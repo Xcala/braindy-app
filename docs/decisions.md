@@ -13,3 +13,8 @@
 | 2026-10-05 | All migrated brands are current clients (`active`); admin gets an archive/activate toggle | |
 | 2026-10-05 | Brand files from Drive must live in the platform (view, download, upload), not links to Drive | Supersedes the "link to Drive only" recommendation |
 | 2026-10-05 | Phase 1 migration written: 40 brands (2 groups), 41 assets, 32 context docs, 15 members, 17 users | Second run idempotent |
+| 2026-10-05 | More groups: **Restaurantes** (Puerta del Sol, Hacienda Parrilla Bar, Casa en el Aire), **Grupo Alejandra** (Mayo RD, Taxcan), **MEX Group** (Toro Mambo, LNSR) | Renamed: "Case en el Aire" → Casa en el Aire, "PLS" → Principal Learning Strategies |
+| 2026-10-05 | "Marcas Personales" in Drive is an organizing folder; each subfolder is a client | 12 older personal brands imported as `archived` |
+| 2026-10-05 | Proposals are a separate admin-only module (draft/sent/won/lost, public tracked link, "won → create client") with sending by platform link, Gmail and WhatsApp + open/time tracking | Approved; Gmail send scope to be approved when built |
+| 2026-10-05 | Files: private bucket `braindy-app-files`; all downloads/uploads through the backend with 15-min signed URLs | Storage rules cannot read the `braindy-app` database |
+| 2026-10-05 | Drive import reads via the `braindy-api` service account on folders shared as Viewer | gcloud's OAuth client is blocked for Drive scopes |

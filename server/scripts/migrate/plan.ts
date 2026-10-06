@@ -1,6 +1,6 @@
 // Builds the phase 1 migration plan from legacy data. Pure: no reads, no writes.
 import {
-  ADMIN_EMAILS, ALIASES, CANONICAL_NAMES, CONTEXT_EXCLUDED_NAMES, DRIVE_BRAND_NAMES, GROUPS,
+  ADMIN_EMAILS, ALIASES, ARCHIVED_BRANDS, CANONICAL_NAMES, CONTEXT_EXCLUDED_NAMES, DRIVE_BRAND_NAMES, GROUPS,
   IGNORED_NAMES, INTERNAL_BRAND, INTERNAL_TITLES, MEMBER_OVERRIDES, POSSIBLE_DUPLICATES, STAFF_DOMAINS,
 } from './config.js';
 import type { LegacyData, Row } from './legacy.js';
@@ -174,6 +174,13 @@ export function buildPlan(src: LegacyData): Plan {
       if (b.kind !== 'group') b.groupId = group.id;
       if (isNew) flags.push(`New brand "${b.name}" from the Drive folder of ${group.name}.`);
     }
+  }
+
+  // 3c · archived clients that only exist as Drive folders
+  for (const [key, name] of Object.entries(ARCHIVED_BRANDS)) {
+    const isNew = !brands.has(key);
+    const b = ensure(key, name);
+    if (isNew) b.status = 'archived';
   }
 
   // 4 · brands.marketMaps → marketmap assets

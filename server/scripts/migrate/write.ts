@@ -45,5 +45,16 @@ export async function applyPlan(plan: Plan): Promise<number> {
     await set(`users/${u.uid}`, { email: u.email, name: u.name, role: u.role, brandIds: u.brandIds });
   }
   await flush();
+
+  // Prune brands this migration created earlier that are no longer planned (e.g. renamed),
+  // but only when they are still empty: never touches anything a person added.
+  const planned = new Set(plan.brands.map((b) => b.id));
+  for (const doc of (await db.collection('brands').get()).docs) {
+    if (planned.has(doc.id) || !doc.get('migratedAt')) continue;
+    const subs = await doc.ref.listCollections();
+    if (subs.length) { console.warn(`Not pruning brands/${doc.id}: it has ${subs.map((c) => c.id).join(', ')}`); continue; }
+    await doc.ref.delete();
+    console.log(`Pruned obsolete brands/${doc.id}`);
+  }
   return total;
 }

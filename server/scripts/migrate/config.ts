@@ -15,6 +15,9 @@ export const ALIASES: Record<string, string> = {
   'jero66': 'jero berrio',
   'ibmt': 'grupo ibmt',
   'berrio': 'grupo berrio',
+  'case en el aire': 'casa en el aire',
+  'pls': 'principal learning strategies',
+  'max group': 'mex group',
 };
 
 /** Display name to use for a canonical key when sources disagree. */
@@ -30,6 +33,11 @@ export const CANONICAL_NAMES: Record<string, string> = {
   'grupo ibmt': 'Grupo IBMT',
   'ipark': 'iPark',
   'equipark': 'EquiPark',
+  'casa en el aire': 'Casa en el Aire',
+  'principal learning strategies': 'Principal Learning Strategies',
+  'restaurantes': 'Restaurantes',
+  'grupo alejandra': 'Grupo Alejandra',
+  'mex group': 'MEX Group',
   'braindy': 'Braindy',
 };
 
@@ -46,6 +54,29 @@ export const GROUPS: Record<string, { parent?: string; children: string[] }> = {
     parent: 'grupo berrio',
     children: ['ipark', 'equipark', 'park media y plaza'],
   },
+  // Decisions 2026-10-05 (Drive folders "Restaurantes", "Grupo Alejandra", "MEX Group").
+  restaurantes: { children: ['puerta del sol', 'hacienda parrilla bar', 'casa en el aire'] },
+  'grupo alejandra': { children: ['mayo rd', 'taxcan'] },
+  'mex group': { children: ['toro mambo', 'lnsr'] },
+};
+
+/**
+ * Clients from the Drive folder "Marcas Personales" (an organizing folder, not a group).
+ * Not among the current clients, so they start archived; Nicolas activates them from the app.
+ */
+export const ARCHIVED_BRANDS: Record<string, string> = {
+  'mariana duenas': 'Mariana Dueñas',
+  'andrea carmona': 'Andrea Carmona',
+  'fernanda gil': 'Fernanda Gil',
+  'adriana penuela useche': 'Adriana Penuela-Useche',
+  'monica bautista': 'Mónica Bautista',
+  'nadia olea': 'Nadia Olea',
+  'rusmila okuale': 'Rusmila Okuale',
+  'andrea perez': 'Andrea Pérez',
+  'rocio suarez': 'Rocío Suárez',
+  'claudia rojas': 'Claudia Rojas',
+  'cote': 'Coté',
+  'ivana': 'Ivana',
 };
 
 /** Display names for brands that only exist as Drive folders. */
