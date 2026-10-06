@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "braindy-brand-guideline"
+  },
+  "targets": {
+    "braindy-brand-guideline": {
+      "hosting": {
+        "staging": ["braindy-app-staging"]
+      }
+    }
+  }
+}

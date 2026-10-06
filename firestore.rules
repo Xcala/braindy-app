@@ -1,0 +1,156 @@
+rules_version = '2';
+
+// Braindy platform · Firestore database `braindy-app` only.
+// The backend (Cloud Run, Admin SDK) bypasses these rules; Brain agents act through it
+// and their limits (never approve, never publish, never read credentials) live in server code.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid()));
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(uid()))
+        && userDoc().data.role == 'admin';
+    }
+
+    function memberPath(brandId) {
+      return /databases/$(database)/documents/brands/$(brandId)/members/$(uid());
+    }
+
+    function isMember(brandId) {
+      return signedIn() && exists(memberPath(brandId));
+    }
+
+    function member(brandId) {
+      return get(memberPath(brandId)).data;
+    }
+
+    function isOwner(brandId) {
+      return isMember(brandId) && member(brandId).role == 'client_owner';
+    }
+
+    function canApprove(brandId) {
+      return isOwner(brandId)
+        || (isMember(brandId) && member(brandId).get('canApprove', false) == true);
+    }
+
+    function canReadBrand(brandId) {
+      return isAdmin() || isMember(brandId);
+    }
+
+    function onlyChanges(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    // ---------- users ----------
+    match /users/{userId} {
+      allow read: if isAdmin() || (signedIn() && uid() == userId);
+      allow create, delete: if isAdmin();
+      // A user may edit their own display name; role and brandIds are admin-only.
+      allow update: if isAdmin()
+        || (signedIn() && uid() == userId
+            && onlyChanges(['name'])
+            && request.resource.data.name is string
+            && request.resource.data.name.size() <= 120);
+    }
+
+    // ---------- brands ----------
+    match /brands/{brandId} {
+      allow read: if canReadBrand(brandId);
+      allow write: if isAdmin();
+
+      match /context/{docId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if isAdmin();
+      }
+
+      match /assets/{assetId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if isAdmin();
+      }
+
+      match /members/{memberId} {
+        allow read: if canReadBrand(brandId);
+        // Owners invite and manage members of their brand, but never edit their own entry.
+        allow create, update: if isAdmin()
+          || (isOwner(brandId)
+              && memberId != uid()
+              && request.resource.data.keys().hasOnly(['role', 'canApprove'])
+              && request.resource.data.role in ['client_owner', 'client_member']
+              && request.resource.data.get('canApprove', false) is bool);
+        allow delete: if isAdmin() || (isOwner(brandId) && memberId != uid());
+      }
+
+      match /requests/{requestId} {
+        allow read: if canReadBrand(brandId);
+        // Clients open requests; routing, plan, status and approval level are set server-side.
+        allow create: if isAdmin()
+          || (isMember(brandId)
+              && request.resource.data.createdBy == uid()
+              && request.resource.data.status == 'in_production'
+              && request.resource.data.keys().hasOnly([
+                   'category', 'subcategory', 'formatType', 'cards', 'moodboard',
+                   'dueDate', 'status', 'createdBy', 'createdAt'])
+              && request.resource.data.createdAt == request.time);
+        allow update, delete: if isAdmin();
+
+        match /versions/{versionId} {
+          allow read: if canReadBrand(brandId);
+          allow create, delete: if isAdmin();
+          // Approvers record their decision; nothing else on a version is client-editable.
+          allow update: if isAdmin()
+            || (canApprove(brandId)
+                && onlyChanges(['approval'])
+                && request.resource.data.approval.keys().hasOnly(['state', 'by', 'at', 'note'])
+                && request.resource.data.approval.state in ['approved', 'changes_requested']
+                && request.resource.data.approval.by == uid()
+                && request.resource.data.approval.at == request.time);
+        }
+
+        match /comments/{commentId} {
+          allow read: if canReadBrand(brandId);
+          allow create: if (isAdmin() || isMember(brandId))
+            && request.resource.data.author == uid()
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 5000
+            && request.resource.data.createdAt == request.time;
+          allow update: if isAdmin();
+          allow delete: if isAdmin()
+            || (isMember(brandId) && resource.data.author == uid());
+        }
+      }
+
+      // Credential metadata only; secrets are encrypted server-side (KMS) and revealed
+      // through the backend, which writes the audit log. No client writes, ever.
+      match /accesses/{accessId} {
+        allow read: if isAdmin() || isOwner(brandId);
+        allow write: if false;
+      }
+    }
+
+    // ---------- audit (backend writes only) ----------
+    match /audit/{eventId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ---------- brains (status board) ----------
+    match /brains/{brainId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

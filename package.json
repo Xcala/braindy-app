@@ -1,0 +1,21 @@
+{
+  "name": "braindy-app",
+  "private": true,
+  "type": "module",
+  "workspaces": ["web", "server"],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web && npm run build -w server",
+    "typecheck": "npm run typecheck -w web && npm run typecheck -w server && tsc -p tests/rules --noEmit",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-braindy \"vitest run --config tests/rules/vitest.config.ts\"",
+    "emulators": "firebase emulators:start --project demo-braindy"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@types/node": "^24.0.0",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.32.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

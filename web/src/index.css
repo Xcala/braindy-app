@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "@fontsource/red-hat-display/300.css";
+@import "@fontsource/red-hat-display/400.css";
+@import "@fontsource/red-hat-display/500.css";
+@import "@fontsource/red-hat-display/900.css";
+
+@theme {
+  --font-sans: "Red Hat Display", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #0b0b0f;
+  --color-paper: #f7f7f5;
+  --color-researcher: #f5b301;
+  --color-marketer: #8b5cf6;
+  --color-creator: #06b6d4;
+  --color-builder: #2a7fff;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  font-style: normal;
+}
