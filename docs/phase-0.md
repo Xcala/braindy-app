@@ -39,6 +39,13 @@ npm run dev -w server       # API on :8787
 | 8 | Cloud Run service `braindy-api` (same region, scale to zero, public; the app checks Firebase tokens) | `gcloud run deploy braindy-api --source . --service-account braindy-api@... --set-env-vars ALLOWED_ORIGINS=https://braindy-app-staging.web.app` |
 | 9 | Admin profile for Nicolas in `braindy-app` | `npm run set-admin -w server -- nicolas@braindy.co --dry-run`, then without `--dry-run` |
 
-
+## Live resources (created 2026-10-05)
+- Firestore `braindy-app` · nam5 · delete protection on · rules released only to `cloud.firestore/braindy-app`
+- Web app "Braindy App" `1:283103160183:web:fce82a279f18e7aa01e372`
+- Hosting https://braindy-app-staging.web.app (domain added to Auth authorized domains)
+- Service account `braindy-api@` · `roles/datastore.user` with condition `only-braindy-app-db` · `roles/firebaseauth.viewer`
+- Cloud Run `braindy-api` · us-central1 · https://braindy-api-283103160183.us-central1.run.app (`/health`, `/v1/me`)
+- `users/RtXYJs35puWUxm4wDM13Ks6m9mL2` (Nicolas, admin)
+- Note: the project IAM policy now has a conditional binding (policy v3); future `gcloud add/remove-iam-policy-binding` calls need `--condition`.
 
 Not in phase 0: app.braindy.co DNS (ask first), KMS (phase 3), Storage (phase 1), any migration.
