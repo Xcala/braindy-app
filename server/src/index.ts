@@ -14,7 +14,7 @@ const app = new Hono<AuthEnv>();
 app.use('*', logger());
 app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'] }));
 
-app.get('/healthz', (c) => c.json({ ok: true }));
+app.get('/health', (c) => c.json({ ok: true }));
 
 app.use('/v1/*', requireUser);
 

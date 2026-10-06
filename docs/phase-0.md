@@ -8,7 +8,7 @@ Done when: login works on staging with existing users.
 | `web/` | Vite + React 19 + TS + Tailwind v4 + react-router 7. Firebase 12 client, database `braindy-app` only |
 | `server/` | Cloud Run backend (Node 24, Hono, firebase-admin). Verifies Firebase ID tokens. All AI calls will live here |
 | `firestore.rules` | Rules for database `braindy-app` |
-| `tests/rules/` | Emulator tests for the rules (`npm run test:rules`) |
+| `tests/rules/` | Emulator tests for the rules (`npm run test:rules`, needs Java 21) |
 | `Dockerfile` | Backend image, built from the repo root |
 
 ## Local
@@ -38,5 +38,7 @@ npm run dev -w server       # API on :8787
 | 7 | Service account `braindy-api` · `roles/datastore.user` (condition: database `braindy-app`) · `roles/firebaseauth.viewer` | `gcloud iam service-accounts create braindy-api` + `add-iam-policy-binding --condition=...` |
 | 8 | Cloud Run service `braindy-api` (same region, scale to zero, public; the app checks Firebase tokens) | `gcloud run deploy braindy-api --source . --service-account braindy-api@... --set-env-vars ALLOWED_ORIGINS=https://braindy-app-staging.web.app` |
 | 9 | Admin profile for Nicolas in `braindy-app` | `npm run set-admin -w server -- nicolas@braindy.co --dry-run`, then without `--dry-run` |
+
+
 
 Not in phase 0: app.braindy.co DNS (ask first), KMS (phase 3), Storage (phase 1), any migration.

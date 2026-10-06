@@ -4,6 +4,7 @@ FROM node:24-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/
+COPY web/package.json web/
 RUN npm ci --workspace server --include-workspace-root=false
 COPY server server
 RUN npm run build -w server
@@ -13,6 +14,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/
+COPY web/package.json web/
 RUN npm ci --workspace server --include-workspace-root=false --omit=dev
 COPY --from=build /app/server/dist server/dist
 USER node

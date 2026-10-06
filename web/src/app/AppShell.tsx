@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { Wordmark } from '../components/Wordmark';
+import { ApiStatus } from '../components/ApiStatus';
 
 const TABS = [
   { to: '/brand', label: 'My brand' },
@@ -20,6 +21,7 @@ export function AppShell() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <Wordmark className="text-2xl" />
           <div className="flex items-center gap-3 text-sm">
+            {profile?.role === 'admin' && <ApiStatus />}
             <span className="hidden text-black/60 sm:inline">{profile?.name ?? profile?.email}</span>
             <button onClick={logout} className="rounded-full border border-black/15 px-3 py-1 hover:bg-black/5">
               Sign out
