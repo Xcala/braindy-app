@@ -1,7 +1,7 @@
 // Builds the phase 1 migration plan from legacy data. Pure: no reads, no writes.
 import {
-  ADMIN_EMAILS, ALIASES, CANONICAL_NAMES, IGNORED_NAMES, INTERNAL_BRAND, INTERNAL_TITLES,
-  MEMBER_OVERRIDES, POSSIBLE_DUPLICATES, STAFF_DOMAINS,
+  ADMIN_EMAILS, ALIASES, CANONICAL_NAMES, CONTEXT_EXCLUDED_NAMES, DRIVE_BRAND_NAMES, GROUPS,
+  IGNORED_NAMES, INTERNAL_BRAND, INTERNAL_TITLES, MEMBER_OVERRIDES, POSSIBLE_DUPLICATES, STAFF_DOMAINS,
 } from './config.js';
 import type { LegacyData, Row } from './legacy.js';
 
@@ -24,11 +24,14 @@ export interface PlannedMember {
   role: 'client_owner' | 'client_member';
   canApprove: boolean;
   via: string;
+  explicitRole?: boolean;
 }
 
 export interface PlannedBrand {
   id: string;
   name: string;
+  kind: 'brand' | 'group';
+  groupId: string | null;
   status: string;
   logoUrl: string | null;
   legacyIds: { brands: string[]; orbit: string[]; brandingProjects: string[]; briefEmails: string[] };
@@ -83,7 +86,7 @@ export function buildPlan(src: LegacyData): Plan {
     if (!b) {
       const name = CANONICAL_NAMES[key] ?? displayName.trim();
       b = {
-        id: slugify(name), name, status: 'active', logoUrl: null,
+        id: slugify(name), name, kind: 'brand', groupId: null, status: 'active', logoUrl: null,
         legacyIds: { brands: [], orbit: [], brandingProjects: [], briefEmails: [] },
         sourceNames: new Set(), context: {}, assets: [], members: [],
       };
@@ -114,7 +117,6 @@ export function buildPlan(src: LegacyData): Plan {
     const b = ensure(key, String(p.client));
     b.legacyIds.orbit.push(p.id);
     b.logoUrl ??= str(p.logo);
-    if (p.isArchived === true) b.status = b.legacyIds.brands.length ? b.status : 'archived';
     orbitKey.set(p.id, key);
   }
 
@@ -131,9 +133,10 @@ export function buildPlan(src: LegacyData): Plan {
   }
   for (const [key, list] of byBrand) {
     const b = brands.get(key)!;
-    const primary = [...list].sort((x, y) =>
+    const eligible = list.filter((bp) => !CONTEXT_EXCLUDED_NAMES.includes(normalize(bp.name)));
+    const primary = [...eligible].sort((x, y) =>
       Number(!!y.clientId) - Number(!!x.clientId) || millis(y.updatedAt) - millis(x.updatedAt))[0];
-    b.context.identity = {
+    if (primary) b.context.identity = {
       logos: primary.logos ?? null,
       colors: primary.colors ?? [],
       typography: primary.typography ?? [],
@@ -142,8 +145,9 @@ export function buildPlan(src: LegacyData): Plan {
       galleryAssets: primary.galleryAssets ?? [],
       source: { collection: 'brandingProjects', id: primary.id },
     };
-    if (primary.brandVoice) b.context.voice = { ...(primary.brandVoice as object), source: { collection: 'brandingProjects', id: primary.id } };
-    if (list.length > 1) flags.push(`${b.name}: ${list.length} brand books; context taken from "${primary.name}" (${primary.id}), the rest kept as LogoDeck assets.`);
+    if (primary?.brandVoice) b.context.voice = { ...(primary.brandVoice as object), source: { collection: 'brandingProjects', id: primary.id } };
+    if (!primary) flags.push(`${b.name}: no main brand book (only ${list.map((x) => x.name).join(', ')}); context left empty, kept as LogoDeck assets.`);
+    else if (list.length > 1) flags.push(`${b.name}: ${list.length} brand books; context taken from "${primary.name}" (${primary.id}), the rest kept as LogoDeck assets.`);
 
     for (const bp of list) {
       const data = { heroTitle: bp.heroTitle ?? null, heroSubtitle: bp.heroSubtitle ?? null, sections: bp.sections ?? [], deckSlides: bp.deckSlides ?? [] };
@@ -156,6 +160,19 @@ export function buildPlan(src: LegacyData): Plan {
         data: inline ? data : undefined,
         legacy: { db: '(default)', collection: 'brandingProjects', id: bp.id }, sizeBytes: size,
       });
+    }
+  }
+
+  // 3b · groups (from the Drive "Berrio" folder structure)
+  for (const groupKey of Object.keys(GROUPS)) ensure(groupKey, CANONICAL_NAMES[groupKey] ?? groupKey).kind = 'group';
+  for (const [groupKey, g] of Object.entries(GROUPS)) {
+    const group = brands.get(groupKey)!;
+    if (g.parent) group.groupId = brands.get(g.parent)!.id;
+    for (const child of g.children) {
+      const isNew = !brands.has(child);
+      const b = ensure(child, DRIVE_BRAND_NAMES[child] ?? CANONICAL_NAMES[child] ?? child);
+      if (b.kind !== 'group') b.groupId = group.id;
+      if (isNew) flags.push(`New brand "${b.name}" from the Drive folder of ${group.name}.`);
     }
   }
 
@@ -222,12 +239,13 @@ function planUsers(
   skipped: Plan['skipped'],
 ): PlannedUser[] {
   const authByEmail = new Map(src.authUsers.filter((u) => u.email).map((u) => [u.email!.toLowerCase(), u]));
-  const isStaff = (e: string) => STAFF_DOMAINS.some((d) => e.endsWith(`@${d}`));
+  const isStaff = (e: string) => ADMIN_EMAILS.includes(e) || STAFF_DOMAINS.some((d) => e.endsWith(`@${d}`));
   const wanted = new Map<string, Set<string>>(); // email → brand keys
   const via = new Map<string, string>();
   const add = (email: unknown, key: string | undefined, source: string) => {
     const e = String(email ?? '').trim().toLowerCase();
     if (!e || !key) return;
+    if (MEMBER_OVERRIDES[e] && source !== 'override') return; // overrides are exclusive
     wanted.set(e, (wanted.get(e) ?? new Set()).add(key));
     via.set(`${e}|${key}`, source);
   };
@@ -286,7 +304,7 @@ function planUsers(
       if (briefEmails.has(email)) b.legacyIds.briefEmails.push(email);
       const o = MEMBER_OVERRIDES[email];
       b.members.push({
-        uid: auth.uid, email, role: o?.role ?? 'client_member',
+        uid: auth.uid, email, role: o?.role ?? 'client_member', explicitRole: !!o?.role,
         canApprove: o?.canApprove ?? false, via: via.get(`${email}|${key}`) ?? '?',
       });
       const u = users.get(auth.uid) ?? { uid: auth.uid, email, name: auth.displayName ?? email, role: 'client' as const, brandIds: [] };
@@ -297,7 +315,7 @@ function planUsers(
 
   // A brand's only member becomes its owner (unless overridden).
   for (const b of brands.values()) {
-    if (b.members.length === 1 && !MEMBER_OVERRIDES[b.members[0].email]) {
+    if (b.members.length === 1 && !b.members[0].explicitRole) {
       b.members[0].role = 'client_owner';
       b.members[0].canApprove = true;
     } else if (b.members.length > 1 && !b.members.some((m) => m.role === 'client_owner')) {

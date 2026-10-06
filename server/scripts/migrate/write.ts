@@ -29,7 +29,7 @@ export async function applyPlan(plan: Plan): Promise<number> {
   for (const b of plan.brands) {
     const base = `brands/${b.id}`;
     await set(base, {
-      name: b.name, slug: b.id, status: b.status, logoUrl: b.logoUrl, legacyIds: b.legacyIds, migratedAt,
+      name: b.name, slug: b.id, kind: b.kind, groupId: b.groupId, status: b.status, logoUrl: b.logoUrl, legacyIds: b.legacyIds, migratedAt,
       ...(existing.has(b.id) ? {} : { createdAt: migratedAt }),
     });
     for (const [doc, data] of Object.entries(b.context)) await set(`${base}/context/${doc}`, data, false);

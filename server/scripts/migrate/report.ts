@@ -28,7 +28,8 @@ export function renderReport(plan: Plan, mode: 'dry-run' | 'write'): string {
     const merged = [...b.sourceNames].filter((n) => n !== b.name);
     const l = b.legacyIds;
     const m = b.members.map((x) => `${x.email} (${x.role === 'client_owner' ? 'owner' : 'member'}${x.canApprove ? ', approves' : ''})`).join('<br>');
-    line(`| **${b.name}** \`${b.id}\` | ${merged.join(', ') || '—'} | ${l.brands.length} / ${l.orbit.length} / ${l.brandingProjects.length} | ${Object.keys(b.context).join(', ') || '—'} | ${b.assets.map((a) => `${a.type}: ${a.title}`).join('<br>') || '—'} | ${m || '—'} |`);
+    const tag = `${b.kind === 'group' ? ' · group' : ''}${b.groupId ? ` · in ${b.groupId}` : ''}`;
+    line(`| **${b.name}** \`${b.id}\`${tag} | ${merged.join(', ') || '—'} | ${l.brands.length} / ${l.orbit.length} / ${l.brandingProjects.length} | ${Object.keys(b.context).join(', ') || '—'} | ${b.assets.map((a) => `${a.type}: ${a.title}`).join('<br>') || '—'} | ${m || '—'} |`);
   }
   line();
 
