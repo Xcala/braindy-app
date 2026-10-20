@@ -52,8 +52,8 @@ function Palette({ onClose }: { onClose: () => void }) {
 
   const items = useMemo<Item[]>(() => {
     const go = (path: string) => () => { navigate(path); onClose(); };
-    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings']] as Array<[string, StringKey]>)
-      .concat(isAdmin ? [['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team']] : [])
+    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
+      .concat(isAdmin ? [['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team'], ['/admin/onboarding', 'nav.onboarding'], ['/admin/billing', 'nav.billing']] : [])
       .map(([p, k]) => ({ id: p, group: 'search.pages' as StringKey, label: t(k), run: go(p) }));
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));
     const reqItems: Item[] = requests.map((r) => ({ id: `r-${r.id}`, group: 'search.requests' as StringKey, label: r.title, hint: `${r.brandId !== current?.id ? `${brands.find((b) => b.id === r.brandId)?.name ?? ''} · ` : ''}${t(`req.status.${r.status}`)}`, run: () => { if (r.brandId !== current?.id) select(r.brandId); go(`/requests/${r.id}`)(); } }));

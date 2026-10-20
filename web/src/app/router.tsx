@@ -17,6 +17,11 @@ import { AdminTeam } from '../pages/admin/Team';
 import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
 import { Settings } from '../pages/Settings';
+import { Onboarding } from '../pages/Onboarding';
+import { Report } from '../pages/Report';
+import { AdminOnboarding } from '../pages/admin/Onboarding';
+import { AdminBilling } from '../pages/admin/Billing';
+import { Pay, PaySuccess } from '../pages/Pay';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -38,6 +43,10 @@ export const router = createBrowserRouter([
           { path: 'requests/:id', element: <RequestDetail /> },
           { path: 'accesses', element: <Accesses /> },
           { path: 'settings', element: <Settings /> },
+          { path: 'onboarding', element: <Onboarding /> },
+          { path: 'report', element: <Report /> },
+          { path: 'pay', element: <Pay /> },
+          { path: 'pay/success', element: <PaySuccess /> },
           {
             element: <RequireAdmin />,
             children: [
@@ -45,6 +54,8 @@ export const router = createBrowserRouter([
               { path: 'admin/proposals', element: <AdminProposals /> },
               { path: 'admin/proposals/:id', element: <ProposalDetail /> },
               { path: 'team', element: <AdminTeam /> },
+              { path: 'admin/onboarding', element: <AdminOnboarding /> },
+              { path: 'admin/billing', element: <AdminBilling /> },
             ],
           },
         ],

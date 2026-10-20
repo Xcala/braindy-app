@@ -4,6 +4,8 @@ import { requestsEn, requestsEs } from './requestStrings';
 import { teamHomeEn, teamHomeEs } from './teamHomeStrings';
 import { accessEn, accessEs } from './accessStrings';
 import { reviewEn, reviewEs } from './reviewStrings';
+import { onboardingEn, onboardingEs } from './onboardingStrings';
+import { billingEn, billingEs } from './billingStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -169,7 +171,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -337,4 +339,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs };

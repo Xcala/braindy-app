@@ -10,6 +10,9 @@ import { adminRequests, requests } from './requests.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
+import { adminOnboarding, onboarding } from './onboarding.js';
+import { adminReports } from './reports.js';
+import { adminBilling, billing, stripeWebhook } from './billing.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -26,6 +29,9 @@ app.get('/health', (c) => c.json({ ok: true }));
 app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
+
+// Stripe webhook: public, verified by signature (no CORS: server to server).
+app.route('/webhooks', stripeWebhook);
 
 app.use('/v1/*', requireUser);
 
@@ -47,6 +53,11 @@ app.route('/v1', members);
 app.route('/v1', accesses);
 app.route('/v1', review);
 app.route('/v1/admin', adminReview);
+app.route('/v1', onboarding);
+app.route('/v1/admin', adminOnboarding);
+app.route('/v1/admin', adminReports);
+app.route('/v1', billing);
+app.route('/v1/admin', adminBilling);
 app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);

@@ -230,6 +230,28 @@ describe('accesses (credentials)', () => {
     }
   });
 
+  it('reports: members see published only, admin sees drafts, nobody writes; sessions admin read only', async () => {
+    await assertSucceeds(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/reports/2026-09`)));
+    await assertFails(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/reports/2026-10`)));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/reports/2026-10`)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/reports/2026-09`)));
+    await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/reports/2026-11`), { published: true }));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'sessions/2026-11-01T14:00:00.000Z')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'sessions/2026-11-01T14:00:00.000Z')));
+  });
+
+  it('billing: owners and admin read, members and others do not, nobody writes; Stripe maps backend only', async () => {
+    for (const p of ['billing/plan', 'invoices/i1', 'transfers/t1']) {
+      await assertSucceeds(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/${p}`)));
+      await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/${p}`)));
+      await assertFails(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/${p}`)));
+      await assertFails(getDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/${p}`)));
+      await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/${p}`), { status: 'paid' }));
+    }
+    await assertFails(getDoc(doc(as(env, ADMIN), 'stripeCustomers/cus_1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
+  });
+
   it('encrypted values are unreachable from any client, admin included', async () => {
     for (const who of [OWNER, ADMIN, MEMBER]) {
       await assertFails(getDoc(doc(as(env, who), `accessSecrets/${BRAND_A}__ig`)));

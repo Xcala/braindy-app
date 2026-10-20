@@ -46,6 +46,8 @@ export async function seed(env: RulesTestEnvironment): Promise<void> {
       await put(`brands/${brand}/context/voice`, { tone: 'warm' });
       await put(`brands/${brand}/assets/deck`, { type: 'logodeck', title: 'Deck' });
       await put(`brands/${brand}/accesses/ig`, { platform: 'instagram', username: 'x', secretRef: 'kms://ref' });
+      await put(`brands/${brand}/reports/2026-09`, { month: '2026-09', published: true });
+      await put(`brands/${brand}/reports/2026-10`, { month: '2026-10', published: false });
       await put(`brands/${brand}/requests/r1`, { category: 'SOCIAL', status: 'to_approve', createdBy: 'seed' });
       await put(`brands/${brand}/requests/r1/versions/v1`, { n: 1, files: [], brain: 'creator', approval: { state: 'pending' } });
       await put(`brands/${brand}/requests/r1/comments/c1`, { author: 'seed', text: 'hi' });
