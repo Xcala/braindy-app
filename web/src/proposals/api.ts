@@ -43,7 +43,7 @@ export const publicApi = {
     fetch(`${API_URL}/public/p/${t}/accept`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
   pay: (t: string): Promise<{ payUrl: string | null }> =>
-    fetch(`${API_URL}/public/p/${t}/pay`, { method: 'POST' }).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
+    fetch(`${API_URL}/public/p/${t}/pay`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => (r.ok ? r.json() : Promise.reject(r.status))),
   fileUrl: (t: string, fileId: string) =>
     fetch(`${API_URL}/public/p/${t}/files/${fileId}`).then((r) => r.json()).then((r: { url: string }) => r.url),
 };
