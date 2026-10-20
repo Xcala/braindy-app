@@ -6,6 +6,10 @@ const API_URL = import.meta.env.VITE_API_URL ?? '';
 export const signedUrl = (brandId: string, assetId: string, inline = false) =>
   api<{ url: string }>(`/v1/brands/${brandId}/assets/${assetId}/url${inline ? '?inline=1' : ''}`).then((r) => r.url);
 
+export const signedUrls = (brandId: string, ids: string[]) =>
+  api<{ urls: Record<string, string> }>(`/v1/brands/${brandId}/assets/urls`, { method: 'POST', body: JSON.stringify({ ids }) })
+    .then((r) => r.urls);
+
 export async function download(brandId: string, assetId: string) {
   window.location.assign(await signedUrl(brandId, assetId));
 }

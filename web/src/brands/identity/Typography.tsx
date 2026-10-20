@@ -1,24 +1,41 @@
-type Font = { id?: string; name?: string; fontFamily?: string; role?: string; description?: string; downloadUrl?: string; url?: string };
+import { useEffect } from 'react';
+
+type Font = { id?: string; name?: string; fontFamily?: string; role?: string; description?: string; type?: string; downloadUrl?: string; url?: string };
+
+/** Loads Google Fonts used by the brand so the specimen renders in the real typeface. */
+function useGoogleFonts(families: string[]) {
+  const key = families.join('|');
+  useEffect(() => {
+    if (!key) return;
+    const href = `https://fonts.googleapis.com/css2?${key.split('|').map((f) => `family=${encodeURIComponent(f)}:wght@400;600;700`).join('&')}&display=swap`;
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href });
+    document.head.appendChild(link);
+  }, [key]);
+}
 
 export function Typography({ fonts }: { fonts: Font[] }) {
+  useGoogleFonts([...new Set(fonts.filter((f) => f.type === 'google' && f.fontFamily).map((f) => f.fontFamily!))]);
   if (!fonts.length) return null;
   return (
-    <ul className="divide-y divide-black/10 rounded-xl border border-black/10 bg-white">
+    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       {fonts.map((f) => {
         const link = f.downloadUrl || f.url;
         return (
-          <li key={f.id ?? f.name} className="flex flex-wrap items-baseline justify-between gap-2 px-4 py-4">
-            <div>
-              <div className="text-2xl" style={{ fontFamily: f.fontFamily }}>{f.name ?? f.fontFamily}</div>
-              {f.description && <p className="mt-1 max-w-xl text-sm text-black/60">{f.description}</p>}
+          <div key={f.id ?? f.name} className="card col g20">
+            <div className="row between g8">
+              <p className="label">{f.role ?? ''}</p>
+              {f.type && <span className="chip c-type">{f.type === 'google' ? 'Google Fonts' : f.type}</span>}
             </div>
-            <div className="flex items-center gap-3 text-sm text-black/60">
-              {f.role && <span className="rounded-full border border-black/15 px-2 py-0.5">{f.role}</span>}
-              {link && <a href={link} target="_blank" rel="noreferrer" className="hover:text-ink">↗</a>}
+            <p style={{ fontFamily: f.fontFamily, fontSize: 64, lineHeight: '64px', color: 'var(--ink)' }}>Aa</p>
+            <div className="col g4">
+              <span className="h3" style={{ fontFamily: f.fontFamily }}>{f.name ?? f.fontFamily}</span>
+              {f.description && <p className="t-sm t-mute">{f.description}</p>}
             </div>
-          </li>
+            {link && <a href={link} target="_blank" rel="noreferrer" className="t-sm w7">{f.fontFamily ?? f.name} ↗</a>}
+          </div>
         );
       })}
-    </ul>
+    </div>
   );
 }

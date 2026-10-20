@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { download, previewKind, signedUrl } from './fileApi';
 
-export interface FileItem { id: string; title: string; contentType: string; size: number }
+import type { FileItem } from './fileKinds';
+export type { FileItem };
 
 export function Preview({ brandId, file, onClose }: { brandId: string; file: FileItem; onClose: () => void }) {
   const { t } = useI18n();

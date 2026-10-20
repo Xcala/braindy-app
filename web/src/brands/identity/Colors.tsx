@@ -1,42 +1,50 @@
-import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
+import { Icon } from '../../components/Icon';
+import { inkOn, isHex, rgb, useCopy } from './useCopy';
 
-type Color = { id?: string; hex?: string; name?: string; pantone?: string; chosen?: boolean };
+export type Color = { id?: string; hex?: string; name?: string; pantone?: string; chosen?: boolean };
 
-/** Readable text color on top of a swatch. */
-const ink = (hex: string) => {
-  const n = parseInt(hex.replace('#', '').padEnd(6, '0').slice(0, 6), 16);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  return 0.299 * r + 0.587 * g + 0.114 * b > 150 ? '#0b0b0f' : '#ffffff';
+export const brandColors = (colors: Color[]) => {
+  const valid = colors.filter((c) => isHex(c.hex));
+  return valid.some((c) => c.chosen) ? valid.filter((c) => c.chosen) : valid;
 };
 
 export function Colors({ colors }: { colors: Color[] }) {
   const { t } = useI18n();
-  const [copied, setCopied] = useState<string | null>(null);
-  const list = colors.filter((c) => /^#[0-9a-f]{3,8}$/i.test(c.hex ?? ''));
-  const shown = list.some((c) => c.chosen) ? list.filter((c) => c.chosen) : list;
-  if (!shown.length) return null;
-
-  const copy = async (hex: string) => {
-    try { await navigator.clipboard.writeText(hex); setCopied(hex); setTimeout(() => setCopied(null), 1500); } catch { /* clipboard blocked */ }
-  };
+  const { copied, copy } = useCopy();
+  const list = brandColors(colors);
+  if (!list.length) return null;
 
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-      {shown.map((c) => (
-        <li key={c.id ?? c.hex}>
-          <button
-            onClick={() => copy(c.hex!)}
-            className="flex aspect-square w-full flex-col justify-end rounded-xl p-3 text-left"
-            style={{ background: c.hex, color: ink(c.hex!) }}
-            aria-label={`${t('common.copy')} ${c.hex}`}
-          >
-            <span className="text-sm font-medium">{c.name}</span>
-            <span className="text-xs opacity-80">{copied === c.hex ? t('common.copied') : c.hex?.toUpperCase()}</span>
-            {c.pantone && <span className="text-xs opacity-80">{c.pantone}</span>}
-          </button>
-        </li>
-      ))}
-    </ul>
+    <div className="col g24">
+      <div className="prop" aria-hidden="true">
+        {list.map((c, i) => (
+          <div key={c.id ?? c.hex} style={{ flex: Math.max(1, list.length - i), background: c.hex, color: inkOn(c.hex!) }}>
+            {c.name}
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        {list.map((c) => {
+          const hex = c.hex!.toUpperCase();
+          return (
+            <div key={c.id ?? hex} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="swatch" style={{ borderRadius: 0, height: 140, background: hex, borderBottom: inkOn(hex) === '#0B1220' ? '1px solid #E3E7F0' : undefined }} />
+              <div className="col g8" style={{ padding: 18 }}>
+                <span className="h3">{c.name ?? hex}</span>
+                <div className="spec">
+                  <span className="k">Hex</span><span className="mono">{hex}</span>
+                  <button className="copybtn" onClick={() => copy(hex)} aria-label={`${t('common.copy')} ${hex}`}>
+                    <Icon name={copied === hex ? 'check' : 'copy'} size={14} />{copied === hex ? t('common.copied') : t('common.copy')}
+                  </button>
+                  <span className="k">RGB</span><span className="mono">{rgb(hex).join(' ')}</span><span />
+                  <span className="k">PMS</span><span className="t-sm t-mute">{c.pantone ?? t('brand.toConfirm')}</span><span />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

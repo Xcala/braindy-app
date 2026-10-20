@@ -10,6 +10,8 @@ export interface Brand {
   groupId: string | null;
   status: 'active' | 'archived';
   logoUrl: string | null;
+  /** Old apps this brand was migrated from: brands, orbit, brief, brandbook. */
+  sources: string[];
 }
 
 interface BrandState {
@@ -29,7 +31,15 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   groupId: (d.groupId as string) ?? null,
   status: d.status === 'archived' ? 'archived' : 'active',
   logoUrl: (d.logoUrl as string) ?? null,
+  sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
 });
+
+const sourcesOf = (l?: Record<string, unknown[]>) => [
+  (l?.brands?.length ?? 0) > 0 && 'brands',
+  (l?.orbit?.length ?? 0) > 0 && 'orbit',
+  (l?.briefEmails?.length ?? 0) > 0 && 'brief',
+  (l?.brandingProjects?.length ?? 0) > 0 && 'brandbook',
+].filter((x): x is string => !!x);
 
 /** Admin sees every brand; clients see the brands listed in their profile (rules enforce the same). */
 export function BrandProvider({ children }: { children: ReactNode }) {

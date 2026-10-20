@@ -12,3 +12,6 @@ ui-debug.log*
 coverage/
 service-account*.json
 migration-reports/
+
+# local dev
+.claude/settings.local.json

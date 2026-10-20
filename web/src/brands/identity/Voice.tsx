@@ -1,57 +1,76 @@
 import { useI18n } from '../../i18n/I18nProvider';
 
-type Voice = {
+export type VoiceDoc = {
   essence?: { title?: string; description?: string };
   tonePrinciples?: Array<{ id?: string; title?: string; description?: string }>;
   howItSounds?: { is?: string[]; isNot?: string[] };
+  toneBalance?: { tradition?: number; modernity?: number; intellect?: number; emotion?: number };
+  keyLanguage?: string[];
   example?: string;
 };
 
-export function Voice({ voice }: { voice: Voice | null }) {
+export function Voice({ voice }: { voice: VoiceDoc | null }) {
   const { t } = useI18n();
   if (!voice) return null;
-  const { essence, tonePrinciples = [], howItSounds, example } = voice;
+  const { essence, tonePrinciples = [], howItSounds, toneBalance, example } = voice;
+  const keyLanguage = (voice.keyLanguage ?? []).flatMap((k) => k.split(/[·,;]/)).map((k) => k.trim()).filter(Boolean);
 
   return (
-    <div className="space-y-8">
-      {essence?.title && (
-        <div>
-          <p className="text-3xl font-light leading-tight sm:text-4xl">{essence.title}</p>
-          {essence.description && <p className="mt-3 max-w-2xl text-black/65">{essence.description}</p>}
-          {example && <p className="mt-4 text-lg font-medium">{example}</p>}
+    <div className="col g20">
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
+        <div className="card col g20">
+          <p className="label">{t('brand.essence')}</p>
+          {essence?.title && <p className="d-lg" style={{ fontSize: 30, lineHeight: '36px' }}><span className="w9">{essence.title}</span></p>}
+          {essence?.description && <p className="t-mute">{essence.description}</p>}
+          {example && <p className="t-lg w7">{example}</p>}
+          {(howItSounds?.is?.length || howItSounds?.isNot?.length) ? (
+            <>
+              <div className="divider" />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="col g8"><p className="label">{t('brand.is')}</p>{(howItSounds?.is ?? []).map((s) => <p key={s}>{s}</p>)}</div>
+                <div className="col g8"><p className="label">{t('brand.isNot')}</p>{(howItSounds?.isNot ?? []).map((s) => <p key={s} className="t-mute">{s}</p>)}</div>
+              </div>
+            </>
+          ) : null}
         </div>
-      )}
+        <div className="card col g20">
+          <div className="row between"><p className="label">{t('brand.toneBalance')}</p>{!toneBalance && <span className="chip c-draft">{t('brand.notSet')}</span>}</div>
+          <Balance left={t('brand.tradition')} right={t('brand.modernity')} a={toneBalance?.tradition} b={toneBalance?.modernity} />
+          <Balance left={t('brand.intellect')} right={t('brand.emotion')} a={toneBalance?.intellect} b={toneBalance?.emotion} />
+          {keyLanguage.length > 0 && (
+            <>
+              <div className="divider" />
+              <p className="label">{t('brand.keyLanguage')}</p>
+              <div className="row g8 wrap">{keyLanguage.map((k) => <span key={k} className="chip chip-plain c-type">{k}</span>)}</div>
+            </>
+          )}
+        </div>
+      </div>
       {tonePrinciples.length > 0 && (
-        <div>
-          <h3 className="mb-3 text-sm font-medium">{t('brand.tone')}</h3>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {tonePrinciples.map((p) => (
-              <li key={p.id ?? p.title} className="rounded-xl border border-black/10 bg-white p-4">
-                <div className="font-medium">{p.title}</div>
-                {p.description && <p className="mt-1 text-sm text-black/60">{p.description}</p>}
-              </li>
-            ))}
-          </ul>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {tonePrinciples.map((p, i) => (
+            <div key={p.id ?? p.title} className="card col g8">
+              <span className="sec-num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="h3">{p.title}</span>
+              {p.description && <p className="t-sm t-mute">{p.description}</p>}
+            </div>
+          ))}
         </div>
       )}
-      {(howItSounds?.is?.length || howItSounds?.isNot?.length) ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <List title={t('brand.is')} items={howItSounds?.is ?? []} />
-          <List title={t('brand.isNot')} items={howItSounds?.isNot ?? []} muted />
-        </div>
-      ) : null}
     </div>
   );
 }
 
-function List({ title, items, muted }: { title: string; items: string[]; muted?: boolean }) {
-  if (!items.length) return null;
+/** Position between two poles, from the two weights stored in the brand book. */
+function Balance({ left, right, a, b }: { left: string; right: string; a?: number; b?: number }) {
+  const set = typeof a === 'number' && typeof b === 'number' && a + b > 0;
+  const pos = set ? (b! / (a! + b!)) * 100 : 50;
   return (
-    <div className="rounded-xl border border-black/10 bg-white p-4">
-      <h3 className="mb-2 text-sm font-medium">{title}</h3>
-      <ul className={`list-disc space-y-1 pl-5 text-sm ${muted ? 'text-black/50' : 'text-black/75'}`}>
-        {items.map((i) => <li key={i}>{i}</li>)}
-      </ul>
+    <div className="col g8">
+      <div className="row between t-sm"><span className="w7">{left}</span><span className="w7">{right}</span></div>
+      <div className={`track ${set ? '' : 'unset'}`} role={set ? 'img' : undefined} aria-label={set ? `${left} ${Math.round(100 - pos)}% · ${right} ${Math.round(pos)}%` : undefined}>
+        {set && <span className="knob" style={{ left: `${pos}%` }} />}
+      </div>
     </div>
   );
 }

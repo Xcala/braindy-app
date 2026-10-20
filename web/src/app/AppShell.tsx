@@ -1,9 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
-import { Wordmark } from '../components/Wordmark';
 import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
-import { BrandSwitcher } from '../brands/BrandSwitcher';
+import { BrandMenu } from '../brands/BrandMenu';
 import { LangToggle } from '../i18n/LangToggle';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -21,49 +21,79 @@ const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
 ];
 
 export function AppShell() {
-  const { profile, logout } = useAuth();
+  const { profile } = useAuth();
   const { t } = useI18n();
   const isAdmin = profile?.role === 'admin';
-  const tabs = isAdmin ? [...TABS, ...ADMIN_TABS] : TABS;
 
   return (
     <BrandProvider>
       <div className="flex min-h-full flex-col">
-        <header className="border-b border-black/10 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-            <div className="flex items-center gap-4">
-              <Wordmark className="text-2xl" />
-              <BrandSwitcher />
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              {isAdmin && <ApiStatus />}
-              <LangToggle />
-              <span className="hidden text-black/60 md:inline">{profile?.name ?? profile?.email}</span>
-              <button onClick={logout} className="rounded-full border border-black/15 px-3 py-1 hover:bg-black/5">
-                {t('common.signOut')}
-              </button>
-            </div>
-          </div>
-          <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4">
-            {tabs.map((tab) => (
-              <NavLink
-                key={tab.to}
-                to={tab.to}
-                className={({ isActive }) =>
-                  `whitespace-nowrap border-b-2 px-3 py-2 text-sm ${
-                    isActive ? 'border-ink font-medium' : 'border-transparent text-black/55 hover:text-ink'
-                  }`
-                }
-              >
-                {t(tab.label)}
-              </NavLink>
-            ))}
-          </nav>
+        <header className="topbar" style={{ height: 'auto', minHeight: 72, flexWrap: 'wrap', padding: '12px 16px', rowGap: 12 }}>
+          <img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" />
+          <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
+          <BrandMenu isAdmin={isAdmin} />
+          <div className="grow" />
+          {isAdmin && <span className="hidden md:inline-flex"><ApiStatus /></span>}
+          <LangToggle />
+          <AccountMenu />
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+        <nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
+          {TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} />)}
+          {isAdmin && (
+            <>
+              <span className="vsep" />
+              {ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />)}
+            </>
+          )}
+        </nav>
+        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-16 pt-8 sm:px-8 lg:px-10">
           <Outlet />
         </main>
       </div>
     </BrandProvider>
+  );
+}
+
+function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
+  return (
+    <NavLink to={to} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
+      {label}
+    </NavLink>
+  );
+}
+
+function AccountMenu() {
+  const { profile, user, logout } = useAuth();
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [open]);
+
+  const name = profile?.name ?? user?.email ?? '';
+  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
+  return (
+    <div ref={box} className="relative">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label={t('nav.account')}
+        className="row g12" style={{ appearance: 'none', border: 0, background: 'none', cursor: 'pointer', padding: 2, borderRadius: 999 }}>
+        {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
+        <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
+          <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
+          <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
+        </span>
+      </button>
+      {open && (
+        <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
+          <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
+          <button role="menuitem" onClick={logout} className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}>
+            {t('common.signOut')}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

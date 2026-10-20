@@ -1,94 +1,112 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
-import { download, formatBytes, previewKind } from './fileApi';
-import { Preview, type FileItem } from './Preview';
-import { UploadButton } from './UploadButton';
+import { normalizeSearch } from '../lib/text';
+import { Icon } from '../components/Icon';
+import { download, previewKind } from './fileApi';
+import { kindOf, type FileItem, type FileKind } from './fileKinds';
+import { FileGrid, FileList, FolderGrid } from './FileViews';
+import { Preview } from './Preview';
+import { useThumbs } from './useThumbs';
 
 type Folder = { path: string; files: number; bytes: number };
+type Filter = 'all' | FileKind;
 const UPLOADS = 'Uploads';
-
+const PAGE = 48;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
-const nameOf = (p: string) => p.slice(p.lastIndexOf('/') + 1);
 
-export function FileExplorer({ brandId }: { brandId: string }) {
+export function FileExplorer({ brandId, brandName }: { brandId: string; brandName: string }) {
   const { t } = useI18n();
   const [path, setPath] = useState('');
   const [files, setFiles] = useState<FileItem[]>([]);
+  const [q, setQ] = useState('');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [limit, setLimit] = useState(PAGE);
   const [preview, setPreview] = useState<FileItem | null>(null);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
 
   useEffect(() => { setPath(''); }, [brandId]);
+  useEffect(() => { setLimit(PAGE); setQ(''); }, [brandId, path]);
   useEffect(() => {
-    const q = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
-    return onSnapshot(q, (s) => setFiles(
-      s.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'> & { status?: string }) }))
-        .filter((f) => (f as { status?: string }).status !== 'uploading')
+    const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
+    return onSnapshot(qy, (s) => setFiles(
+      s.docs.filter((d) => d.get('status') !== 'uploading')
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>) }))
         .sort((a, b) => a.title.localeCompare(b.title)),
     ), () => setFiles([]));
   }, [brandId, path]);
 
   const subfolders = useMemo(() => {
-    const list = folders.filter((f) => f.path && parentOf(f.path) === path);
-    if (!path && !list.some((f) => f.path === UPLOADS)) list.push({ path: UPLOADS, files: 0, bytes: 0 });
+    const list = folders.filter((f) => f.path && parentOf(f.path) === path).map((f) => ({ ...f, highlight: false }));
+    if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true });
     return list;
   }, [folders, path]);
 
-  if (!folders.length && !files.length && !path) {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-black/20 p-6 text-sm text-black/55">
-        {t('files.none')}
-        <UploadButton brandId={brandId} />
-      </div>
-    );
-  }
-
+  const needle = normalizeSearch(q);
+  const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)));
+  const page = shown.slice(0, limit);
+  const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
+  const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
   const crumbs = path ? path.split('/') : [];
+
   return (
-    <div className="rounded-xl border border-black/10 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 px-4 py-3">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1 text-sm">
-          <button onClick={() => setPath('')} className="hover:underline">{t('files.root')}</button>
+    <section className="card" style={{ padding: 0, overflow: 'hidden' }} aria-labelledby="files-crumbs">
+      <div className="flex flex-wrap items-center gap-4 border-b px-4 py-4 sm:px-6" style={{ borderColor: 'var(--line)' }}>
+        <nav className="crumbs grow" aria-label="Breadcrumb" id="files-crumbs">
+          <a href="#" onClick={(e) => { e.preventDefault(); setPath(''); }} className={crumbs.length ? '' : 'cur'}>{brandName}</a>
           {crumbs.map((c, i) => (
-            <span key={i} className="flex items-center gap-1">
-              <span className="text-black/30">/</span>
-              <button onClick={() => setPath(crumbs.slice(0, i + 1).join('/'))} className="hover:underline">{c}</button>
-            </span>
+            <Fragment key={i}>
+              <Icon name="chevronRight" size={14} />
+              {i === crumbs.length - 1 ? <span className="cur">{c}</span>
+                : <a href="#" onClick={(e) => { e.preventDefault(); setPath(crumbs.slice(0, i + 1).join('/')); }}>{c}</a>}
+            </Fragment>
           ))}
         </nav>
-        <UploadButton brandId={brandId} />
+        <div className="search w-full sm:w-[260px]">
+          <Icon name="search" />
+          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('files.search')}
+            placeholder={t('files.searchIn', { name: crumbs[crumbs.length - 1] ?? brandName })} />
+        </div>
+        <div className="seg overflow-x-auto" role="group" aria-label={t('files.filter')}>
+          {(['all', 'image', 'video', 'pdf', 'design'] as Filter[]).map((k) => (
+            <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{t(`files.kind.${k}`)}</button>
+          ))}
+        </div>
+        <div className="seg" role="group" aria-label={t('files.view')}>
+          <button className={view === 'grid' ? 'is-on' : ''} aria-pressed={view === 'grid'} aria-label={t('files.grid')} onClick={() => setView('grid')}><Icon name="grid" /></button>
+          <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} aria-label={t('files.listView')} onClick={() => setView('list')}><Icon name="list" /></button>
+        </div>
       </div>
-      <ul className="divide-y divide-black/5">
-        {subfolders.map((f) => (
-          <li key={f.path}>
-            <button onClick={() => setPath(f.path)} className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03]">
-              <span className="flex items-center gap-2"><span aria-hidden>📁</span>{nameOf(f.path)}</span>
-              {f.bytes > 0 && <span className="text-xs text-black/45">{formatBytes(f.bytes)}</span>}
+      <div className="col g24 p-4 sm:p-6">
+        {subfolders.length > 0 && !needle && (
+          <div className="col g12">
+            <p className="label">{t('files.folders')} · {subfolders.length}</p>
+            <FolderGrid folders={subfolders} onOpen={setPath} />
+          </div>
+        )}
+        <div className="col g12">
+          <p className="label">{t('files.files')} · {shown.length}</p>
+          {index.loading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
+          ) : shown.length === 0 ? (
+            <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
+          ) : view === 'grid' ? (
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} />
+          ) : (
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} />
+          )}
+          {shown.length > limit && (
+            <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>
+              {t('files.showMore', { n: Math.min(PAGE, shown.length - limit) })}
             </button>
-          </li>
-        ))}
-        {files.map((f) => (
-          <li key={f.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
-            <button
-              onClick={() => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id))}
-              className="min-w-0 truncate text-left hover:underline"
-            >
-              {f.title}
-            </button>
-            <span className="flex shrink-0 items-center gap-3 text-xs text-black/45">
-              {formatBytes(f.size)}
-              <button onClick={() => download(brandId, f.id)} className="rounded-full border border-black/15 px-2.5 py-1 text-black/70 hover:bg-black/5">
-                {t('common.download')}
-              </button>
-            </span>
-          </li>
-        ))}
-        {!subfolders.length && !files.length && <li className="px-4 py-6 text-sm text-black/50">{t('assets.empty')}</li>}
-      </ul>
+          )}
+        </div>
+      </div>
       {preview && <Preview brandId={brandId} file={preview} onClose={() => setPreview(null)} />}
-    </div>
+    </section>
   );
 }

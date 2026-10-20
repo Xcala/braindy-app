@@ -1,22 +1,24 @@
 import { useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
+import { Icon } from '../components/Icon';
 import { upload } from './fileApi';
 
 export function UploadButton({ brandId }: { brandId: string }) {
   const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState(false);
+  const [state, setState] = useState<'idle' | 'done' | 'error'>('idle');
 
   async function onFiles(list: FileList | null) {
     if (!list?.length) return;
-    setError(false);
+    setState('idle');
     try {
       for (const [i, f] of [...list].entries()) {
         await upload(brandId, f, (p) => setProgress((i + p) / list.length));
       }
+      setState('done');
     } catch {
-      setError(true);
+      setState('error');
     } finally {
       setProgress(null);
       if (input.current) input.current.value = '';
@@ -24,20 +26,20 @@ export function UploadButton({ brandId }: { brandId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3 text-sm">
-      {error && <span role="alert" className="text-red-600">{t('files.uploadError')}</span>}
+    <div className="row g12 wrap">
+      {state === 'error' && <span role="alert" className="t-sm" style={{ color: 'var(--danger)' }}>{t('files.uploadError')}</span>}
+      {state === 'done' && <span role="status" className="t-sm" style={{ color: 'var(--success)' }}>{t('files.uploaded')}</span>}
       {progress !== null && (
-        <span className="flex items-center gap-2 text-black/55" aria-live="polite">
-          <span className="h-1.5 w-24 overflow-hidden rounded-full bg-black/10">
-            <span className="block h-full bg-ink" style={{ width: `${Math.round(progress * 100)}%` }} />
+        <span className="row g8 t-sm t-mute" aria-live="polite">
+          <span className="block h-1.5 w-28 overflow-hidden rounded-full" style={{ background: 'var(--line)' }}>
+            <span className="block h-full" style={{ width: `${Math.round(progress * 100)}%`, background: 'var(--azul)' }} />
           </span>
           {Math.round(progress * 100)}%
         </span>
       )}
-      <input ref={input} type="file" multiple className="sr-only" onChange={(e) => onFiles(e.target.files)} aria-label={t('files.upload')} />
-      <button onClick={() => input.current?.click()} disabled={progress !== null}
-        className="rounded-full bg-ink px-3 py-1.5 text-white disabled:opacity-50">
-        {t('files.upload')}
+      <input ref={input} type="file" multiple className="sr" onChange={(e) => onFiles(e.target.files)} aria-label={t('files.upload')} />
+      <button className="btn btn-primary" onClick={() => input.current?.click()} disabled={progress !== null}>
+        <Icon name="upload" />{t('files.upload')}
       </button>
     </div>
   );

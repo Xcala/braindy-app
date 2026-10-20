@@ -34,6 +34,25 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
   return c.json({ url, expiresInSeconds: URL_TTL_MS / 1000 });
 });
 
+/** Signed inline URLs for up to 60 assets at once (thumbnails in the file browser). */
+files.post('/brands/:brandId/assets/urls', async (c) => {
+  const { brandId } = c.req.param();
+  const access = await brandAccess(c.get('user').uid, brandId);
+  if (!access.member) return c.json({ error: 'forbidden' }, 403);
+
+  const { ids } = await c.req.json<{ ids?: string[] }>();
+  const list = [...new Set((ids ?? []).filter((x) => typeof x === 'string'))].slice(0, 60);
+  const snaps = list.length ? await db.getAll(...list.map((id) => db.doc(`brands/${brandId}/assets/${id}`))) : [];
+  const urls: Record<string, string> = {};
+  await Promise.all(snaps.map(async (s) => {
+    const path = s.get('storagePath') as string | undefined;
+    if (!s.exists || !path || !path.startsWith(`brands/${brandId}/`)) return;
+    const [url] = await bucket().file(path).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
+    urls[s.id] = url;
+  }));
+  return c.json({ urls });
+});
+
 /** Starts a client upload: registers a pending asset and returns a signed PUT URL. */
 files.post('/brands/:brandId/uploads', async (c) => {
   const { brandId } = c.req.param();

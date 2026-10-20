@@ -1,13 +1,25 @@
 @import "tailwindcss";
 @import "@fontsource/red-hat-display/300.css";
-@import "@fontsource/red-hat-display/400.css";
 @import "@fontsource/red-hat-display/500.css";
+@import "@fontsource/red-hat-display/700.css";
+@import "@fontsource/red-hat-display/800.css";
 @import "@fontsource/red-hat-display/900.css";
+@import "@fontsource/red-hat-text/400.css";
+@import "@fontsource/red-hat-text/500.css";
+@import "@fontsource/red-hat-text/600.css";
+@import "@fontsource/red-hat-text/700.css";
+@import "@fontsource/red-hat-mono/500.css";
+/* Design system from the "Braindy app · Design v1" canvas. Unlayered, so it wins over Tailwind utilities. */
+@import "./styles/bd-app.css";
 
 @theme {
-  --font-sans: "Red Hat Display", ui-sans-serif, system-ui, sans-serif;
-  --color-ink: #0b0b0f;
-  --color-paper: #f7f7f5;
+  --font-sans: "Red Hat Text", system-ui, sans-serif;
+  --font-display: "Red Hat Display", system-ui, sans-serif;
+  --color-ink: #0b1220;
+  --color-graphite: #5c6375;
+  --color-azul: #2f4de0;
+  --color-niebla: #f4f6fb;
+  --color-line: #e3e7f0;
   --color-researcher: #f5b301;
   --color-marketer: #8b5cf6;
   --color-creator: #06b6d4;
@@ -21,6 +33,10 @@ body,
 }
 
 body {
-  @apply bg-paper text-ink font-sans antialiased;
-  font-style: normal;
+  background: var(--niebla);
+}
+
+/* The design system scopes its base type to .app; the root element carries it. */
+#root {
+  min-height: 100%;
 }
