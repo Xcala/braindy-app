@@ -21,6 +21,12 @@ for (const id of ids) {
   }
   (await prod.collection(`brands/${id}/assets`).where('source', '==', 'legacy').get()).docs.forEach((d) => docs.push({ path: d.ref.path, data: d.data() }));
   (await prod.collection(`brands/${id}/assets`).where('folder', '==', '').limit(40).get()).docs.forEach((d) => docs.push({ path: d.ref.path, data: d.data() }));
+  for (const r of (await prod.collection(`brands/${id}/requests`).orderBy('createdAt', 'desc').limit(25).get()).docs) {
+    docs.push({ path: r.ref.path, data: r.data() });
+    for (const sub of ['versions', 'comments']) {
+      (await r.ref.collection(sub).get()).docs.forEach((d) => docs.push({ path: d.ref.path, data: d.data() }));
+    }
+  }
 }
 console.log(`read ${docs.length} docs from production`);
 

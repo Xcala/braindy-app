@@ -154,7 +154,12 @@ service cloud.firestore {
             && request.resource.data.text.size() > 0
             && request.resource.data.text.size() <= 5000
             && request.resource.data.createdAt == request.time;
-          allow update: if isAdmin();
+          // Resolving a comment: its author, anyone who can approve, or the admin. Text never changes.
+          allow update: if isAdmin()
+            || ((resource.data.author == uid() || canApprove(brandId))
+                && onlyChanges(['resolved', 'resolvedBy', 'resolvedAt'])
+                && request.resource.data.resolved is bool
+                && request.resource.data.resolvedBy == uid());
           allow delete: if isAdmin()
             || (isMember(brandId) && resource.data.author == uid());
         }

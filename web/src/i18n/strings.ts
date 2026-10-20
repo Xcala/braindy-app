@@ -1,5 +1,6 @@
 // UI copy. English is the source; Spanish must cover every key (TypeScript enforces it).
 import { proposalsEn, proposalsEs } from './proposalStrings';
+import { requestsEn, requestsEs } from './requestStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -165,7 +166,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -333,4 +334,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs };

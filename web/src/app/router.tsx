@@ -9,6 +9,10 @@ import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
 import { ProposalDetail } from '../pages/admin/ProposalDetail';
 import { PublicProposal } from '../pages/PublicProposal';
+import { Ask } from '../pages/Ask';
+import { Requests } from '../pages/Requests';
+import { RequestDetail } from '../pages/RequestDetail';
+import { BatchApprove } from '../pages/BatchApprove';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -22,8 +26,10 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="/brand" replace /> },
           { path: 'brand', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
-          { path: 'ask', element: <Placeholder title="nav.ask" phase={2} /> },
-          { path: 'requests', element: <Placeholder title="nav.requests" phase={2} /> },
+          { path: 'ask', element: <Ask /> },
+          { path: 'requests', element: <Requests /> },
+          { path: 'requests/approve', element: <BatchApprove /> },
+          { path: 'requests/:id', element: <RequestDetail /> },
           { path: 'accesses', element: <Placeholder title="nav.accesses" phase={3} /> },
           {
             element: <RequireAdmin />,

@@ -182,6 +182,16 @@ describe('comments', () => {
     await assertFails(deleteDoc(doc(db, `brands/${BRAND_A}/requests/r1/comments/c1`)));
   });
 
+  it('authors and approvers resolve comments; plain members cannot resolve others, nobody edits text', async () => {
+    const resolve = (by: string) => ({ resolved: true, resolvedBy: by, resolvedAt: serverTimestamp() });
+    await setDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), comment(MEMBER));
+    await assertSucceeds(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), resolve(MEMBER)));
+    await assertSucceeds(updateDoc(doc(as(env, APPROVER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(APPROVER)));
+    await assertFails(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(MEMBER)));
+    await assertFails(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), { text: 'edited' }));
+    await assertFails(updateDoc(doc(as(env, APPROVER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(OWNER)));
+  });
+
   it('cannot impersonate or comment on another brand', async () => {
     await assertFails(setDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/x`), comment(OWNER)));
     await assertFails(setDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/requests/r1/comments/x`), comment(OUTSIDER)));

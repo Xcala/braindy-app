@@ -6,6 +6,7 @@ import { requireUser, type AuthEnv } from './auth.js';
 import { db } from './firebase.js';
 import { files } from './files.js';
 import { adminProposals, publicProposals } from './proposals.js';
+import { adminRequests, requests } from './requests.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -37,6 +38,8 @@ app.get('/v1/me', async (c) => {
 
 app.route('/v1', files);
 app.route('/v1/admin', adminProposals);
+app.route('/v1', requests);
+app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));
