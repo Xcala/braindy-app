@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { extname, resolve } from 'node:path';
 import { EXCLUDED_FILE_NAMES } from './config.js';
-import { LOCAL_FOLDERS, absFolder, walkLocal, type LocalFile } from './local.js';
+import { LOCAL_FOLDERS, absFolder, importable, walkLocal, type LocalFile } from './local.js';
 
 const KINDS: Record<string, RegExp> = {
   image: /\.(png|jpe?g|gif|webp|svg|heic|tiff?|bmp)$/i,
@@ -22,7 +22,8 @@ const allAbs = new Set(Object.keys(LOCAL_FOLDERS).map(absFolder));
 const rows: string[] = [];
 const missing: string[] = [];
 const summary: Record<string, { files: number; bytes: number; google: number }> = {};
-let totalFiles = 0, totalBytes = 0, totalGoogle = 0;
+let totalFiles = 0, totalBytes = 0, totalGoogle = 0, keptFiles = 0, keptBytes = 0;
+const cache: Record<string, Array<Pick<LocalFile, 'relPath' | 'size' | 'mtimeMs' | 'googleShortcut'>>> = {};
 const big: Array<{ brand: string; path: string; size: number }> = [];
 const otherExt = new Map<string, number>();
 
@@ -41,25 +42,30 @@ for (const brandId of Object.keys(LOCAL_FOLDERS).sort()) {
     if (f.size > 500 * 1024 ** 2) big.push({ brand: brandId, path: f.relPath, size: f.size });
   }
   const google = files.length - real.length;
+  const kept = files.filter(importable);
+  const kBytes = kept.reduce((n, f) => n + f.size, 0);
+  keptFiles += kept.length; keptBytes += kBytes;
+  cache[brandId] = files.map(({ relPath, size, mtimeMs, googleShortcut }) => ({ relPath, size, mtimeMs, googleShortcut }));
   summary[brandId] = { files: real.length, bytes, google };
   totalFiles += real.length; totalBytes += bytes; totalGoogle += google;
-  rows.push(`| ${brandId} | ${LOCAL_FOLDERS[brandId]} | ${real.length} | ${gb(bytes)} | ${google} | ${Object.entries(byKind).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')} |`);
-  console.log(`${brandId.padEnd(30)} ${String(real.length).padStart(6)} files ${gb(bytes).padStart(8)} GB  (+${google} Google docs)`);
+  rows.push(`| ${brandId} | ${LOCAL_FOLDERS[brandId]} | ${real.length} | ${gb(bytes)} | **${kept.length}** | **${gb(kBytes)}** | ${google} | ${Object.entries(byKind).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')} |`);
+  console.log(`${brandId.padEnd(30)} all ${String(real.length).padStart(6)} / ${gb(bytes).padStart(7)} GB   import ${String(kept.length).padStart(6)} / ${gb(kBytes).padStart(7)} GB  (+${google} Google)`);
 }
 
 const dir = resolve(import.meta.dirname, '../../../migration-reports');
 mkdirSync(dir, { recursive: true });
 writeFileSync(resolve(dir, 'drive-map.json'), JSON.stringify(summary, null, 2));
+writeFileSync(resolve(dir, 'drive-files.json'), JSON.stringify(cache));
 const report = [
   `# Drive map (local) · dry-run · ${new Date().toISOString()}`, '',
   `Source: Google Drive for Desktop (nicolas@xent.co). Metadata only, nothing copied.`,
-  `**${totalFiles} files · ${gb(totalBytes)} GB** to copy, plus **${totalGoogle} Google Docs/Sheets/Slides** (shortcuts, need export).`,
-  `Estimated storage: ~USD ${((totalBytes / 1024 ** 3) * 0.02).toFixed(2)}/month.`, '',
-  '| Brand | Folder | Files | GB | Google docs | Types |', '|---|---|---|---|---|---|', ...rows, '',
+  `All: ${totalFiles} files · ${gb(totalBytes)} GB. **After filtering noise (code, RAW, GIS, archives, >500 MB): ${keptFiles} files · ${gb(keptBytes)} GB**, plus ${totalGoogle} Google Docs/Sheets/Slides (shortcuts).`,
+  `Estimated storage for the filtered set: ~USD ${((keptBytes / 1024 ** 3) * 0.02).toFixed(2)}/month.`, '',
+  '| Brand | Folder | All files | All GB | Import files | Import GB | Google docs | Types |', '|---|---|---|---|---|---|---|---|', ...rows, '',
   missing.length ? `## Folders not found\n${missing.map((m) => `- ${m}`).join('\n')}\n` : '',
   big.length ? `## Files over 500 MB\n${big.map((b) => `- ${b.brand}: ${b.path} (${gb(b.size)} GB)`).join('\n')}\n` : '',
   `## Other file types\n${[...otherExt].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([e, n]) => `${e} ${n}`).join(' · ')}`,
 ].join('\n');
 const file = resolve(dir, `drive-map-local-${new Date().toISOString().replace(/[:.]/g, '-')}.md`);
 writeFileSync(file, report);
-console.log(`\nTotal ${totalFiles} files, ${gb(totalBytes)} GB (+${totalGoogle} Google docs). Report: ${file}`);
+console.log(`\nAll ${totalFiles} files ${gb(totalBytes)} GB · Import ${keptFiles} files ${gb(keptBytes)} GB (+${totalGoogle} Google docs). Report: ${file}`);

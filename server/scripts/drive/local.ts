@@ -65,6 +65,16 @@ export const GOOGLE_SHORTCUT = /\.(gdoc|gsheet|gslides|gdraw|gform|gmap|gsite|gj
 const IGNORED = /^(desktop\.ini|\.ds_store|thumbs\.db|icon\r?)$/i;
 const IGNORED_DIRS = /^(_?to[_ ]delete|\$recycle\.bin)$/i;
 
+/** Not brand material: source code, build output, GIS data, camera RAW, partial downloads, archives. */
+export const NOISE_DIRS = /^(node_modules|\.git|\.next|\.astro|dist|build|out|vendor|__pycache__|\.cache|\.vercel|\.firebase|.*\.gdb)$/i;
+export const NOISE_FILES = /\.(js|mjs|cjs|ts|tsx|jsx|map|php|py|rb|go|lock|json|yml|yaml|toml|env|sh|bat|css|scss|less|gdb\w*|spx|cr2|cr3|dng|nef|arw|raf|orf|descarga|crdownload|part|tmp|zip|rar|7z|dmg|exe|msi|iso)$/i;
+export const MAX_IMPORT_BYTES = 500 * 1024 ** 2;
+
+/** Whether a file is worth copying into the platform (brand assets, deliverables, documents). */
+export const importable = (f: LocalFile) =>
+  !f.googleShortcut && !NOISE_FILES.test(f.name) && f.size <= MAX_IMPORT_BYTES
+  && !f.relPath.split('/').slice(0, -1).some((d) => NOISE_DIRS.test(d));
+
 export interface LocalFile {
   absPath: string;
   relPath: string; // relative to the brand folder, with "/" separators
