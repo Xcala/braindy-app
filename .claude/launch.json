@@ -1,7 +1,39 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "web", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "-w", "web", "--", "--port", "5174", "--strictPort"], "port": 5174 },
-    { "name": "web-emulators", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev", "-w", "web", "--", "--port", "5175", "--strictPort"], "port": 5175, "env": { "VITE_USE_EMULATORS": "true" } }
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "web",
+        "--",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "web-emulators",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "web",
+        "--",
+        "--port",
+        "5175",
+        "--strictPort"
+      ],
+      "port": 5175,
+      "env": {
+        "VITE_USE_EMULATORS": "true",
+        "VITE_API_URL": "http://localhost:8788"
+      }
+    }
   ]
 }

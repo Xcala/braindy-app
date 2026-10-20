@@ -17,6 +17,7 @@ const TABS: Array<{ to: string; label: StringKey }> = [
 ];
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/brands', label: 'nav.brands' },
+  { to: '/admin/proposals', label: 'nav.proposals' },
   { to: '/team', label: 'nav.team' },
 ];
 

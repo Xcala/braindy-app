@@ -6,9 +6,13 @@ import { Placeholder } from '../pages/Placeholder';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { AdminBrands } from '../pages/admin/Brands';
+import { AdminProposals } from '../pages/admin/Proposals';
+import { ProposalDetail } from '../pages/admin/ProposalDetail';
+import { PublicProposal } from '../pages/PublicProposal';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
+  { path: '/p/:token', element: <PublicProposal /> },
   {
     element: <RequireAuth />,
     children: [
@@ -25,6 +29,8 @@ export const router = createBrowserRouter([
             element: <RequireAdmin />,
             children: [
               { path: 'admin/brands', element: <AdminBrands /> },
+              { path: 'admin/proposals', element: <AdminProposals /> },
+              { path: 'admin/proposals/:id', element: <ProposalDetail /> },
               { path: 'team', element: <Placeholder title="nav.team" phase={4} /> },
             ],
           },
