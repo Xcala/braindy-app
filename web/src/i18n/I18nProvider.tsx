@@ -5,13 +5,26 @@ export type Lang = 'en' | 'es';
 const STORAGE_KEY = 'braindy.lang';
 const dictionaries: Record<Lang, Record<StringKey, string>> = { en, es };
 
-function initialLang(): Lang {
+/** The first Spanish or English entry in the browser's language list (es-CO, es-419, en-US…). Default: English. */
+export function browserLang(): Lang {
+  const list = navigator.languages?.length ? navigator.languages : [navigator.language];
+  for (const l of list) {
+    const code = String(l).toLowerCase();
+    if (code.startsWith('es')) return 'es';
+    if (code.startsWith('en')) return 'en';
+  }
+  return 'en';
+}
+
+function savedLang(): Lang | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'en' || saved === 'es') return saved;
-  } catch { /* storage unavailable */ }
-  return navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en';
+    return saved === 'en' || saved === 'es' ? saved : null;
+  } catch { return null; }
 }
+
+/** A choice made with the EN/ES toggle wins; otherwise the browser decides. */
+const initialLang = (): Lang => savedLang() ?? browserLang();
 
 interface I18n {
   lang: Lang;
@@ -25,6 +38,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(initialLang);
 
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+
+  // Follow the browser when its language changes, unless the person picked one with the toggle.
+  useEffect(() => {
+    const onChange = () => { if (!savedLang()) setLangState(browserLang()); };
+    window.addEventListener('languagechange', onChange);
+    return () => window.removeEventListener('languagechange', onChange);
+  }, []);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
