@@ -52,7 +52,13 @@ You can do them one at a time. A missing secret only leaves its feature in fallb
 - **Template to create and get approved:** `delivery_ready`, in Spanish (`es`) and English (`en`).
   - Body with 3 variables: `{{1}}` brand, `{{2}}` Brain, `{{3}}` title. Example text: "{{1}}: {{2}} entregó «{{3}}». Revísalo y apruébalo sin iniciar sesión."
   - One URL button: `https://braindy-app-staging.web.app/r/{{1}}` (use the app.braindy.co domain when it goes live).
-- **Without it:** after each delivery, the panel shows a ready "Abrir WhatsApp" link to send by hand.
+- **Onboarding templates (wave H), same idea, Spanish and English, `{{1}}` = brand:**
+  - `onboarding_welcome` (day 0)
+  - `brand_brain_ready` (day 1)
+  - `session_confirmed` (day 2; `{{2}}` = date and time)
+  - `brand_brain_signed` (day 2)
+  - `system_live` (day 11)
+- **Without it:** after each delivery the panel shows a ready "Abrir WhatsApp" link, and the onboarding notices wait in Admin → Onboarding with a send button.
 
 ### Claude (wave F)
 - **What it's for:** with the key, the Researcher writes the Brand Brain draft from the brief.
