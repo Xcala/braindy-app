@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import type { Notice } from '../review/api';
 
 export const createRequest = (brandId: string, body: Record<string, unknown>) =>
   api<{ requestId: string }>(`/v1/brands/${brandId}/requests`, { method: 'POST', body: JSON.stringify(body) });
@@ -32,7 +33,8 @@ export async function uploadVersion(brandId: string, requestId: string, files: F
       xhr.send(f);
     });
   }
-  await api(`/v1/admin/brands/${brandId}/requests/${requestId}/versions/${start.versionId}/publish`, { method: 'POST', body: '{}' });
+  const r = await api<{ notice?: Notice }>(`/v1/admin/brands/${brandId}/requests/${requestId}/versions/${start.versionId}/publish`, { method: 'POST', body: '{}' });
+  return r.notice ?? null;
 }
 
 export const markPublished = (brandId: string, requestId: string) =>

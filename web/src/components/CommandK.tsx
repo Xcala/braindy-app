@@ -52,7 +52,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 
   const items = useMemo<Item[]>(() => {
     const go = (path: string) => () => { navigate(path); onClose(); };
-    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>)
+    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings']] as Array<[string, StringKey]>)
       .concat(isAdmin ? [['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team']] : [])
       .map(([p, k]) => ({ id: p, group: 'search.pages' as StringKey, label: t(k), run: go(p) }));
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));

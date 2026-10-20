@@ -1,3 +1,5 @@
+import { NoticeResult } from '../review/NoticeResult';
+import { noticesApi, type Notice } from '../review/api';
 import { useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
@@ -16,11 +18,12 @@ export function AdminVersionPanel({ brandId, r }: { brandId: string; r: BrandReq
   const [brain, setBrain] = useState<BrainId>(r.leadBrain);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
 
   async function deliver() {
     setError(false);
     try {
-      await uploadVersion(brandId, r.id, files, { notes, reason, brain }, setProgress);
+      setNotice(await uploadVersion(brandId, r.id, files, { notes, reason, brain }, setProgress));
       setFiles([]); setNotes(''); setReason('');
     } catch { setError(true); } finally { setProgress(null); }
   }
@@ -46,9 +49,11 @@ export function AdminVersionPanel({ brandId, r }: { brandId: string; r: BrandReq
         <button className="btn btn-primary" disabled={!files.length || progress !== null} onClick={deliver}>
           {progress !== null ? `${Math.round(progress * 100)}%` : t('req.deliver')}
         </button>
+        {r.status === 'to_approve' && r.latestVersion && <button className="btn btn-secondary" onClick={async () => setNotice(await noticesApi.sendLink(brandId, r.id, r.latestVersion!).catch(() => ({ status: 'error' as const })))}>{t('rev.sendLink')}</button>}
         {r.status === 'approved' && <button className="btn btn-secondary" onClick={() => markPublished(brandId, r.id)}>{t('req.markLive')}</button>}
         <span className="t-sm t-mute">{t('req.deliverHint')}</span>
       </div>
+      {notice && <NoticeResult notice={notice} />}
     </section>
   );
 }

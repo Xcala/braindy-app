@@ -220,6 +220,16 @@ describe('accesses (credentials)', () => {
     await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/accessLog/e2`), { action: 'revealed' }));
   });
 
+  it('brand settings: members read, nobody writes; review links are backend only', async () => {
+    await assertSucceeds(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/settings/notices`)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/settings/notices`)));
+    await assertFails(setDoc(doc(as(env, OWNER), `brands/${BRAND_A}/settings/notices`), { whatsapp: '573000000000' }));
+    for (const who of [OWNER, ADMIN, OUTSIDER]) {
+      await assertFails(getDoc(doc(as(env, who), 'reviewLinks/abc')));
+      await assertFails(setDoc(doc(as(env, who), 'reviewLinks/abc'), { brandId: BRAND_A }));
+    }
+  });
+
   it('encrypted values are unreachable from any client, admin included', async () => {
     for (const who of [OWNER, ADMIN, MEMBER]) {
       await assertFails(getDoc(doc(as(env, who), `accessSecrets/${BRAND_A}__ig`)));

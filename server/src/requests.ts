@@ -6,11 +6,12 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
+import { notifyDelivery } from './review.js';
 import type { AuthEnv } from './auth.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
-const URL_TTL_MS = 15 * 60 * 1000;
-const bucket = () => getStorage().bucket(BUCKET);
+export const URL_TTL_MS = 15 * 60 * 1000;
+export const bucket = () => getStorage().bucket(BUCKET);
 
 type Brain = 'researcher' | 'marketer' | 'creator' | 'builder';
 // Keep in sync with web/src/requests/taxonomy.ts (lead, helpers, "with Nicolas").
@@ -31,7 +32,7 @@ const now = () => FieldValue.serverTimestamp();
 async function isAdmin(uid: string) {
   return (await db.doc(`users/${uid}`).get()).get('role') === 'admin';
 }
-async function canApprove(uid: string, brandId: string) {
+export async function canApprove(uid: string, brandId: string) {
   const a = await brandAccess(uid, brandId);
   if (a.admin) return true;
   if (!a.member) return false;
@@ -74,7 +75,7 @@ requests.post('/brands/:brandId/requests', async (c) => {
 });
 
 /** Approve or ask for changes on a version. Approving moves the request to Approved. */
-async function decide(brandId: string, requestId: string, versionId: string, uid: string, state: string, note: string) {
+export async function decide(brandId: string, requestId: string, versionId: string, uid: string, state: string, note: string) {
   const reqRef = db.doc(`brands/${brandId}/requests/${requestId}`);
   const verRef = reqRef.collection('versions').doc(versionId);
   const [req, ver] = await Promise.all([reqRef.get(), verRef.get()]);
@@ -195,7 +196,9 @@ adminRequests.post('/brands/:brandId/requests/:requestId/versions/:versionId/pub
     .update(verRef, { published: true, publishedAt: now(), reviewedBy: c.get('user').uid })
     .update(reqRef, { status: 'to_approve', stage: 'clientApproval', latestVersion: versionId, updatedAt: now() })
     .commit();
-  return c.json({ ok: true });
+  // Review link to the brand's WhatsApp approver (sent by the API, or a wa.me link for Nicolas).
+  const notice = await notifyDelivery(brandId, requestId, versionId, c.get('user').uid).catch(() => ({ status: 'error' as const }));
+  return c.json({ ok: true, notice });
 });
 
 /** Marks an approved request as published (live). */

@@ -9,6 +9,7 @@ import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
+import { adminReview, publicReview, review } from './review.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -17,13 +18,14 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
 const app = new Hono<AuthEnv>();
 
 app.use('*', logger());
-app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'], allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] }));
+app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'], allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] }));
 
 app.get('/health', (c) => c.json({ ok: true }));
 
 // Public proposal pages: no login, tracked per send.
 app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
 app.route('/public', publicProposals);
+app.route('/public', publicReview);
 
 app.use('/v1/*', requireUser);
 
@@ -43,6 +45,8 @@ app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
 app.route('/v1', members);
 app.route('/v1', accesses);
+app.route('/v1', review);
+app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);

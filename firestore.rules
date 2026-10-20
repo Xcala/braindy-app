@@ -172,6 +172,12 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Brand settings (WhatsApp number, notices). Members read; changes go through the backend.
+      match /settings/{docId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
+
       // Append-only log of every add/change/reveal/copy (never holds values). Backend writes.
       match /accessLog/{eventId} {
         allow read: if isAdmin() || isOwner(brandId);
@@ -181,6 +187,11 @@ service cloud.firestore {
 
     // ---------- encrypted credential values (backend only, never readable by clients) ----------
     match /accessSecrets/{secretId} {
+      allow read, write: if false;
+    }
+
+    // ---------- review links (approve from WhatsApp without login): backend only ----------
+    match /reviewLinks/{token} {
       allow read, write: if false;
     }
 

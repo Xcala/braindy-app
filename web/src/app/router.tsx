@@ -15,10 +15,13 @@ import { BatchApprove } from '../pages/BatchApprove';
 import { Home } from '../pages/Home';
 import { AdminTeam } from '../pages/admin/Team';
 import { Accesses } from '../pages/Accesses';
+import { PublicReview } from '../pages/PublicReview';
+import { Settings } from '../pages/Settings';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
   { path: '/p/:token', element: <PublicProposal /> },
+  { path: '/r/:token', element: <PublicReview /> },
   {
     element: <RequireAuth />,
     children: [
@@ -34,6 +37,7 @@ export const router = createBrowserRouter([
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
           { path: 'accesses', element: <Accesses /> },
+          { path: 'settings', element: <Settings /> },
           {
             element: <RequireAdmin />,
             children: [

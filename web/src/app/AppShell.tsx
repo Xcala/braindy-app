@@ -93,6 +93,7 @@ function AccountMenu() {
       {open && (
         <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
+          <NavLink role="menuitem" to="/settings" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.settings")}</NavLink>
           <button role="menuitem" onClick={logout} className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}>
             {t('common.signOut')}
           </button>
