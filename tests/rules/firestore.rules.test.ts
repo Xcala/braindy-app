@@ -210,6 +210,22 @@ describe('accesses (credentials)', () => {
     await assertFails(setDoc(doc(as(env, OWNER), `brands/${BRAND_A}/accesses/x`), { platform: 'email', password: 'plain' }));
     await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/accesses/x`), { platform: 'email' }));
   });
+
+  it('access log: owner and admin read, nobody writes from the client', async () => {
+    await assertSucceeds(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/accessLog/e1`)));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/accessLog/e1`)));
+    await assertFails(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/accessLog/e1`)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/accessLog/e1`)));
+    await assertFails(setDoc(doc(as(env, OWNER), `brands/${BRAND_A}/accessLog/e2`), { action: 'revealed' }));
+    await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/accessLog/e2`), { action: 'revealed' }));
+  });
+
+  it('encrypted values are unreachable from any client, admin included', async () => {
+    for (const who of [OWNER, ADMIN, MEMBER]) {
+      await assertFails(getDoc(doc(as(env, who), `accessSecrets/${BRAND_A}__ig`)));
+      await assertFails(setDoc(doc(as(env, who), `accessSecrets/${BRAND_A}__x`), { ciphertext: 'x' }));
+    }
+  });
 });
 
 describe('cross-brand queries and invites', () => {

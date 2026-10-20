@@ -12,7 +12,8 @@
     "drive:map": "tsx scripts/drive/map-local.ts",
     "drive:map-api": "tsx scripts/drive/map.ts",
     "drive:import": "tsx scripts/drive/import.ts",
-    "migrate:requests": "tsx scripts/migrate/requests.ts"
+    "migrate:requests": "tsx scripts/migrate/requests.ts",
+    "migrate:accesses": "tsx scripts/migrate/accesses.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.3",

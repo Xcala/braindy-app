@@ -8,6 +8,7 @@ import { files } from './files.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { members } from './members.js';
+import { accesses } from './accesses.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -41,6 +42,7 @@ app.route('/v1', files);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
 app.route('/v1', members);
+app.route('/v1', accesses);
 app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);

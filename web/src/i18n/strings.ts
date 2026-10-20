@@ -2,6 +2,7 @@
 import { proposalsEn, proposalsEs } from './proposalStrings';
 import { requestsEn, requestsEs } from './requestStrings';
 import { teamHomeEn, teamHomeEs } from './teamHomeStrings';
+import { accessEn, accessEs } from './accessStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -167,7 +168,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -335,4 +336,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs };

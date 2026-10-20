@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RequireAdmin, RequireAuth } from '../auth/RequireAuth';
 import { AppShell } from './AppShell';
 import { Login } from '../pages/Login';
-import { Placeholder } from '../pages/Placeholder';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -15,6 +14,7 @@ import { RequestDetail } from '../pages/RequestDetail';
 import { BatchApprove } from '../pages/BatchApprove';
 import { Home } from '../pages/Home';
 import { AdminTeam } from '../pages/admin/Team';
+import { Accesses } from '../pages/Accesses';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -33,7 +33,7 @@ export const router = createBrowserRouter([
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
-          { path: 'accesses', element: <Placeholder title="nav.accesses" phase={3} /> },
+          { path: 'accesses', element: <Accesses /> },
           {
             element: <RequireAdmin />,
             children: [

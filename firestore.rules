@@ -171,6 +171,17 @@ service cloud.firestore {
         allow read: if isAdmin() || isOwner(brandId);
         allow write: if false;
       }
+
+      // Append-only log of every add/change/reveal/copy (never holds values). Backend writes.
+      match /accessLog/{eventId} {
+        allow read: if isAdmin() || isOwner(brandId);
+        allow write: if false;
+      }
+    }
+
+    // ---------- encrypted credential values (backend only, never readable by clients) ----------
+    match /accessSecrets/{secretId} {
+      allow read, write: if false;
     }
 
     // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
