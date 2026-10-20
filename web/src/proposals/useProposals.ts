@@ -13,6 +13,17 @@ export function useProposals() {
   return { list, loading };
 }
 
+/** Proposals only for admins (clients cannot read them; avoids a denied listener). */
+useProposals.optional = function useProposalsOptional(enabled: boolean) {
+  const [list, setList] = useState<Proposal[]>([]);
+  useEffect(() => {
+    if (!enabled) return;
+    return onSnapshot(query(collection(db, 'proposals'), orderBy('createdAt', 'desc')),
+      (s) => setList(s.docs.map((d) => ({ id: d.id, ...d.data() }) as Proposal)), () => setList([]));
+  }, [enabled]);
+  return { list };
+};
+
 export function useProposal(id: string) {
   const [p, setP] = useState<Proposal | null | undefined>(undefined);
   useEffect(() => onSnapshot(doc(db, 'proposals', id), (s) => setP(s.exists() ? ({ id: s.id, ...s.data() } as Proposal) : null)), [id]);

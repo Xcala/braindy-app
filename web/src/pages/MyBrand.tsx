@@ -6,6 +6,7 @@ import { Logos } from '../brands/identity/Logos';
 import { Colors, brandColors, type Color } from '../brands/identity/Colors';
 import { Typography } from '../brands/identity/Typography';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
+import { GroupWork } from '../brands/GroupWork';
 import { ApprovedWork } from '../brands/identity/ApprovedWork';
 import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
@@ -35,6 +36,7 @@ export function MyBrand() {
 
   const sections: Array<{ id: string; label: StringKey; show: boolean }> = [
     { id: 'family', label: 'brand.children', show: children.length > 0 },
+    { id: 'overview', label: 'group.overview', show: children.length > 0 },
     { id: 'logos', label: 'brand.logos', show: !!id.logos },
     { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
     { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0 },
@@ -74,6 +76,12 @@ export function MyBrand() {
         <section className="col g24" id="family" aria-labelledby="h-family">
           <SectionHead id="family" num={num('family')} title={t('brand.children')} subtitle={t('brand.childrenSub', { n: children.length })} />
           <GroupBrands brands={children} all={brands} />
+        </section>
+      )}
+      {children.length > 0 && (
+        <section className="col g24" id="overview" aria-labelledby="h-overview">
+          <SectionHead id="overview" num={num('overview')} title={t('group.overview')} subtitle={t('group.overviewHint', { name: current.name })} />
+          <GroupWork group={current} all={brands} />
         </section>
       )}
       {id.logos && (

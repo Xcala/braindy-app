@@ -5,10 +5,12 @@ import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
 import { BrandMenu } from '../brands/BrandMenu';
 import { LangToggle } from '../i18n/LangToggle';
+import { CommandK } from '../components/CommandK';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 
 const TABS: Array<{ to: string; label: StringKey }> = [
+  { to: '/home', label: 'nav.home' },
   { to: '/brand', label: 'nav.brand' },
   { to: '/assets', label: 'nav.assets' },
   { to: '/ask', label: 'nav.ask' },
@@ -35,6 +37,7 @@ export function AppShell() {
           <BrandMenu isAdmin={isAdmin} />
           <div className="grow" />
           {isAdmin && <span className="hidden md:inline-flex"><ApiStatus /></span>}
+          <CommandK />
           <LangToggle />
           <AccountMenu />
         </header>

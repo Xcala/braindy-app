@@ -3,6 +3,7 @@ import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import type { UserProfile } from '../lib/types';
+import { api } from '../lib/api';
 
 interface AuthState {
   user: User | null;
@@ -30,11 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
+    let claimed = false;
     return onSnapshot(
       doc(db, 'users', user.uid),
       (snap) => {
         setProfile(snap.exists() ? (snap.data() as UserProfile) : null);
         setLoading(false);
+        // No profile yet: claim pending invitations for this email once (the snapshot updates if any).
+        if (!snap.exists() && !claimed) {
+          claimed = true;
+          api('/v1/me/claim', { method: 'POST', body: '{}' }).catch(() => undefined);
+        }
       },
       () => {
         setProfile(null);

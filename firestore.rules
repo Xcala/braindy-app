@@ -173,6 +173,16 @@ service cloud.firestore {
       }
     }
 
+    // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
+    match /{path=**}/requests/{requestId} {
+      allow read: if isAdmin();
+    }
+
+    // ---------- pending invitations (backend only; claimed on first sign-in) ----------
+    match /invites/{inviteId} {
+      allow read, write: if false;
+    }
+
     // ---------- audit (backend writes only) ----------
     match /audit/{eventId} {
       allow read: if isAdmin();

@@ -7,6 +7,7 @@ import { db } from './firebase.js';
 import { files } from './files.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
+import { members } from './members.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -15,7 +16,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
 const app = new Hono<AuthEnv>();
 
 app.use('*', logger());
-app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'], allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] }));
 
 app.get('/health', (c) => c.json({ ok: true }));
 
@@ -39,6 +40,7 @@ app.get('/v1/me', async (c) => {
 app.route('/v1', files);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
+app.route('/v1', members);
 app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);

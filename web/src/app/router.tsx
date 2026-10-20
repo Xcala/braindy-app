@@ -13,6 +13,8 @@ import { Ask } from '../pages/Ask';
 import { Requests } from '../pages/Requests';
 import { RequestDetail } from '../pages/RequestDetail';
 import { BatchApprove } from '../pages/BatchApprove';
+import { Home } from '../pages/Home';
+import { AdminTeam } from '../pages/admin/Team';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -23,7 +25,8 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate to="/brand" replace /> },
+          { index: true, element: <Navigate to="/home" replace /> },
+          { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'ask', element: <Ask /> },
@@ -37,7 +40,7 @@ export const router = createBrowserRouter([
               { path: 'admin/brands', element: <AdminBrands /> },
               { path: 'admin/proposals', element: <AdminProposals /> },
               { path: 'admin/proposals/:id', element: <ProposalDetail /> },
-              { path: 'team', element: <Placeholder title="nav.team" phase={4} /> },
+              { path: 'team', element: <AdminTeam /> },
             ],
           },
         ],

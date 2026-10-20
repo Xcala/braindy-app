@@ -212,6 +212,19 @@ describe('accesses (credentials)', () => {
   });
 });
 
+describe('cross-brand queries and invites', () => {
+  it('only admin queries requests across every brand', async () => {
+    const { collectionGroup, query, where } = await import('firebase/firestore');
+    await assertSucceeds(getDocs(query(collectionGroup(as(env, ADMIN), 'requests'), where('status', '==', 'to_approve'))));
+    await assertFails(getDocs(query(collectionGroup(as(env, OWNER), 'requests'), where('status', '==', 'to_approve'))));
+  });
+
+  it('invites are backend-only', async () => {
+    await assertFails(getDoc(doc(as(env, ADMIN), 'invites/x')));
+    await assertFails(setDoc(doc(as(env, OWNER), 'invites/x'), { email: 'a@b.co' }));
+  });
+});
+
 describe('audit and brains', () => {
   it('only admin reads audit; nobody writes it from the client', async () => {
     await assertSucceeds(getDoc(doc(as(env, ADMIN), 'audit/e1')));

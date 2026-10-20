@@ -41,10 +41,15 @@ export async function applyPlan(plan: Plan, applyStatus = false): Promise<number
         status: a.status, data: a.data, legacy: a.legacy, migratedAt,
       }, false);
     }
-    for (const m of b.members) await set(`${base}/members/${m.uid}`, { role: m.role, canApprove: m.canApprove });
+    // Roles are owned by the app (Team) once a member exists: re-runs only fill in the email.
+    const existingMembers = new Set((await db.collection(`${base}/members`).select().get()).docs.map((d) => d.id));
+    for (const m of b.members) {
+      await set(`${base}/members/${m.uid}`, existingMembers.has(m.uid) ? { email: m.email } : { role: m.role, canApprove: m.canApprove, email: m.email });
+    }
   }
+  // brandIds only grow here: brands added later by invitation are never dropped by a re-run.
   for (const u of plan.users) {
-    await set(`users/${u.uid}`, { email: u.email, name: u.name, role: u.role, brandIds: u.brandIds });
+    await set(`users/${u.uid}`, { email: u.email, name: u.name, role: u.role, ...(u.brandIds.length ? { brandIds: FieldValue.arrayUnion(...u.brandIds) } : {}) });
   }
   await flush();
 
