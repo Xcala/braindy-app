@@ -3,6 +3,9 @@ import { RequireAdmin, RequireAuth } from '../auth/RequireAuth';
 import { AppShell } from './AppShell';
 import { Login } from '../pages/Login';
 import { Placeholder } from '../pages/Placeholder';
+import { MyBrand } from '../pages/MyBrand';
+import { MyAssets } from '../pages/MyAssets';
+import { AdminBrands } from '../pages/admin/Brands';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
@@ -13,14 +16,17 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { index: true, element: <Navigate to="/brand" replace /> },
-          { path: 'brand', element: <Placeholder title="My brand" phase={1} /> },
-          { path: 'assets', element: <Placeholder title="My assets" phase={1} /> },
-          { path: 'ask', element: <Placeholder title="Ask for something" phase={2} /> },
-          { path: 'requests', element: <Placeholder title="My requests" phase={2} /> },
-          { path: 'accesses', element: <Placeholder title="Accesses" phase={3} /> },
+          { path: 'brand', element: <MyBrand /> },
+          { path: 'assets', element: <MyAssets /> },
+          { path: 'ask', element: <Placeholder title="nav.ask" phase={2} /> },
+          { path: 'requests', element: <Placeholder title="nav.requests" phase={2} /> },
+          { path: 'accesses', element: <Placeholder title="nav.accesses" phase={3} /> },
           {
             element: <RequireAdmin />,
-            children: [{ path: 'team', element: <Placeholder title="Team" phase={4} /> }],
+            children: [
+              { path: 'admin/brands', element: <AdminBrands /> },
+              { path: 'team', element: <Placeholder title="nav.team" phase={4} /> },
+            ],
           },
         ],
       },
