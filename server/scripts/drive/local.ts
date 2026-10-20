@@ -58,7 +58,16 @@ export const LOCAL_FOLDERS: Record<string, string> = {
   'banco-familiar': 'Banco Familiar',
   'grupo-alternativas': 'Grupo alternativas',
   quimiolab: 'Quimiolab',
+  // Added 2026-10-19.
+  encanto: 'Restaurantes/Encanto',
+  concreto: 'Grupo Alejandra/Concreto',
+  'ar-figures': 'Grupo Alejandra/AR Figures',
+  'camaron-de-sinaloa': 'MEX Group/Camaron de sinaloa',
+  'blacky-meals': 'Blacky Meals',
 };
+
+/** Stage 1 of the import: brand essentials only (logos, manuals, typography, kits). */
+export const ESSENTIALS = /(marca|logo|brand|elementos|manual|identidad|gu[ií]a|guide|tipograf|font|fuente|paleta|kit)/i;
 
 /** Google-native files appear on disk as small JSON shortcuts; they cannot be copied as files. */
 export const GOOGLE_SHORTCUT = /\.(gdoc|gsheet|gslides|gdraw|gform|gmap|gsite|gjam|gscript)$/i;

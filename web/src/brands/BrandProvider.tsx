@@ -51,14 +51,27 @@ export function BrandProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       });
     }
-    const ids = brandIds ? brandIds.split(',') : [];
+    // Direct brands plus, for groups, every brand below them (group members see the whole group).
     const found = new Map<string, Brand>();
+    const unsubs = new Map<string, () => void>();
+    const publish = () => setBrands([...found.values()].sort((a, b) => a.name.localeCompare(b.name)));
+    const watch = (id: string) => {
+      if (unsubs.has(id)) return;
+      unsubs.set(id, onSnapshot(doc(db, 'brands', id), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          found.set(id, toBrand(id, data));
+          if (data.kind === 'group') ((data.descendants as string[]) ?? []).forEach(watch);
+        } else {
+          found.delete(id);
+        }
+        publish();
+        setLoading(false);
+      }, () => setLoading(false)));
+    };
+    const ids = brandIds ? brandIds.split(',') : [];
     if (!ids.length) setLoading(false);
-    const unsubs = ids.map((id) => onSnapshot(doc(db, 'brands', id), (snap) => {
-      if (snap.exists()) found.set(id, toBrand(id, snap.data())); else found.delete(id);
-      setBrands([...found.values()].sort((a, b) => a.name.localeCompare(b.name)));
-      setLoading(false);
-    }, () => setLoading(false)));
+    ids.forEach(watch);
     return () => unsubs.forEach((u) => u());
   }, [profile, isAdmin, brandIds]);
 

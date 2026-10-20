@@ -29,21 +29,48 @@ service cloud.firestore {
       return /databases/$(database)/documents/brands/$(brandId)/members/$(uid());
     }
 
-    function isMember(brandId) {
-      return signedIn() && exists(memberPath(brandId));
+    // Group chain of a brand, nearest first (e.g. iPark → [grupo-ibmt, grupo-berrio]).
+    // Membership in any ancestor group grants the same access to the brand (multi-brand clients).
+    function ancestors(brandId) {
+      return get(/databases/$(database)/documents/brands/$(brandId)).data.get('ancestors', []);
     }
 
-    function member(brandId) {
-      return get(memberPath(brandId)).data;
+    function memberAt(id) {
+      return exists(memberPath(id));
+    }
+
+    function ownerAt(id) {
+      return memberAt(id) && get(memberPath(id)).data.role == 'client_owner';
+    }
+
+    function approverAt(id) {
+      return memberAt(id)
+        && (get(memberPath(id)).data.role == 'client_owner'
+            || get(memberPath(id)).data.get('canApprove', false) == true);
+    }
+
+    function isMember(brandId) {
+      let a = ancestors(brandId);
+      return signedIn() && (memberAt(brandId)
+        || (a.size() > 0 && memberAt(a[0]))
+        || (a.size() > 1 && memberAt(a[1]))
+        || (a.size() > 2 && memberAt(a[2])));
     }
 
     function isOwner(brandId) {
-      return isMember(brandId) && member(brandId).role == 'client_owner';
+      let a = ancestors(brandId);
+      return signedIn() && (ownerAt(brandId)
+        || (a.size() > 0 && ownerAt(a[0]))
+        || (a.size() > 1 && ownerAt(a[1]))
+        || (a.size() > 2 && ownerAt(a[2])));
     }
 
     function canApprove(brandId) {
-      return isOwner(brandId)
-        || (isMember(brandId) && member(brandId).get('canApprove', false) == true);
+      let a = ancestors(brandId);
+      return signedIn() && (approverAt(brandId)
+        || (a.size() > 0 && approverAt(a[0]))
+        || (a.size() > 1 && approverAt(a[1]))
+        || (a.size() > 2 && approverAt(a[2])));
     }
 
     function canReadBrand(brandId) {

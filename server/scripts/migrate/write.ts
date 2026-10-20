@@ -8,7 +8,8 @@ const app = initializeApp({ credential: applicationDefault(), projectId: 'braind
 const db = getFirestore(app, 'braindy-app');
 db.settings({ ignoreUndefinedProperties: true });
 
-export async function applyPlan(plan: Plan): Promise<number> {
+/** applyStatus: overwrite status from the plan; otherwise status is only set on new brands (the app owns it). */
+export async function applyPlan(plan: Plan, applyStatus = false): Promise<number> {
   let batch: WriteBatch = db.batch();
   let pending = 0;
   let total = 0;
@@ -29,13 +30,14 @@ export async function applyPlan(plan: Plan): Promise<number> {
   for (const b of plan.brands) {
     const base = `brands/${b.id}`;
     await set(base, {
-      name: b.name, slug: b.id, kind: b.kind, groupId: b.groupId, status: b.status, logoUrl: b.logoUrl, legacyIds: b.legacyIds, migratedAt,
+      name: b.name, slug: b.id, kind: b.kind, groupId: b.groupId, ancestors: b.ancestors, descendants: b.descendants, logoUrl: b.logoUrl, legacyIds: b.legacyIds, migratedAt,
       ...(existing.has(b.id) ? {} : { createdAt: migratedAt }),
+      ...(applyStatus || !existing.has(b.id) ? { status: b.status } : {}),
     });
     for (const [doc, data] of Object.entries(b.context)) await set(`${base}/context/${doc}`, data, false);
     for (const a of b.assets) {
       await set(`${base}/assets/${a.id}`, {
-        type: a.type, title: a.title, url: a.url, storagePath: a.storagePath, publicSlug: a.publicSlug,
+        type: a.type, source: 'legacy', title: a.title, url: a.url, storagePath: a.storagePath, publicSlug: a.publicSlug,
         status: a.status, data: a.data, legacy: a.legacy, migratedAt,
       }, false);
     }

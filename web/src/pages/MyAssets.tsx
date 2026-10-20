@@ -1,5 +1,8 @@
 import { useBrands } from '../brands/BrandProvider';
-import { useBrandCollection } from '../brands/useBrandDoc';
+import { useEffect, useState } from 'react';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { FileExplorer } from '../assets/FileExplorer';
 import { BrandHeader } from '../brands/BrandHeader';
 import { Section } from '../components/Section';
 import { useI18n } from '../i18n/I18nProvider';
@@ -16,15 +19,15 @@ const GROUPS: Array<{ type: string; label: StringKey }> = [
 export function MyAssets() {
   const { current } = useBrands();
   const { t } = useI18n();
-  const { docs, loading } = useBrandCollection(current?.id, 'assets');
+  const { docs, loading } = useLegacyAssets(current?.id);
   if (!current) return <p className="text-black/55">{t('brand.none')}</p>;
   const assets = docs as Asset[];
 
   return (
     <div>
       <BrandHeader brand={current} />
+      <Section title={t('files.title')}><FileExplorer brandId={current.id} /></Section>
       {loading && <p className="mt-8 text-black/50">{t('common.loading')}…</p>}
-      {!loading && !assets.length && <p className="mt-8 text-black/55">{t('assets.empty')}</p>}
       {GROUPS.map(({ type, label }) => {
         const list = assets.filter((a) => a.type === type).sort((a, b) => String(a.title).localeCompare(String(b.title)));
         if (!list.length) return null;
@@ -61,4 +64,18 @@ function AssetCard({ asset }: { asset: Asset }) {
       </div>
     </li>
   );
+}
+
+/** Assets migrated from the old apps (LogoDecks, MarketMaps, orbit documents). Drive files live in the explorer. */
+function useLegacyAssets(brandId: string | undefined) {
+  const [docs, setDocs] = useState<Array<Record<string, unknown> & { id: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!brandId) return;
+    setLoading(true);
+    const q = query(collection(db, 'brands', brandId, 'assets'), where('source', '==', 'legacy'));
+    return onSnapshot(q, (snap) => { setDocs(snap.docs.map((d) => ({ id: d.id, ...d.data() }))); setLoading(false); },
+      () => { setDocs([]); setLoading(false); });
+  }, [brandId]);
+  return { docs, loading };
 }

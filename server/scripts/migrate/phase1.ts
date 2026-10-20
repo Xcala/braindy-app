@@ -25,7 +25,7 @@ if (plan.flags.some((f) => f.startsWith('ERROR'))) {
 
 if (write) {
   const { applyPlan } = await import('./write.js');
-  const n = await applyPlan(plan);
+  const n = await applyPlan(plan, process.argv.includes('--apply-status'));
   console.log(`Wrote ${n} documents to braindy-app.`);
 }
 

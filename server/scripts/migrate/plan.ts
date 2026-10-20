@@ -1,6 +1,6 @@
 // Builds the phase 1 migration plan from legacy data. Pure: no reads, no writes.
 import {
-  ADMIN_EMAILS, ALIASES, ARCHIVED_BRANDS, CANONICAL_NAMES, CONTEXT_EXCLUDED_NAMES, DRIVE_BRAND_NAMES, GROUPS,
+  ACTIVE_BRANDS, ADMIN_EMAILS, ALIASES, ARCHIVED_BRANDS, EXTRA_BRANDS, CANONICAL_NAMES, CONTEXT_EXCLUDED_NAMES, DRIVE_BRAND_NAMES, GROUPS,
   IGNORED_NAMES, INTERNAL_BRAND, INTERNAL_TITLES, MEMBER_OVERRIDES, POSSIBLE_DUPLICATES, STAFF_DOMAINS,
 } from './config.js';
 import type { LegacyData, Row } from './legacy.js';
@@ -32,6 +32,10 @@ export interface PlannedBrand {
   name: string;
   kind: 'brand' | 'group';
   groupId: string | null;
+  /** Group chain from the direct parent up to the root, e.g. ["grupo-ibmt", "grupo-berrio"]. */
+  ancestors: string[];
+  /** For groups: every brand below it (any depth), so group members can list their brands. */
+  descendants: string[];
   status: string;
   logoUrl: string | null;
   legacyIds: { brands: string[]; orbit: string[]; brandingProjects: string[]; briefEmails: string[] };
@@ -86,7 +90,7 @@ export function buildPlan(src: LegacyData): Plan {
     if (!b) {
       const name = CANONICAL_NAMES[key] ?? displayName.trim();
       b = {
-        id: slugify(name), name, kind: 'brand', groupId: null, status: 'active', logoUrl: null,
+        id: slugify(name), name, kind: 'brand', groupId: null, ancestors: [], descendants: [], status: 'active', logoUrl: null,
         legacyIds: { brands: [], orbit: [], brandingProjects: [], briefEmails: [] },
         sourceNames: new Set(), context: {}, assets: [], members: [],
       };
@@ -176,6 +180,8 @@ export function buildPlan(src: LegacyData): Plan {
     }
   }
 
+  for (const [key, name] of Object.entries(EXTRA_BRANDS)) ensure(key, name);
+
   // 3c · archived clients that only exist as Drive folders
   for (const [key, name] of Object.entries(ARCHIVED_BRANDS)) {
     const isNew = !brands.has(key);
@@ -226,6 +232,18 @@ export function buildPlan(src: LegacyData): Plan {
     b.context.intake = { summaries: [...prev, { text: s.summary, sessionId: s.id }] };
   }
   if (emptySessions) flags.push(`${emptySessions} of ${src.orbitSessions.length} intake sessions have no summary; nothing to migrate from them.`);
+
+  // 6b · ancestors and status (active list; a listed group activates its subtree)
+  const byId = new Map([...brands.values()].map((b) => [b.id, b]));
+  for (const b of brands.values()) {
+    for (let g = b.groupId; g && !b.ancestors.includes(g); g = byId.get(g)?.groupId ?? null) b.ancestors.push(g);
+  }
+  for (const b of brands.values()) for (const a of b.ancestors) byId.get(a)?.descendants.push(b.id);
+  const activeIds = new Set(ACTIVE_BRANDS.map((k) => brands.get(k)?.id).filter(Boolean) as string[]);
+  for (const k of ACTIVE_BRANDS) if (!brands.has(k)) flags.push(`Active brand "${k}" not found.`);
+  for (const b of brands.values()) {
+    b.status = activeIds.has(b.id) || b.ancestors.some((a) => activeIds.has(a)) ? 'active' : 'archived';
+  }
 
   const users = planUsers(src, brands, orbitKey, flags, skipped);
 

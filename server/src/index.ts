@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { requireUser, type AuthEnv } from './auth.js';
 import { db } from './firebase.js';
+import { files } from './files.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -12,7 +13,7 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
 const app = new Hono<AuthEnv>();
 
 app.use('*', logger());
-app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'] }));
+app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
 
 app.get('/health', (c) => c.json({ ok: true }));
 
@@ -28,6 +29,8 @@ app.get('/v1/me', async (c) => {
     profile: snap.exists ? snap.data() : null,
   });
 });
+
+app.route('/v1', files);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

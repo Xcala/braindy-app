@@ -55,9 +55,26 @@ export const GROUPS: Record<string, { parent?: string; children: string[] }> = {
     children: ['ipark', 'equipark', 'park media y plaza'],
   },
   // Decisions 2026-10-05 (Drive folders "Restaurantes", "Grupo Alejandra", "MEX Group").
-  restaurantes: { children: ['puerta del sol', 'hacienda parrilla bar', 'casa en el aire'] },
-  'grupo alejandra': { children: ['mayo rd', 'taxcan'] },
-  'mex group': { children: ['toro mambo', 'lnsr'] },
+  restaurantes: { children: ['puerta del sol', 'hacienda parrilla bar', 'casa en el aire', 'encanto'] },
+  'grupo alejandra': { children: ['mayo rd', 'taxcan', 'concreto', 'ar figures'] },
+  'mex group': { children: ['toro mambo', 'lnsr', 'camaron de sinaloa'] },
+};
+
+/**
+ * Active clients (decision 2026-10-19). Everything else starts archived. A listed group makes its
+ * whole subtree active. Status is applied only with --apply-status; afterwards it is owned by the
+ * app's Active/Archived toggle.
+ */
+export const ACTIVE_BRANDS = [
+  'milohas', 'grupo alternativas', 'blacky meals', 'community workforce institut', 'sanuteam',
+  'tinyroots', 'marco polo education', 'revista level', 'legadus', 'pequeloop', 'restaurantes', 'braindy',
+  // Added 2026-10-19: not archived.
+  'quimiolab', 'grupo berrio', 'grupo alejandra', 'banco familiar',
+];
+
+/** Brands that only exist as Drive folders, with their display names. */
+export const EXTRA_BRANDS: Record<string, string> = {
+  'blacky meals': 'Blacky Meals',
 };
 
 /**
@@ -88,6 +105,10 @@ export const DRIVE_BRAND_NAMES: Record<string, string> = {
   'quindio bio tech': 'Quindío Bio Tech',
   imedh: 'Imedh',
   'park media y plaza': 'Park Media y Plaza',
+  encanto: 'Encanto',
+  concreto: 'Concreto',
+  'ar figures': 'AR Figures',
+  'camaron de sinaloa': 'Camarón de Sinaloa',
 };
 
 /** The internal brand for Braindy's own documents. */
