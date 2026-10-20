@@ -1,6 +1,10 @@
 /** Strings for payments and billing (wave G). */
 export const billingEn = {
   'nav.billing': 'Billing',
+  'bill.requested': 'Requested', 'bill.addTitle': 'Add AI Agents to your plan', 'bill.addConfirm': 'Confirm and pay', 'bill.addRequest': 'Request it',
+  'bill.addTotal': 'Continuity + AI Agents: {total} / month', 'bill.addProrated': 'Prorated for this month and charged today. The four Brains map your sales and service first; Nicolas signs the plan before any agent goes live.',
+  'bill.addAsk': 'Nicolas confirms the price and adds it to your plan.', 'bill.a.agents': 'AI Agents per month (add-on)',
+  'pay.expiredTitle': 'The payment link expired', 'pay.expiredBody': 'Links last a limited time. Continue below to open a new one; the price of your proposal stays the same until its expiry date.',
   'bill.tagline': 'You pay for results. The four Brains work on all of them.',
   'bill.noPlan': 'There is no plan for this brand yet. Nicolas sets it up with you.',
   'bill.yourPlan': 'Your plan',
@@ -50,6 +54,10 @@ export const billingEn = {
 
 export const billingEs: Record<keyof typeof billingEn, string> = {
   'nav.billing': 'Facturación',
+  'bill.requested': 'Solicitado', 'bill.addTitle': 'Agregar Agentes de IA a su plan', 'bill.addConfirm': 'Confirmar y pagar', 'bill.addRequest': 'Solicitarlo',
+  'bill.addTotal': 'Continuity + Agentes de IA: {total} / mes', 'bill.addProrated': 'Se prorratea este mes y se cobra hoy. Los cuatro Brains mapean primero sus ventas y servicio; Nicolas firma el plan antes de que cualquier agente salga en vivo.',
+  'bill.addAsk': 'Nicolas confirma el precio y lo suma a su plan.', 'bill.a.agents': 'Agentes de IA por mes (adicional)',
+  'pay.expiredTitle': 'El link de pago venció', 'pay.expiredBody': 'Los links duran un tiempo limitado. Continúen abajo para abrir uno nuevo; el precio de su propuesta se mantiene hasta su fecha de vigencia.',
   'bill.tagline': 'Pagan por resultados. Los cuatro Brains trabajan en todos.',
   'bill.noPlan': 'Esta marca todavía no tiene plan. Nicolas lo define con ustedes.',
   'bill.yourPlan': 'Su plan',

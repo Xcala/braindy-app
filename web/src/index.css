@@ -40,3 +40,7 @@ body {
 #root {
   min-height: 100%;
 }
+
+/* Mobile header (design 25): the brand selector truncates so search, language and avatar keep their 44 px. */
+.topbar .sel { min-width: 0; max-width: 100%; }
+.topbar .sel > span:not(.mark) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

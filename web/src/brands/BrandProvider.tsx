@@ -17,7 +17,7 @@ export interface Brand {
 }
 
 export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
-export interface Onboarding { step: OnboardingStep; sessionAt?: Date | null; signedAt?: Date | null }
+export interface Onboarding { step: OnboardingStep; sessionAt?: Date | null; signedAt?: Date | null; liveAt?: Date | null }
 
 interface BrandState {
   brands: Brand[];
@@ -44,6 +44,7 @@ const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step
   step: o.step as OnboardingStep,
   sessionAt: (o.sessionAt as { toDate?: () => Date })?.toDate?.() ?? null,
   signedAt: (o.signedAt as { toDate?: () => Date })?.toDate?.() ?? null,
+  liveAt: (o.liveAt as { toDate?: () => Date })?.toDate?.() ?? null,
 } : null;
 
 const sourcesOf = (l?: Record<string, unknown[]>) => [

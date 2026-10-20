@@ -13,7 +13,7 @@ const pushRecent = (id: string) => {
 };
 
 /** Brand selector from the design: search, recent, groups as a tree, admin entry. */
-export function BrandMenu({ isAdmin }: { isAdmin: boolean }) {
+export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: () => void }) {
   const { brands, current, select } = useBrands();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -35,7 +35,7 @@ export function BrandMenu({ isAdmin }: { isAdmin: boolean }) {
   const found = needle ? brands.filter((b) => normalizeSearch(b.name).includes(needle)) : null;
   const recent = readRecent().map((id) => brands.find((b) => b.id === id)).filter((b): b is Brand => !!b);
 
-  const choose = (id: string) => { select(id); pushRecent(id); setOpen(false); setQ(''); };
+  const choose = (id: string) => { select(id); pushRecent(id); setOpen(false); setQ(''); onPicked?.(); };
 
   if (!current) return null;
   if (brands.length < 2) {

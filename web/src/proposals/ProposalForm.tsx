@@ -8,7 +8,7 @@ import type { OptionKey, Proposal } from './types';
 export function ProposalForm({ p }: { p: Proposal }) {
   const { t } = useI18n();
   const [saved, setSaved] = useState(false);
-  const save = async (path: string, value: string) => {
+  const save = async (path: string, value: string | number | null) => {
     await updateDoc(doc(db, 'proposals', p.id), { [path]: value });
     setSaved(true);
     setTimeout(() => setSaved(false), 1200);
@@ -38,6 +38,14 @@ export function ProposalForm({ p }: { p: Proposal }) {
       <Group title={t('proposals.prices')}>
         {(['launch', 'transform', 'continuity', 'aiAgents'] as const).map((k) => (
           <Field key={k} label={t(`proposals.opt.${k}`)} placeholder={t('proposals.pricePh')} value={p.options?.[k]?.price} onSave={(v) => save(`options.${k}.price`, v)} />
+        ))}
+      </Group>
+      <Group title={t('proposals.amounts')}>
+        <Select label={t('bill.a.currency')} value={p.currency ?? 'usd'} options={[['usd', 'USD'], ['cop', 'COP']]} onSave={(v) => save('currency', v)} />
+        <p className="t-xs t-mute" style={{ alignSelf: 'end' }}>{t('proposals.amountsHint')}</p>
+        {([['launch', 'amount'], ['transform', 'amount'], ['transform', 'monthly'], ['continuity', 'monthly']] as const).map(([k, f]) => (
+          <Field key={`${k}-${f}`} type="number" label={`${t(`proposals.opt.${k}`)} · ${t(f === 'amount' ? 'bill.a.project' : 'bill.a.monthly')}`}
+            value={p.options?.[k]?.[f] != null ? String(p.options[k]![f]) : ''} onSave={(v) => save(`options.${k}.${f}`, v.trim() ? Number(v) : null)} />
         ))}
       </Group>
       <Field area label={t('proposals.f.notes')} value={p.notes} onSave={(v) => save('notes', v)} />

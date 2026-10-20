@@ -9,6 +9,7 @@ import { useBrandsRequests, type ScopedRequest } from '../requests/useBrandsRequ
 import { useVersions } from '../requests/useRequests';
 import { useFileUrl, isImage } from '../requests/useFileUrl';
 import { HomeHero } from '../home/HomeHero';
+import { BriefCase, LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
 import { CONTACT } from '../proposals/public/copy';
 
 export function Home() {
@@ -34,6 +35,7 @@ export function Home() {
           <span className="btn btn-primary btn-sm">{t('common.continue')}</span>
         </Link>
       )}
+      {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="col g32">
@@ -59,10 +61,7 @@ export function Home() {
           </section>
         </div>
         <aside className="col g16">
-          <Link to="/report" className="card col g4" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
-            <h2 className="h3">{t('nav.report')}</h2>
-            <p className="t-sm t-mute">{t('rep.tagline')}</p>
-          </Link>
+          <ResultsCard brandId={current.id} />
           <div className="card col g8">
             <h2 className="h3">{t('home.brandBrain')}</h2>
             <p className="t-sm t-mute">{t('home.brandBrainBody')}</p>
@@ -74,6 +73,7 @@ export function Home() {
               <div className="row g8 wrap">{colors.map((c) => <button key={c.hex} className="qcopy" onClick={() => copy(c.hex!.toUpperCase())}><i style={{ background: c.hex }} />{copied === c.hex!.toUpperCase() ? t('common.copied') : c.hex!.toUpperCase()}</button>)}</div>
             </div>
           )}
+          <WhatsappCard brandId={current.id} />
           <div className="card row g12">
             <img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
             <div className="col grow"><span className="t-sm w7">Nicolas (NickMark)</span><span className="t-xs t-mute">{t('home.orchestrator')}</span></div>
@@ -81,6 +81,7 @@ export function Home() {
           </div>
         </aside>
       </div>
+      <BriefCase />
     </div>
   );
 }

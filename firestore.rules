@@ -192,6 +192,12 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // WhatsApp notices sent (or ready to send by hand) during onboarding: admin only. Backend writes.
+      match /notices/{noticeId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
       // Brand settings (WhatsApp number, notices). Members read; changes go through the backend.
       match /settings/{docId} {
         allow read: if canReadBrand(brandId);

@@ -1,0 +1,36 @@
+/** Strings for wave H (workspace switch, mobile nav, undo, home blocks, search). */
+export const uxEn = {
+  'nav.backToAdmin': 'Back to admin',
+  'nav.homeShort': 'Home', 'nav.brandShort': 'Brand', 'nav.askShort': 'Ask', 'nav.requestsShort': 'Requests', 'nav.assetsShort': 'Assets',
+  'common.undo': 'Undo',
+  'req.compareMode': 'Compare mode', 'req.mode.slider': 'Slider', 'req.mode.side': 'Side by side', 'req.mode.changes': 'Changes only',
+  'req.changesTitle': 'From v{a} to v{b}', 'req.askedOn': 'What was asked on v{n}', 'req.noChangesAsked': 'No changes were asked on this version.',
+  'ob.n.title': 'WhatsApp notices', 'ob.n.welcome': 'Day 0 · Welcome', 'ob.n.brain_ready': 'Day 1 · Brand Brain ready', 'ob.n.session_confirmed': 'Day 2 · Session confirmed', 'ob.n.brain_signed': 'Day 2 · Signed by Nicolas', 'ob.n.live': 'Day 11 · System live',
+  'ob.n.sent': 'Sent', 'ob.n.send': 'Send by WhatsApp', 'ob.n.noNumber': 'No number yet',
+  'home.live1': 'You will see the work', 'home.live2': 'moving.', 'home.liveKicker': 'Day 11 · Your brand system is live', 'home.liveSub': 'Live, every day. Every piece with its reason. Every result in sales, not likes.',
+  'search.values': 'Brand values · Enter copies', 'search.recent': 'Recent', 'search.allBrands': 'All brands',
+  'home.results': 'Results this month', 'home.salesNotLikes': 'We report sales, not likes.',
+  'home.waOn': 'Approvals by WhatsApp are on', 'home.waOnSub': 'Deliveries arrive with a review link',
+  'home.waOff': 'Approve from WhatsApp', 'home.waOffSub': 'Add the number that receives review links',
+  'home.caseTitle': 'What one brief can do · The iPark case', 'home.askLikeThis': 'Ask for something like this',
+  'toast.archived': '{name} archived', 'toast.activated': '{name} active again',
+  'toast.resolved': 'Comment resolved', 'toast.reopened': 'Comment reopened', 'toast.copied': '{value} copied', 'toast.copyFailed': 'Could not copy. Select the text and copy it by hand.',
+} as const;
+
+export const uxEs: Record<keyof typeof uxEn, string> = {
+  'nav.backToAdmin': 'Volver a admin',
+  'nav.homeShort': 'Inicio', 'nav.brandShort': 'Marca', 'nav.askShort': 'Pedir', 'nav.requestsShort': 'Solicitudes', 'nav.assetsShort': 'Archivos',
+  'common.undo': 'Deshacer',
+  'req.compareMode': 'Modo de comparación', 'req.mode.slider': 'Deslizador', 'req.mode.side': 'Lado a lado', 'req.mode.changes': 'Solo cambios',
+  'req.changesTitle': 'De v{a} a v{b}', 'req.askedOn': 'Lo que se pidió en v{n}', 'req.noChangesAsked': 'No se pidieron cambios en esta versión.',
+  'ob.n.title': 'Avisos por WhatsApp', 'ob.n.welcome': 'Día 0 · Bienvenida', 'ob.n.brain_ready': 'Día 1 · Brand Brain listo', 'ob.n.session_confirmed': 'Día 2 · Sesión confirmada', 'ob.n.brain_signed': 'Día 2 · Firmado por Nicolas', 'ob.n.live': 'Día 11 · Sistema en vivo',
+  'ob.n.sent': 'Enviado', 'ob.n.send': 'Enviar por WhatsApp', 'ob.n.noNumber': 'Sin número todavía',
+  'home.live1': 'Van a ver el trabajo', 'home.live2': 'en marcha.', 'home.liveKicker': 'Día 11 · Su sistema de marca está vivo', 'home.liveSub': 'En vivo, cada día. Cada pieza con su razón. Cada resultado en ventas, no en likes.',
+  'search.values': 'Valores de marca · Enter copia', 'search.recent': 'Recientes', 'search.allBrands': 'Todas las marcas',
+  'home.results': 'Resultados del mes', 'home.salesNotLikes': 'Reportamos ventas, no likes.',
+  'home.waOn': 'Las aprobaciones por WhatsApp están activas', 'home.waOnSub': 'Cada entrega llega con un link para revisarla',
+  'home.waOff': 'Aprueba desde WhatsApp', 'home.waOffSub': 'Agrega el número que recibe los links de revisión',
+  'home.caseTitle': 'Lo que logra un brief · El caso iPark', 'home.askLikeThis': 'Pedir algo así',
+  'toast.archived': '{name} archivada', 'toast.activated': '{name} activa de nuevo',
+  'toast.resolved': 'Comentario resuelto', 'toast.reopened': 'Comentario reabierto', 'toast.copied': '{value} copiado', 'toast.copyFailed': 'No se pudo copiar. Selecciona el texto y cópialo a mano.',
+};

@@ -58,7 +58,7 @@ export function AdminBilling() {
               <span className="t-sm">{r?.path ? t(`bill.path.${r.path}`) : '—'}</span>
               <span className="t-sm">{r?.monthly ? `${money(r.monthly, r.currency, lang)} / ${t('pay.month')}` : r?.project ? money(r.project, r.currency, lang) : '—'}</span>
               <span className="t-sm">{r ? t(`bill.status.${r.status ?? 'pending'}`) : '—'}</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(b.id); setForm({ path: r?.path ?? 'continuity', monthly: r?.monthly ?? null, project: r?.project ?? null, currency: r?.currency ?? 'usd' }); }}>{r ? t('bill.edit') : t('bill.a.setPlan')}</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(b.id); setForm({ path: r?.path ?? 'continuity', monthly: r?.monthly ?? null, project: r?.project ?? null, currency: r?.currency ?? 'usd', agentsMonthly: r?.agentsMonthly ?? null }); }}>{r ? t('bill.edit') : t('bill.a.setPlan')}</button>
             </div>
           );
         })}
@@ -71,6 +71,7 @@ export function AdminBilling() {
               <select id="pl-path" className="input" value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value as Plan['path'] })}>
                 {(['transform', 'continuity', 'launch'] as const).map((p) => <option key={p} value={p}>{t(`bill.path.${p}`)}</option>)}
               </select></div>
+            <div className="field"><label htmlFor="pl-ag">{t('bill.a.agents')}</label><input id="pl-ag" className="input" inputMode="decimal" value={form.agentsMonthly ?? ''} onChange={(e) => setForm({ ...form, agentsMonthly: Number(e.target.value) || null })} /></div>
             <div className="grid grid-cols-3 gap-3">
               <div className="field"><label htmlFor="pl-m">{t('bill.a.monthly')}</label><input id="pl-m" className="input" inputMode="decimal" value={form.monthly ?? ''} onChange={(e) => setForm({ ...form, monthly: Number(e.target.value) || null })} /></div>
               <div className="field"><label htmlFor="pl-p">{t('bill.a.project')}</label><input id="pl-p" className="input" inputMode="decimal" value={form.project ?? ''} onChange={(e) => setForm({ ...form, project: Number(e.target.value) || null })} /></div>

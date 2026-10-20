@@ -15,7 +15,7 @@ async function canManage(uid: string, brandId: string) {
   return a.admin || a.role === 'client_owner';
 }
 
-async function addMember(brandId: string, uid: string, email: string, name: string, role: Role, canApprove: boolean, by: string) {
+export async function addMember(brandId: string, uid: string, email: string, name: string, role: Role, canApprove: boolean, by: string) {
   const userRef = db.doc(`users/${uid}`);
   const user = await userRef.get();
   await db.batch()

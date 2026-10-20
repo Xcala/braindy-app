@@ -10,6 +10,7 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
 }) {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
+  const [email, setEmail] = useState('');
   const [agree, setAgree] = useState(false);
   const [state, setState] = useState<'form' | 'busy' | 'done' | 'error'>('form');
   const box = useRef<HTMLElement>(null);
@@ -23,7 +24,11 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
 
   async function sign() {
     setState('busy');
-    try { await publicApi.accept(token, { name, role, accepted: true, option }); setState('done'); } catch { setState('error'); }
+    try {
+      const r = await publicApi.accept(token, { name, role, email: email.trim(), accepted: true, option });
+      if (r.payUrl) { window.location.href = r.payUrl; return; }
+      setState('done');
+    } catch { setState('error'); }
   }
 
   return (
@@ -48,6 +53,7 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
             <p className="t-sm"><span className="t-mute">{c.option}:</span> <b>{c.options[option].name}</b></p>
             <div className="field"><label htmlFor="sn">{c.fullName}</label><input className="input" id="sn" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></div>
             <div className="field"><label htmlFor="sr">{c.roleCompany}</label><input className="input" id="sr" value={role} onChange={(e) => setRole(e.target.value)} autoComplete="organization-title" /></div>
+            <div className="field"><label htmlFor="se">{c.email}</label><input className="input" id="se" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /><span className="t-xs t-mute">{c.emailHint}</span></div>
             <div className="col g8">
               <span className="t-sm w7">{c.signature}</span>
               <div aria-live="polite" style={{ height: 96, border: '1.5px dashed var(--line-strong)', borderRadius: 16, display: 'flex', alignItems: 'center', padding: '0 24px', font: "500 34px/1 'Red Hat Display', sans-serif", color: 'var(--ink)' }}>{name}</div>
@@ -58,7 +64,7 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
               <span className="t-sm">{c.agree}</span>
             </label>
             {state === 'error' && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{c.error}</p>}
-            <button className="btn btn-primary btn-block" style={{ height: 52 }} disabled={!agree || name.trim().length < 3 || state === 'busy'} onClick={sign}>{c.signContinue}</button>
+            <button className="btn btn-primary btn-block" style={{ height: 52 }} disabled={!agree || name.trim().length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) || state === 'busy'} onClick={sign}>{c.signContinue}</button>
             <span className="t-xs t-mute">{c.paymentNext}</span>
           </>
         )}

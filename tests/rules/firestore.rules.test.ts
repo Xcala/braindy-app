@@ -249,6 +249,8 @@ describe('accesses (credentials)', () => {
       await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/${p}`), { status: 'paid' }));
     }
     await assertFails(getDoc(doc(as(env, ADMIN), 'stripeCustomers/cus_1')));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/notices/n1`)));
+    await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/notices/n1`)));
     await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
   });
 

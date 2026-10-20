@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { RequireAdmin, RequireAuth } from '../auth/RequireAuth';
 import { AppShell } from './AppShell';
+import { Landing } from './Landing';
 import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
@@ -33,7 +34,7 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate to="/home" replace /> },
+          { index: true, element: <Landing /> },
           { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },

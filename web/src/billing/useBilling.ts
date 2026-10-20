@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 
 export type Plan = {
-  path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[];
+  path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[]; agentsMonthly?: number | null; addonRequests?: string[];
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; nextChargeAt?: Timestamp; stripeCustomerId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string }; cancelRequestedAt?: Timestamp;
 };
@@ -37,6 +37,7 @@ export const billingApi = {
   checkout: (brandId: string, option: 'monthly' | 'project') => api<{ url: string }>(`${b(brandId)}/checkout`, post({ option })),
   portal: (brandId: string) => api<{ url: string }>(`${b(brandId)}/portal`, post()),
   transfer: (brandId: string, reference: string, amount?: number) => api(`${b(brandId)}/transfer`, post({ reference, amount })),
+  addon: (brandId: string) => api<{ ok: true; added?: boolean; requested?: boolean; already?: boolean }>(`${b(brandId)}/addon`, post({ addon: 'agents' })),
   cancelRequest: (brandId: string) => api(`${b(brandId)}/cancel-request`, post()),
   setPlan: (brandId: string, p: Plan) => api(`${a(brandId)}/plan`, { method: 'PUT', body: JSON.stringify(p) }),
   confirmTransfer: (brandId: string, id: string) => api(`${a(brandId)}/transfers/${id}/confirm`, post()),

@@ -11,6 +11,7 @@ export interface PublicProposal {
   options?: Partial<Record<OptionKey | 'aiAgents', { price?: string }>>;
   recommended?: OptionKey;
   files: Array<{ id: string; title: string }>;
+  acceptance?: { name: string; role?: string; email?: string; at?: { _seconds?: number; seconds?: number } };
 }
 
 const img = (name: string) => `/brand/proposal/${name}.jpg`;
@@ -46,6 +47,27 @@ export function Hero({ c, p, dateLabel, validLabel, onLang, lang }: { c: PublicC
   );
 }
 
+/** One brief in, everything back: the iPark case (also shown on Home). */
+export function IparkCase({ c }: { c: PublicCopy }) {
+  return (
+    <div className="stage col g32 rounded-[28px] p-6 sm:p-12">
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="col g16"><p className="label" style={{ color: '#C9D0DE' }}>{c.caseLabel}</p><h3 className="d-lg" style={{ color: '#fff' }}><span className="w9">{c.case1}</span> {c.case2}</h3></div>
+        <p className="t-lg muted self-end">{c.caseBody}</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        {c.caseShots.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-[4/3] w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
+      </div>
+      <div className="rule-line" />
+      <h3 className="kicker" style={{ fontSize: 22 }}><b>{c.caseAfter1}</b> {c.caseAfter2}</h3>
+      <div className="grid gap-3 md:grid-cols-2">
+        {c.caseEnd.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-video w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
+      </div>
+      <p className="kicker" style={{ fontSize: 24 }}><span className="w3">{c.caseKicker1}</span> <b>{c.caseKicker2}</b></p>
+    </div>
+  );
+}
+
 export function Proof({ c }: { c: PublicCopy }) {
   return (
     <section className="col g32 px-5 py-16 sm:px-14" data-section="1">
@@ -57,21 +79,7 @@ export function Proof({ c }: { c: PublicCopy }) {
         {c.results.map(([n, w, d]) => <div key={w} className="card col g8"><span className="d-lg"><span className="w9">{n}</span></span><span className="w7">{w}</span><span className="t-sm t-mute">{d}</span></div>)}
       </div>
       <p className="t-xs t-mute">{c.resultsNote}</p>
-      <div className="stage col g32 rounded-[28px] p-6 sm:p-12">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <div className="col g16"><p className="label" style={{ color: '#C9D0DE' }}>{c.caseLabel}</p><h3 className="d-lg" style={{ color: '#fff' }}><span className="w9">{c.case1}</span> {c.case2}</h3></div>
-          <p className="t-lg muted self-end">{c.caseBody}</p>
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          {c.caseShots.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-[4/3] w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
-        </div>
-        <div className="rule-line" />
-        <h3 className="kicker" style={{ fontSize: 22 }}><b>{c.caseAfter1}</b> {c.caseAfter2}</h3>
-        <div className="grid gap-3 md:grid-cols-2">
-          {c.caseEnd.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-video w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
-        </div>
-        <p className="kicker" style={{ fontSize: 24 }}><span className="w3">{c.caseKicker1}</span> <b>{c.caseKicker2}</b></p>
-      </div>
+      <IparkCase c={c} />
     </section>
   );
 }

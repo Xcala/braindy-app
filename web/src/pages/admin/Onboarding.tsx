@@ -6,6 +6,7 @@ import { useBrandDoc } from '../../brands/useBrandDoc';
 import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import { BrainCards } from '../../onboarding/BrainCards';
+import { NoticesList } from '../../onboarding/NoticesList';
 import { onboardingApi, type BrainDraft } from '../../onboarding/api';
 
 /** Admin · onboarding queue and "review and sign the Brand Brain" (design 18). */
@@ -74,6 +75,7 @@ function SignPanel({ brand }: { brand: Brand }) {
         <p className="t-sm t-mute w7">{brand.name} · {t(`ob.a.step.${step}`)}</p>
         <div className="row g12 wrap"><h1 className="h1">{t('ob.a.title')}</h1><span className="chip c-draft">{t('ob.namePending')}</span></div>
       </div>
+      <NoticesList brandId={brand.id} />
       {!draft ? <div className="card t-mute">{step === 'brief' ? t('ob.a.briefInProgress') : t('common.loading')}</div> : (
         <>
           <BrainCards brain={draft} onChange={setDraft} />

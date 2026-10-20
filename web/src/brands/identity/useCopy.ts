@@ -1,14 +1,19 @@
 import { useState } from 'react';
+import { useToast } from '../../components/Toaster';
+import { useI18n } from '../../i18n/I18nProvider';
 
 /** Copies text to the clipboard and remembers which value was copied for ~1.5 s. */
 export function useCopy() {
   const [copied, setCopied] = useState<string | null>(null);
+  const toast = useToast();
+  const { t } = useI18n();
   const copy = async (value: string) => {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(value);
+      toast({ text: t('toast.copied', { value: value.length > 40 ? `${value.slice(0, 40)}…` : value }) });
       setTimeout(() => setCopied((c) => (c === value ? null : c)), 1500);
-    } catch { /* clipboard blocked */ }
+    } catch { toast({ text: t('toast.copyFailed'), tone: 'bad' }); }
   };
   return { copied, copy };
 }

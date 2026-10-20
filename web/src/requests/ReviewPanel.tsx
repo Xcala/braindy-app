@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { BrainStack, brainName } from '../components/BrainStack';
 import { decide } from './api';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
+import { useToast } from '../components/Toaster';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
 export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark }: {
@@ -43,7 +44,12 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
     try { await decide(brandId, r.id, v.id, state, state === 'changes_requested' ? text.trim() || t('req.seeComments') : ''); setText(''); clearMark(); }
     catch { setError(t('req.decisionError')); } finally { setBusy(false); }
   }
-  const resolve = (c: RequestComment) => user && updateDoc(doc(db, 'brands', brandId, 'requests', r.id, 'comments', c.id), { resolved: !c.resolved, resolvedBy: user.uid, resolvedAt: serverTimestamp() });
+  const toast = useToast();
+  const setResolved = (c: RequestComment, resolved: boolean) => user && updateDoc(doc(db, 'brands', brandId, 'requests', r.id, 'comments', c.id), { resolved, resolvedBy: user.uid, resolvedAt: serverTimestamp() });
+  const resolve = async (c: RequestComment) => {
+    await setResolved(c, !c.resolved);
+    toast({ text: t(c.resolved ? 'toast.reopened' : 'toast.resolved'), undo: () => setResolved(c, !!c.resolved) });
+  };
 
   return (
     <aside className="col min-h-0" style={{ borderLeft: '1px solid var(--line)' }}>

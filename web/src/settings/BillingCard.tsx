@@ -19,6 +19,7 @@ export function BillingCard({ brandId }: { brandId: string }) {
   const { t, lang } = useI18n();
   const { plan, invoices } = useBilling(brandId);
   const [cancel, setCancel] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   if (plan === undefined) return <div className="card t-mute">{t('common.loading')}…</div>;
   if (plan === null) return <div className="card col g8"><p className="t-mute">{t('bill.noPlan')}</p><a className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a></div>;
@@ -39,7 +40,9 @@ export function BillingCard({ brandId }: { brandId: string }) {
             <div key={s.key} className="row between g12" style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
               <span className="col"><span className="w7 t-sm">{t(s.title)}</span><span className="t-xs t-mute">{t(s.body)}</span></span>
               {included.has(s.key) ? <span className="chip c-approved">{t('bill.inPlan')}</span>
-                : <a className="btn btn-secondary btn-sm" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(t(s.title))}`} target="_blank" rel="noreferrer">{s.key === 'agents' ? t('bill.add') : t('bill.quote')}</a>}
+                : s.key === 'agents'
+                  ? (plan.addonRequests ?? []).includes('agents') ? <span className="chip c-draft">{t('bill.requested')}</span> : <button className="btn btn-secondary btn-sm" onClick={() => setAdding(true)}>{t('bill.add')}</button>
+                  : <a className="btn btn-secondary btn-sm" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(t(s.title))}`} target="_blank" rel="noreferrer">{t('bill.quote')}</a>}
             </div>
           ))}
         </div>
@@ -77,6 +80,14 @@ export function BillingCard({ brandId }: { brandId: string }) {
         {!plan.cancelRequestedAt && <button className="btn btn-ghost btn-sm" onClick={() => setCancel(true)}>{t('bill.requestCancel')}</button>}
       </div>
       {msg && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{msg}</p>}
+      {adding && (
+        <ConfirmDialog title={t('bill.addTitle')} confirmLabel={plan.agentsMonthly && plan.stripeCustomerId ? t('bill.addConfirm') : t('bill.addRequest')}
+          onConfirm={async () => { try { await billingApi.addon(brandId); setAdding(false); } catch { setMsg(t('bill.portalError')); setAdding(false); } }} onCancel={() => setAdding(false)}>
+          <span className="col g8"><span>{t('bill.s.agentsBody')}</span>
+            {plan.agentsMonthly ? <b>{t('bill.addTotal', { total: money((plan.monthly ?? 0) + plan.agentsMonthly, plan.currency, lang) })}</b> : null}
+            <span className="t-sm">{plan.agentsMonthly && plan.stripeCustomerId ? t('bill.addProrated') : t('bill.addAsk')}</span></span>
+        </ConfirmDialog>
+      )}
       {cancel && (
         <ConfirmDialog title={t('bill.cancelTitle')} confirmLabel={t('bill.requestCancel')} danger
           onConfirm={async () => { await billingApi.cancelRequest(brandId); setCancel(false); }} onCancel={() => setCancel(false)}>

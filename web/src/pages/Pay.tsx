@@ -45,6 +45,11 @@ export function Pay() {
           <a className="t-sm w7" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('pay.whatsappNicolas')}</a>
         </div>
       )}
+      {params.get('state') === 'expired' && (
+        <div className="card col g8" role="alert" style={{ borderColor: '#F5D98A', background: '#FFFBF0' }}>
+          <span className="w7">{t('pay.expiredTitle')}</span><span className="t-sm">{t('pay.expiredBody')}</span>
+        </div>
+      )}
       {plan.status === 'transfer_review' && <div className="card t-sm" role="status">{t('pay.transferReview')} <Link to="/onboarding" className="w7">{t('pay.startBrief')}</Link></div>}
       <div className="col g8"><p className="label">{t('ob.day0')} · {current.name}</p><h1 className="h1">{t('pay.title')}</h1><p className="t-mute">{t(`bill.pathSub.${plan.path ?? 'transform'}`)}</p></div>
       {plan.monthly && plan.project ? (

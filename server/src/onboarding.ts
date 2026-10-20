@@ -5,6 +5,7 @@ import { FieldValue, type DocumentData } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { aiConfigured, claudeJson } from './ai.js';
+import { notify } from './notify.js';
 import type { AuthEnv } from './auth.js';
 
 const now = () => FieldValue.serverTimestamp();
@@ -64,6 +65,7 @@ onboarding.post('/brands/:brandId/brief/complete', async (c) => {
   await brainRef(brandId).set({ ...draft, status: 'draft', draftedBy: 'researcher', draftedWithAi: aiConfigured(), draftedAt: now() });
   await briefRef(brandId).set({ status: 'complete', completedAt: now() }, { merge: true });
   await brandRef(brandId).set({ onboarding: { step: 'brain', briefDoneAt: now() } }, { merge: true });
+  await notify(brandId, 'brain_ready');
   return c.json({ ok: true, ai: aiConfigured() });
 });
 
@@ -100,6 +102,7 @@ onboarding.post('/brands/:brandId/session', async (c) => {
   });
   if (!ok) return c.json({ error: 'taken' }, 409);
   await brandRef(brandId).set({ onboarding: { step: 'session', sessionAt: when } }, { merge: true });
+  await notify(brandId, 'session_confirmed', { when: when.toLocaleString('es-CO', { weekday: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Bogota' }) });
   return c.json({ ok: true });
 });
 
@@ -113,6 +116,7 @@ adminOnboarding.use('/brands/:brandId/onboarding/*', async (c, next) => {
 adminOnboarding.post('/brands/:brandId/onboarding/start', async (c) => {
   const { brandId } = c.req.param();
   await brandRef(brandId).set({ onboarding: { step: 'brief', startedAt: now(), startedBy: c.get('user').uid } }, { merge: true });
+  await notify(brandId, 'welcome');
   return c.json({ ok: true });
 });
 
@@ -143,10 +147,12 @@ adminOnboarding.post('/brands/:brandId/onboarding/sign', async (c) => {
     .set(brandRef(brandId), { onboarding: { step: 'firstDelivery', signedAt: now() } }, { merge: true })
     .set(db.collection('audit').doc(), { type: 'brand_brain_signed', brandId, version, by: uid, at: now() })
     .commit();
+  await notify(brandId, 'brain_signed');
   return c.json({ ok: true, version });
 });
 
 adminOnboarding.post('/brands/:brandId/onboarding/live', async (c) => {
   await brandRef(c.req.param('brandId')).set({ onboarding: { step: 'live', liveAt: now() } }, { merge: true });
+  await notify(c.req.param('brandId'), 'live');
   return c.json({ ok: true });
 });

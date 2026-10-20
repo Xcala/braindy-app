@@ -4,6 +4,7 @@ import { publicApi } from '../proposals/api';
 import { PUBLIC_COPY } from '../proposals/public/copy';
 import { usePublicTracking } from '../proposals/public/usePublicTracking';
 import { AcceptDialog } from '../proposals/public/AcceptDialog';
+import { Signed } from '../proposals/public/Signed';
 import { Braintrust, Days, FromAtoB, Hero, Options, Proof, Talk, type PublicProposal as Data } from '../proposals/public/Sections';
 import type { OptionKey } from '../proposals/types';
 
@@ -43,6 +44,8 @@ export function PublicProposal() {
         <Braintrust c={c} />
         <Days c={c} />
         <Options c={c} p={data} onPick={setAccepting} />
+        {data.acceptance && <Signed c={c} acceptance={data.acceptance} locale={locale} paid={new URLSearchParams(window.location.search).get('paid')}
+          onPayAgain={() => publicApi.pay(token).then((r) => { if (r.payUrl) window.location.href = r.payUrl; }).catch(() => undefined)} />}
         <Talk c={c} files={data.files} onFile={openFile} onAccept={() => setAccepting(data.recommended ?? 'transform')} />
         <footer className="row between g16 wrap px-5 py-10 sm:px-14" style={{ borderTop: '1px solid var(--line)' }}>
           <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 28 }} />

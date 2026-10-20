@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useBrands, type Brand } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { BrandHero } from '../brands/BrandHero';
@@ -26,6 +27,7 @@ export function MyBrand() {
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const { copied, copy } = useCopy();
+  const active = useActiveSection([identity.loading, voiceDoc.loading, current?.id]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const id = (identity.data ?? {}) as Identity;
@@ -45,6 +47,7 @@ export function MyBrand() {
   ];
   const visible = sections.filter((s) => s.show);
   const num = (key: string) => visible.findIndex((s) => s.id === key) + 1;
+  const font = ((id.typography ?? [])[0] as { fontFamily?: string; name?: string } | undefined)?.fontFamily ?? ((id.typography ?? [])[0] as { name?: string } | undefined)?.name;
 
   return (
     <div className="col g48">
@@ -52,9 +55,9 @@ export function MyBrand() {
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />
 
       {visible.length > 1 && (
-        <div className="row between g16 wrap" style={{ marginTop: -24 }}>
+        <div className="stickybar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
           <nav className="anchors" aria-label={t('brand.onThisPage')}>
-            {visible.map((s) => <a key={s.id} href={`#${s.id}`}>{t(s.label)}</a>)}
+            {visible.map((s) => <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-on' : ''} aria-current={active === s.id ? 'location' : undefined}>{t(s.label)}</a>)}
           </nav>
           {colors.length > 0 && (
             <div className="row g8 wrap">
@@ -64,6 +67,7 @@ export function MyBrand() {
                   <i style={{ background: c.hex }} />{copied === c.hex!.toUpperCase() ? t('common.copied') : c.hex!.toUpperCase()}
                 </button>
               ))}
+              {font && <button className="qcopy" onClick={() => copy(font)}>{font}</button>}
             </div>
           )}
         </div>
@@ -141,4 +145,19 @@ function GroupBrands({ brands, all }: { brands: Brand[]; all: Brand[] }) {
       })}
     </div>
   );
+}
+
+/** The section currently in view, to highlight its anchor in the sticky bar (design 26). */
+function useActiveSection(deps: unknown[]) {
+  const [active, setActive] = useState<string | null>(null);
+  useEffect(() => {
+    const els = [...document.querySelectorAll<HTMLElement>('main section[id]')];
+    const io = new IntersectionObserver((entries) => {
+      const top = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+      if (top) setActive(top.target.id);
+    }, { rootMargin: '-80px 0px -60% 0px' });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  return active;
 }

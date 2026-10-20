@@ -13,12 +13,13 @@ export interface Proposal {
   preparedOn?: string;
   fromA?: { today?: string; insights?: string };
   toB?: { target?: string; changes?: string };
-  options?: Partial<Record<OptionKey | 'aiAgents', { price?: string }>>;
+  options?: Partial<Record<OptionKey | 'aiAgents', { price?: string; amount?: number | null; monthly?: number | null }>>;
+  currency?: string;
   recommended?: OptionKey;
   lostReason?: string;
   notes?: string;
   convertedBrandId?: string;
-  acceptance?: { name: string; role?: string; option?: string; at?: Timestamp };
+  acceptance?: { name: string; role?: string; email?: string; option?: string; at?: Timestamp };
   lastActivity?: { type: string; at?: Timestamp; channel?: string; to?: string; name?: string };
   createdAt?: Timestamp;
 }

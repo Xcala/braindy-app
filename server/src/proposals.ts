@@ -4,7 +4,10 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { Hono, type MiddlewareHandler } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { db } from './firebase.js';
+import { adminAuth, db } from './firebase.js';
+import { addMember } from './members.js';
+import { createCheckout, planFromProposal } from './billing.js';
+import { stripeConfigured } from './stripe.js';
 import type { AuthEnv } from './auth.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
@@ -15,7 +18,7 @@ const token = () => randomBytes(9).toString('base64url');
 const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 /** Fields of a proposal that the public page may show. Internal notes never leave the server. */
-const PUBLIC_FIELDS = ['title', 'prospect', 'lang', 'validUntil', 'preparedOn', 'fromA', 'toB', 'options', 'recommended', 'status'] as const;
+const PUBLIC_FIELDS = ['title', 'prospect', 'lang', 'validUntil', 'preparedOn', 'fromA', 'toB', 'options', 'recommended', 'status', 'currency', 'acceptance'] as const;
 
 // ---------- admin ----------
 export const adminProposals = new Hono<AuthEnv>();
@@ -56,14 +59,12 @@ adminProposals.post('/proposals/:id/sends', async (c) => {
   return c.json({ sendId: sendRef.id, url, whatsapp });
 });
 
-/** Won → create client: a new brand that remembers the proposal it came from. */
-adminProposals.post('/proposals/:id/convert', async (c) => {
-  const { id } = c.req.param();
+/** Won → create client: a new brand that remembers the proposal it came from. Idempotent. */
+export async function convertProposal(id: string): Promise<string | null> {
   const ref = db.doc(`proposals/${id}`);
   const p = await ref.get();
-  if (!p.exists) return c.json({ error: 'not_found' }, 404);
-  if (p.get('convertedBrandId')) return c.json({ brandId: p.get('convertedBrandId') });
-
+  if (!p.exists) return null;
+  if (p.get('convertedBrandId')) return p.get('convertedBrandId') as string;
   const name = String(p.get('prospect.company') || p.get('prospect.name') || p.get('title') || 'New brand').trim();
   let brandId = slug(name) || `brand-${id.slice(0, 6)}`;
   for (let i = 2; (await db.doc(`brands/${brandId}`).get()).exists; i++) brandId = `${slug(name)}-${i}`;
@@ -75,7 +76,12 @@ adminProposals.post('/proposals/:id/convert', async (c) => {
     })
     .update(ref, { status: 'won', convertedBrandId: brandId, wonAt: now, lastActivity: { type: 'converted', at: now } })
     .commit();
-  return c.json({ brandId });
+  return brandId;
+}
+
+adminProposals.post('/proposals/:id/convert', async (c) => {
+  const brandId = await convertProposal(c.req.param('id'));
+  return brandId ? c.json({ brandId }) : c.json({ error: 'not_found' }, 404);
 });
 
 /** Signed upload URL for a proposal file (PDF, deck, page). */
@@ -167,23 +173,57 @@ publicProposals.post('/p/:token/ping', async (c) => {
   return c.json({ ok: true });
 });
 
-/** Accept and sign (typed signature). Marks the proposal as won; payment comes next (Stripe). */
+/** Accept and sign (typed signature): won → client created → signer invited as owner → plan → secure payment. */
 publicProposals.post('/p/:token/accept', async (c) => {
-  const r = await resolve(c.req.param('token'));
+  const t = c.req.param('token');
+  const r = await resolve(t);
   if (!r) return c.json({ error: 'not_found' }, 404);
-  const b = await c.req.json<{ name?: string; role?: string; accepted?: boolean; option?: string }>();
+  const b = await c.req.json<{ name?: string; role?: string; email?: string; accepted?: boolean; option?: string }>();
   const name = String(b.name ?? '').trim().slice(0, 120);
-  if (!name || b.accepted !== true) return c.json({ error: 'invalid' }, 400);
+  const email = String(b.email ?? '').trim().toLowerCase().slice(0, 200);
+  if (!name || b.accepted !== true || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ error: 'invalid' }, 400);
+  const option = String(b.option ?? '').slice(0, 40);
   const now = FieldValue.serverTimestamp();
   await db.batch()
     .update(r.proposalRef, {
       status: 'won', wonAt: now,
-      acceptance: { name, role: String(b.role ?? '').slice(0, 160), option: String(b.option ?? '').slice(0, 40), sendId: r.sendRef.id, at: now },
+      acceptance: { name, role: String(b.role ?? '').slice(0, 160), email, option, sendId: r.sendRef.id, at: now },
       lastActivity: { type: 'accepted', at: now, name },
     })
     .set(r.sendRef.collection('events').doc(), { type: 'accepted', at: now, name })
     .commit();
-  return c.json({ ok: true });
+
+  const brandId = await convertProposal(r.proposalRef.id);
+  if (!brandId) return c.json({ ok: true, payUrl: null });
+  // The signer becomes the owner of the new brand (now if they have an account, else on first sign-in).
+  const existing = await adminAuth.getUserByEmail(email).catch(() => null);
+  if (existing) await addMember(brandId, existing.uid, email, existing.displayName ?? name, 'client_owner', true, 'proposal');
+  else await db.doc(`invites/${brandId}__${email}`).set({ email, brandId, role: 'client_owner', canApprove: true, invitedBy: 'proposal', at: now });
+
+  const p = (await r.proposalRef.get()).data() ?? {};
+  const o = (p.options?.[option] ?? {}) as { amount?: number; monthly?: number };
+  await planFromProposal(brandId, option, { project: o.amount, monthly: o.monthly, currency: p.currency }, email);
+  let payUrl: string | null = null;
+  if (stripeConfigured() && (o.amount || o.monthly)) {
+    payUrl = await createCheckout(brandId, o.amount ? 'project' : 'monthly', {
+      success: `${PUBLIC_BASE}/p/${t}?paid=1`, cancel: `${PUBLIC_BASE}/p/${t}?paid=0`,
+    }).catch((e) => { console.warn('proposal checkout failed', String(e)); return null; });
+  }
+  return c.json({ ok: true, payUrl });
+});
+
+/** New payment link after a failed or abandoned payment (the signature stays). */
+publicProposals.post('/p/:token/pay', async (c) => {
+  const t = c.req.param('token');
+  const r = await resolve(t);
+  if (!r) return c.json({ error: 'not_found' }, 404);
+  const p = (await r.proposalRef.get()).data() ?? {};
+  if (!p.acceptance || !p.convertedBrandId || !stripeConfigured()) return c.json({ payUrl: null });
+  const o = (p.options?.[p.acceptance.option] ?? {}) as { amount?: number };
+  const payUrl = await createCheckout(p.convertedBrandId, o.amount ? 'project' : 'monthly', {
+    success: `${PUBLIC_BASE}/p/${t}?paid=1`, cancel: `${PUBLIC_BASE}/p/${t}?paid=0`,
+  }).catch(() => null);
+  return c.json({ payUrl });
 });
 
 publicProposals.get('/p/:token/files/:fileId', async (c) => {

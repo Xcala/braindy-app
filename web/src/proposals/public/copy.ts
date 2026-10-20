@@ -53,6 +53,10 @@ const en = {
   acceptFor: 'Proposal for {name}', acceptValid: 'valid until {date}', fullName: 'Full name', roleCompany: 'Role and company',
   signature: 'Signature', signatureHint: 'Typed signature. We email a signed PDF to both parties.', agree: 'I accept the scope, investment and terms in this proposal.',
   option: 'Where you start', signContinue: 'Sign and accept', paymentNext: 'Next: secure payment of the first 50% and your strategy session.',
+  email: 'Your email', emailHint: 'Your access to the Braindy app goes to this email.',
+  paidOk: 'Payment received. Your app is ready.', paidOkBody: 'Sign in at the Braindy app with {email}. The first step is the brief with the Researcher (about 12 minutes).',
+  paidNo: 'The payment did not go through. Nothing was charged.', paidNoBody: 'Try again or write to Nicolas: your signature is saved.', payAgain: 'Try the payment again', openApp: 'Open the app',
+  signedBy: 'Signed by {name}', signedCopy: 'Download the signed copy',
   close: 'Close', done1: 'Signed.', done2: 'Thank you, {name}.', doneBody: 'Nicolas has your signature. He will write to you today with the secure payment link and the date of your strategy session.',
   error: 'Something went wrong. Please try again or write to Nicolas.', notFound: 'This proposal link is not available. Ask Nicolas for a new one.',
 };
@@ -111,6 +115,10 @@ const es: PublicCopy = {
   acceptFor: 'Propuesta para {name}', acceptValid: 'válida hasta el {date}', fullName: 'Nombre completo', roleCompany: 'Cargo y empresa',
   signature: 'Firma', signatureHint: 'Firma escrita. Enviamos un PDF firmado a ambas partes.', agree: 'Acepto el alcance, la inversión y los términos de esta propuesta.',
   option: 'Por dónde empiezas', signContinue: 'Firmar y aceptar', paymentNext: 'Después: pago seguro del primer 50% y tu sesión de estrategia.',
+  email: 'Tu correo', emailHint: 'A este correo llega tu acceso a la app de Braindy.',
+  paidOk: 'Pago recibido. Tu app está lista.', paidOkBody: 'Entra a la app de Braindy con {email}. El primer paso es el brief con el Researcher (unos 12 minutos).',
+  paidNo: 'El pago no pasó. No se hizo ningún cobro.', paidNoBody: 'Inténtalo de nuevo o escríbele a Nicolas: tu firma quedó guardada.', payAgain: 'Intentar el pago de nuevo', openApp: 'Abrir la app',
+  signedBy: 'Firmado por {name}', signedCopy: 'Descargar la copia firmada',
   close: 'Cerrar', done1: 'Firmado.', done2: 'Gracias, {name}.', doneBody: 'Nicolas ya tiene tu firma. Hoy te escribe con el link de pago seguro y la fecha de tu sesión de estrategia.',
   error: 'Algo salió mal. Intenta de nuevo o escríbele a Nicolas.', notFound: 'Este link de propuesta no está disponible. Pídele uno nuevo a Nicolas.',
 };

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { BottomNav } from './BottomNav';
+import { Toaster } from '../components/Toaster';
 import { useAuth } from '../auth/AuthProvider';
 import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
@@ -29,33 +31,46 @@ export function AppShell() {
   const { profile } = useAuth();
   const { t } = useI18n();
   const isAdmin = profile?.role === 'admin';
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  // Admin is its own space (design 24): never mixed with the client tabs.
+  const adminSpace = isAdmin && (pathname.startsWith('/admin') || pathname === '/team');
 
   return (
     <BrandProvider>
+      <Toaster>
       <div className="flex min-h-full flex-col">
-        <header className="topbar" style={{ height: 'auto', minHeight: 72, flexWrap: 'wrap', padding: '12px 16px', rowGap: 12 }}>
-          <img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" />
+        <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', gap: 8 }}>
+          <span className="hidden sm:inline-flex"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
           <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
-          <BrandMenu isAdmin={isAdmin} />
+          {adminSpace ? (
+            <>
+              <Link to="/team" className="ws" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span>Braindy admin</Link>
+              <span className="hidden sm:inline-flex"><BrandMenu isAdmin onPicked={() => navigate('/home')} /></span>
+            </>
+          ) : (
+            <>
+              <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
+              {isAdmin && <span className="hidden sm:inline-flex"><Link to="/team" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
+            </>
+          )}
           <div className="grow" />
           {isAdmin && <span className="hidden md:inline-flex"><ApiStatus /></span>}
           <CommandK />
           <LangToggle />
           <AccountMenu />
         </header>
+        <div className={adminSpace ? '' : 'hidden md:block'}>
         <nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
-          {TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} />)}
-          {isAdmin && (
-            <>
-              <span className="vsep" />
-              {ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />)}
-            </>
-          )}
+          {(adminSpace ? ADMIN_TABS : TABS).map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin={adminSpace} />)}
         </nav>
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-16 pt-8 sm:px-8 lg:px-10">
+        </div>
+        <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
           <Outlet />
         </main>
+        {!adminSpace && <BottomNav />}
       </div>
+      </Toaster>
     </BrandProvider>
   );
 }
@@ -95,6 +110,8 @@ function AccountMenu() {
       {open && (
         <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
+          <div className="md:hidden"><NavLink role="menuitem" to="/accesses" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.accesses")}</NavLink></div>
+          {profile?.role === 'admin' && <div className="sm:hidden"><NavLink role="menuitem" to="/team" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.backToAdmin")}</NavLink></div>}
           <NavLink role="menuitem" to="/settings" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.settings")}</NavLink>
           <button role="menuitem" onClick={logout} className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}>
             {t('common.signOut')}

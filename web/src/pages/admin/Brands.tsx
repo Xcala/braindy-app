@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { asTree, useBrands, type Brand } from '../../brands/BrandProvider';
@@ -6,7 +7,7 @@ import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import { normalizeSearch } from '../../lib/text';
 import { Icon } from '../../components/Icon';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { useToast } from '../../components/Toaster';
 import type { StringKey } from '../../i18n/strings';
 
 type Status = 'all' | 'active' | 'archived';
@@ -19,8 +20,7 @@ export function AdminBrands() {
   const [status, setStatus] = useState<Status>('all');
   const [groupsOnly, setGroupsOnly] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [pending, setPending] = useState<Brand | null>(null);
-  const [busy, setBusy] = useState(false);
+  const toast = useToast();
 
   const rows = useMemo(() => {
     const needle = normalizeSearch(q);
@@ -38,18 +38,14 @@ export function AdminBrands() {
 
   const toggleCollapse = (id: string) => setCollapsed((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
-  async function applyToggle() {
-    if (!pending) return;
-    setBusy(true);
-    try {
-      await updateDoc(doc(db, 'brands', pending.id), {
-        status: pending.status === 'archived' ? 'active' : 'archived', statusUpdatedAt: serverTimestamp(),
-      });
-      setPending(null);
-    } finally {
-      setBusy(false);
-    }
+  // Archive and activate are reversible: act now, offer Undo (design 30) instead of a confirmation.
+  async function toggle(brand: Brand) {
+    const to = brand.status === 'archived' ? 'active' : 'archived';
+    const set = (status: string) => updateDoc(doc(db, 'brands', brand.id), { status, statusUpdatedAt: serverTimestamp() });
+    await set(to);
+    toast({ text: t(to === 'archived' ? 'toast.archived' : 'toast.activated', { name: brand.name }), undo: () => set(brand.status) });
   }
+
 
   const active = brands.filter((b) => b.status === 'active').length;
   return (
@@ -86,18 +82,10 @@ export function AdminBrands() {
         </div>
         {rows.map(({ brand, depth }) => (
           <Row key={brand.id} brand={brand} depth={depth} collapsed={collapsed.has(brand.id)}
-            onCollapse={() => toggleCollapse(brand.id)} onToggle={() => setPending(brand)} />
+            onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} />
         ))}
       </div>
 
-      {pending && (
-        <ConfirmDialog
-          title={pending.status === 'archived' ? t('admin.brands.confirmActivate', { name: pending.name }) : t('admin.brands.confirmArchiveTitle', { name: pending.name })}
-          confirmLabel={pending.status === 'archived' ? t('admin.brands.activate') : t('admin.brands.archive')}
-          danger={pending.status !== 'archived'} busy={busy} onConfirm={applyToggle} onCancel={() => setPending(null)}>
-          {pending.status !== 'archived' && t('admin.brands.confirmArchive', { name: pending.name })}
-        </ConfirmDialog>
-      )}
     </section>
   );
 }
@@ -107,6 +95,7 @@ function Row({ brand, depth, collapsed, onCollapse, onToggle }: {
 }) {
   const { t } = useI18n();
   const { select } = useBrands();
+  const navigate = useNavigate();
   const on = brand.status === 'active';
   return (
     <div className={`trow min-w-[760px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
@@ -118,7 +107,7 @@ function Row({ brand, depth, collapsed, onCollapse, onToggle }: {
           </button>
         ) : <span style={{ width: 32 }} />}
         <span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none' }}><BrandMark brand={brand} /></span>
-        <button onClick={() => select(brand.id)} className="w7 truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'inherit' }}>{brand.name}</button>
+        <button onClick={() => { select(brand.id); navigate('/brand'); }} className="w7 truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'inherit' }}>{brand.name}</button>
       </span>
       <span><span className={`chip ${brand.kind === 'group' ? 'c-group' : 'c-type'}`}>{brand.kind === 'group' ? t('brand.group') : t('admin.brands.brand')}</span></span>
       <span className="row g4 wrap">
