@@ -24,7 +24,7 @@ export async function createEnv(): Promise<RulesTestEnvironment> {
     firestore: {
       rules: readFileSync(resolve(process.cwd(), 'firestore.rules'), 'utf8'),
       host: '127.0.0.1',
-      port: 8080,
+      port: Number(process.env.FIRESTORE_TEST_PORT ?? 8081),
     },
   });
 }
