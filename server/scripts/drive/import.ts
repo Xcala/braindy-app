@@ -3,7 +3,8 @@
 // a file is uploaded again only if its size or modification time changed.
 //
 //   npm run drive:import -w server -- --stage essentials [--brand milohas] [--dry-run] [--concurrency 6]
-//   stage "essentials" = brand-book folders only; "all" = every importable file.
+//   stage "essentials" = brand-book folders only; "all" = every importable file. --no-video skips video files
+//   (stage 2a: everything but video; videos go brand by brand later).
 import { createHash } from 'node:crypto';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { extname, posix, resolve } from 'node:path';
@@ -19,6 +20,8 @@ const stage = arg('stage') ?? 'essentials';
 const onlyBrand = arg('brand');
 const dryRun = process.argv.includes('--dry-run');
 const concurrency = Number(arg('concurrency') ?? 6);
+const noVideo = process.argv.includes('--no-video');
+const VIDEO = /\.(mp4|mov|m4v|avi|mkv|webm|wmv|mpe?g|mxf|r3d|braw|prores)$/i;
 if (!['essentials', 'all'].includes(stage)) throw new Error('--stage must be essentials or all');
 
 const BUCKET = 'braindy-app-files';
@@ -48,7 +51,7 @@ const brandIds = onlyBrand
       .filter((id) => LOCAL_FOLDERS[id]);
 const allAbs = new Set(Object.keys(LOCAL_FOLDERS).map(absFolder));
 
-log(`Import · stage ${stage}${dryRun ? ' · DRY RUN' : ''} · ${brandIds.length} brands · log ${logFile}`);
+log(`Import · stage ${stage}${noVideo ? ' · no video' : ''}${dryRun ? ' · DRY RUN' : ''} · ${brandIds.length} brands · log ${logFile}`);
 let totalUp = 0, totalSkip = 0, totalErr = 0, totalBytes = 0;
 
 for (const brandId of brandIds.sort()) {
@@ -56,7 +59,8 @@ for (const brandId of brandIds.sort()) {
   const skipDirs = new Set([...allAbs].filter((p) => p !== abs && p.startsWith(abs)));
   const files = (await walkLocal(abs, skipDirs))
     .filter((f) => importable(f) && !EXCLUDED_FILE_NAMES.includes(f.name))
-    .filter((f) => stage === 'all' || ESSENTIALS.test(f.relPath));
+    .filter((f) => stage === 'all' || ESSENTIALS.test(f.relPath))
+    .filter((f) => !noVideo || !VIDEO.test(f.name));
 
   const existing = new Map(
     (await db.collection(`brands/${brandId}/assets`).where('source', '==', 'drive').select('size', 'mtimeMs').get())
@@ -110,7 +114,9 @@ async function writeFolderIndex(brandId: string) {
       folders[key].bytes += Number(d.get('size') ?? 0);
     }
   }
-  const list = Object.entries(folders).map(([path, v]) => ({ path, ...v })).sort((a, b) => a.path.localeCompare(b.path));
+  let list = Object.entries(folders).map(([path, v]) => ({ path, ...v })).sort((a, b) => a.path.localeCompare(b.path));
+  // A Firestore document holds up to 1 MiB: on very deep trees keep the first levels only.
+  for (let depth = 8; JSON.stringify(list).length > 900_000 && depth > 1; depth--) list = list.filter((f) => f.path.split('/').length <= depth);
   await db.doc(`brands/${brandId}/context/fileIndex`).set({ folders: list, updatedAt: FieldValue.serverTimestamp() });
 }
 
