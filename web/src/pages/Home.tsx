@@ -28,6 +28,12 @@ export function Home() {
 
   return (
     <div className="col g32">
+      {current.onboarding && current.onboarding.step !== 'live' && (
+        <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: '#EAF0FF', border: 0 }}>
+          <span className="col"><span className="w7">{t('ob.continue')}</span><span className="t-sm t-mute">{t('ob.continueSub', { step: t(`ob.a.step.${current.onboarding.step}`) })}</span></span>
+          <span className="btn btn-primary btn-sm">{t('common.continue')}</span>
+        </Link>
+      )}
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="col g32">
@@ -53,6 +59,10 @@ export function Home() {
           </section>
         </div>
         <aside className="col g16">
+          <Link to="/report" className="card col g4" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
+            <h2 className="h3">{t('nav.report')}</h2>
+            <p className="t-sm t-mute">{t('rep.tagline')}</p>
+          </Link>
           <div className="card col g8">
             <h2 className="h3">{t('home.brandBrain')}</h2>
             <p className="t-sm t-mute">{t('home.brandBrainBody')}</p>

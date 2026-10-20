@@ -12,7 +12,12 @@ export interface Brand {
   logoUrl: string | null;
   /** Old apps this brand was migrated from: brands, orbit, brief, brandbook. */
   sources: string[];
+  /** First 11 days (wave F). Absent for brands that were already running. */
+  onboarding: Onboarding | null;
 }
+
+export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
+export interface Onboarding { step: OnboardingStep; sessionAt?: Date | null; signedAt?: Date | null }
 
 interface BrandState {
   brands: Brand[];
@@ -32,7 +37,14 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   status: d.status === 'archived' ? 'archived' : 'active',
   logoUrl: (d.logoUrl as string) ?? null,
   sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
+  onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
 });
+
+const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
+  step: o.step as OnboardingStep,
+  sessionAt: (o.sessionAt as { toDate?: () => Date })?.toDate?.() ?? null,
+  signedAt: (o.signedAt as { toDate?: () => Date })?.toDate?.() ?? null,
+} : null;
 
 const sourcesOf = (l?: Record<string, unknown[]>) => [
   (l?.brands?.length ?? 0) > 0 && 'brands',
