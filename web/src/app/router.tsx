@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RequireAdmin, RequireAuth } from '../auth/RequireAuth';
 import { AppShell } from './AppShell';
 import { Landing } from './Landing';
+import { RouteError } from '../components/RouteError';
 import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
@@ -25,11 +26,12 @@ import { AdminBilling } from '../pages/admin/Billing';
 import { Pay, PaySuccess } from '../pages/Pay';
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <Login /> },
-  { path: '/p/:token', element: <PublicProposal /> },
-  { path: '/r/:token', element: <PublicReview /> },
+  { path: '/login', element: <Login />, errorElement: <RouteError /> },
+  { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
+  { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
+    errorElement: <RouteError />,
     children: [
       {
         element: <AppShell />,

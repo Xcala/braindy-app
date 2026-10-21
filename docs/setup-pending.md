@@ -79,5 +79,10 @@ You can do them one at a time. A missing secret only leaves its feature in fallb
 ## 3 · Gmail sending for proposals (wave A, pending)
 This one needs a one-time OAuth consent with nicolas@braindy.co. Ask Claude to walk you through it when you want to turn it on.
 
-## 4 · Before app.braindy.co
+## 4 · App Check and error alerts (optional now, required before production)
+- **App Check:** create a reCAPTCHA Enterprise key for the web (Firebase console → App Check → Web app → reCAPTCHA Enterprise). Send Claude the site key (it is public). The steps to turn it on are in `docs/production.md`.
+- **Alerts:** Error Reporting → Turn on notifications → choose your email. Errors from the API and from browsers already arrive there.
+
+## 5 · Before app.braindy.co
+See `docs/production.md`.
 DNS and the production deploy are only done after asking you (CLAUDE.md).

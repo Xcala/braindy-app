@@ -24,3 +24,12 @@ if (env.VITE_USE_EMULATORS === 'true') {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
   connectFirestoreEmulator(db, '127.0.0.1', 8081);
 }
+
+// App Check (reCAPTCHA Enterprise): only when a site key is configured. The backend enforces it
+// only with APP_CHECK_ENFORCE=1, so turning it on is two separate, reversible steps.
+export const appCheck = env.VITE_APPCHECK_SITE_KEY && env.VITE_USE_EMULATORS !== 'true'
+  ? (await import('firebase/app-check')).initializeAppCheck(app, {
+    provider: new (await import('firebase/app-check')).ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  })
+  : null;
