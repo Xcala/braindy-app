@@ -31,7 +31,7 @@ export function WhatsappCard({ brandId }: { brandId: string }) {
   const n = s.data as { whatsapp?: string; notices?: { delivery?: boolean } } | null;
   const on = !!n?.whatsapp && n.notices?.delivery !== false;
   return (
-    <Link to="/settings" className="card row g12" style={{ textDecoration: 'none', color: 'var(--ink)', background: on ? '#E9F7EF' : undefined, border: on ? 0 : undefined }}>
+    <Link to="/settings" data-tour="home-wa" className="card row g12" style={{ textDecoration: 'none', color: 'var(--ink)', background: on ? '#E9F7EF' : undefined, border: on ? 0 : undefined }}>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke={on ? '#0E7A4E' : 'currentColor'} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h14v10H10l-4 4v-4H5z" /></svg>
       <span className="col"><span className="t-sm w7">{t(on ? 'home.waOn' : 'home.waOff')}</span><span className="t-xs t-mute">{t(on ? 'home.waOnSub' : 'home.waOffSub')}</span></span>
     </Link>

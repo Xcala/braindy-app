@@ -1,3 +1,5 @@
+import { useTour } from '../tour/useTour';
+import { reviewSteps } from '../tour/steps';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
@@ -32,6 +34,7 @@ export function RequestDetail() {
 
   useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); }, [r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useTour('review', () => reviewSteps(lang), versions.length > 0, !isAdmin);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (r === undefined) return <div className="skel" style={{ height: 400 }} />;
   if (r === null) return <p className="t-mute">{t('req.notFound')}</p>;
@@ -50,7 +53,7 @@ export function RequestDetail() {
       </div>
 
       {versions.length > 0 && (
-        <div className="card grid overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }}>
+        <div className="card grid overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
             comments={comments} onMark={setMark} onCompare={() => setComparing(true)} />
           <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
@@ -58,7 +61,7 @@ export function RequestDetail() {
         </div>
       )}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1.2fr]">
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1.2fr]" data-tour="review-brief">
         <div className="col g12">
           <p className="label">{t('req.brief')}</p>
           {(['product', 'application', 'scene'] as const).map((k) => (

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BottomNav } from './BottomNav';
 import { Toaster } from '../components/Toaster';
+import { requestTour } from '../tour/useTour';
 import { useAuth } from '../auth/AuthProvider';
 import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
@@ -77,7 +78,7 @@ export function AppShell() {
 
 function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
   return (
-    <NavLink to={to} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
+    <NavLink to={to} data-tour={to === '/ask' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
       {label}
     </NavLink>
   );
@@ -85,6 +86,7 @@ function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean 
 
 function AccountMenu() {
   const { profile, user, logout } = useAuth();
+  const navigate = useNavigate();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -112,6 +114,8 @@ function AccountMenu() {
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
           <div className="md:hidden"><NavLink role="menuitem" to="/accesses" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.accesses")}</NavLink></div>
           {profile?.role === 'admin' && <div className="sm:hidden"><NavLink role="menuitem" to="/team" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.backToAdmin")}</NavLink></div>}
+          <button role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}
+            onClick={() => { setOpen(false); if (!requestTour()) navigate('/home?tour=1'); }}>{t('tour.see')}</button>
           <NavLink role="menuitem" to="/settings" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.settings")}</NavLink>
           <button role="menuitem" onClick={logout} className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}>
             {t('common.signOut')}

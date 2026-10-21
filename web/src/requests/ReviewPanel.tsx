@@ -61,7 +61,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           {v.approval?.state === 'approved' && <span className="chip c-approved self-start">{t('req.approvedChip', { n: v.n })}</span>}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
           {canApprove && pending && isLatest && (
-            <div className="row g8">
+            <div className="row g8" data-tour="review-decide">
               <button className="btn btn-primary grow" disabled={busy} onClick={() => decision('approved')}><Icon name="check" />{t('req.approveV', { n: v.n })}</button>
               <button className="btn btn-secondary grow" disabled={busy} onClick={() => decision('changes_requested')}>{t('req.requestChanges')}</button>
             </div>
@@ -70,7 +70,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
         </div>
       )}
-      <div className="col g16 min-h-0 flex-1" style={{ padding: 20 }}>
+      <div className="col g16 min-h-0 flex-1" style={{ padding: 20 }} data-tour="review-comments">
         <div className="row between"><p className="label">{t('req.comments')}</p>
           <div className="seg" role="group" aria-label={t('req.filterComments')}>
             <button className={filter === 'open' ? 'is-on' : ''} onClick={() => setFilter('open')}>{t('req.open')}</button>

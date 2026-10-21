@@ -44,3 +44,10 @@ body {
 /* Mobile header (design 25): the brand selector truncates so search, language and avatar keep their 44 px. */
 .topbar .sel { min-width: 0; max-width: 100%; }
 .topbar .sel > span:not(.mark) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* First-use tours (tour/engine.js): Braindy tokens. The app is light-only, so the tour stays light too. */
+:root, :root:not([data-theme="light"]) {
+  --tg-accent: var(--azul, #2F4DE0); --tg-bg: #FFFFFF; --tg-ink: var(--ink, #0B1220); --tg-muted: var(--graphite, #5C6375);
+  --tg-surface: var(--niebla, #F4F6FB); --tg-border: var(--line, #E3E7F0); --tg-scrim: rgba(11, 18, 32, .62);
+  --tg-font-title: 'Red Hat Display', sans-serif; --tg-felicita-top: 5.25rem;
+}

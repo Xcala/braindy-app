@@ -18,7 +18,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
 
   return (
     <section className="stage grid gap-10 rounded-[28px] p-6 sm:p-12 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="h-home">
-      <div className="col g24">
+      <div className="col g24" data-tour="home-needs">
         <p className="label" style={{ color: '#C9D0DE' }}>{today} · {brandName}</p>
         <h1 className="d-lg" id="h-home" style={{ color: '#fff' }}>
           {needsYou.length ? <><span className="w9">{t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length })}</span> {t('home.restMoving')}</>
@@ -26,7 +26,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
         </h1>
         {first && <FirstItem r={first} />}
       </div>
-      <div className="col g12">
+      <div className="col g12" data-tour="home-brains">
         <div className="grid grid-cols-2 gap-3">
           {BRAINS.map((b) => (
             <div key={b} className="b3d col g4">

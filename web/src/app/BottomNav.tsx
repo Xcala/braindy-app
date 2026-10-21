@@ -17,7 +17,7 @@ export function BottomNav() {
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 md:hidden"><nav className="bnav" aria-label={t('nav.sections')}>
       {ITEMS.map((i) => (
-        <NavLink key={i.to} to={i.to} className={({ isActive }) => `${i.fab ? 'fab' : ''} ${isActive ? 'is-active' : ''}`} aria-label={i.fab ? t('nav.ask') : undefined}>
+        <NavLink key={i.to} to={i.to} data-tour={i.fab ? 'ask-nav-m' : undefined} className={({ isActive }) => `${i.fab ? 'fab' : ''} ${isActive ? 'is-active' : ''}`} aria-label={i.fab ? t('nav.ask') : undefined}>
           {i.fab ? <span className="f">{i.icon}</span> : i.icon}
           {t(i.label)}
         </NavLink>

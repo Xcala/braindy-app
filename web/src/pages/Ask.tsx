@@ -1,3 +1,6 @@
+import { useAuth } from '../auth/AuthProvider';
+import { useTour } from '../tour/useTour';
+import { askSteps } from '../tour/steps';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
@@ -23,6 +26,8 @@ export function Ask() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 
+  const { profile: me } = useAuth();
+  useTour('ask', () => askSteps(lang), !!current, me?.role !== 'admin');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const category = findCategory(cat)!;
   const subcat = findSub(cat, sub);
@@ -44,7 +49,7 @@ export function Ask() {
       <div className="col g32">
         <div className="col g8"><p className="label">{current.name}</p><h1 className="h1"><span className="w9">{t('ask.title')}</span></h1></div>
 
-        <section className="col g12" aria-labelledby="s1">
+        <section className="col g12" aria-labelledby="s1" data-tour="ask-what">
           <div className="row g12"><span className="sec-num">01</span><h2 className="h3" id="s1">{t('ask.s1')}</h2></div>
           <div className="card grid gap-4 md:grid-cols-[1fr_1fr_1.2fr]">
             <div className="col" role="listbox" aria-label={t('ask.s1')}>
@@ -74,7 +79,7 @@ export function Ask() {
           </div>
         </section>
 
-        <section className="col g12" aria-labelledby="s2">
+        <section className="col g12" aria-labelledby="s2" data-tour="ask-cards">
           <div className="row g12"><span className="sec-num">02</span><h2 className="h3" id="s2">{t('ask.s2')}</h2></div>
           <div className="grid gap-4 lg:grid-cols-3">
             {(['product', 'application', 'scene'] as CardKey[]).map((k) => (
@@ -83,7 +88,7 @@ export function Ask() {
           </div>
         </section>
 
-        <section className="col g12" aria-labelledby="s3">
+        <section className="col g12" aria-labelledby="s3" data-tour="ask-when">
           <div className="row g12"><span className="sec-num">03</span><h2 className="h3" id="s3">{t('ask.s3')}</h2></div>
           <div className="card grid gap-4 md:grid-cols-3">
             <div className="field"><label htmlFor="d1">{t('ask.due')}</label><input className="input" id="d1" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
@@ -93,7 +98,7 @@ export function Ask() {
         </section>
       </div>
 
-      <aside className="card col g16 lg:sticky lg:top-6" aria-label={t('ask.summary')}>
+      <aside className="card col g16 lg:sticky lg:top-6" aria-label={t('ask.summary')} data-tour="ask-summary">
         <p className="label">{t('ask.summary')}</p>
         <div className="col g4"><span className="t-sm t-mute">{category.label[lang]}{subcat ? ` · ${subcat.label[lang]}` : ''}</span><span className="h3">{type || '—'}</span></div>
         <div className="divider" />

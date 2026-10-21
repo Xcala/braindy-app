@@ -40,8 +40,8 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, c
           {versions.map((v) => <button key={v.id} role="tab" aria-selected={v.id === current?.id} className={v.id === current?.id ? 'is-on' : ''} onClick={() => { onPick(v.id); setFileIndex(0); }}>v{v.n}{date(v) ? ` · ${date(v)}` : ''}</button>)}
         </div>
         <div className="row g8 wrap">
-          {isImage(file?.contentType) && <button className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
-          {versions.length > 1 && isImage(file?.contentType) && <button className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
+          {isImage(file?.contentType) && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
+          {versions.length > 1 && isImage(file?.contentType) && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
           {current && file && <button className="btn btn-ghost btn-sm" onClick={async () => window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true))}><Icon name="download" />{t('common.download')}</button>}
         </div>
       </div>

@@ -1,3 +1,6 @@
+import { useAuth } from '../auth/AuthProvider';
+import { useTour } from '../tour/useTour';
+import { homeSteps } from '../tour/steps';
 import { Link } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -19,6 +22,9 @@ export function Home() {
   const { copied, copy } = useCopy();
   const scope = current ? [current.id, ...brands.filter((b) => b.groupId && (b.groupId === current.id || brands.find((p) => p.id === b.groupId)?.groupId === current.id)).map((b) => b.id)] : [];
   const all = useBrandsRequests(scope);
+  const { profile } = useAuth();
+  const { lang } = useI18n();
+  useTour('home', () => homeSteps(lang), !!current, profile?.role !== 'admin');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const needsYou = all.filter((r) => r.status === 'to_approve');
@@ -39,7 +45,7 @@ export function Home() {
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="col g32">
-          <section className="col g12" aria-labelledby="h-moving">
+          <section className="col g12" aria-labelledby="h-moving" data-tour="home-prod">
             <div className="row between"><h2 className="h3" id="h-moving">{t('req.status.in_production')}</h2><Link to="/requests" className="t-sm w7">{t('home.seeAll')}</Link></div>
             {inProd.length === 0 && <div className="card t-mute">{t('home.nothingInProd')}</div>}
             {inProd.map((r) => (
@@ -53,7 +59,7 @@ export function Home() {
               </Link>
             ))}
           </section>
-          <section className="col g12" aria-labelledby="h-recent">
+          <section className="col g12" aria-labelledby="h-recent" data-tour="home-delivered">
             <div className="row between"><h2 className="h3" id="h-recent">{t('home.recent')}</h2><Link to="/assets" className="t-sm w7">{t('home.openAssets')}</Link></div>
             {delivered.length === 0 ? <div className="card t-mute">{t('home.nothingDelivered')}</div> : (
               <div className="grid gap-4 sm:grid-cols-3">{delivered.map((r) => <DeliveredShot key={`${r.brandId}/${r.id}`} r={r} />)}</div>
@@ -62,7 +68,7 @@ export function Home() {
         </div>
         <aside className="col g16">
           <ResultsCard brandId={current.id} />
-          <div className="card col g8">
+          <div className="card col g8" data-tour="home-brain">
             <h2 className="h3">{t('home.brandBrain')}</h2>
             <p className="t-sm t-mute">{t('home.brandBrainBody')}</p>
             <Link className="t-sm w7" to="/brand">{t('home.openBrand')}</Link>

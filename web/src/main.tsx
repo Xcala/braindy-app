@@ -5,6 +5,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import { I18nProvider } from './i18n/I18nProvider';
 import { router } from './app/router';
 import { installErrorReporting } from './lib/reportError';
+import './tour/tour.css';
 import './index.css';
 
 installErrorReporting();
