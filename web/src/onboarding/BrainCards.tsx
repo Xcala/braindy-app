@@ -18,7 +18,7 @@ export function BrainCards({ brain, onChange }: { brain: BrainDraft; onChange?: 
   const { t } = useI18n();
   const edit = !!onChange;
   const comps = brain.competitors ?? [];
-  const setComp = (i: number, k: 'name' | 'promise' | 'price', v: string) =>
+  const setComp = (i: number, k: 'name' | 'promise' | 'price' | 'url', v: string) =>
     onChange?.({ ...brain, competitors: comps.map((c, j) => (j === i ? { ...c, [k]: v } : c)) });
 
   return (
@@ -34,12 +34,12 @@ export function BrainCards({ brain, onChange }: { brain: BrainDraft; onChange?: 
       <div className="card col g8 md:col-span-2" style={{ padding: 22 }}>
         <div className="row between g8"><h3 className="h3">{t('ob.b.competitors')}</h3><span className="t-xs t-mute">{t('ob.b.researcherRead')}</span></div>
         <div className="table overflow-x-auto">
-          <div className="trow head label min-w-[480px]" style={{ gridTemplateColumns: '1fr 1.4fr 1fr' }}><span>{t('ob.b.name')}</span><span>{t('ob.b.promise')}</span><span>{t('ob.b.price')}</span></div>
+          <div className="trow head label min-w-[480px]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}><span>{t('ob.b.name')}</span><span>{t('ob.b.promise')}</span><span>{t('ob.b.price')}</span>{edit && <span>{t('brains.site')}</span>}</div>
           {comps.length === 0 && <p className="t-sm t-mute" style={{ padding: 12 }}>{t('ob.b.empty')}</p>}
           {comps.map((c, i) => (
-            <div key={i} className="trow min-w-[480px]" style={{ gridTemplateColumns: '1fr 1.4fr 1fr' }}>
-              {(['name', 'promise', 'price'] as const).map((k) => edit
-                ? <input key={k} className="input" style={{ height: 36 }} value={c[k]} onChange={(e) => setComp(i, k, e.target.value)} aria-label={`${t(`ob.b.${k}`)} ${i + 1}`} />
+            <div key={i} className="trow min-w-[480px]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}>
+              {(edit ? ['name', 'promise', 'price', 'url'] as const : ['name', 'promise', 'price'] as const).map((k) => edit
+                ? <input key={k} className="input" style={{ height: 36 }} value={c[k] ?? ''} placeholder={k === 'url' ? 'https://' : undefined} onChange={(e) => setComp(i, k, e.target.value)} aria-label={`${k === 'url' ? t('brains.site') : t(`ob.b.${k}`)} ${i + 1}`} />
                 : <span key={k} className="t-sm">{c[k] || '—'}</span>)}
             </div>
           ))}

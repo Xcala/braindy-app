@@ -7,6 +7,8 @@ import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { notifyDelivery } from './review.js';
+import { proposePlan } from './brains/plan.js';
+import { recordLearning } from './brains/learn.js';
 import type { AuthEnv } from './auth.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
@@ -71,6 +73,8 @@ requests.post('/brands/:brandId/requests', async (c) => {
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',
     plan: null, versionCount: 0, createdBy: uid, createdAt: now(), updatedAt: now(),
   });
+  // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
+  await proposePlan(brandId, ref.id).catch(() => null);
   return c.json({ requestId: ref.id });
 });
 
@@ -89,6 +93,7 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   if (note) batch.set(reqRef.collection('comments').doc(), { author: uid, text: note, versionId, kind: state, createdAt: now() });
   batch.set(db.collection('audit').doc(), { type: 'approval', brandId, requestId, versionId, state, by: uid, at: now() });
   await batch.commit();
+  await recordLearning(brandId, requestId, versionId, state, note);
   return 'ok';
 }
 

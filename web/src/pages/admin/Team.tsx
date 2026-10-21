@@ -7,6 +7,7 @@ import { brainName } from '../../components/BrainStack';
 import { useOpenWork, type WorkItem } from '../../team/useWork';
 import { MembersCard } from '../../team/MembersCard';
 import type { BrainId } from '../../requests/taxonomy';
+import { useBrainTasks } from '../../brains/useBrains';
 
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 const ago = (d?: Date) => {
@@ -26,6 +27,7 @@ export function AdminTeam() {
   // Waiting on Nicolas: plans to approve, and work that needs his review before the client sees it.
   const queue = items.filter((i) => i.stage === 'plan' || (i.approvalLevel === 'nicolas' && i.stage === 'work' && (i.versionCount ?? 0) > 0))
     .sort((a, b) => (a.createdAt?.toMillis() ?? 0) - (b.createdAt?.toMillis() ?? 0));
+  const tasks = useBrainTasks(true);
   const load = (b: BrainId) => ({
     prod: items.filter((i) => i.leadBrain === b && i.status === 'in_production').length,
     approve: items.filter((i) => i.leadBrain === b && i.status === 'to_approve').length,
@@ -80,6 +82,14 @@ export function AdminTeam() {
                     <div className="row between"><span>{t('req.status.in_production')}</span><strong>{l.prod}</strong></div>
                     <div className="row between"><span>{t('req.status.to_approve')}</span><strong>{l.approve}</strong></div>
                   </div>
+                  {(() => {
+                    const running = tasks.find((x) => x.brain === b && x.status === 'running');
+                    const last = tasks.find((x) => x.brain === b && x.status === 'done');
+                    const task = running ?? last;
+                    if (!task) return null;
+                    const brandName = brands.find((x) => x.id === task.brandId)?.name ?? task.brandId;
+                    return <span className="t-xs t-mute truncate">{t(running ? 'brains.now' : 'brains.lastDone', { title: `${task.title} · ${brandName}` })}</span>;
+                  })()}
                 </div>
               );
             })}

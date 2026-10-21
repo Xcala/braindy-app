@@ -192,6 +192,15 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Brain insights (competitor changes, group analysis): members read. Watch snapshots: backend only.
+      match /insights/{insightId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
+      match /watch/{pageId} {
+        allow read, write: if false;
+      }
+
       // WhatsApp notices sent (or ready to send by hand) during onboarding: admin only. Backend writes.
       match /notices/{noticeId} {
         allow read: if isAdmin();
@@ -284,7 +293,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ---------- brains (status board) ----------
+    // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
+    match /brainTasks/{taskId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ---------- brains (status board: working or ready, never what or for whom) ----------
     match /brains/{brainId} {
       allow read: if signedIn();
       allow write: if isAdmin();

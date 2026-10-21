@@ -12,6 +12,7 @@ import { useBrandsRequests, type ScopedRequest } from '../requests/useBrandsRequ
 import { useVersions } from '../requests/useRequests';
 import { useFileUrl, isImage } from '../requests/useFileUrl';
 import { HomeHero } from '../home/HomeHero';
+import { InsightsCard } from '../brains/BrainPanels';
 import { BriefCase, LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
 import { CONTACT } from '../proposals/public/copy';
 
@@ -67,6 +68,7 @@ export function Home() {
           </section>
         </div>
         <aside className="col g16">
+          <InsightsCard brandId={current.id} />
           <ResultsCard brandId={current.id} />
           <div className="card col g8" data-tour="home-brain">
             <h2 className="h3">{t('home.brandBrain')}</h2>

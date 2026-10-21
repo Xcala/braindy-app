@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { saveReport, type Report } from './useReports';
+import { brainsApi } from '../brains/useBrains';
 
 const thisMonth = () => new Date().toISOString().slice(0, 7);
 
@@ -44,6 +45,7 @@ export function ReportEditor({ brandId, existing }: { brandId: string; existing:
         <textarea id="r-next" className="input" rows={3} value={f.nextMonth ?? ''} onChange={(e) => setF({ ...f, nextMonth: e.target.value })} style={{ height: 'auto', paddingTop: 10 }} /></div>
       <p className="help">{t('rep.countedHelp')}</p>
       <div className="row g12 wrap">
+        <button className="btn btn-ghost" onClick={async () => { setMsg(t('brains.drafting')); try { await brainsApi.draftReport(brandId, month); setMsg(t('brains.drafted')); } catch { setMsg(t('brains.error')); } }}>{t('brains.askMarketer')}</button>
         <button className="btn btn-secondary" onClick={() => save(false)}>{t('rep.saveDraft')}</button>
         <button className="btn btn-primary" onClick={() => save(true)}>{t('rep.publish')}</button>
         {msg && <span className="t-sm" role="status">{msg}</span>}

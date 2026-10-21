@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../lib/api';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { BrainStack, brainName } from '../components/BrainStack';
@@ -13,6 +14,11 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
   const [firstDelivery, setFirstDelivery] = useState(r.plan?.firstDelivery ?? '');
   const [note, setNote] = useState(r.plan?.note ?? '');
   const [busy, setBusy] = useState(false);
+  // A new proposal from the Brain (or after "Ask again") refreshes the editable fields.
+  useEffect(() => {
+    if (r.plan && !r.plan.approved) { setScope(r.plan.scope?.length ? r.plan.scope : defaults); setFirstDelivery(r.plan.firstDelivery ?? ''); setNote(r.plan.note ?? ''); }
+  }, [r.plan?.scope?.join('|'), r.plan?.firstDelivery, r.plan?.note]); // eslint-disable-line react-hooks/exhaustive-deps
+  const repropose = async () => { setBusy(true); try { await api(`/v1/admin/brands/${brandId}/brains/plan/${r.id}`, { method: 'POST', body: '{}' }); } finally { setBusy(false); } };
 
   const approved = !!r.plan?.approved;
   if (!isAdmin && !approved) {
@@ -33,8 +39,12 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
     <div className="card col g20">
       <div className="row between g12 wrap">
         <BrainStack lead={r.leadBrain} state={approved ? 'idle' : 'approval'} label={t('req.planBy', { brain: brainName(r.leadBrain) })} />
-        <span className={`chip ${approved ? 'c-approved' : 'c-approve'}`}>{approved ? t('req.planApproved') : t('req.planToApprove')}</span>
+        <span className="row g8">
+          {r.plan?.proposedBy && !approved && <span className="chip chip-plain">{r.plan.proposedWithAi ? t('brains.proposedAi') : t('brains.proposedBasic')}</span>}
+          <span className={`chip ${approved ? 'c-approved' : 'c-approve'}`}>{approved ? t('req.planApproved') : t('req.planToApprove')}</span>
+        </span>
       </div>
+      {isAdmin && !approved && r.plan?.note && <p className="t-sm" style={{ padding: '10px 14px', borderRadius: 12, background: 'var(--hielo)' }}>{r.plan.note}</p>}
       <div className="col g12">
         <p className="label">{t('req.scope')}</p>
         {scope.map((s, i) => (
@@ -59,6 +69,7 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
           <div className="row g12 wrap">
             <button className="btn btn-primary" disabled={busy} onClick={() => save(true)}><Icon name="check" />{t('req.approvePlan')}</button>
             <button className="btn btn-secondary" disabled={busy} onClick={() => save(false)}>{t('req.saveDraft')}</button>
+            <button className="btn btn-ghost" disabled={busy} onClick={repropose}>{t('brains.askAgain', { brain: brainName(r.leadBrain) })}</button>
             <span className="t-sm t-mute">{t('req.clientSeesPlan')}</span>
           </div>
         </>

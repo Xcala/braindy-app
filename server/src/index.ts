@@ -15,6 +15,7 @@ import { adminReview, publicReview, review } from './review.js';
 import { adminOnboarding, onboarding } from './onboarding.js';
 import { adminReports } from './reports.js';
 import { adminBilling, billing, stripeWebhook } from './billing.js';
+import { adminBrains, brains, cron } from './brains/routes.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -46,6 +47,9 @@ app.route('/public', publicReview);
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
+// Scheduled Brain work (Cloud Scheduler, OIDC-verified inside).
+app.use('/cron/*', rateLimit('cron', 30, 60_000));
+app.route('/cron', cron);
 
 app.use('/v1/*', appCheck);
 app.use('/v1/*', requireUser);
@@ -74,6 +78,8 @@ app.route('/v1/admin', adminOnboarding);
 app.route('/v1/admin', adminReports);
 app.route('/v1', billing);
 app.route('/v1/admin', adminBilling);
+app.route('/v1', brains);
+app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminRequests);
 
 const port = Number(process.env.PORT ?? 8787);

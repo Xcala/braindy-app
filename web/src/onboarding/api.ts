@@ -5,7 +5,7 @@ const a = (id: string) => `/v1/admin/brands/${encodeURIComponent(id)}/onboarding
 const post = (body: unknown = {}): RequestInit => ({ method: 'POST', body: JSON.stringify(body) });
 
 export type BrainDraft = {
-  voice?: string; audiences?: string; competitors?: Array<{ name: string; promise: string; price: string }>;
+  voice?: string; audiences?: string; competitors?: Array<{ name: string; promise: string; price: string; url?: string }>;
   lookAndFeel?: string; goals?: string; avoid?: string; position?: string; criterio?: string;
   status?: 'draft' | 'signed'; draftedWithAi?: boolean; version?: number;
 };

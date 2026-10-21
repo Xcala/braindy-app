@@ -8,6 +8,8 @@ import { Colors, brandColors, type Color } from '../brands/identity/Colors';
 import { Typography } from '../brands/identity/Typography';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
 import { GroupWork } from '../brands/GroupWork';
+import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
+import { useCanApprove } from '../requests/useCanApprove';
 import { ApprovedWork } from '../brands/identity/ApprovedWork';
 import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
@@ -27,6 +29,7 @@ export function MyBrand() {
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const { copied, copy } = useCopy();
+  const canAsk = useCanApprove(current?.id);
   const active = useActiveSection([identity.loading, voiceDoc.loading, current?.id]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -86,6 +89,7 @@ export function MyBrand() {
         <section className="col g24" id="overview" aria-labelledby="h-overview">
           <SectionHead id="overview" num={num('overview')} title={t('group.overview')} subtitle={t('group.overviewHint', { name: current.name })} />
           <GroupWork group={current} all={brands} />
+          <GroupAnalysis groupId={current.id} canAsk={canAsk} />
         </section>
       )}
       {id.logos && (
@@ -118,6 +122,7 @@ export function MyBrand() {
           <ApprovedWork items={id.galleryAssets ?? []} />
         </section>
       )}
+      <LearningsSection brandId={current.id} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import { BrainCards } from '../../onboarding/BrainCards';
 import { NoticesList } from '../../onboarding/NoticesList';
+import { brainsApi } from '../../brains/useBrains';
 import { onboardingApi, type BrainDraft } from '../../onboarding/api';
 
 /** Admin · onboarding queue and "review and sign the Brand Brain" (design 18). */
@@ -84,6 +85,7 @@ function SignPanel({ brand }: { brand: Brand }) {
               <div className="col"><span className="w7">Nicolas (NickMark)</span><span className="t-xs t-mute">{t('ob.a.signNote')}</span></div></div>
             <div className="row g8 wrap">
               <button className="btn btn-secondary" disabled={busy} onClick={() => run(() => onboardingApi.saveBrain(brand.id, draft), t('ob.a.saved'))}>{t('ob.a.save')}</button>
+              {(draft.competitors ?? []).some((c) => c.url) && <button className="btn btn-ghost" disabled={busy} onClick={async () => { setBusy(true); setMsg(t('brains.watching')); try { await onboardingApi.saveBrain(brand.id, draft); const r = await brainsApi.watch(brand.id); const n = (s: string) => String(r.results.filter((x) => x.status === s).length); setMsg(t('brains.watchDone', { changed: n('changed'), same: n('unchanged'), first: n('baseline') })); } catch { setMsg(t('brains.error')); } finally { setBusy(false); } }}>{t('brains.watchNow')}</button>}
               {draft.status !== 'signed'
                 ? <button className="btn btn-primary" disabled={busy} onClick={() => run(async () => { await onboardingApi.saveBrain(brand.id, draft); await onboardingApi.sign(brand.id); setDraft({ ...draft, status: 'signed' }); }, t('ob.a.signed'))}>{t('ob.a.sign')}</button>
                 : <button className="btn btn-primary" disabled={busy} onClick={() => run(() => onboardingApi.live(brand.id), t('ob.a.liveDone'))}>{t('ob.a.markLive')}</button>}

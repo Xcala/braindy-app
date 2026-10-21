@@ -250,6 +250,12 @@ describe('accesses (credentials)', () => {
     }
     await assertFails(getDoc(doc(as(env, ADMIN), 'stripeCustomers/cus_1')));
     await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/notices/n1`)));
+    await assertSucceeds(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/insights/i1`)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), `brands/${BRAND_A}/insights/i1`)));
+    await assertFails(setDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/insights/i2`), { title: 'x' }));
+    await assertFails(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/watch/w1`)));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'brainTasks/t1')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'brainTasks/t1')));
     await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/notices/n1`)));
     await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
   });

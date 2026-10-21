@@ -128,7 +128,7 @@ adminOnboarding.post('/brands/:brandId/onboarding/brain', async (c) => {
   const patch: DocumentData = { editedBy: c.get('user').uid, editedAt: now() };
   for (const k of BRAIN_FIELDS) if (typeof b[k] === 'string') patch[k] = b[k].slice(0, 4000);
   if (Array.isArray(b.competitors)) {
-    patch.competitors = b.competitors.slice(0, 8).map((x: DocumentData) => ({ name: String(x.name ?? '').slice(0, 120), promise: String(x.promise ?? '').slice(0, 300), price: String(x.price ?? '').slice(0, 120) }));
+    patch.competitors = b.competitors.slice(0, 8).map((x: DocumentData) => ({ name: String(x.name ?? '').slice(0, 120), promise: String(x.promise ?? '').slice(0, 300), price: String(x.price ?? '').slice(0, 120), url: String(x.url ?? '').slice(0, 300) }));
   }
   await brainRef(brandId).set(patch, { merge: true });
   return c.json({ ok: true });
