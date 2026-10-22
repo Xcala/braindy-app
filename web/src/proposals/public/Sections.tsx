@@ -102,8 +102,8 @@ export function Braintrust({ c }: { c: PublicCopy }) {
   return (
     <section className="stage grid gap-10 px-5 py-16 sm:px-14 lg:grid-cols-[420px_1fr]" data-section="3">
       <div className="relative overflow-hidden rounded-[24px]">
-        <img src={img('nicolas')} alt="Nicolas (NickMark)" className="h-full w-full object-cover" loading="lazy" />
-        <div className="glass-dark absolute bottom-4 left-4 right-4 rounded-2xl p-4"><p className="w7">Nicolas (NickMark)</p><p className="t-sm">{c.founderRole}</p></div>
+        <img src={img('nicolas')} alt={c.sigCard} className="h-full w-full object-cover" loading="lazy" />
+        <div className="glass-dark absolute bottom-4 left-4 right-4 rounded-2xl p-4"><p className="w7">{c.sigCard}</p><p className="t-sm">{c.founderRole}</p></div>
       </div>
       <div className="col g32">
         <span className="sec-num">03</span>
@@ -187,7 +187,7 @@ export function Talk({ c, onAccept, files, onFile }: { c: PublicCopy; onAccept: 
       <div className="card row g20 self-start">
         <img src={img('nicolas')} alt="" className="h-20 w-20 rounded-full object-cover" />
         <div className="col g4">
-          <span className="h3">Nicolas (NickMark)</span>
+          <span className="h3">{c.sigCard}</span>
           <span className="t-sm t-mute">{c.founderRole}</span>
           <a href={`mailto:${CONTACT.email}`} className="t-sm w7">{CONTACT.email}</a>
           <a href={`tel:${CONTACT.phone.replace(/\s/g, '')}`} className="t-sm w7">{CONTACT.phone}</a>

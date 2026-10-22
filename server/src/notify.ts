@@ -10,9 +10,9 @@ export type NoticeKind = 'welcome' | 'brain_ready' | 'session_confirmed' | 'brai
 // Template name in Meta → body text (ES / EN) used for the wa.me fallback. {name} = brand, {when} = session.
 const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string; en: string }> = {
   welcome: { template: 'onboarding_welcome', path: '/onboarding', es: 'Bienvenidos a Braindy, {name}. Su app está lista. Empiecen el brief aquí (unos 12 minutos):', en: 'Welcome to Braindy, {name}. Your app is ready. Start the brief here (about 12 minutes):' },
-  brain_ready: { template: 'brand_brain_ready', path: '/onboarding', es: '{name}: su Brand Brain está listo. El Researcher lo armó con su brief. Revísenlo antes de la sesión:', en: '{name}: your Brand Brain is ready. The Researcher built it from your brief. Review it before the session:' },
+  brain_ready: { template: 'brand_brain_ready', path: '/onboarding', es: '{name}: su Brand Brain está listo. NicoMarca lo armó con su brief, con el Researcher. Revísenlo antes de la sesión:', en: '{name}: your Brand Brain is ready. NickMark built it from your brief, with the Researcher. Review it before the session:' },
   session_confirmed: { template: 'session_confirmed', path: '/onboarding', es: '{name}: sesión con Nicolas confirmada para {when}. Traigan preguntas, no tareas.', en: '{name}: session with Nicolas confirmed for {when}. Bring questions, not homework.' },
-  brain_signed: { template: 'brand_brain_signed', path: '/brand', es: '{name}: su Brand Brain está firmado por Nicolas. Los Brains arrancan ya.', en: '{name}: your Brand Brain is signed by Nicolas. The Brains start now.' },
+  brain_signed: { template: 'brand_brain_signed', path: '/brand', es: '{name}: su Brand Brain está firmado por NicoMarca. Su equipo arranca ya.', en: '{name}: your Brand Brain is signed by NickMark. His team starts now.' },
   live: { template: 'system_live', path: '/home', es: '{name}: su sistema de marca está vivo. Todo en marca, en un solo lugar:', en: '{name}: your brand system is live. Everything on brand, in one place:' },
 };
 

@@ -13,7 +13,6 @@ import type { AuthEnv } from './auth.js';
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const LINK_DAYS = 7;
 const now = () => FieldValue.serverTimestamp();
-const BRAINS: Record<string, string> = { researcher: 'Researcher', marketer: 'Marketer', creator: 'Creator', builder: 'Builder' };
 const NOTICES = ['delivery', 'approved', 'brandBrain', 'report'] as const;
 
 type Notices = { whatsapp?: string; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
@@ -34,12 +33,12 @@ export async function notifyDelivery(brandId: string, requestId: string, version
   });
   const url = `${PUBLIC_BASE}/r/${token}`;
   const title = String(req.get('title') ?? '');
-  const brain = BRAINS[String(req.get('leadBrain'))] ?? 'Braindy';
   const lang = s.lang ?? 'es';
   const text = lang === 'es'
-    ? `${brand.get('name')}: ${brain} entregó "${title}". Revísalo y apruébalo aquí (sin iniciar sesión, válido ${LINK_DAYS} días): ${url}`
-    : `${brand.get('name')}: ${brain} delivered "${title}". Review and approve it here (no login, valid ${LINK_DAYS} days): ${url}`;
-  const sent = await sendTemplate(phone, 'delivery_ready', lang, [String(brand.get('name')), brain, title], token);
+    ? `${brand.get('name')}: NicoMarca te envía "${title}" para revisar. Apruébalo aquí (sin iniciar sesión, válido ${LINK_DAYS} días): ${url}`
+    : `${brand.get('name')}: NickMark sends you "${title}" to review. Approve it here (no login, valid ${LINK_DAYS} days): ${url}`;
+  // The delivery is signed by NickMark (EN) / NicoMarca (ES): the person, with his team.
+  const sent = await sendTemplate(phone, 'delivery_ready', lang, [String(brand.get('name')), lang === 'es' ? 'NicoMarca' : 'NickMark', title], token);
   await db.collection('audit').doc().set({ type: 'review_link', brandId, requestId, versionId, sent: sent.sent, by, at: now() });
   return { status: sent.sent ? 'sent' as const : 'manual' as const, url, waUrl: sent.sent ? null : waMeLink(phone, text) };
 }

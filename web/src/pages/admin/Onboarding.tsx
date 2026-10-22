@@ -82,7 +82,7 @@ function SignPanel({ brand }: { brand: Brand }) {
           <BrainCards brain={draft} onChange={setDraft} />
           <div className="card row between g16 wrap" style={{ padding: 22 }}>
             <div className="row g12"><img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
-              <div className="col"><span className="w7">Nicolas (NickMark)</span><span className="t-xs t-mute">{t('ob.a.signNote')}</span></div></div>
+              <div className="col"><span className="w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('ob.a.signNote')}</span></div></div>
             <div className="row g8 wrap">
               <button className="btn btn-secondary" disabled={busy} onClick={() => run(() => onboardingApi.saveBrain(brand.id, draft), t('ob.a.saved'))}>{t('ob.a.save')}</button>
               {(draft.competitors ?? []).some((c) => c.url) && <button className="btn btn-ghost" disabled={busy} onClick={async () => { setBusy(true); setMsg(t('brains.watching')); try { await onboardingApi.saveBrain(brand.id, draft); const r = await brainsApi.watch(brand.id); const n = (s: string) => String(r.results.filter((x) => x.status === s).length); setMsg(t('brains.watchDone', { changed: n('changed'), same: n('unchanged'), first: n('baseline') })); } catch { setMsg(t('brains.error')); } finally { setBusy(false); } }}>{t('brains.watchNow')}</button>}

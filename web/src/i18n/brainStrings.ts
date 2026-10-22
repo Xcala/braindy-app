@@ -10,7 +10,7 @@ export const brainEn = {
   'brains.changed': 'You asked to change',
   'brains.groupTitle': 'Reading of the whole group',
   'brains.groupSub': 'The Researcher looks at every brand together: consistency, where work gets stuck, opportunities.',
-  'brains.byResearcher': 'By the Researcher',
+  'brains.byResearcher': 'By NickMark with the Researcher',
   'brains.analyze': 'Analyze the group',
   'brains.analyzeAgain': 'Analyze again',
   'brains.analyzing': 'Analyzing…',
@@ -25,6 +25,11 @@ export const brainEn = {
   'brains.watchDone': '{changed} changed · {same} unchanged · {first} first read',
   'brains.now': 'Now: {title}',
   'brains.lastDone': 'Last: {title}',
+  'team.notes': 'Team meeting notes',
+  'team.meetings': 'Meetings with the client',
+  'team.meetingsSub': 'Paste the notes of each session (or a Granola summary). The four Brains read them before every task, like a team that was in the room.',
+  'team.meetingTitle': 'Meeting title', 'team.meetingDate': 'Date', 'team.meetingNotes': 'Notes',
+  'team.meetingNotesPh': 'What was agreed, what the client liked, what to avoid, next steps…', 'team.meetingAdd': 'Save meeting',
 } as const;
 
 export const brainEs: Record<keyof typeof brainEn, string> = {
@@ -38,7 +43,7 @@ export const brainEs: Record<keyof typeof brainEn, string> = {
   'brains.changed': 'Pediste cambiar',
   'brains.groupTitle': 'Lectura del grupo completo',
   'brains.groupSub': 'El Researcher mira todas las marcas juntas: coherencia, dónde se frena el trabajo, oportunidades.',
-  'brains.byResearcher': 'Del Researcher',
+  'brains.byResearcher': 'De NicoMarca con el Researcher',
   'brains.analyze': 'Analizar el grupo',
   'brains.analyzeAgain': 'Analizar de nuevo',
   'brains.analyzing': 'Analizando…',
@@ -53,4 +58,9 @@ export const brainEs: Record<keyof typeof brainEn, string> = {
   'brains.watchDone': '{changed} cambiaron · {same} sin cambios · {first} primera lectura',
   'brains.now': 'Ahora: {title}',
   'brains.lastDone': 'Último: {title}',
+  'team.notes': 'Notas de la reunión del equipo',
+  'team.meetings': 'Reuniones con el cliente',
+  'team.meetingsSub': 'Pega las notas de cada sesión (o el resumen de Granola). Los cuatro Brains las leen antes de cada tarea, como un equipo que estuvo en la reunión.',
+  'team.meetingTitle': 'Título de la reunión', 'team.meetingDate': 'Fecha', 'team.meetingNotes': 'Notas',
+  'team.meetingNotesPh': 'Qué se acordó, qué le gustó al cliente, qué evitar, próximos pasos…', 'team.meetingAdd': 'Guardar reunión',
 };

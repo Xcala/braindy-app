@@ -9,6 +9,8 @@ import { Typography } from '../brands/identity/Typography';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
 import { GroupWork } from '../brands/GroupWork';
 import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
+import { MeetingsCard } from '../brains/TeamNotes';
+import { useAuth } from '../auth/AuthProvider';
 import { useCanApprove } from '../requests/useCanApprove';
 import { ApprovedWork } from '../brands/identity/ApprovedWork';
 import { useCopy } from '../brands/identity/useCopy';
@@ -30,6 +32,7 @@ export function MyBrand() {
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
+  const isAdmin = useAuth().profile?.role === 'admin';
   const active = useActiveSection([identity.loading, voiceDoc.loading, current?.id]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -123,6 +126,7 @@ export function MyBrand() {
         </section>
       )}
       <LearningsSection brandId={current.id} />
+      {isAdmin && <MeetingsCard brandId={current.id} />}
     </div>
   );
 }

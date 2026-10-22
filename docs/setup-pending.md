@@ -50,7 +50,7 @@ You can do them one at a time. A missing secret only leaves its feature in fallb
 ### WhatsApp (wave E)
 - **Where the values come from:** Meta Business → WhatsApp → API setup. You need a permanent system-user token and the phone number ID.
 - **Template to create and get approved:** `delivery_ready`, in Spanish (`es`) and English (`en`).
-  - Body with 3 variables: `{{1}}` brand, `{{2}}` Brain, `{{3}}` title. Example text: "{{1}}: {{2}} entregó «{{3}}». Revísalo y apruébalo sin iniciar sesión."
+  - Body with 3 variables: `{{1}}` brand, `{{2}}` signature (NicoMarca in Spanish, NickMark in English), `{{3}}` title. Example text: "{{1}}: {{2}} te envía «{{3}}» para revisar. Apruébalo sin iniciar sesión."
   - One URL button: `https://braindy-app-staging.web.app/r/{{1}}` (use the app.braindy.co domain when it goes live).
 - **Onboarding templates (wave H), same idea, Spanish and English, `{{1}}` = brand:**
   - `onboarding_welcome` (day 0)

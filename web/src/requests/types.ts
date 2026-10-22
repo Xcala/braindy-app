@@ -21,6 +21,7 @@ export interface BrandRequest {
   leadBrain: BrainId;
   helperBrains: BrainId[];
   approvalLevel: 'self' | 'nicolas';
+  teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;
   latestVersion?: string;

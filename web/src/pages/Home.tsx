@@ -84,7 +84,7 @@ export function Home() {
           <WhatsappCard brandId={current.id} />
           <div className="card row g12">
             <img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
-            <div className="col grow"><span className="t-sm w7">Nicolas (NickMark)</span><span className="t-xs t-mute">{t('home.orchestrator')}</span></div>
+            <div className="col grow"><span className="t-sm w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('home.orchestrator')}</span></div>
             <a className="btn btn-secondary btn-sm" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a>
           </div>
         </aside>

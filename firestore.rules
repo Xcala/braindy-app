@@ -197,6 +197,11 @@ service cloud.firestore {
         allow read: if canReadBrand(brandId);
         allow write: if false;
       }
+      // Meetings with the client (notes = team memory): admin only. Backend writes.
+      match /meetings/{meetingId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
       match /watch/{pageId} {
         allow read, write: if false;
       }

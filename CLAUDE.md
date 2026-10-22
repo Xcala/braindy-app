@@ -11,15 +11,15 @@ One platform, called simply **Braindy**, at **app.braindy.co**. It replaces thre
 Do NOT name anything Orbit, Artemis, Fleet, Galaxy or Mission. No gamified metrics.
 
 ## The team model (product concept)
-- **Nicolas** = Orchestrator (strategy, direction, approvals). Only human admin.
-- **4 Brain Agents** do and explain the work:
+- **Nicolas** makes the work (strategy, direction, corrections, sign-off). Only human admin. His signature is **NickMark** (EN) / **NicoMarca** (ES).
+- **4 Brain Agents** are his team: they work together on every task (like an agency team), each one the protagonist of its craft:
   | Brain | Verb | Color | Specialties |
   |---|---|---|---|
   | Researcher | Research | #F5B301 | Research, Analytics |
   | Marketer | Communicate | #8B5CF6 | Marketing, Publishing, Metrics |
   | Creator | Create | #06B6D4 | Naming, Design, Motion |
   | Builder | Build | #2A7FFF | Web, Apps, Automations, AI Agents |
-- Line: "Nicolas orchestrates. The Brains execute." All UI copy in English (client-facing Spanish later via i18n).
+- Line (2026-10-21): **"Made by NickMark. Powered by his Brains."** / ES **"Lo hace NicoMarca. Sus Brains lo aceleran."** Clients want a person doing their brand: Nicolas is always the author; Brains appear "with" him, never as authors. AI is not hidden. Full narrative: `docs/narrativa-nicolas-y-su-equipo.md`. UI copy in English and Spanish (i18n).
 - Brain avatars (3D + emoji + 5 s loops) are status indicators and signatures, not chat companions. Asset URLs: `docs/brain-agents-assets.md`.
 
 ## Golden rules

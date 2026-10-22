@@ -31,7 +31,7 @@ async function draftBrain(brandName: string, answers: Record<string, string>): P
   if (!aiConfigured()) return fallback;
   try {
     const out = await claudeJson<Partial<Brain>>(
-      'You are the Researcher, one of the four Brain Agents of Braindy. You turn a client brief into a Brand Brain draft that Nicolas (the human orchestrator) will review and sign. Be concrete and short. Write in the language of the answers. Never invent numbers: leave unknown fields as empty strings.',
+      'You are the Researcher, one of the four Brains on the team of NickMark (Nicolas, founder of Braindy). With him, you turn a client brief into a Brand Brain draft that he will review and sign. Be concrete and short. Write in the language of the answers. Never invent numbers: leave unknown fields as empty strings.',
       `Brand: ${brandName}\nBrief answers (JSON): ${JSON.stringify(answers)}\n\nReturn {"voice": three traits plus "sounds like"/"never" examples, "audiences": main and secondary audience and what each needs to believe, "competitors": [{"name","promise","price"}], "lookAndFeel", "goals": goals in sales not likes, "avoid", "position": "", "criterio": ""}`,
     );
     return { ...fallback, ...out, competitors: Array.isArray(out.competitors) ? out.competitors.slice(0, 6) : fallback.competitors };

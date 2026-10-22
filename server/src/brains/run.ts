@@ -6,7 +6,7 @@ import { db } from '../firebase.js';
 import { aiConfigured, claudeJson } from '../ai.js';
 import { logError } from '../guard.js';
 import { brandContext } from './context.js';
-import { systemPrompt, type BrainId } from './prompts.js';
+import { systemPrompt, teamPrompt, type BrainId } from './prompts.js';
 
 const now = () => FieldValue.serverTimestamp();
 
@@ -21,6 +21,8 @@ async function setStatus(brain: BrainId) {
  */
 export async function runBrain<T>(o: {
   brain: BrainId; brandId: string; kind: string; title: string; ask: string; fallback: () => T | Promise<T>; maxTokens?: number;
+  /** All four Brains in one meeting (the lead still owns the task). */
+  team?: boolean;
 }): Promise<{ output: T; ai: boolean; taskId: string }> {
   const task = db.collection('brainTasks').doc();
   await task.set({ brain: o.brain, brandId: o.brandId, kind: o.kind, title: o.title.slice(0, 160), status: 'running', ai: aiConfigured(), createdAt: now() });
@@ -29,7 +31,7 @@ export async function runBrain<T>(o: {
   try {
     if (aiConfigured()) {
       const ctx = await brandContext(o.brandId);
-      output = await claudeJson<T>(systemPrompt(o.brain), `Brand Brain:\n${ctx.text}\n\nWrite in ${ctx.lang === 'en' ? 'English' : 'Spanish'}.\n\n${o.ask}`, o.maxTokens ?? 1800);
+      output = await claudeJson<T>(o.team ? teamPrompt() : systemPrompt(o.brain), `Brand Brain:\n${ctx.text}\n\nWrite in ${ctx.lang === 'en' ? 'English' : 'Spanish'}.\n\n${o.ask}`, o.maxTokens ?? 1800);
       ai = true;
     } else output = await o.fallback();
   } catch (e) {

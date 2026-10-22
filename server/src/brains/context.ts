@@ -1,17 +1,20 @@
-// The Brand Brain as the Brains read it: one compact text with the signed (or draft) Brand Brain, identity,
-// voice and what the brand has taught them (learnings). Credentials are never part of it.
+// The Brand Brain as the Brains read it: one compact text with the Brand Brain, identity, voice, what the brand
+// taught them (learnings) and the team memory (recent work, meetings, insights). Credentials are never part of it.
 import { db } from '../firebase.js';
 
 const cut = (s: unknown, n = 600) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
 
 export async function brandContext(brandId: string): Promise<{ text: string; lang: 'es' | 'en'; name: string }> {
-  const [brand, brain, identity, voice, learnings, settings] = await Promise.all([
+  const [brand, brain, identity, voice, learnings, settings, recent, meetings, insights] = await Promise.all([
     db.doc(`brands/${brandId}`).get(),
     db.doc(`brands/${brandId}/context/brain`).get(),
     db.doc(`brands/${brandId}/context/identity`).get(),
     db.doc(`brands/${brandId}/context/voice`).get(),
     db.doc(`brands/${brandId}/context/learnings`).get(),
     db.doc(`brands/${brandId}/settings/notices`).get(),
+    db.collection(`brands/${brandId}/requests`).orderBy('createdAt', 'desc').limit(10).get(),
+    db.collection(`brands/${brandId}/meetings`).orderBy('date', 'desc').limit(5).get(),
+    db.collection(`brands/${brandId}/insights`).orderBy('at', 'desc').limit(3).get(),
   ]);
   const name = String(brand.get('name') ?? brandId);
   const b = brain.data() ?? {};
@@ -31,6 +34,9 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
     Array.isArray(b.competitors) && b.competitors.length && `Competitors: ${b.competitors.map((c: { name?: string; promise?: string; price?: string }) => [c.name, c.promise, c.price].filter(Boolean).join(' · ')).join(' | ')}`,
     colors.length && `Colors: ${colors.join(', ')}`,
     fonts.length && `Typography: ${fonts.join(', ')}`,
+    recent.size && `Team memory · recent work:\n${recent.docs.map((d) => `- ${cut(d.get('title'), 120)} · ${d.get('status')} · led by ${d.get('leadBrain')}${d.get('plan.note') ? ` · note: ${cut(d.get('plan.note'), 160)}` : ''}`).join('\n')}`,
+    meetings.size && `Team memory · meetings with the client (newest first):\n${meetings.docs.map((d) => `- ${d.get('date') ?? ''} ${cut(d.get('title'), 100)}: ${cut(d.get('notes'), 700)}`).join('\n')}`,
+    insights.size && `Team memory · what the team noticed:\n${insights.docs.map((d) => `- ${cut(d.get('title'), 200)}`).join('\n')}`,
     learned.length && `Learned from approvals and changes:\n${learned.map((l) => `- ${l.kind === 'liked' ? 'Liked' : 'Change asked'}: ${cut(l.text, 240)}`).join('\n')}`,
   ].filter(Boolean);
   return { text: lines.join('\n'), lang: settings.get('lang') === 'en' ? 'en' : 'es', name };

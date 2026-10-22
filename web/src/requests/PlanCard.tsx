@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
+import { TeamNotes } from '../brains/TeamNotes';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { BrainStack, brainName } from '../components/BrainStack';
@@ -75,6 +76,7 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
         </>
       )}
       {approved && r.plan?.note && <p className="t-sm t-mute">{r.plan.note}</p>}
+      {isAdmin && r.teamNotes && <TeamNotes notes={r.teamNotes} />}
     </div>
   );
 }
