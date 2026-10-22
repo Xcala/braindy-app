@@ -76,8 +76,10 @@ const IGNORED_DIRS = /^(_?to[_ ]delete|\$recycle\.bin)$/i;
 
 /** Not brand material: source code, build output, GIS data, camera RAW, partial downloads, archives. */
 export const NOISE_DIRS = /^(node_modules|\.git|\.next|\.astro|dist|build|out|vendor|__pycache__|\.cache|\.vercel|\.firebase|.*\.gdb)$/i;
-export const NOISE_FILES = /\.(js|mjs|cjs|ts|tsx|jsx|map|php|py|rb|go|lock|json|yml|yaml|toml|env|sh|bat|css|scss|less|gdb\w*|spx|cr2|cr3|dng|nef|arw|raf|orf|descarga|crdownload|part|tmp|zip|rar|7z|dmg|exe|msi|iso)$/i;
-export const MAX_IMPORT_BYTES = 500 * 1024 ** 2;
+export const NOISE_FILES = /\.(js|mjs|cjs|ts|tsx|jsx|map|php|py|rb|go|lock|json|yml|yaml|toml|env|sh|bat|css|scss|less|gdb\w*|spx|cr2|cr3|dng|nef|arw|raf|orf|descarga|crdownload|part|tmp|zip|rar|7z|dmg|exe|msi|iso|lnk|ini|ds_store)$/i;
+// Per-file ceiling: 500 MB by default; the video stage raises it with --max-gb.
+const maxGbArg = process.argv.indexOf('--max-gb');
+export const MAX_IMPORT_BYTES = (maxGbArg > 0 ? Number(process.argv[maxGbArg + 1]) || 0.5 : 0.5) * 1024 ** 3;
 
 /** Whether a file is worth copying into the platform (brand assets, deliverables, documents). */
 export const importable = (f: LocalFile) =>

@@ -4,7 +4,7 @@
 //
 //   npm run drive:import -w server -- --stage essentials [--brand milohas] [--dry-run] [--concurrency 6]
 //   stage "essentials" = brand-book folders only; "all" = every importable file. --no-video skips video files
-//   (stage 2a: everything but video; videos go brand by brand later).
+//   (stage 2a: everything but video). --only-video [--max-gb 4] imports the videos (stage 2b).
 import { createHash } from 'node:crypto';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { extname, posix, resolve } from 'node:path';
@@ -21,6 +21,7 @@ const onlyBrand = arg('brand');
 const dryRun = process.argv.includes('--dry-run');
 const concurrency = Number(arg('concurrency') ?? 6);
 const noVideo = process.argv.includes('--no-video');
+const onlyVideo = process.argv.includes('--only-video');
 const VIDEO = /\.(mp4|mov|m4v|avi|mkv|webm|wmv|mpe?g|mxf|r3d|braw|prores)$/i;
 if (!['essentials', 'all'].includes(stage)) throw new Error('--stage must be essentials or all');
 
@@ -51,7 +52,7 @@ const brandIds = onlyBrand
       .filter((id) => LOCAL_FOLDERS[id]);
 const allAbs = new Set(Object.keys(LOCAL_FOLDERS).map(absFolder));
 
-log(`Import · stage ${stage}${noVideo ? ' · no video' : ''}${dryRun ? ' · DRY RUN' : ''} · ${brandIds.length} brands · log ${logFile}`);
+log(`Import · stage ${stage}${noVideo ? ' · no video' : ''}${onlyVideo ? ' · videos only' : ''}${dryRun ? ' · DRY RUN' : ''} · ${brandIds.length} brands · log ${logFile}`);
 let totalUp = 0, totalSkip = 0, totalErr = 0, totalBytes = 0;
 
 for (const brandId of brandIds.sort()) {
@@ -60,7 +61,8 @@ for (const brandId of brandIds.sort()) {
   const files = (await walkLocal(abs, skipDirs))
     .filter((f) => importable(f) && !EXCLUDED_FILE_NAMES.includes(f.name))
     .filter((f) => stage === 'all' || ESSENTIALS.test(f.relPath))
-    .filter((f) => !noVideo || !VIDEO.test(f.name));
+    .filter((f) => !noVideo || !VIDEO.test(f.name))
+    .filter((f) => !onlyVideo || VIDEO.test(f.name));
 
   const existing = new Map(
     (await db.collection(`brands/${brandId}/assets`).where('source', '==', 'drive').select('size', 'mtimeMs').get())
