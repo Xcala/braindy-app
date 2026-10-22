@@ -94,6 +94,16 @@ gcloud run services update braindy-api --region us-central1 --project $p --updat
 ```
 If Scheduler says it cannot act as the service account, grant its service agent `roles/iam.serviceAccountTokenCreator` on `braindy-api@…`.
 
-## 6 · Before app.braindy.co
+## 6 · Granola → team memory
+1. **API key (enables "Sync last 30 days" in Team):** Granola → Settings → Connectors → API → **Personal API keys** → create one (starts with `grn_`). Save it as the secret `granola-api-key`.
+2. **Webhook (every new note arrives by itself):** Granola → Connectors → **Webhooks** → add endpoint `https://braindy-api-283103160183.us-central1.run.app/webhooks/granola`, events `note.generated` and `note.edited`. Copy the signing secret (`whsec_…`, shown once) as the secret `granola-webhook-secret`. Webhooks need a Granola Business or Enterprise plan; without it, use the Sync button.
+3. Mount both on Cloud Run:
+```powershell
+foreach ($s in "granola-api-key","granola-webhook-secret") { $v = Read-Host -AsSecureString "Value for $s"; $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v)); $plain | gcloud secrets create $s --data-file=- --project $p; gcloud secrets add-iam-policy-binding $s --member $sa --role roles/secretmanager.secretAccessor --project $p }
+gcloud run services update braindy-api --region us-central1 --project $p --update-secrets "GRANOLA_API_KEY=granola-api-key:latest,GRANOLA_WEBHOOK_SECRET=granola-webhook-secret:latest"
+```
+Notes are filed by participant email domain or brand name in the title; the rest wait in Team → Granola meetings. Assigning one teaches its domains for next time.
+
+## 7 · Before app.braindy.co
 See `docs/production.md`.
 DNS and the production deploy are only done after asking you (CLAUDE.md).

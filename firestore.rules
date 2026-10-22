@@ -298,6 +298,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- Granola notes that could not be matched to a brand: admin reads, backend writes ----------
+    match /granolaInbox/{noteId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
     match /brainTasks/{taskId} {
       allow read: if isAdmin();

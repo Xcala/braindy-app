@@ -257,6 +257,9 @@ describe('accesses (credentials)', () => {
     await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/meetings/m1`)));
     await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/meetings/m1`)));
     await assertSucceeds(getDoc(doc(as(env, ADMIN), 'brainTasks/t1')));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'granolaInbox/not_1')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'granolaInbox/not_1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'granolaInbox/not_2'), { title: 'x' }));
     await assertFails(getDoc(doc(as(env, OWNER), 'brainTasks/t1')));
     await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/notices/n1`)));
     await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
