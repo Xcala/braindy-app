@@ -303,6 +303,9 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
+    match /granolaNotes/{noteId} {
+      allow read, write: if false;
+    }
 
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
     match /brainTasks/{taskId} {

@@ -54,28 +54,46 @@ export async function matchBrand(title: string, emails: string[]) {
     if (domains.some((d) => conf.includes(d))) score += 10;
     if (words.some((w) => t.includes(w))) score += 8;
     if (name.length >= 4 && domains.some((d) => norm(d.split('.')[0]) === name)) score += 6;
-    if (name.length >= 4 && t.includes(name)) score += 5;
+    // The brand name in the title is the strongest hint, except Braindy itself ("X + Braindy" is in most titles).
+    if (name.length >= 4 && b.id !== 'braindy' && t.includes(name)) score += 7;
     if (score && (!best || score > best.score)) best = { id: b.id, score };
   }
   return best?.id ?? null;
+}
+
+/** Notes filed before granolaNotes existed: remove copies under any other brand (one-time, per note). */
+async function removeStrayCopies(noteId: string, keep: string | null) {
+  const ids = (await db.collection('brands').select().get()).docs.map((d) => d.id).filter((id) => id !== keep);
+  const refs = ids.map((id) => db.doc(`brands/${id}/meetings/granola-${noteId}`));
+  const snaps = refs.length ? await db.getAll(...refs) : [];
+  await Promise.all(snaps.filter((s) => s.exists).map((s) => s.ref.delete()));
 }
 
 /** Files one Granola note: meeting under the brand (idempotent by note id) or into the inbox. */
 export async function fileNote(note: Note, forcedBrand?: string) {
   const title = note.title || 'Granola';
   const emails = (note.attendees ?? []).map((a) => String(a.email ?? '')).filter(Boolean);
-  const brandId = forcedBrand ?? await matchBrand(title, emails);
+  const map = db.doc(`granolaNotes/${note.id}`);
+  const mapped = await map.get();
+  // A brand chosen by hand stays; otherwise match again (participants and title).
+  const brandId = forcedBrand ?? (mapped.get('manual') ? (mapped.get('brandId') as string) : await matchBrand(title, emails));
   const doc = {
     title: title.slice(0, 160), date: String(note.calendar_event?.scheduled_start_time ?? note.created_at).slice(0, 10),
     notes: String(note.summary_markdown || note.summary_text || '').slice(0, 20_000), source: 'granola', granolaId: note.id,
     webUrl: note.web_url ?? null, attendees: emails.slice(0, 30), syncedAt: FieldValue.serverTimestamp(),
   };
   if (!doc.notes.trim()) return { status: 'empty' as const };
+  // One copy per note: if it was filed under another brand before (or a manual choice moved it), move it.
+  const prev = mapped.get('brandId') as string | undefined;
+  if (prev && prev !== brandId) await db.doc(`brands/${prev}/meetings/granola-${note.id}`).delete().catch(() => undefined);
+  if (!mapped.exists) await removeStrayCopies(note.id, brandId);
   if (!brandId) {
     await db.doc(`granolaInbox/${note.id}`).set({ ...doc, status: 'unassigned' }, { merge: true });
+    await map.delete().catch(() => undefined);
     return { status: 'inbox' as const };
   }
   await db.doc(`brands/${brandId}/meetings/granola-${note.id}`).set(doc, { merge: true });
+  await map.set({ brandId, at: FieldValue.serverTimestamp() });
   await db.doc(`granolaInbox/${note.id}`).delete().catch(() => undefined);
   return { status: 'filed' as const, brandId };
 }
@@ -130,6 +148,7 @@ adminGranola.post('/granola/inbox/:id/assign', async (c) => {
   if (!item.exists || !brandId || !(await db.doc(`brands/${brandId}`).get()).exists) return c.json({ error: 'invalid' }, 400);
   const d = item.data()!;
   await db.doc(`brands/${brandId}/meetings/granola-${item.id}`).set({ ...d, status: FieldValue.delete() }, { merge: true });
+  await db.doc(`granolaNotes/${item.id}`).set({ brandId, manual: true, at: FieldValue.serverTimestamp() });
   // Learn from the choice: next meetings with these participants' domains go straight to this brand.
   const domains = ((d.attendees as string[]) ?? []).map((e) => e.split('@')[1]?.toLowerCase()).filter((x): x is string => !!x && !PUBLIC_DOMAINS.has(x));
   if (domains.length) await db.doc(`brands/${brandId}`).update({ meetingDomains: FieldValue.arrayUnion(...domains) });
