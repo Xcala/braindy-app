@@ -1,6 +1,6 @@
 // Claude calls (backend only, never from the browser). Key in Secret Manager as ANTHROPIC_API_KEY.
 // Without a key, aiConfigured() is false and callers use their non-AI fallback.
-const KEY = process.env.ANTHROPIC_API_KEY;
+const KEY = process.env.ANTHROPIC_API_KEY?.trim();
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-opus-5-5';
 
 export const aiConfigured = () => !!KEY;

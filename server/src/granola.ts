@@ -11,8 +11,8 @@ import { logError } from './guard.js';
 import type { AuthEnv } from './auth.js';
 
 const API = 'https://public-api.granola.ai/v1';
-const KEY = process.env.GRANOLA_API_KEY;
-const SECRET = process.env.GRANOLA_WEBHOOK_SECRET;
+const KEY = process.env.GRANOLA_API_KEY?.trim();
+const SECRET = process.env.GRANOLA_WEBHOOK_SECRET?.trim();
 const PUBLIC_DOMAINS = new Set(['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'live.com', 'braindy.co', 'xent.co']);
 
 type Note = {

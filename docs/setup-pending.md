@@ -2,7 +2,7 @@
 
 The code for waves D–G is deployed to staging. Each feature below already works in a fallback mode and switches to its full mode once its key or resource exists. Claude does not create keys or IAM grants, and never handles secret values.
 
-Run the commands in PowerShell with gcloud on the PATH:
+Run the commands in PowerShell with gcloud on the PATH. If PowerShell blocks scripts ("la ejecución de scripts está deshabilitada"), type `gcloud.cmd` and `npx.cmd` instead of `gcloud` and `npx`. Secrets are written through a temporary file so PowerShell does not add a line break:
 
 ```powershell
 $env:Path = "C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin;" + $env:Path
@@ -38,8 +38,8 @@ Create each secret with your value. The value is read from the prompt and is nev
 ```powershell
 foreach ($s in "whatsapp-token","whatsapp-phone-id","anthropic-api-key","stripe-secret-key","stripe-webhook-secret") {
   $v = Read-Host -AsSecureString "Value for $s"
-  $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v))
-  $plain | gcloud secrets create $s --data-file=- --project $p
+  $f = "$env:TEMPsecret.txt"; [IO.File]::WriteAllText($f, [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v)))
+  gcloud secrets create $s --data-file=$f --project $p; Remove-Item $f
   gcloud secrets add-iam-policy-binding $s --member $sa --role roles/secretmanager.secretAccessor --project $p
 }
 gcloud run services update braindy-api --region us-central1 --project $p --update-secrets "WHATSAPP_TOKEN=whatsapp-token:latest,WHATSAPP_PHONE_ID=whatsapp-phone-id:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest,STRIPE_SECRET_KEY=stripe-secret-key:latest,STRIPE_WEBHOOK_SECRET=stripe-webhook-secret:latest"
@@ -99,7 +99,7 @@ If Scheduler says it cannot act as the service account, grant its service agent 
 2. **Webhook (every new note arrives by itself):** Granola → Connectors → **Webhooks** → add endpoint `https://braindy-api-283103160183.us-central1.run.app/webhooks/granola`, events `note.generated` and `note.edited`. Copy the signing secret (`whsec_…`, shown once) as the secret `granola-webhook-secret`. Webhooks need a Granola Business or Enterprise plan; without it, use the Sync button.
 3. Mount both on Cloud Run:
 ```powershell
-foreach ($s in "granola-api-key","granola-webhook-secret") { $v = Read-Host -AsSecureString "Value for $s"; $plain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v)); $plain | gcloud secrets create $s --data-file=- --project $p; gcloud secrets add-iam-policy-binding $s --member $sa --role roles/secretmanager.secretAccessor --project $p }
+foreach ($s in "granola-api-key","granola-webhook-secret") { $v = Read-Host -AsSecureString "Value for $s"; $f = "$env:TEMPsecret.txt"; [IO.File]::WriteAllText($f, [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v))); gcloud secrets create $s --data-file=$f --project $p; Remove-Item $f; gcloud secrets add-iam-policy-binding $s --member $sa --role roles/secretmanager.secretAccessor --project $p }
 gcloud run services update braindy-api --region us-central1 --project $p --update-secrets "GRANOLA_API_KEY=granola-api-key:latest,GRANOLA_WEBHOOK_SECRET=granola-webhook-secret:latest"
 ```
 Notes are filed by participant email domain or brand name in the title; the rest wait in Team → Granola meetings. Assigning one teaches its domains for next time.

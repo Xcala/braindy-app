@@ -1,8 +1,8 @@
 // WhatsApp Business (Meta Cloud API). Configured with WHATSAPP_TOKEN and WHATSAPP_PHONE_ID (Secret Manager).
 // Business-initiated messages must use templates approved in Meta: see docs/setup-pending.md.
 // Without configuration nothing is sent and callers fall back to a wa.me link Nicolas sends himself.
-const TOKEN = process.env.WHATSAPP_TOKEN;
-const PHONE_ID = process.env.WHATSAPP_PHONE_ID;
+const TOKEN = process.env.WHATSAPP_TOKEN?.trim();
+const PHONE_ID = process.env.WHATSAPP_PHONE_ID?.trim();
 const API = 'https://graph.facebook.com/v21.0';
 
 export const whatsappConfigured = () => !!(TOKEN && PHONE_ID);

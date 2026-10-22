@@ -2,8 +2,8 @@
 // Card data never touches Braindy: payment happens on Stripe Checkout and the customer portal.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-const KEY = process.env.STRIPE_SECRET_KEY;
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const KEY = process.env.STRIPE_SECRET_KEY?.trim();
+const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET?.trim();
 
 export const stripeConfigured = () => !!KEY;
 
