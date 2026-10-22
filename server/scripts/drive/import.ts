@@ -94,8 +94,12 @@ for (const brandId of brandIds.sort()) {
       });
       totalUp++; totalBytes += f.size;
     } catch (e) {
+      const m = (e as Error).message;
+      // Expired Google session (Workspace reauth policy): stop now; a rerun resumes where it left off.
+      if (/invalid_rapt|invalid_grant|reauth/i.test(m)) { log(`
+AUTH EXPIRED at ${brandId}/${f.relPath}. Run: gcloud auth application-default login, then rerun (it resumes).`); process.exit(3); }
       totalErr++;
-      log(`  ERROR ${f.relPath}: ${(e as Error).message}`);
+      log(`  ERROR ${f.relPath}: ${m}`);
     }
     if (++done % 50 === 0 || done === todo.length) log(`  ${brandId}: ${done}/${todo.length}`);
   });
