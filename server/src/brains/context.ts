@@ -17,6 +17,15 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
     db.collection(`brands/${brandId}/insights`).orderBy('at', 'desc').limit(3).get(),
   ]);
   const name = String(brand.get('name') ?? brandId);
+  // Meetings held with the group(s) above this brand (e.g. Grupo Berrío for iPark) are team memory too.
+  const ancestors = ((brand.get('ancestors') as string[]) ?? []).slice(0, 3);
+  const groupMeetings = (await Promise.all(ancestors.map(async (g) => {
+    const [gb, ms] = await Promise.all([
+      db.doc(`brands/${g}`).get(),
+      db.collection(`brands/${g}/meetings`).orderBy('date', 'desc').limit(3).get(),
+    ]);
+    return ms.docs.map((d) => `- ${d.get('date') ?? ''} (${gb.get('name') ?? g}) ${cut(d.get('title'), 100)}: ${cut(d.get('notes'), 500)}`);
+  }))).flat();
   const b = brain.data() ?? {};
   const colors = ((identity.get('colors') as Array<{ hex?: string; name?: string }>) ?? []).slice(0, 6).map((c) => `${c.name ?? ''} ${c.hex ?? ''}`.trim());
   const fonts = ((identity.get('typography') as Array<{ fontFamily?: string; name?: string }>) ?? []).slice(0, 3).map((f) => f.fontFamily ?? f.name);
@@ -36,6 +45,7 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
     fonts.length && `Typography: ${fonts.join(', ')}`,
     recent.size && `Team memory · recent work:\n${recent.docs.map((d) => `- ${cut(d.get('title'), 120)} · ${d.get('status')} · led by ${d.get('leadBrain')}${d.get('plan.note') ? ` · note: ${cut(d.get('plan.note'), 160)}` : ''}`).join('\n')}`,
     meetings.size && `Team memory · meetings with the client (newest first):\n${meetings.docs.map((d) => `- ${d.get('date') ?? ''} ${cut(d.get('title'), 100)}: ${cut(d.get('notes'), 700)}`).join('\n')}`,
+    groupMeetings.length && `Team memory · meetings with the group:\n${groupMeetings.join('\n')}`,
     insights.size && `Team memory · what the team noticed:\n${insights.docs.map((d) => `- ${cut(d.get('title'), 200)}`).join('\n')}`,
     learned.length && `Learned from approvals and changes:\n${learned.map((l) => `- ${l.kind === 'liked' ? 'Liked' : 'Change asked'}: ${cut(l.text, 240)}`).join('\n')}`,
   ].filter(Boolean);
