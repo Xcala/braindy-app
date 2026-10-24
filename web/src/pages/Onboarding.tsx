@@ -7,6 +7,7 @@ import { BriefChat } from '../onboarding/BriefChat';
 import { BrainCards } from '../onboarding/BrainCards';
 import { SessionPicker } from '../onboarding/SessionPicker';
 import type { BrainDraft } from '../onboarding/api';
+import { OnboardingLessons } from '../criterio/LessonCards';
 
 /** First 11 days (design 17): one page that follows the brand's onboarding step. */
 export function Onboarding() {
@@ -20,9 +21,9 @@ export function Onboarding() {
   const signed = brain.status === 'signed';
 
   return (
-    <div className="grid items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
       <Steps step={ob.step} />
-      {ob.step === 'brief' && <BriefChat brandId={current.id} brandName={current.name} />}
+      {ob.step === 'brief' && <div className="col g24 min-w-0"><BriefChat brandId={current.id} brandName={current.name} /><OnboardingLessons /></div>}
 
       {(ob.step === 'brain' || ob.step === 'session') && (
         <section className="col g20">
@@ -47,6 +48,7 @@ export function Onboarding() {
           )}
           <BrainCards brain={brain} />
           <div className="card t-sm" style={{ background: '#EAF0FF', border: 0 }}><b>{t('ob.aiNoteBold')}</b> {t('ob.aiNote')}</div>
+          <OnboardingLessons />
         </section>
       )}
 

@@ -3,35 +3,30 @@ import { useTour } from '../tour/useTour';
 import { homeSteps } from '../tour/steps';
 import { Link } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
-import { useBrandDoc } from '../brands/useBrandDoc';
-import { brandColors, type Color } from '../brands/identity/Colors';
-import { useCopy } from '../brands/identity/useCopy';
 import { useI18n } from '../i18n/I18nProvider';
-import { BrainStack, brainName } from '../components/BrainStack';
+import { brainName } from '../components/BrainStack';
+import { dayLabel, isOverdue } from '../lib/dates';
 import { useBrandsRequests, type ScopedRequest } from '../requests/useBrandsRequests';
 import { useVersions } from '../requests/useRequests';
 import { useFileUrl, isImage } from '../requests/useFileUrl';
 import { HomeHero } from '../home/HomeHero';
 import { InsightsCard } from '../brains/BrainPanels';
-import { BriefCase, LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
-import { CONTACT } from '../proposals/public/copy';
+import { LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
+import { LessonOfTheWeek } from '../criterio/LessonCards';
 
 export function Home() {
   const { current, brands, select } = useBrands();
-  const { t } = useI18n();
-  const identity = useBrandDoc(current?.id, 'context/identity');
-  const { copied, copy } = useCopy();
+  const { t, lang } = useI18n();
   const scope = current ? [current.id, ...brands.filter((b) => b.groupId && (b.groupId === current.id || brands.find((p) => p.id === b.groupId)?.groupId === current.id)).map((b) => b.id)] : [];
   const all = useBrandsRequests(scope);
   const { profile } = useAuth();
-  const { lang } = useI18n();
   useTour('home', () => homeSteps(lang), !!current, profile?.role !== 'admin');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const needsYou = all.filter((r) => r.status === 'to_approve');
-  const inProd = all.filter((r) => r.status === 'in_production').slice(0, 5);
+  const inProd = all.filter((r) => r.status === 'in_production')
+    .sort((a, b) => String(a.dueDate ?? '9999').localeCompare(String(b.dueDate ?? '9999'))).slice(0, 5);
   const delivered = all.filter((r) => r.status === 'approved' || r.status === 'published').slice(0, 3);
-  const colors = brandColors(((identity.data?.colors as Color[]) ?? [])).slice(0, 4);
   const brandOf = (id: string) => brands.find((b) => b.id === id);
 
   return (
@@ -44,21 +39,28 @@ export function Home() {
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="col g32">
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="col g32 min-w-0">
           <section className="col g12" aria-labelledby="h-moving" data-tour="home-prod">
-            <div className="row between"><h2 className="h3" id="h-moving">{t('req.status.in_production')}</h2><Link to="/requests" className="t-sm w7">{t('home.seeAll')}</Link></div>
+            <div className="row between"><h2 className="h3" id="h-moving">{t('home.thisWeek')}</h2><Link to="/requests" className="t-sm w7">{t('home.seeAll')}</Link></div>
             {inProd.length === 0 && <div className="card t-mute">{t('home.nothingInProd')}</div>}
-            {inProd.map((r) => (
-              <Link key={`${r.brandId}/${r.id}`} to={`/requests/${r.id}`} onClick={() => current.id !== r.brandId && select(r.brandId)} className="card row g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
-                <BrainStack lead={r.leadBrain} state="working" />
-                <div className="col g4 grow" style={{ minWidth: 200 }}>
-                  <span className="w7">{r.title}</span>
-                  <span className="t-sm t-mute">{r.brandId !== current.id ? `${brandOf(r.brandId)?.name} · ` : ''}{r.stage === 'plan' ? t('home.planning', { brain: brainName(r.leadBrain) }) : t('req.onIt', { brain: brainName(r.leadBrain) })}</span>
-                </div>
-                {r.dueDate && <span className="t-xs t-mute whitespace-nowrap">{t('req.due', { date: r.dueDate })}</span>}
-              </Link>
-            ))}
+            {inProd.map((r) => {
+              const late = isOverdue(r.dueDate);
+              return (
+                <Link key={`${r.brandId}/${r.id}`} to={`/requests/${r.id}`} onClick={() => current.id !== r.brandId && select(r.brandId)} className="card row g16" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
+                  {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-10 w-10 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
+                  <div className="col g4 grow" style={{ minWidth: 0 }}>
+                    <span className="w7 truncate">{r.title}</span>
+                    <span className="t-sm t-mute truncate">{r.brandId !== current.id ? `${brandOf(r.brandId)?.name} · ` : ''}{r.stage === 'plan' ? t('home.planning', { brain: brainName(r.leadBrain) }) : t('req.onIt', { brain: brainName(r.leadBrain) })}</span>
+                  </div>
+                  {r.dueDate && (
+                    <span className={`t-xs whitespace-nowrap ${late ? 'w7' : 't-mute'}`} style={late ? { color: '#C0362C' } : undefined}>
+                      {t(late ? 'home.late' : 'home.dueDay', { day: dayLabel(r.dueDate, lang) })}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </section>
           <section className="col g12" aria-labelledby="h-recent" data-tour="home-delivered">
             <div className="row between"><h2 className="h3" id="h-recent">{t('home.recent')}</h2><Link to="/assets" className="t-sm w7">{t('home.openAssets')}</Link></div>
@@ -67,29 +69,13 @@ export function Home() {
             )}
           </section>
         </div>
-        <aside className="col g16">
-          <InsightsCard brandId={current.id} />
+        <aside className="col g16 min-w-0">
           <ResultsCard brandId={current.id} />
-          <div className="card col g8" data-tour="home-brain">
-            <h2 className="h3">{t('home.brandBrain')}</h2>
-            <p className="t-sm t-mute">{t('home.brandBrainBody')}</p>
-            <Link className="t-sm w7" to="/brand">{t('home.openBrand')}</Link>
-          </div>
-          {colors.length > 0 && (
-            <div className="card col g12">
-              <h2 className="h3">{t('brand.quickCopy')}</h2>
-              <div className="row g8 wrap">{colors.map((c) => <button key={c.hex} className="qcopy" onClick={() => copy(c.hex!.toUpperCase())}><i style={{ background: c.hex }} />{copied === c.hex!.toUpperCase() ? t('common.copied') : c.hex!.toUpperCase()}</button>)}</div>
-            </div>
-          )}
+          <InsightsCard brandId={current.id} />
+          <LessonOfTheWeek />
           <WhatsappCard brandId={current.id} />
-          <div className="card row g12">
-            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
-            <div className="col grow"><span className="t-sm w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('home.orchestrator')}</span></div>
-            <a className="btn btn-secondary btn-sm" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a>
-          </div>
         </aside>
       </div>
-      <BriefCase />
     </div>
   );
 }

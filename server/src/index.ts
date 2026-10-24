@@ -17,6 +17,7 @@ import { adminReports } from './reports.js';
 import { adminBilling, billing, stripeWebhook } from './billing.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
+import { criterio } from './criterio.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -84,6 +85,7 @@ app.route('/v1', brains);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
+app.route('/v1', criterio);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

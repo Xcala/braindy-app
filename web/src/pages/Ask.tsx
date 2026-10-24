@@ -1,119 +1,102 @@
-import { useAuth } from '../auth/AuthProvider';
 import { useTour } from '../tour/useTour';
 import { askSteps } from '../tour/steps';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { Icon } from '../components/Icon';
-import { BrainStack, brainName } from '../components/BrainStack';
-import { TAXONOMY, findCategory, findSub } from '../requests/taxonomy';
-import { AskCard, type CardKey } from '../requests/AskCards';
+import { TAXONOMY, findCategory } from '../requests/taxonomy';
+import { AskDetails, type AskDetailValue } from '../requests/AskDetails';
 import { createRequest } from '../requests/api';
 import type { Card } from '../requests/types';
+import { LessonForCategory } from '../criterio/LessonCards';
 
+/** "Ask for something": one box, like a WhatsApp message. Type of piece and details are optional. */
 export function Ask() {
   const { current } = useBrands();
   const { t, lang } = useI18n();
   const navigate = useNavigate();
-  const [cat, setCat] = useState('social');
-  const [sub, setSub] = useState('');
-  const [type, setType] = useState('');
-  const [cards, setCards] = useState<Record<CardKey, Card>>({ product: {}, application: {}, scene: {} });
+  const [text, setText] = useState('');
+  const [links, setLinks] = useState<string[]>([]);
+  const [link, setLink] = useState('');
+  const [cat, setCat] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [format, setFormat] = useState('');
-  const [language, setLanguage] = useState(lang === 'es' ? 'Español' : 'English');
+  const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState<AskDetailValue>({ sub: '', type: '', application: {}, scene: {}, format: '', language: lang === 'es' ? 'Español' : 'English' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 
-  const { profile: me } = useAuth();
-  useTour('ask', () => askSteps(lang), !!current, me?.role !== 'admin');
+  useTour('ask', () => askSteps(lang), !!current, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
-  const category = findCategory(cat)!;
-  const subcat = findSub(cat, sub);
-  const withNicolas = !!category.withNicolas || !!subcat?.withNicolas;
-  const ready = !!sub && !!type && (cards.product.text ?? '').trim().length > 2;
+  const category = findCategory(cat);
+  const withNicolas = !!category?.withNicolas || !!category?.subs.find((s) => s.id === detail.sub)?.withNicolas;
+  const ready = text.trim().length > 5;
+
+  const addLink = () => {
+    const v = link.trim();
+    if (!/^https?:\/\//i.test(v)) return;
+    setLinks((l) => [...l, v].slice(0, 10)); setLink('');
+  };
 
   async function submit() {
     setBusy(true); setError(false);
+    const product: Card = { text, links };
+    const firstLine = text.trim().split('\n')[0].slice(0, 80);
     try {
       const { requestId } = await createRequest(current!.id, {
-        category: cat, subcategory: sub, formatType: type, title: type, cards, dueDate, format, language,
+        category: cat, subcategory: detail.sub, formatType: detail.type, title: detail.type || firstLine,
+        cards: { product, application: detail.application, scene: detail.scene }, dueDate, format: detail.format, language: detail.language,
       });
       navigate(`/requests/${requestId}`);
     } catch { setError(true); } finally { setBusy(false); }
   }
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="col g32">
-        <div className="col g8"><p className="label">{current.name}</p><h1 className="h1"><span className="w9">{t('ask.title')}</span></h1></div>
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="col g24">
+        <div className="col g8"><p className="label">{current.name}</p><h1 className="h1"><span className="w9">{t('ask.simpleTitle')}</span></h1></div>
 
-        <section className="col g12" aria-labelledby="s1" data-tour="ask-what">
-          <div className="row g12"><span className="sec-num">01</span><h2 className="h3" id="s1">{t('ask.s1')}</h2></div>
-          <div className="card grid gap-4 md:grid-cols-[1fr_1fr_1.2fr]">
-            <div className="col" role="listbox" aria-label={t('ask.s1')}>
-              {TAXONOMY.map((c) => (
-                <button key={c.id} role="option" aria-selected={c.id === cat} onClick={() => { setCat(c.id); setSub(''); setType(''); }}
-                  className={`menu-item w-full text-left ${c.id === cat ? 'is-on' : ''}`} style={{ border: 0, background: undefined, cursor: 'pointer' }}>
-                  <span className="grow">{c.label[lang]}</span>
-                  {c.withNicolas && <span className="chip chip-plain c-type">{t('ask.withNicolas')}</span>}
-                  {c.id === cat && <Icon name="chevronRight" size={16} />}
-                </button>
-              ))}
+        <section className="card col g16" data-tour="ask-what">
+          <textarea className="input" aria-label={t('ask.simpleTitle')} style={{ minHeight: 170, padding: '16px 18px', resize: 'vertical', fontSize: 17, lineHeight: 1.5 }}
+            placeholder={t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} autoFocus />
+          {links.map((l) => (
+            <div key={l} className="row g8 t-sm">
+              <a href={l} target="_blank" rel="noreferrer" className="grow truncate">{l}</a>
+              <button className="btn btn-ghost btn-sm" onClick={() => setLinks((all) => all.filter((x) => x !== l))} aria-label={t('ask.removeLink')}>✕</button>
             </div>
-            <div className="col">
-              {category.subs.map((s) => (
-                <button key={s.id} onClick={() => { setSub(s.id); setType(''); }}
-                  className={`menu-item w-full text-left ${s.id === sub ? 'is-on' : ''}`} style={{ border: 0, background: undefined, cursor: 'pointer' }}>
-                  <span className="grow">{s.label[lang]}</span>{s.id === sub && <Icon name="chevronRight" size={16} />}
-                </button>
-              ))}
-            </div>
-            <div className="row g8 wrap content-start">
-              {subcat ? subcat.types.map((ty) => (
-                <button key={ty.en} aria-pressed={type === ty[lang]} onClick={() => setType(ty[lang])}
-                  className={`btn btn-sm ${type === ty[lang] ? 'btn-primary' : 'btn-secondary'}`}>{ty[lang]}</button>
-              )) : <p className="t-sm t-mute">{t('ask.pickSub')}</p>}
-            </div>
+          ))}
+          <div className="grid gap-3 md:grid-cols-[1fr_auto_200px]">
+            <input className="input" style={{ height: 44 }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')}
+              value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())} />
+            <button className="btn btn-secondary btn-sm" style={{ height: 44 }} onClick={addLink}>{t('ask.addLink')}</button>
+            <input className="input" style={{ height: 44 }} type="date" aria-label={t('ask.due')} title={t('ask.due')} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
         </section>
 
-        <section className="col g12" aria-labelledby="s2" data-tour="ask-cards">
-          <div className="row g12"><span className="sec-num">02</span><h2 className="h3" id="s2">{t('ask.s2')}</h2></div>
-          <div className="grid gap-4 lg:grid-cols-3">
-            {(['product', 'application', 'scene'] as CardKey[]).map((k) => (
-              <AskCard key={k} k={k} value={cards[k]} onChange={(c) => setCards((all) => ({ ...all, [k]: c }))} />
+        <section className="col g12" data-tour="ask-cards">
+          <p className="t-sm w7">{t('ask.typeOptional')}</p>
+          <div className="row g8 wrap">
+            {TAXONOMY.map((c) => (
+              <button key={c.id} aria-pressed={c.id === cat} onClick={() => { setCat(c.id === cat ? '' : c.id); setDetail((d) => ({ ...d, sub: '', type: '' })); }}
+                className={`btn btn-sm ${c.id === cat ? 'btn-primary' : 'btn-secondary'}`}>{c.label[lang]}</button>
             ))}
           </div>
-        </section>
-
-        <section className="col g12" aria-labelledby="s3" data-tour="ask-when">
-          <div className="row g12"><span className="sec-num">03</span><h2 className="h3" id="s3">{t('ask.s3')}</h2></div>
-          <div className="card grid gap-4 md:grid-cols-3">
-            <div className="field"><label htmlFor="d1">{t('ask.due')}</label><input className="input" id="d1" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
-            <div className="field"><label htmlFor="d2">{t('ask.format')}</label><input className="input" id="d2" value={format} placeholder={t('ask.formatPh')} onChange={(e) => setFormat(e.target.value)} /></div>
-            <div className="field"><label htmlFor="d3">{t('ask.language')}</label><input className="input" id="d3" value={language} onChange={(e) => setLanguage(e.target.value)} /></div>
-          </div>
+          <button className="btn btn-ghost btn-sm self-start" aria-expanded={open} onClick={() => setOpen((o) => !o)}>{open ? t('ask.hideDetail') : t('ask.addDetail')}</button>
+          {open && <AskDetails cat={cat} value={detail} onChange={setDetail} />}
         </section>
       </div>
 
-      <aside className="card col g16 lg:sticky lg:top-6" aria-label={t('ask.summary')} data-tour="ask-summary">
-        <p className="label">{t('ask.summary')}</p>
-        <div className="col g4"><span className="t-sm t-mute">{category.label[lang]}{subcat ? ` · ${subcat.label[lang]}` : ''}</span><span className="h3">{type || '—'}</span></div>
-        <div className="divider" />
-        <BrainStack lead={category.lead} state="working" label={t('ask.leadBrain', { brain: brainName(category.lead) })} />
-        <p className="t-sm t-mute">{withNicolas ? t('ask.levelNicolas') : t('ask.levelSelf')}</p>
-        <div className="divider" />
-        {(['product', 'application', 'scene'] as CardKey[]).map((k) => (
-          <div key={k} className="row between t-sm"><span>{t(`ask.card.${k}`)}</span>
-            <span className={(cards[k].text ?? '').trim() ? 'w7' : 't-mute'} style={{ color: (cards[k].text ?? '').trim() ? 'var(--success)' : undefined }}>
-              {(cards[k].text ?? '').trim() ? t('ask.done') : k === 'scene' ? t('ask.optional') : t('ask.needed')}
-            </span></div>
-        ))}
-        {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('ask.error')}</p>}
-        <button className="btn btn-primary btn-block" style={{ height: 52 }} disabled={!ready || busy} onClick={submit}>{t('ask.send')}</button>
-        <p className="t-xs t-mute">{t('ask.next')}</p>
+      <aside className="col g16 lg:sticky lg:top-6" data-tour="ask-summary">
+        <div className="card col g12">
+          <div className="row g12">
+            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-11 w-11 flex-none rounded-full object-cover" />
+            <span className="col"><span className="t-sm w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('home.withBrains')}</span></span>
+          </div>
+          <p className="t-sm t-mute">{withNicolas ? t('ask.levelNicolas') : t('ask.levelSelf')}</p>
+          {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('ask.error')}</p>}
+          <button className="btn btn-primary btn-block" style={{ height: 52 }} disabled={!ready || busy} onClick={submit}>{t('ask.sendSimple')}</button>
+          <p className="t-xs t-mute">{t('ask.next')}</p>
+        </div>
+        <LessonForCategory category={cat || undefined} />
       </aside>
     </div>
   );

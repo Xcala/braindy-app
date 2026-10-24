@@ -4,7 +4,9 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
-import { BrainStack, brainName } from '../components/BrainStack';
+import { brainName } from '../components/BrainStack';
+import { ObjectionHint, useObjectionMatch } from '../criterio/LessonCards';
+import { logObjection } from '../criterio/useCriterio';
 import { decide } from './api';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
@@ -14,9 +16,11 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
   brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; canApprove: boolean;
   pendingMark: Annotation | null; clearMark: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { user, profile } = useAuth();
   const [text, setText] = useState('');
+  const objection = useObjectionMatch(text);
+  const sentAnyway = () => { if (objection) logObjection(brandId, objection.id, 'sent'); };
   const [filter, setFilter] = useState<'open' | 'resolved'>('open');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -33,7 +37,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
       author: user.uid, text: text.trim(), createdAt: serverTimestamp(),
       ...(pendingMark ? { annotation: pendingMark, versionId: pendingMark.versionId } : v ? { versionId: v.id } : {}),
     });
-    setText(''); clearMark();
+    sentAnyway(); setText(''); clearMark();
   }
   async function decision(state: 'approved' | 'changes_requested') {
     if (!v) return;
@@ -41,7 +45,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
     const openOnVersion = comments.some((c) => !c.resolved && c.versionId === v.id);
     if (state === 'changes_requested' && !text.trim() && !openOnVersion) { setError(t('req.changesNeedComment')); return; }
     setBusy(true);
-    try { await decide(brandId, r.id, v.id, state, state === 'changes_requested' ? text.trim() || t('req.seeComments') : ''); setText(''); clearMark(); }
+    try { await decide(brandId, r.id, v.id, state, state === 'changes_requested' ? text.trim() || t('req.seeComments') : ''); if (state === 'changes_requested') sentAnyway(); setText(''); clearMark(); }
     catch { setError(t('req.decisionError')); } finally { setBusy(false); }
   }
   const toast = useToast();
@@ -55,7 +59,11 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
     <aside className="col min-h-0" style={{ borderLeft: '1px solid var(--line)' }}>
       {v && (
         <div className="col g12" style={{ padding: 20, borderBottom: '1px solid var(--line)' }}>
-          <BrainStack lead={v.brain ?? r.leadBrain} label={r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(v.brain ?? r.leadBrain) })} />
+          <span className="row g8">
+            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-8 w-8 flex-none rounded-full object-cover" />
+            {(v.brain ?? r.leadBrain) && <img src={`/brand/brains/${v.brain ?? r.leadBrain}.png`} alt="" className="h-8 w-8 flex-none rounded-full" style={{ marginLeft: -12, boxShadow: '0 0 0 2px #fff', background: 'var(--niebla)' }} />}
+            <span className="t-sm">{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(v.brain ?? r.leadBrain) })}</span>
+          </span>
           {v.notes && <p className="t-sm t-mute">{v.notes}</p>}
           {v.reason && <div className="col" style={{ gap: 6, padding: '14px 16px', borderRadius: 14, background: 'var(--hielo)' }}><span className="t-sm w7">{t('req.whyItWorks')}</span><span className="t-sm">{v.reason}</span><span className="t-xs t-mute">{t('req.everyPieceReason')}</span></div>}
           {v.approval?.state === 'approved' && <span className="chip c-approved self-start">{t('req.approvedChip', { n: v.n })}</span>}
@@ -83,7 +91,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
             <div key={c.id} className="row g12" style={{ alignItems: 'flex-start' }}>
               <span className="flex flex-none items-center justify-center" style={{ width: 28, height: 28, borderRadius: '50%', background: c.annotation ? 'var(--azul)' : 'var(--hielo)', color: c.annotation ? '#fff' : 'var(--azul-press)', font: '800 12px/1 var(--f-text)' }}>{c.annotation ? pinNumber(c) : '·'}</span>
               <div className="col g4 grow">
-                <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString()}</span></span>
+                <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}</span></span>
                 <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>
                 {(c.author === user?.uid || canApprove) && <button className="t-xs w7 self-start" style={{ background: 'none', border: 0, color: 'var(--azul)', cursor: 'pointer', padding: 0 }} onClick={() => resolve(c)}>{c.resolved ? t('req.reopen') : t('req.resolve')}</button>}
               </div>
@@ -96,6 +104,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
             <input className="input" id="cmt" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('req.commentPh')} />
             <button className="btn btn-primary btn-icon" aria-label={t('req.sendComment')} onClick={send} disabled={!text.trim()}><Icon name="arrowLeft" className="rotate-180" /></button>
           </div>
+          <ObjectionHint brandId={brandId} o={objection} />
           {pendingMark && <button className="t-xs self-start" style={{ background: 'none', border: 0, color: 'var(--graphite)', cursor: 'pointer', padding: 0 }} onClick={clearMark}>{t('req.cancelMark')}</button>}
           <span className="t-xs t-mute">{t('req.changesHint')}</span>
         </div>

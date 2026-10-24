@@ -307,6 +307,21 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- NickMark Taste: lessons and objection answers. Signed-in users read published ones; admin edits ----------
+    match /lessons/{lessonId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+    match /objections/{objectionId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+    // Which objections show up in comments (ids only, never the text): admin reads, backend writes.
+    match /criterioHits/{hitId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
     match /brainTasks/{taskId} {
       allow read: if isAdmin();
