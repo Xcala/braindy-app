@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { BrainStack, brainName, type BrainState } from '../components/BrainStack';
+import { brainName, type BrainState } from '../components/BrainStack';
+import { dayLabel, isOverdue } from '../lib/dates';
 import { useRequests } from '../requests/useRequests';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { STATUS_CHIP, type BrandRequest, type RequestStatus } from '../requests/types';
@@ -52,15 +53,17 @@ export function Requests() {
                   <div className="row between"><span className={`chip ${STATUS_CHIP[status]}`}>{t(`req.status.${status}`)}</span><span className="t-sm t-mute">{items.length}</span></div>
                   {items.map((r) => (
                     <Link key={r.id} to={`/requests/${r.id}`} className="card col" style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined }}>
-                      <span className="t-xs t-mute">{typeLabel(r)}</span>
                       <span className="w7">{r.title}</span>
-                      {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>v{r.versionCount}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
+                      {r.formatType && r.formatType !== r.title && <span className="t-xs t-mute">{r.formatType}</span>}
+                      {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>{t("home.version", { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
                       <div className="row between g8">
-                        <BrainStack size="xs" lead={r.leadBrain} state={brainState(r)}
-                          label={status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : status === 'to_approve' ? t('req.ready') : t('req.allFour')} />
-                        {status === 'to_approve' ? <span className="btn btn-primary btn-sm" style={{ height: 32 }}>{t('req.review')}</span>
-                          : r.dueDate ? <span className="t-xs t-mute whitespace-nowrap">{t("req.due", { date: r.dueDate })}</span> : null}
+                        <span className="row g8" style={{ minWidth: 0 }}>
+                          {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-6 w-6 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
+                          <span className="t-xs t-mute truncate">{status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : t('req.madeByReviewed')}</span>
+                        </span>
+                        {status === 'to_approve' && <span className="btn btn-primary btn-sm flex-none" style={{ height: 32 }}>{t('req.review')}</span>}
                       </div>
+                      {status === 'in_production' && r.dueDate && <span className="t-xs" style={{ color: isOverdue(r.dueDate) ? '#C0362C' : 'var(--graphite)' }}>{t(isOverdue(r.dueDate) ? 'home.late' : 'home.dueDay', { day: dayLabel(r.dueDate, lang) })}</span>}
                     </Link>
                   ))}
                 </section>
@@ -76,8 +79,8 @@ export function Requests() {
               <div key={r.id} className="trow min-w-[760px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 200px 110px 200px 140px', background: r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
                 <Link to={`/requests/${r.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{r.title}</Link>
                 <span className="t-sm truncate">{typeLabel(r)}</span>
-                <span>{r.dueDate ?? '—'}</span>
-                <BrainStack lead={r.leadBrain} state={brainState(r)} />
+                <span className="t-sm">{r.dueDate ? dayLabel(r.dueDate, lang) : '—'}</span>
+                <span className="t-sm truncate">{t('req.onIt', { brain: brainName(r.leadBrain) })}</span>
                 <span><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span></span>
               </div>
             ))}

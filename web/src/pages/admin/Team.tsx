@@ -68,7 +68,7 @@ export function AdminTeam() {
         })}
       </section>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1.2fr_1fr]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.2fr_1fr]">
         <section className="col g12" aria-labelledby="b">
           <h2 className="h3" id="b">{t('team.brains')}</h2>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -66,7 +66,7 @@ export function ProposalDetail() {
           )}
         </div>
       </div>
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
         <div className="col g24">
           <ProposalForm key={p.id} p={p} />
           <ProposalFiles id={p.id} />

@@ -6,63 +6,76 @@ import { useFileUrl, isImage } from '../requests/useFileUrl';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
 import type { BrainId } from '../requests/taxonomy';
 import { useBrands } from '../brands/BrandProvider';
+import { dayLabel, daysFrom } from '../lib/dates';
+import { CONTACT } from '../proposals/public/copy';
 
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
-/** Home hero (design 12): what needs you, and the four Brains with their live state. */
+/** Home hero: what needs you (every item, up to three) and NickMark, who makes the work, with his Brains as a signature. */
 export function HomeHero({ brandName, needsYou, open }: { brandName: string; needsYou: ScopedRequest[]; open: ScopedRequest[] }) {
   const { t, lang } = useI18n();
   const today = new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  const first = needsYou[0];
-  const state = (b: BrainId) => needsYou.some((r) => r.leadBrain === b) ? 'approval' : open.some((r) => r.leadBrain === b && r.status === 'in_production') ? 'working' : 'idle';
+  const shown = needsYou.slice(0, 3);
+  const working = (b: BrainId) => open.some((r) => r.leadBrain === b && r.status === 'in_production');
+  const next = open
+    .filter((r) => r.status === 'in_production' && r.dueDate && (daysFrom(r.dueDate) ?? -1) >= 0)
+    .sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)))[0];
+  const current = open.find((r) => r.status === 'in_production');
 
   return (
-    <section className="stage grid gap-10 rounded-[28px] p-6 sm:p-12 lg:grid-cols-[1.2fr_1fr]" aria-labelledby="h-home">
-      <div className="col g24" data-tour="home-needs">
+    <section className="stage grid gap-10 rounded-[28px] p-6 sm:p-12 lg:grid-cols-[1.25fr_1fr]" aria-labelledby="h-home">
+      <div className="col g24 min-w-0" data-tour="home-needs">
         <p className="label" style={{ color: '#C9D0DE' }}>{today} · {brandName}</p>
         <h1 className="d-lg" id="h-home" style={{ color: '#fff' }}>
-          {needsYou.length ? <><span className="w9">{t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length })}</span> {t('home.restMoving')}</>
-            : <><span className="w9">{t('home.nothingNeeds')}</span> {t('home.restMoving')}</>}
+          <span className="w9">{needsYou.length ? t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length }) : t('home.nothingNeeds')}</span> {t('home.restMoving')}
         </h1>
-        {first && <FirstItem r={first} />}
+        {shown.length > 0 && <div className="col g12">{shown.map((r) => <NeedItem key={`${r.brandId}/${r.id}`} r={r} />)}</div>}
+        {needsYou.length > 3 && <Link to="/requests" className="t-sm w7" style={{ color: '#fff' }}>{t('home.moreToReview', { n: needsYou.length - 3 })}</Link>}
       </div>
-      <div className="col g12" data-tour="home-brains">
-        <div className="grid grid-cols-2 gap-3">
-          {BRAINS.map((b) => (
-            <div key={b} className="b3d col g4">
-              <img src={`/brand/proposal/b3d-${b}.jpg`} alt={brainName(b)} loading="lazy" />
-              <span className="w7">{brainName(b)}</span>
-              <span className="st t-xs" style={{ color: state(b) === 'approval' ? '#FFD66B' : state(b) === 'working' ? '#8FA0FF' : '#C9D0DE' }}>{t(`team.state.${state(b)}`)}</span>
-              <span className="t-xs muted">{t(`home.brainLine.${b}`)}</span>
-            </div>
-          ))}
+      <div className="col g16 min-w-0 justify-end" data-tour="home-brains">
+        <div className="widget col g16" style={{ position: 'static' }}>
+          <div className="row g12">
+            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-14 w-14 flex-none rounded-full object-cover" />
+            <div className="col grow"><span className="w7">{t('sig.card')}</span><span className="t-xs muted">{t('home.orchestrator')}</span></div>
+            <a className="btn btn-white btn-sm" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a>
+          </div>
+          <p className="t-sm" style={{ color: '#E6EAF2' }}>
+            {next ? t('home.nicoNowDue', { title: next.title, day: dayLabel(next.dueDate, lang) })
+              : current ? t('home.nicoNow', { title: current.title }) : t('home.nicoIdle')}
+          </p>
+          <div className="row g12 wrap" style={{ borderTop: '1px solid rgba(255,255,255,.12)', paddingTop: 12 }}>
+            <span className="row" aria-label={BRAINS.map(brainName).join(', ')}>
+              {BRAINS.map((b, i) => (
+                <span key={b} title={`${brainName(b)}${working(b) ? ` · ${t('team.state.working')}` : ''}`} className="relative" style={{ marginLeft: i ? -8 : 0 }}>
+                  <img src={`/brand/brains/${b}.png`} alt="" className="h-9 w-9 rounded-full" style={{ background: '#0B1020', boxShadow: '0 0 0 2px #0B1020' }} />
+                  {working(b) && <i className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full" style={{ background: '#8FA0FF', boxShadow: '0 0 0 2px #0B1020' }} />}
+                </span>
+              ))}
+            </span>
+            <span className="t-xs muted">{t('home.withBrains')}</span>
+          </div>
         </div>
-        <p className="t-xs muted">{t('home.brainsOn', { name: brandName })}</p>
       </div>
     </section>
   );
 }
 
-function FirstItem({ r }: { r: ScopedRequest }) {
+function NeedItem({ r }: { r: ScopedRequest }) {
   const { t } = useI18n();
   const { select, current } = useBrands();
   const versions = useVersions(r.brandId, r.id);
   const v = versions.find((x) => x.id === r.latestVersion);
   const url = useFileUrl(r.brandId, r.id, v);
   return (
-    <div className="widget row g20 wrap" style={{ position: 'static' }}>
-      <div className="flex h-20 w-20 flex-none items-center justify-center overflow-hidden rounded-xl" style={{ background: 'rgba(255,255,255,.1)' }}>
-        {url && isImage(v?.files?.[0]?.contentType) ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="t-xs muted">v{v?.n ?? ''}</span>}
+    <div className="widget row g16" style={{ position: 'static', padding: 14 }}>
+      <div className="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-xl" style={{ background: 'rgba(255,255,255,.1)' }}>
+        {url && isImage(v?.files?.[0]?.contentType) ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="t-xs muted">{v?.n ?? ''}</span>}
       </div>
-      <div className="col g4 grow" style={{ minWidth: 180 }}>
-        <span className="t-xs muted">v{v?.n ?? ''}</span>
-        <span className="w7">{r.title}</span>
-        <span className="t-sm muted">{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(r.leadBrain) })}</span>
+      <div className="col g4 grow" style={{ minWidth: 0 }}>
+        <span className="w7 truncate">{r.title}</span>
+        <span className="t-xs muted">{v?.n ? `${t('home.version', { n: v.n })} · ` : ''}{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(r.leadBrain) })}</span>
       </div>
-      <div className="col g8">
-        <Link className="btn btn-white" to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)}>{t('home.review')}</Link>
-        <span className="t-xs muted">{t('home.twoMinutes')}</span>
-      </div>
+      <Link className="btn btn-white btn-sm flex-none" to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)}>{t('home.review')}</Link>
     </div>
   );
 }

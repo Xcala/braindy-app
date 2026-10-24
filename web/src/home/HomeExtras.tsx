@@ -2,8 +2,6 @@ import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useReports } from '../report/useReports';
-import { IparkCase } from '../proposals/public/Sections';
-import { PUBLIC_COPY } from '../proposals/public/copy';
 
 /** Home · results this month (from the latest published report), design 12. */
 export function ResultsCard({ brandId }: { brandId: string }) {
@@ -35,17 +33,6 @@ export function WhatsappCard({ brandId }: { brandId: string }) {
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke={on ? '#0E7A4E' : 'currentColor'} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h14v10H10l-4 4v-4H5z" /></svg>
       <span className="col"><span className="t-sm w7">{t(on ? 'home.waOn' : 'home.waOff')}</span><span className="t-xs t-mute">{t(on ? 'home.waOnSub' : 'home.waOffSub')}</span></span>
     </Link>
-  );
-}
-
-/** Home · what one brief can do: the iPark case. */
-export function BriefCase() {
-  const { t, lang } = useI18n();
-  return (
-    <section className="col g16" aria-labelledby="h-case">
-      <div className="row between g8 wrap"><h2 className="h3" id="h-case">{t('home.caseTitle')}</h2><Link to="/ask" className="t-sm w7">{t('home.askLikeThis')}</Link></div>
-      <IparkCase c={PUBLIC_COPY[lang]} />
-    </section>
   );
 }
 

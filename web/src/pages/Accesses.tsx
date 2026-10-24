@@ -33,7 +33,7 @@ export function Accesses() {
       </div>
 
       {denied ? <div className="card t-mute">{t('acc.ownersOnly')}</div> : (
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="table overflow-x-auto">
             <div className="trow head label min-w-[640px]" style={{ gridTemplateColumns: 'minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.3fr)' }}>
               <span>{t('acc.platform')}</span><span>{t('acc.user')}</span><span>{t('acc.password')}</span>

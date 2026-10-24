@@ -8,7 +8,10 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { normalizeSearch } from '../../lib/text';
 import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toaster';
-import type { StringKey } from '../../i18n/strings';
+import { useOpenWork } from '../../team/useWork';
+import { daysFrom } from '../../lib/dates';
+
+type Health = { open: number; late: number; last: number };
 
 type Status = 'all' | 'active' | 'archived';
 const COLS = 'minmax(0,1fr) 110px 220px 170px';
@@ -21,6 +24,18 @@ export function AdminBrands() {
   const [groupsOnly, setGroupsOnly] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toast = useToast();
+  const { items } = useOpenWork();
+  const health = useMemo(() => {
+    const m = new Map<string, Health>();
+    for (const i of items) {
+      const h = m.get(i.brandId) ?? { open: 0, late: 0, last: 0 };
+      h.open++;
+      if (i.status === 'in_production' && i.dueDate && (daysFrom(i.dueDate) ?? 0) < 0) h.late++;
+      h.last = Math.max(h.last, i.updatedAt?.toMillis() ?? i.createdAt?.toMillis() ?? 0);
+      m.set(i.brandId, h);
+    }
+    return m;
+  }, [items]);
 
   const rows = useMemo(() => {
     const needle = normalizeSearch(q);
@@ -78,10 +93,10 @@ export function AdminBrands() {
 
       <div className="table overflow-x-auto">
         <div className="trow head label min-w-[760px]" style={{ gridTemplateColumns: COLS }}>
-          <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('admin.brands.colFrom')}</span><span>{t('admin.brands.colStatus')}</span>
+          <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colStatus')}</span>
         </div>
         {rows.map(({ brand, depth }) => (
-          <Row key={brand.id} brand={brand} depth={depth} collapsed={collapsed.has(brand.id)}
+          <Row key={brand.id} brand={brand} depth={depth} health={health.get(brand.id)} collapsed={collapsed.has(brand.id)}
             onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} />
         ))}
       </div>
@@ -90,8 +105,8 @@ export function AdminBrands() {
   );
 }
 
-function Row({ brand, depth, collapsed, onCollapse, onToggle }: {
-  brand: Brand; depth: number; collapsed: boolean; onCollapse: () => void; onToggle: () => void;
+function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
+  brand: Brand; depth: number; health?: Health; collapsed: boolean; onCollapse: () => void; onToggle: () => void;
 }) {
   const { t } = useI18n();
   const { select } = useBrands();
@@ -110,9 +125,12 @@ function Row({ brand, depth, collapsed, onCollapse, onToggle }: {
         <button onClick={() => { select(brand.id); navigate('/brand'); }} className="w7 truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'inherit' }}>{brand.name}</button>
       </span>
       <span><span className={`chip ${brand.kind === 'group' ? 'c-group' : 'c-type'}`}>{brand.kind === 'group' ? t('brand.group') : t('admin.brands.brand')}</span></span>
-      <span className="row g4 wrap">
-        {brand.sources.length ? brand.sources.map((s) => <span key={s} className="chip c-type">{t(`admin.brands.src.${s}` as StringKey)}</span>)
-          : <span className="t-sm t-mute">{t('admin.brands.newInApp')}</span>}
+      <span className="row g8 wrap t-sm">
+        {brand.kind === 'group' || !on ? <span className="t-mute">—</span>
+          : health?.late ? <span className="chip" style={{ background: '#FDECEA', color: '#C0362C' }}>{t('brands.lateN', { n: health.late })}</span>
+          : health?.open ? <span className="chip c-active">{t('brands.ok')}</span>
+          : <span className="chip chip-plain">{t('brands.quiet')}</span>}
+        {health?.open ? <span className="t-mute">{health.open} {t('brands.open').toLowerCase()}</span> : null}
       </span>
       <span className="row g12">
         <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />

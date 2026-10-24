@@ -29,6 +29,18 @@ const ROUTING: Record<string, { lead: Brain; helpers: Brain[]; withNicolas?: boo
 };
 
 const str = (v: unknown, max = 2000) => String(v ?? '').trim().slice(0, max);
+
+const GUESS: Array<[string, RegExp]> = [
+  ['branding', /\b(logo|logotipo|marca nueva|naming|nombre de marca|identidad|rebrand|brand)\b/i],
+  ['web', /\b(web|p[aá]gina|landing|sitio|home|seo|website|hero)\b/i],
+  ['ai', /\b(app|automatiza\w*|agente|chatbot|bot|dashboard|plataforma|ia|ai)\b/i],
+  ['multimedia', /\b(video|reel|motion|animaci[oó]n|podcast|fotos?)\b/i],
+  ['marketing', /\b(campa[nñ]a|ads|pauta|anuncios?|embudo|funnel|copy)\b/i],
+  ['social', /\b(post|carrusel|carousel|historia|story|instagram|tiktok|linkedin|redes)\b/i],
+  ['graphic', /\b(brochure|folleto|flyer|presentaci[oó]n|deck|banner|tarjetas?|empaque|etiqueta|impreso)\b/i],
+];
+/** Category for a free-text request; "other" (Nicolas reviews it) when nothing matches. */
+export const guessCategory = (text: string) => GUESS.find(([, re]) => re.test(text))?.[0] ?? 'other';
 const now = () => FieldValue.serverTimestamp();
 
 async function isAdmin(uid: string) {
@@ -56,17 +68,19 @@ requests.post('/brands/:brandId/requests', async (c) => {
   const uid = c.get('user').uid;
   if (!(await brandAccess(uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
   const b = await c.req.json<Record<string, unknown>>();
-  const route = ROUTING[str(b.category, 40)];
+  const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[] }>;
+  // "Ask" can be one free-text box: without a type, the category is read from the words.
+  const category = str(b.category, 40) || guessCategory(str(cards.product?.text, 4000));
+  const route = ROUTING[category];
   if (!route) return c.json({ error: 'invalid_category' }, 400);
   const subcategory = str(b.subcategory, 40);
   const withNicolas = !!route.withNicolas || (route.nicolasSubs ?? []).includes(subcategory);
-  const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[] }>;
   const card = (k: string) => ({ text: str(cards[k]?.text, 4000), links: (cards[k]?.links ?? []).map((l) => str(l, 500)).filter(Boolean).slice(0, 10) });
 
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
     title: str(b.title, 160) || str(b.formatType, 160),
-    category: str(b.category, 40), subcategory, formatType: str(b.formatType, 160),
+    category, subcategory, formatType: str(b.formatType, 160),
     cards: { product: card('product'), application: card('application'), scene: card('scene') },
     dueDate: str(b.dueDate, 20) || null, format: str(b.format, 160), language: str(b.language, 60),
     status: 'in_production', stage: 'plan',

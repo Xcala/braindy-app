@@ -17,13 +17,6 @@ export function Colors({ colors }: { colors: Color[] }) {
 
   return (
     <div className="col g24">
-      <div className="prop" aria-hidden="true">
-        {list.map((c, i) => (
-          <div key={c.id ?? c.hex} style={{ flex: Math.max(1, list.length - i), background: c.hex, color: inkOn(c.hex!) }}>
-            {c.name}
-          </div>
-        ))}
-      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         {list.map((c) => {
           const hex = c.hex!.toUpperCase();
@@ -38,7 +31,7 @@ export function Colors({ colors }: { colors: Color[] }) {
                     <Icon name={copied === hex ? 'check' : 'copy'} size={14} />{copied === hex ? t('common.copied') : t('common.copy')}
                   </button>
                   <span className="k">RGB</span><span className="mono">{rgb(hex).join(' ')}</span><span />
-                  <span className="k">PMS</span><span className="t-sm t-mute">{c.pantone ?? t('brand.toConfirm')}</span><span />
+                  {c.pantone && <><span className="k">PMS</span><span className="mono">{c.pantone}</span><span /></>}
                 </div>
               </div>
             </div>

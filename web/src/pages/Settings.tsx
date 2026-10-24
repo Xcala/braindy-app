@@ -18,7 +18,7 @@ export function Settings() {
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   return (
-    <div className="grid items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
       <nav className="col g4" aria-label={t('nav.settings')}>
         <p className="label" style={{ padding: '0 12px 8px' }}>{current.name}</p>
         {TABS.map(([k, label]) => (

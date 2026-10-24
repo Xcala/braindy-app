@@ -1,7 +1,7 @@
 /** Strings for onboarding (first 11 days), Brand Brain signing and the monthly report (wave F). */
 export const onboardingEn = {
   'nav.onboarding': 'Onboarding',
-  'nav.report': 'Monthly report',
+  'nav.report': 'Results',
   'common.continue': 'Continue',
   'ob.first11': 'Your first 11 days',
   'ob.day0': 'Day 0', 'ob.day01': 'Day 0 to 1', 'ob.day1': 'Day 1', 'ob.day2': 'Day 2', 'ob.day35': 'Day 3 to 5', 'ob.day11': 'Day 11',
@@ -63,7 +63,7 @@ export const onboardingEn = {
   'rep.pieces': 'Pieces delivered', 'rep.piecesSub': 'All on brand · first try {pct}%',
   'rep.byMonth': 'Qualified leads by month', 'rep.noSeries': 'No monthly series yet.', 'rep.whatMoved': 'What moved the number',
   'rep.likesNote': 'Likes and reach are not the result.',
-  'rep.next': 'Next month', 'rep.nextSub': 'Your Braintrust · all four Brains, one plan.',
+  'rep.next': 'Next month', 'rep.nextSub': 'NickMark and his four Brains, one plan.',
   'rep.reviewed': 'Reviewed by NickMark', 'rep.book20': 'Book 20 minutes to go through it', 'rep.book': 'Book',
   'rep.editTitle': 'Edit the report',
   'rep.f.salesAttributed': 'Sales attributed', 'rep.f.salesPrev': 'Sales previous month', 'rep.f.leads': 'Qualified leads', 'rep.f.costPerLead': 'Cost per lead',
@@ -74,7 +74,7 @@ export const onboardingEn = {
 
 export const onboardingEs: Record<keyof typeof onboardingEn, string> = {
   'nav.onboarding': 'Onboarding',
-  'nav.report': 'Reporte mensual',
+  'nav.report': 'Resultados',
   'common.continue': 'Continuar',
   'ob.first11': 'Tus primeros 11 días',
   'ob.day0': 'Día 0', 'ob.day01': 'Día 0 a 1', 'ob.day1': 'Día 1', 'ob.day2': 'Día 2', 'ob.day35': 'Día 3 a 5', 'ob.day11': 'Día 11',
@@ -136,7 +136,7 @@ export const onboardingEs: Record<keyof typeof onboardingEn, string> = {
   'rep.pieces': 'Piezas entregadas', 'rep.piecesSub': 'Todo en marca · al primer intento {pct}%',
   'rep.byMonth': 'Leads calificados por mes', 'rep.noSeries': 'Todavía no hay serie mensual.', 'rep.whatMoved': 'Qué movió el número',
   'rep.likesNote': 'Los likes y el alcance no son el resultado.',
-  'rep.next': 'El próximo mes', 'rep.nextSub': 'Su Braintrust · los cuatro Brains, un plan.',
+  'rep.next': 'El próximo mes', 'rep.nextSub': 'NicoMarca y sus cuatro Brains, un plan.',
   'rep.reviewed': 'Revisado por NicoMarca', 'rep.book20': 'Agenden 20 minutos para revisarlo', 'rep.book': 'Agendar',
   'rep.editTitle': 'Editar el reporte',
   'rep.f.salesAttributed': 'Ventas atribuidas', 'rep.f.salesPrev': 'Ventas del mes anterior', 'rep.f.leads': 'Leads calificados', 'rep.f.costPerLead': 'Costo por lead',

@@ -27,6 +27,7 @@ export interface BrandRequest {
   latestVersion?: string;
   createdBy: string;
   createdAt?: Timestamp;
+  updatedAt?: Timestamp;
   legacy?: { briefRequestId?: string };
 }
 

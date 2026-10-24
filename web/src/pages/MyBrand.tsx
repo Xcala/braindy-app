@@ -6,6 +6,7 @@ import { BrandMark } from '../brands/BrandMark';
 import { Logos } from '../brands/identity/Logos';
 import { Colors, brandColors, type Color } from '../brands/identity/Colors';
 import { Typography } from '../brands/identity/Typography';
+import { Strategy, hasStrategy, type BrainDoc } from '../brands/identity/Strategy';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
 import { GroupWork } from '../brands/GroupWork';
 import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
@@ -30,10 +31,11 @@ export function MyBrand() {
   const { t } = useI18n();
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
+  const brainDoc = useBrandDoc(current?.id, 'context/brain');
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
-  const active = useActiveSection([identity.loading, voiceDoc.loading, current?.id]);
+  const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const id = (identity.data ?? {}) as Identity;
@@ -41,11 +43,13 @@ export function MyBrand() {
   const colors = brandColors(id.colors ?? []);
   const children = brands.filter((b) => b.groupId === current.id);
   const loading = identity.loading || voiceDoc.loading;
+  const brain = brainDoc.data as BrainDoc | null;
 
   const sections: Array<{ id: string; label: StringKey; show: boolean }> = [
     { id: 'family', label: 'brand.children', show: children.length > 0 },
     { id: 'overview', label: 'group.overview', show: children.length > 0 },
     { id: 'logos', label: 'brand.logos', show: !!id.logos },
+    { id: 'strategy', label: 'brand.strategy', show: hasStrategy(brain) },
     { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
     { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0 },
     { id: 'voice', label: 'brand.voice', show: !!voice },
@@ -99,6 +103,12 @@ export function MyBrand() {
         <section className="col g24" id="logos" aria-labelledby="h-logos">
           <SectionHead id="logos" num={num('logos')} title={t('brand.logos')} subtitle={t('brand.logosSub')} />
           <Logos logos={id.logos} />
+        </section>
+      )}
+      {hasStrategy(brain) && (
+        <section className="col g24" id="strategy" aria-labelledby="h-strategy">
+          <SectionHead id="strategy" num={num('strategy')} title={t('brand.strategy')} subtitle={t('brand.strategySub')} />
+          <Strategy brain={brain!} />
         </section>
       )}
       {colors.length > 0 && (

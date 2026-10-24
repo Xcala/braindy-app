@@ -50,7 +50,7 @@ export function Report() {
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.cpl')}</span><span className="h1">{money(r.costPerLead)}</span><span className="t-xs t-mute">{t('rep.cplSub')}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.pieces')}</span><span className="h1">{r.pieces ?? 0}</span><span className="t-xs t-mute">{t('rep.piecesSub', { pct: r.firstTryPct ?? '—' })}</span></div>
           </div>
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
             <section className="card col g16">
               <h2 className="h3">{t('rep.byMonth')}</h2>
               {(r.leadsByMonth ?? []).length === 0 ? <p className="t-sm t-mute">{t('rep.noSeries')}</p> : (

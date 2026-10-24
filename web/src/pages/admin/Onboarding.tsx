@@ -26,7 +26,7 @@ export function AdminOnboarding() {
   const fmt = (d: Date) => d.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Bogota' });
 
   return (
-    <div className="grid items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
       <aside className="col g16">
         <div className="card col g8">
           <h2 className="h3">{t('ob.a.queue')}</h2>

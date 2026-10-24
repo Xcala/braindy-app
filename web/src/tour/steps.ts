@@ -15,21 +15,21 @@ export function homeSteps(lang: Lang): Paso[] {
     { el: '[data-tour="home-needs"]', titulo: es ? '1 · Lo que te necesita' : '1 · What needs you',
       texto: es ? '<p>Arriba siempre ves lo que espera tu respuesta: una entrega por aprobar o un plan por revisar. Revisar toma <b>unos 2 minutos</b>.</p><p>Responde el mismo día si puedes: cada día de espera corre la entrega un día.</p>'
         : '<p>At the top you always see what is waiting for your answer: a delivery to approve or a plan to review. Reviewing takes <b>about 2 minutes</b>.</p><p>Answer the same day if you can: every day of waiting moves the delivery one day.</p>' },
-    { el: '[data-tour="home-brains"]', titulo: es ? '2 · Los cuatro Brains' : '2 · The four Brains',
-      texto: es ? '<p>El equipo de <b>NicoMarca</b>: el <b>Researcher</b> investiga, el <b>Marketer</b> comunica, el <b>Creator</b> crea y el <b>Builder</b> construye. Trabajan juntos en cada pieza; NicoMarca dirige, corrige y firma todo.</p><p>Cada uno muestra su estado: <b>Listo</b>, <b>Trabajando</b> o <b>Esperando aprobación</b> (te espera a ti).</p>'
-        : '<p>The team of <b>NickMark</b>: the <b>Researcher</b> researches, the <b>Marketer</b> communicates, the <b>Creator</b> creates and the <b>Builder</b> builds. They work together on every piece; NickMark directs, corrects and signs everything.</p><p>Each shows its state: <b>Ready</b>, <b>Working</b> or <b>Waiting for approval</b> (waiting on you).</p>' },
-    { el: '[data-tour="home-prod"]', titulo: es ? '3 · En producción' : '3 · In production',
+    { el: '[data-tour="home-brains"]', titulo: es ? '2 · NicoMarca y su equipo' : '2 · NickMark and his team',
+      texto: es ? '<p><b>Nicolas</b> hace tu marca: define la estrategia, dirige, corrige y firma cada pieza. Aquí ves en qué está trabajando esta semana y cuándo llega la próxima entrega.</p><p>Sus cuatro <b>Brains</b> lo aceleran: investigan, comunican, crean y construyen con él. El punto azul indica quién está trabajando.</p>'
+        : '<p><b>Nicolas</b> makes your brand: he sets the strategy, directs, corrects and signs every piece. Here you see what he is working on this week and when the next delivery arrives.</p><p>His four <b>Brains</b> speed him up: they research, communicate, create and build with him. The blue dot shows who is working.</p>' },
+    { el: '[data-tour="home-prod"]', titulo: es ? '3 · Esta semana' : '3 · This week',
       texto: es ? '<p>Lo que se está haciendo ahora, quién lo lidera y la <b>fecha de la primera versión</b>.</p><p>Toca una solicitud para ver el plan, las versiones y los comentarios.</p>'
         : '<p>What is being made right now, who leads it and the <b>date of the first version</b>.</p><p>Tap a request to see its plan, versions and comments.</p>' },
     { el: '[data-tour="home-delivered"]', titulo: es ? '4 · Entregado hace poco' : '4 · Recently delivered',
       texto: es ? '<p>Lo último que aprobaste. Todo lo entregado queda también en <b>Mis archivos</b>, listo para descargar.</p>'
         : '<p>The latest things you approved. Everything delivered also stays in <b>My assets</b>, ready to download.</p>' },
     { el: ask(), titulo: es ? '5 · Pedir algo' : '5 · Ask for something',
-      texto: es ? '<p>Aquí empieza todo trabajo nuevo: eliges qué necesitas, lo cuentas en tres tarjetas y un Brain te propone un plan.</p><p class="tg-ej"><span>Mejor</span> una pieza por solicitud («3 posts del open house»)<br><span>Que</span> «todo lo de noviembre» en una sola</p>'
-        : '<p>Every new piece of work starts here: you choose what you need, describe it in three cards and a Brain proposes a plan.</p><p class="tg-ej"><span>Better</span> one piece per request ("3 posts for the open house")<br><span>Than</span> "everything for November" in one</p>' },
-    { el: '[data-tour="home-brain"]', titulo: es ? '6 · Tu Brand Brain' : '6 · Your Brand Brain',
-      texto: es ? '<p>Todo lo que los Brains saben de tu marca: logos, colores, tipografía y voz. Nicolas lo firma y se actualiza con cada aprobación.</p><p>Truco: en <b>Copia rápida</b> un clic copia el color o la fuente para pasársela a quien la necesite.</p>'
-        : '<p>Everything the Brains know about your brand: logos, colors, type and voice. Nicolas signs it and it updates with every approval.</p><p>Tip: in <b>Quick copy</b> one click copies a color or font to share it with whoever needs it.</p>' },
+      texto: es ? '<p>Aquí empieza todo trabajo nuevo: lo cuentas como por WhatsApp y NicoMarca te devuelve un plan.</p><p class="tg-ej"><span>Mejor</span> una pieza por solicitud («3 posts del open house»)<br><span>Que</span> «todo lo de noviembre» en una sola</p>'
+        : '<p>Every new piece of work starts here: tell it like you would on WhatsApp and NickMark sends back a plan.</p><p class="tg-ej"><span>Better</span> one piece per request ("3 posts for the open house")<br><span>Than</span> "everything for November" in one</p>' },
+    { el: '[data-tour="home-lesson"]', titulo: es ? '6 · El Criterio de NicoMarca' : '6 · NickMark Taste',
+      texto: es ? '<p>Cada semana, una lección corta de cómo y por qué se hace bien una pieza: un logo, un hero, una estrategia. Entender el criterio te ayuda a <b>pedir y aprobar mejor</b>.</p><p>Todas las lecciones están en <b>Aprende</b>.</p>'
+        : '<p>Every week, a short lesson on how and why a piece is done well: a logo, a hero, a strategy. Understanding the taste helps you <b>ask and approve better</b>.</p><p>Every lesson lives in <b>Learn</b>.</p>' },
     { el: '[data-tour="home-wa"]', titulo: es ? '7 · Aprueba desde WhatsApp' : '7 · Approve from WhatsApp',
       texto: es ? '<p>Cada entrega te puede llegar por WhatsApp con un enlace para aprobar <b>sin iniciar sesión</b>. El enlace dura 7 días y abre solo esa entrega.</p><p>Si aún no está activo, toca aquí y agrega el número de quien aprueba.</p>'
         : '<p>Every delivery can reach you on WhatsApp with a link to approve <b>without signing in</b>. The link lasts 7 days and opens only that delivery.</p><p>If it is not on yet, tap here and add the number of the person who approves.</p>' },

@@ -6,19 +6,22 @@ import { Icon } from '../components/Icon';
 import { BrainStack, brainName } from '../components/BrainStack';
 import { savePlan } from './api';
 import type { BrandRequest } from './types';
+import { dayLabel } from '../lib/dates';
 
 /** The plan gate: Nicolas edits and approves the scope; the client sees it once approved. */
 export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandRequest; isAdmin: boolean }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  // Older or hand-written plans may store the scope as one text: always work with a list.
+  const planScope = Array.isArray(r.plan?.scope) ? r.plan.scope : r.plan?.scope ? [String(r.plan.scope)] : [];
   const defaults = [t('req.scope.researcher'), t(`req.scope.lead.${r.leadBrain}`), t('req.scope.builder')];
-  const [scope, setScope] = useState<string[]>(r.plan?.scope?.length ? r.plan.scope : defaults);
+  const [scope, setScope] = useState<string[]>(planScope.length ? planScope : defaults);
   const [firstDelivery, setFirstDelivery] = useState(r.plan?.firstDelivery ?? '');
   const [note, setNote] = useState(r.plan?.note ?? '');
   const [busy, setBusy] = useState(false);
   // A new proposal from the Brain (or after "Ask again") refreshes the editable fields.
   useEffect(() => {
-    if (r.plan && !r.plan.approved) { setScope(r.plan.scope?.length ? r.plan.scope : defaults); setFirstDelivery(r.plan.firstDelivery ?? ''); setNote(r.plan.note ?? ''); }
-  }, [r.plan?.scope?.join('|'), r.plan?.firstDelivery, r.plan?.note]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (r.plan && !r.plan.approved) { setScope(planScope.length ? planScope : defaults); setFirstDelivery(r.plan.firstDelivery ?? ''); setNote(r.plan.note ?? ''); }
+  }, [planScope.join('|'), r.plan?.firstDelivery, r.plan?.note]); // eslint-disable-line react-hooks/exhaustive-deps
   const repropose = async () => { setBusy(true); try { await api(`/v1/admin/brands/${brandId}/brains/plan/${r.id}`, { method: 'POST', body: '{}' }); } finally { setBusy(false); } };
 
   const approved = !!r.plan?.approved;
@@ -59,7 +62,7 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
         {isAdmin && !approved && <button className="btn btn-ghost btn-sm self-start" onClick={() => setScope((l) => [...l, ''])}>+ {t('req.addScope')}</button>}
         <div className="row g24 wrap t-sm">
           <span><span className="t-mute">{t('req.firstDelivery')}</span>{' '}
-            {isAdmin && !approved ? <input className="input inline-block" style={{ height: 34, width: 170 }} type="date" value={firstDelivery} onChange={(e) => setFirstDelivery(e.target.value)} aria-label={t('req.firstDelivery')} /> : <strong>{r.plan?.firstDelivery ?? '—'}</strong>}
+            {isAdmin && !approved ? <input className="input inline-block" style={{ height: 34, width: 170 }} type="date" value={firstDelivery} onChange={(e) => setFirstDelivery(e.target.value)} aria-label={t('req.firstDelivery')} /> : <strong>{r.plan?.firstDelivery ? dayLabel(r.plan.firstDelivery, lang) : '—'}</strong>}
           </span>
           <span><span className="t-mute">{t('req.approval')}</span> <strong>{r.approvalLevel === 'nicolas' ? t('req.approvalNicolas') : t('req.approvalClient')}</strong></span>
         </div>

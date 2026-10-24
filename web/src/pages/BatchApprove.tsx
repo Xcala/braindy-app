@@ -63,7 +63,7 @@ function BatchTile({ brandId, r, on, onToggle }: { brandId: string; r: BrandRequ
       <div className="thumb" style={{ height: 200, overflow: 'hidden' }}>
         {url && isImage(v?.files?.[0]?.contentType) ? <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" /> : <Icon name="file" size={36} />}
         <input type="checkbox" checked={on} onChange={onToggle} className="absolute left-3 top-3" style={{ width: 22, height: 22, accentColor: 'var(--azul)' }} aria-label={r.title} />
-        {v && <span className="chip chip-plain c-type absolute right-3 top-3" style={{ background: '#fff' }}>v{v.n}</span>}
+        {v && <span className="chip chip-plain c-type absolute right-3 top-3" style={{ background: '#fff' }}>{t('home.version', { n: v.n })}</span>}
       </div>
       <div className="tile-meta">
         <span className="tile-name">{r.title}</span>

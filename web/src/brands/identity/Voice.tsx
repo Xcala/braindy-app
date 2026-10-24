@@ -17,7 +17,7 @@ export function Voice({ voice }: { voice: VoiceDoc | null }) {
 
   return (
     <div className="col g20">
-      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr]">
+      <div className={`grid gap-5 ${toneBalance || keyLanguage.length ? 'lg:grid-cols-[1.2fr_1fr]' : ''}`}>
         <div className="card col g20">
           <p className="label">{t('brand.essence')}</p>
           {essence?.title && <p className="d-lg" style={{ fontSize: 30, lineHeight: '36px' }}><span className="w9">{essence.title}</span></p>}
@@ -33,18 +33,24 @@ export function Voice({ voice }: { voice: VoiceDoc | null }) {
             </>
           ) : null}
         </div>
-        <div className="card col g20">
-          <div className="row between"><p className="label">{t('brand.toneBalance')}</p>{!toneBalance && <span className="chip c-draft">{t('brand.notSet')}</span>}</div>
-          <Balance left={t('brand.tradition')} right={t('brand.modernity')} a={toneBalance?.tradition} b={toneBalance?.modernity} />
-          <Balance left={t('brand.intellect')} right={t('brand.emotion')} a={toneBalance?.intellect} b={toneBalance?.emotion} />
-          {keyLanguage.length > 0 && (
-            <>
-              <div className="divider" />
-              <p className="label">{t('brand.keyLanguage')}</p>
-              <div className="row g8 wrap">{keyLanguage.map((k) => <span key={k} className="chip chip-plain c-type">{k}</span>)}</div>
-            </>
-          )}
-        </div>
+        {(toneBalance || keyLanguage.length > 0) && (
+          <div className="card col g20">
+            {toneBalance && (
+              <>
+                <p className="label">{t('brand.toneBalance')}</p>
+                <Balance left={t('brand.tradition')} right={t('brand.modernity')} a={toneBalance.tradition} b={toneBalance.modernity} />
+                <Balance left={t('brand.intellect')} right={t('brand.emotion')} a={toneBalance.intellect} b={toneBalance.emotion} />
+              </>
+            )}
+            {keyLanguage.length > 0 && (
+              <>
+                {toneBalance && <div className="divider" />}
+                <p className="label">{t('brand.keyLanguage')}</p>
+                <div className="row g8 wrap">{keyLanguage.map((k) => <span key={k} className="chip chip-plain c-type">{k}</span>)}</div>
+              </>
+            )}
+          </div>
+        )}
       </div>
       {tonePrinciples.length > 0 && (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">

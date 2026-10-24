@@ -15,17 +15,21 @@ import type { StringKey } from '../i18n/strings';
 const TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/home', label: 'nav.home' },
   { to: '/brand', label: 'nav.brand' },
-  { to: '/assets', label: 'nav.assets' },
   { to: '/ask', label: 'nav.ask' },
   { to: '/requests', label: 'nav.requests' },
+  { to: '/assets', label: 'nav.assets' },
+  { to: '/report', label: 'nav.report' },
+  { to: '/learn', label: 'cr.nav' },
   { to: '/accesses', label: 'nav.accesses' },
 ];
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
+  { to: '/admin/today', label: 'today.title' },
   { to: '/admin/brands', label: 'nav.brands' },
   { to: '/admin/proposals', label: 'nav.proposals' },
   { to: '/admin/onboarding', label: 'nav.onboarding' },
   { to: '/admin/billing', label: 'nav.billing' },
   { to: '/team', label: 'nav.team' },
+  { to: '/admin/criterio', label: 'cra.nav' },
 ];
 
 export function AppShell() {
@@ -46,17 +50,17 @@ export function AppShell() {
           <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
             <>
-              <Link to="/team" className="ws" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span>Braindy admin</Link>
+              <Link to="/admin/today" className="ws" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span>Braindy admin</Link>
               <span className="hidden sm:inline-flex"><BrandMenu isAdmin onPicked={() => navigate('/home')} /></span>
             </>
           ) : (
             <>
               <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
-              {isAdmin && <span className="hidden sm:inline-flex"><Link to="/team" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
+              {isAdmin && <span className="hidden sm:inline-flex"><Link to="/admin/today" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
             </>
           )}
           <div className="grow" />
-          {isAdmin && <span className="hidden md:inline-flex"><ApiStatus /></span>}
+          {isAdmin && import.meta.env.DEV && <span className="hidden md:inline-flex"><ApiStatus /></span>}
           <CommandK />
           <LangToggle />
           <AccountMenu />
@@ -112,8 +116,12 @@ function AccountMenu() {
       {open && (
         <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
-          <div className="md:hidden"><NavLink role="menuitem" to="/accesses" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.accesses")}</NavLink></div>
-          {profile?.role === 'admin' && <div className="sm:hidden"><NavLink role="menuitem" to="/team" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.backToAdmin")}</NavLink></div>}
+          <div className="md:hidden">
+            {([['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).map(([to, k]) => (
+              <NavLink key={to} role="menuitem" to={to} onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: 'none', color: 'var(--ink)' }}>{t(k)}</NavLink>
+            ))}
+          </div>
+          {profile?.role === 'admin' && <div className="sm:hidden"><NavLink role="menuitem" to="/admin/today" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.backToAdmin")}</NavLink></div>}
           <button role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}
             onClick={() => { setOpen(false); if (!requestTour()) navigate('/home?tour=1'); }}>{t('tour.see')}</button>
           <NavLink role="menuitem" to="/settings" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.settings")}</NavLink>

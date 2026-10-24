@@ -53,7 +53,7 @@ export function PublicReview() {
       <div className="row g12"><span className="sel" style={{ border: 0, padding: 0, height: 'auto', background: 'none' }}><BrandMark brand={data.brand} /></span><span className="w7">{data.brand.name}</span></div>
       <div className="col g4">
         <h1 className="h1">{data.request.title}</h1>
-        <p className="t-mute">v{data.version.n} · {data.request.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain })}</p>
+        <p className="t-mute">{t('home.version', { n: data.version.n })} · {data.request.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain })}</p>
       </div>
       <div className="col g12">
         {data.version.files.map((f, i) => f.url && isImage(f.contentType)

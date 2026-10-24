@@ -33,7 +33,7 @@
 .tg-card { position: fixed; width: min(24rem, calc(100vw - 2rem)); background: var(--tg-bg); color: var(--tg-ink); border-radius: var(--tg-radius);
   box-shadow: 0 1.5rem 3rem -1rem rgba(0, 0, 0, .45); padding: 1.375rem 1.375rem 1.125rem; display: grid; gap: 0.5rem; outline: none;
   transition: top .35s var(--tg-ease), left .35s var(--tg-ease); }
-.tg-tour.centro .tg-card { top: 50% !important; left: 50% !important; transform: translate(-50%, -50%); width: min(26rem, calc(100vw - 2rem)) !important; text-align: center; padding-top: 1.75rem; }
+.tg-tour.centro .tg-card { top: 50% !important; left: 50% !important; transform: translate(-50%, -50%); width: min(26rem, calc(100% - 2rem)) !important; max-width: calc(100% - 2rem); text-align: center; padding-top: 1.75rem; }
 .tg-logo { margin-bottom: 0.5rem; }
 .tg-n { margin: 0; font-family: var(--tg-font-mono); font-size: 0.6875rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--tg-accent); }
 .tg-h { margin: 0; font-family: var(--tg-font-title); font-size: 1.3125rem; line-height: 1.2; }
