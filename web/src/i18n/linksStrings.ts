@@ -39,6 +39,8 @@ export const linksEn = {
   'req.inMotionEmpty': 'Nothing in motion yet. Your first request will show up here.',
   'req.allRequests': 'All requests',
   'req.attached': 'Attached files · {n}',
+  'req.dragHint': 'Drag a card to another column to change its status.',
+  'req.moveError': 'The card could not be moved. Try again.',
 };
 
 export const linksEs: Record<keyof typeof linksEn, string> = {
@@ -81,4 +83,6 @@ export const linksEs: Record<keyof typeof linksEn, string> = {
   'req.inMotionEmpty': 'Todavía no hay nada en movimiento. Tu primera solicitud aparece aquí.',
   'req.allRequests': 'Todas las solicitudes',
   'req.attached': 'Archivos adjuntos · {n}',
+  'req.dragHint': 'Arrastra una tarjeta a otra columna para cambiar su estado.',
+  'req.moveError': 'No se pudo mover la tarjeta. Inténtalo de nuevo.',
 };

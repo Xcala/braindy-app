@@ -8,6 +8,8 @@ import { useRequests } from '../requests/useRequests';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { STATUS_CHIP, type BrandRequest, type RequestStatus } from '../requests/types';
 import { AskBox } from '../requests/AskBox';
+import { useAuth } from '../auth/AuthProvider';
+import { moveRequest } from '../requests/moveRequest';
 
 const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
   { status: 'in_production', bg: '#EEF1F7' }, { status: 'to_approve', bg: '#FFF7E3' },
@@ -23,10 +25,19 @@ export function Requests() {
   const { t, lang } = useI18n();
   const { list, loading } = useRequests(current?.id);
   const [view, setView] = useState<'board' | 'list'>('board');
+  const isAdmin = useAuth().profile?.role === 'admin';
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overCol, setOverCol] = useState<RequestStatus | null>(null);
+  const [moveError, setMoveError] = useState(false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const typeLabel = (r: BrandRequest) => [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang]].filter(Boolean).join(' · ');
   const toApprove = list.filter((r) => r.status === 'to_approve').length;
+  const drop = (status: RequestStatus) => {
+    const r = list.find((x) => x.id === dragId);
+    setDragId(null); setOverCol(null); setMoveError(false);
+    if (r && r.status !== status) moveRequest(current.id, r.id, status).catch(() => setMoveError(true));
+  };
 
   return (
     <div className="col g24">
@@ -52,14 +63,25 @@ export function Requests() {
         : list.length === 0 ? (
           <div className="card empty"><p className="h3">{t('req.empty')}</p></div>
         ) : view === 'board' ? (
+          <div className="col g8">
+          {isAdmin && <p className="t-xs t-mute">{t(moveError ? 'req.moveError' : 'req.dragHint')}</p>}
           <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-4">
             {COLUMNS.map(({ status, bg }) => {
               const items = list.filter((r) => r.status === status);
+              const target = isAdmin ? {
+                onDragOver: (e: React.DragEvent) => { if (dragId) { e.preventDefault(); setOverCol(status); } },
+                onDragLeave: (e: React.DragEvent) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setOverCol(null); },
+                onDrop: (e: React.DragEvent) => { e.preventDefault(); drop(status); },
+              } : {};
               return (
-                <section key={status} className="col g12 rounded-[24px] p-4" style={{ background: bg, minHeight: 320 }} aria-label={t(`req.status.${status}`)}>
+                <section key={status} {...target} className="col g12 rounded-[24px] p-4" aria-label={t(`req.status.${status}`)}
+                  style={{ background: bg, minHeight: 320, outline: overCol === status ? '2px dashed var(--azul)' : undefined, outlineOffset: -2 }}>
                   <div className="row between"><span className={`chip ${STATUS_CHIP[status]}`}>{t(`req.status.${status}`)}</span><span className="t-sm t-mute">{items.length}</span></div>
                   {items.map((r) => (
-                    <Link key={r.id} to={`/requests/${r.id}`} className="card col" style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined }}>
+                    <Link key={r.id} to={`/requests/${r.id}`} className="card col" draggable={isAdmin}
+                      onDragStart={isAdmin ? (e) => { setDragId(r.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.id); } : undefined}
+                      onDragEnd={() => { setDragId(null); setOverCol(null); }}
+                      style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
                       <span className="w7">{r.title}</span>
                       {r.formatType && r.formatType !== r.title && <span className="t-xs t-mute">{r.formatType}</span>}
                       {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>{t("home.version", { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
@@ -76,6 +98,7 @@ export function Requests() {
                 </section>
               );
             })}
+          </div>
           </div>
         ) : (
           <div className="table overflow-x-auto">
