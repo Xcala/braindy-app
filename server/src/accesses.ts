@@ -43,7 +43,8 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   const password = String(b.password ?? '');
   const byName = await actorName(user.uid, user.email);
   if (password) {
-    const s = await seal(password, aad(brandId, ref.id));
+    const s = await seal(password, aad(brandId, ref.id)).catch(() => null);
+    if (!s) return c.json({ error: 'vault_unavailable' }, 503);
     await secretRef(brandId, ref.id).set({ ...s, brandId, accessId: ref.id, updatedAt: now() });
   }
   await ref.set({
@@ -71,7 +72,8 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   if (b.notes !== undefined) patch.notes = clean(b.notes, 1000);
   if (b.sharedWithBraindy !== undefined) patch.sharedWithBraindy = b.sharedWithBraindy === true;
   if (typeof b.password === 'string' && b.password) {
-    const s = await seal(b.password, aad(brandId, id));
+    const s = await seal(b.password, aad(brandId, id)).catch(() => null);
+    if (!s) return c.json({ error: 'vault_unavailable' }, 503);
     await secretRef(brandId, id).set({ ...s, brandId, accessId: id, updatedAt: now() });
     patch.hasSecret = true;
   }

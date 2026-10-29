@@ -15,7 +15,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [shared, setShared] = useState(!!editing?.sharedWithBraindy);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<false | 'save' | 'vault'>(false);
   const [deleting, setDeleting] = useState(false);
   const first = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -33,7 +33,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
       if (editing) await accessesApi.update(brandId, editing.id, body);
       else await accessesApi.add(brandId, body);
       setPassword(''); onClose();
-    } catch { setError(true); } finally { setBusy(false); }
+    } catch (err) { setError(String(err).includes('503') ? 'vault' : 'save'); } finally { setBusy(false); }
   }
 
   return (
@@ -70,7 +70,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
         <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
           <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> {t('acc.sharedLabel')}
         </label>
-        {error && <p className="help err" role="alert">{t('acc.saveError')}</p>}
+        {error && <p className="help err" role="alert">{t(error === 'vault' ? 'acc.vaultOff' : 'acc.saveError')}</p>}
         <div className="row g12 wrap" style={{ justifyContent: 'space-between' }}>
           {editing ? <button type="button" className="btn btn-ghost" onClick={() => setDeleting(true)}>{t('acc.delete')}</button> : <span />}
           <span className="row g12">
