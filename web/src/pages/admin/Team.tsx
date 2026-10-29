@@ -9,6 +9,7 @@ import { MembersCard } from '../../team/MembersCard';
 import type { BrainId } from '../../requests/taxonomy';
 import { useBrainTasks } from '../../brains/useBrains';
 import { GranolaInbox } from '../../team/GranolaInbox';
+import { TeamLineup } from '../../team/TeamLineup';
 
 /** Active brands Nicolas takes on at once. */
 const CAP = 50;
@@ -40,6 +41,8 @@ export function AdminTeam() {
   return (
     <div className="col g24">
       <div className="col g8"><p className="label">{t('team.kicker')}</p><h1 className="h1"><span className="w9">{t('nav.team')}.</span> {t('team.tagline')}</h1></div>
+
+      <TeamLineup />
 
       <div className="card row g24 wrap">
         <div className="col grow" style={{ gap: 6, minWidth: 260 }}>
