@@ -41,6 +41,9 @@ export const linksEn = {
   'req.attached': 'Attached files · {n}',
   'req.dragHint': 'Drag a card to another column to change its status.',
   'req.moveError': 'The card could not be moved. Try again.',
+  'site.title': 'Website adjustments', 'site.sub': '{n} points: what was asked, what we did and what is left', 'site.updated': 'updated {date}',
+  'site.filter': 'Filter by state', 'site.all': 'All', 'site.done': 'What we did', 'site.seeChange': 'See the change', 'site.state': 'State',
+  'site.status.delivered': 'Delivered', 'site.status.in_progress': 'In progress', 'site.status.decision': 'Pending decision', 'site.status.client': 'Waiting on you', 'site.status.discarded': 'Discarded',
 };
 
 export const linksEs: Record<keyof typeof linksEn, string> = {
@@ -85,4 +88,7 @@ export const linksEs: Record<keyof typeof linksEn, string> = {
   'req.attached': 'Archivos adjuntos · {n}',
   'req.dragHint': 'Arrastra una tarjeta a otra columna para cambiar su estado.',
   'req.moveError': 'No se pudo mover la tarjeta. Inténtalo de nuevo.',
+  'site.title': 'Ajustes del sitio', 'site.sub': '{n} puntos: lo que pidieron, lo que hicimos y lo que falta', 'site.updated': 'actualizado el {date}',
+  'site.filter': 'Filtrar por estado', 'site.all': 'Todo', 'site.done': 'Lo que hicimos', 'site.seeChange': 'Ver el cambio', 'site.state': 'Estado',
+  'site.status.delivered': 'Entregado', 'site.status.in_progress': 'En curso', 'site.status.decision': 'Pendiente de decisión', 'site.status.client': 'Pendiente del cliente', 'site.status.discarded': 'Descartado',
 };
