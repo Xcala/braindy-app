@@ -60,7 +60,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
       {v && (
         <div className="col g12" style={{ padding: 20, borderBottom: '1px solid var(--line)' }}>
           <span className="row g8">
-            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-8 w-8 flex-none rounded-full object-cover" />
+            <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-8 w-8 flex-none rounded-full object-cover" />
             {(v.brain ?? r.leadBrain) && <img src={`/brand/brains/${v.brain ?? r.leadBrain}.png`} alt="" className="h-8 w-8 flex-none rounded-full" style={{ marginLeft: -12, boxShadow: '0 0 0 2px #fff', background: 'var(--niebla)' }} />}
             <span className="t-sm">{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(v.brain ?? r.leadBrain) })}</span>
           </span>

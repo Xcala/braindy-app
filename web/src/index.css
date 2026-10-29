@@ -55,3 +55,6 @@ body {
 /* Tailwind reads the design-system class "table" as display:table, which ignores max-width and overflow (tables burst out on phones). */
 .table { display: block; }
 .table.overflow-x-auto { overflow-x: auto; }
+
+/* NickMark photos: keep his face in frame wherever the portrait is cropped (circles, cards). */
+img[src$="nicolas.jpg"] { object-position: 50% 18%; }

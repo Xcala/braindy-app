@@ -57,7 +57,7 @@ export function LearnLesson() {
       ) : l.videoUrl ? <a className="btn btn-primary self-start" href={l.videoUrl} target="_blank" rel="noreferrer">▶ {t('cr.watch')}</a>
         : <p className="t-sm t-mute">{t('cr.videoSoon')}</p>}
       <div className="row g12 wrap" style={{ alignItems: 'center' }}>
-        <img src="/brand/proposal/nicolas.jpg" alt="" className="h-9 w-9 rounded-full object-cover" />
+        <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-9 w-9 rounded-full object-cover" />
         <span className="t-sm w7">{t('sig.card')}</span>
         {l.deckUrl && <a className="btn btn-secondary btn-sm" href={l.deckUrl} target="_blank" rel="noreferrer">{t('cr.deck')}</a>}
       </div>

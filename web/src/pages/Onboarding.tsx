@@ -35,7 +35,7 @@ export function Onboarding() {
             </div>
             <div className="widget col" style={{ alignItems: 'flex-start', gap: 8, position: 'static' }}>
               <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('ob.signature')}</span>
-              <div className="row g8"><img src="/brand/proposal/nicolas.jpg" alt="" className="h-10 w-10 rounded-full object-cover" />
+              <div className="row g8"><img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-10 w-10 rounded-full object-cover" />
                 <div className="col"><span className="w7 t-sm">{signed ? t('ob.signedBy') : t('ob.waitingNicolas')}</span><span className="t-xs" style={{ color: '#C9D0DE' }}>{t('ob.signDay2')}</span></div></div>
             </div>
           </div>

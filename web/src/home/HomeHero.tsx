@@ -27,7 +27,9 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
       <div className="col g24 min-w-0" data-tour="home-needs">
         <p className="label" style={{ color: '#C9D0DE' }}>{today} · {brandName}</p>
         <h1 className="d-lg" id="h-home" style={{ color: '#fff' }}>
-          <span className="w9">{needsYou.length ? t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length }) : t('home.nothingNeeds')}</span> {t('home.restMoving')}
+          {needsYou.length
+            ? <><span className="w9">{t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length })}</span> {t('home.restMoving')}</>
+            : <><span className="w9">{t('home.nothingNeeds')}</span><br />{t('home.possibleSub')}</>}
         </h1>
         {shown.length > 0 && <div className="col g12">{shown.map((r) => <NeedItem key={`${r.brandId}/${r.id}`} r={r} />)}</div>}
         {needsYou.length > 3 && <Link to="/requests" className="t-sm w7" style={{ color: '#fff' }}>{t('home.moreToReview', { n: needsYou.length - 3 })}</Link>}
@@ -35,7 +37,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
       <div className="col g16 min-w-0 justify-end" data-tour="home-brains">
         <div className="widget col g16" style={{ position: 'static' }}>
           <div className="row g12">
-            <img src="/brand/proposal/nicolas.jpg" alt="" className="h-14 w-14 flex-none rounded-full object-cover" />
+            <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-14 w-14 flex-none rounded-full object-cover" />
             <div className="col grow"><span className="w7">{t('sig.card')}</span><span className="t-xs muted">{t('home.orchestrator')}</span></div>
             <a className="btn btn-white btn-sm" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a>
           </div>

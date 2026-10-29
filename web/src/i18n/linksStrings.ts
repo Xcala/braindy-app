@@ -25,6 +25,9 @@ export const linksEn = {
   'brand.concept': 'Design concept',
   'brand.conceptSub': 'The idea behind your logo and how your brand presents itself.',
   'brand.cover': 'Brand cover',
+  'ask.need': 'Do you need something?',
+  'ask.moreOptions': 'Add links, date or type',
+  'ask.lessOptions': 'Hide options',
 };
 
 export const linksEs: Record<keyof typeof linksEn, string> = {
@@ -53,4 +56,7 @@ export const linksEs: Record<keyof typeof linksEn, string> = {
   'brand.concept': 'Concepto de diseño',
   'brand.conceptSub': 'La idea detrás de tu logo y cómo se presenta tu marca.',
   'brand.cover': 'Portada de marca',
+  'ask.need': '¿Necesitas algo?',
+  'ask.moreOptions': 'Agregar links, fecha o tipo',
+  'ask.lessOptions': 'Ocultar opciones',
 };

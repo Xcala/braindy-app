@@ -70,7 +70,7 @@ export function Report() {
             <aside className="col g16">
               <div className="card col g8"><h2 className="h3">{t('rep.next')}</h2><p className="t-xs t-mute">{t('rep.nextSub')}</p><p className="t-sm" style={{ whiteSpace: 'pre-wrap' }}>{r.nextMonth || '—'}</p></div>
               <div className="card row g12">
-                <img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
+                <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
                 <div className="col grow"><span className="t-sm w7">{t('rep.reviewed')}</span><span className="t-xs t-mute">{t('rep.book20')}</span></div>
                 <a className="btn btn-secondary btn-sm print:hidden" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('rep.book')}</a>
               </div>

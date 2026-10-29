@@ -81,7 +81,7 @@ function SignPanel({ brand }: { brand: Brand }) {
         <>
           <BrainCards brain={draft} onChange={setDraft} />
           <div className="card row between g16 wrap" style={{ padding: 22 }}>
-            <div className="row g12"><img src="/brand/proposal/nicolas.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
+            <div className="row g12"><img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
               <div className="col"><span className="w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('ob.a.signNote')}</span></div></div>
             <div className="row g8 wrap">
               <button className="btn btn-secondary" disabled={busy} onClick={() => run(() => onboardingApi.saveBrain(brand.id, draft), t('ob.a.saved'))}>{t('ob.a.save')}</button>

@@ -12,7 +12,6 @@ import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
 import { ProposalDetail } from '../pages/admin/ProposalDetail';
 import { PublicProposal } from '../pages/PublicProposal';
-import { Ask } from '../pages/Ask';
 import { Requests } from '../pages/Requests';
 import { RequestDetail } from '../pages/RequestDetail';
 import { BatchApprove } from '../pages/BatchApprove';
@@ -48,7 +47,7 @@ export const router = createBrowserRouter([
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },
           { path: 'research', element: <MyResearch /> },
-          { path: 'ask', element: <Ask /> },
+          { path: 'ask', element: <Navigate to="/requests#ask" replace /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },

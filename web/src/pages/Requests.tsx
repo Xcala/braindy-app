@@ -7,6 +7,7 @@ import { dayLabel, isOverdue } from '../lib/dates';
 import { useRequests } from '../requests/useRequests';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { STATUS_CHIP, type BrandRequest, type RequestStatus } from '../requests/types';
+import { AskBox } from '../requests/AskBox';
 
 const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
   { status: 'in_production', bg: '#EEF1F7' }, { status: 'to_approve', bg: '#FFF7E3' },
@@ -37,13 +38,14 @@ export function Requests() {
             <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('req.list')}</button>
             <button className={view === 'board' ? 'is-on' : ''} aria-pressed={view === 'board'} onClick={() => setView('board')}>{t('req.board')}</button>
           </div>
-          <Link className="btn btn-primary" to="/ask">+ {t('nav.ask')}</Link>
         </div>
       </div>
 
+      <AskBox brandId={current.id} />
+
       {loading ? <div className="grid gap-5 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 300 }} />)}</div>
         : list.length === 0 ? (
-          <div className="card empty"><p className="h3">{t('req.empty')}</p><Link className="btn btn-primary" to="/ask">{t('nav.ask')}</Link></div>
+          <div className="card empty"><p className="h3">{t('req.empty')}</p></div>
         ) : view === 'board' ? (
           <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-4">
             {COLUMNS.map(({ status, bg }) => {

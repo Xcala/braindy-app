@@ -15,7 +15,6 @@ import type { StringKey } from '../i18n/strings';
 const TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/home', label: 'nav.home' },
   { to: '/brand', label: 'nav.brand' },
-  { to: '/ask', label: 'nav.ask' },
   { to: '/requests', label: 'nav.requests' },
   { to: '/assets', label: 'nav.assets' },
   { to: '/apps', label: 'nav.apps' },
@@ -85,7 +84,7 @@ export function AppShell() {
 
 function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
   return (
-    <NavLink to={to} data-tour={to === '/ask' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
+    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
       {label}
     </NavLink>
   );
