@@ -8,6 +8,8 @@ import { Colors, brandColors, type Color } from '../brands/identity/Colors';
 import { Typography } from '../brands/identity/Typography';
 import { Strategy, hasStrategy, type BrainDoc } from '../brands/identity/Strategy';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
+import { DeckConcept, deckShots } from '../brands/identity/DeckConcept';
+import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { GroupWork } from '../brands/GroupWork';
 import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
 import { MeetingsCard } from '../brains/TeamNotes';
@@ -32,6 +34,7 @@ export function MyBrand() {
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const brainDoc = useBrandDoc(current?.id, 'context/brain');
+  const shots = deckShots(useLegacyAssets(current?.id));
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -49,6 +52,7 @@ export function MyBrand() {
     { id: 'family', label: 'brand.children', show: children.length > 0 },
     { id: 'overview', label: 'group.overview', show: children.length > 0 },
     { id: 'logos', label: 'brand.logos', show: !!id.logos },
+    { id: 'concept', label: 'brand.concept', show: shots.length > 0 },
     { id: 'strategy', label: 'brand.strategy', show: hasStrategy(brain) },
     { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
     { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0 },
@@ -103,6 +107,12 @@ export function MyBrand() {
         <section className="col g24" id="logos" aria-labelledby="h-logos">
           <SectionHead id="logos" num={num('logos')} title={t('brand.logos')} subtitle={t('brand.logosSub')} />
           <Logos logos={id.logos} />
+        </section>
+      )}
+      {shots.length > 0 && (
+        <section className="col g24" id="concept" aria-labelledby="h-concept">
+          <SectionHead id="concept" num={num('concept')} title={t('brand.concept')} subtitle={t('brand.conceptSub')} />
+          <DeckConcept shots={shots} />
         </section>
       )}
       {hasStrategy(brain) && (

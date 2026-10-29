@@ -18,6 +18,8 @@ const TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/ask', label: 'nav.ask' },
   { to: '/requests', label: 'nav.requests' },
   { to: '/assets', label: 'nav.assets' },
+  { to: '/apps', label: 'nav.apps' },
+  { to: '/research', label: 'nav.research' },
   { to: '/report', label: 'nav.report' },
   { to: '/learn', label: 'cr.nav' },
   { to: '/accesses', label: 'nav.accesses' },
@@ -118,7 +120,7 @@ function AccountMenu() {
         <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
           <div className="md:hidden">
-            {([['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).map(([to, k]) => (
+            {([['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).map(([to, k]) => (
               <NavLink key={to} role="menuitem" to={to} onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: 'none', color: 'var(--ink)' }}>{t(k)}</NavLink>
             ))}
           </div>

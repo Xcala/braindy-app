@@ -60,7 +60,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 
   const items = useMemo<Item[]>(() => {
     const go = (path: string, id?: string, label?: string) => () => { if (id && label) pushRecent({ id, label, path }); navigate(path); onClose(); };
-    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
+    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/ask', 'nav.ask'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
       .concat(isAdmin ? [['/admin/today', 'today.title'], ['/admin/studio', 'st.nav'], ['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team'], ['/admin/onboarding', 'nav.onboarding'], ['/admin/billing', 'nav.billing'], ['/admin/criterio', 'cra.nav']] : [['/learn', 'cr.nav']])
       .map(([p, k]) => ({ id: p, group: 'search.pages' as StringKey, label: t(k), run: go(p) }));
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));

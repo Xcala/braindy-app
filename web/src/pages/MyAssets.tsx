@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { FileExplorer } from '../assets/FileExplorer';
-import { BrandDocs, type LegacyAsset } from '../assets/BrandDocs';
+import { BrandDocs } from '../assets/BrandDocs';
+import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { UploadButton } from '../assets/UploadButton';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -30,19 +28,9 @@ export function MyAssets() {
         </div>
         <UploadButton brandId={current.id} />
       </div>
-      <BrandDocs assets={legacy} />
+      {/* LogoDecks live in My brand and MarketMaps in My research; only other carried-over documents stay here. */}
+      <BrandDocs assets={legacy.filter((a) => a.type !== 'logodeck' && a.type !== 'marketmap')} />
       <FileExplorer brandId={current.id} brandName={current.name} />
     </div>
   );
-}
-
-/** Assets carried over from the old apps (LogoDecks, MarketMaps, orbit documents). */
-function useLegacyAssets(brandId: string | undefined) {
-  const [docs, setDocs] = useState<LegacyAsset[]>([]);
-  useEffect(() => {
-    if (!brandId) return;
-    const q = query(collection(db, 'brands', brandId, 'assets'), where('source', '==', 'legacy'));
-    return onSnapshot(q, (snap) => setDocs(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as LegacyAsset)), () => setDocs([]));
-  }, [brandId]);
-  return docs;
 }

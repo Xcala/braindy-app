@@ -3,7 +3,9 @@ import { Icon } from '../components/Icon';
 
 export type LegacyAsset = {
   id: string; type?: string; title?: string; url?: string | null; status?: string; publicSlug?: string | null;
-  data?: { coverImageUrl?: string; description?: string };
+  data?: { coverImageUrl?: string; description?: string; heroTitle?: string; heroSubtitle?: string;
+    sections?: Array<{ id: string; type?: string; title?: string; imageUrl?: string; visible?: boolean }>;
+    htmlFiles?: Array<{ downloadUrl?: string; isMain?: boolean }> };
 };
 
 const COVERS: Record<string, string> = {
@@ -13,7 +15,7 @@ const COVERS: Record<string, string> = {
 };
 
 /** "Brand documents" from the design: LogoDecks, MarketMaps and documents carried over from the old apps. */
-export function BrandDocs({ assets }: { assets: LegacyAsset[] }) {
+export function BrandDocs({ assets, title }: { assets: LegacyAsset[]; title?: string }) {
   const { t } = useI18n();
   if (!assets.length) return null;
   const order = ['logodeck', 'marketmap', 'file'];
@@ -22,8 +24,8 @@ export function BrandDocs({ assets }: { assets: LegacyAsset[] }) {
   return (
     <section className="col g16" aria-labelledby="docs">
       <div className="row between wrap g8">
-        <h2 className="h3" id="docs">{t('assets.docs')}</h2>
-        <span className="t-sm t-mute">{t('assets.docsSub')}</span>
+        <h2 className="h3" id="docs">{title ?? t('assets.docs')}</h2>
+        {!title && <span className="t-sm t-mute">{t('assets.docsSub')}</span>}
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {list.map((a) => {

@@ -6,6 +6,8 @@ import { RouteError } from '../components/RouteError';
 import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
+import { MyApps } from '../pages/MyApps';
+import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
 import { ProposalDetail } from '../pages/admin/ProposalDetail';
@@ -44,6 +46,8 @@ export const router = createBrowserRouter([
           { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
+          { path: 'apps', element: <MyApps /> },
+          { path: 'research', element: <MyResearch /> },
           { path: 'ask', element: <Ask /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },

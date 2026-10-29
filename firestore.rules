@@ -165,6 +165,16 @@ service cloud.firestore {
         }
       }
 
+      // My apps / My research: links to the brand's web apps, sites and research pages. The brand reads, NickMark edits.
+      match /links/{linkId} {
+        allow read: if canReadBrand(brandId);
+        allow create, update: if isAdmin()
+          && request.resource.data.section in ['apps', 'research']
+          && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 120
+          && request.resource.data.url is string && request.resource.data.url.matches('^https://.+') && request.resource.data.url.size() <= 1000;
+        allow delete: if isAdmin();
+      }
+
       // Credential metadata only; secrets are encrypted server-side (KMS) and revealed
       // through the backend, which writes the audit log. No client writes, ever.
       match /accesses/{accessId} {
