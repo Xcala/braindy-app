@@ -19,6 +19,7 @@ import { ApprovedWork } from '../brands/identity/ApprovedWork';
 import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
 import { useI18n } from '../i18n/I18nProvider';
+import { BrandEditor, type EditableIdentity } from '../brands/edit/BrandEditor';
 import type { StringKey } from '../i18n/strings';
 
 type Identity = {
@@ -39,6 +40,7 @@ export function MyBrand() {
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
+  const [editing, setEditing] = useState(false);
   const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -70,6 +72,12 @@ export function MyBrand() {
     <div className="col g48">
       <BrandHero brand={current} logo={id.logos?.primary ?? current.logoUrl ?? undefined}
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />
+      {isAdmin && (
+        <div className="row" style={{ justifyContent: 'flex-end', marginTop: -32 }}>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('be.open')}</button>
+        </div>
+      )}
+      {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} onClose={() => setEditing(false)} />}
 
       {visible.length > 1 && (
         <div className="stickybar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>

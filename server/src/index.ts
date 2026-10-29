@@ -21,6 +21,7 @@ import { adminGranola, granolaWebhook } from './granola.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
+import { adminIdentity } from './connector/identity.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -87,6 +88,7 @@ app.route('/v1', review);
 app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
 app.route('/v1', connectorAuth);
+app.route('/v1/admin', adminIdentity);
 app.route('/v1', onboarding);
 app.route('/v1/admin', adminOnboarding);
 app.route('/v1/admin', adminReports);

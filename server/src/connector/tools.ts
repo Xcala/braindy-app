@@ -158,7 +158,9 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   });
   server.registerTool('braindy_brand_identity', {
     title: 'Actualizar Mi marca en Braindy App',
-    description: 'Updates the brand\'s "Mi marca" page in Braindy App: logos (primary, secondary, icon and other versions), colors, typography and design concept images. '
+    description: 'Updates the brand\'s "Mi marca" page in Braindy App with everything it shows: logos (primary, secondary, icon and other versions), colors, typography, '
+      + 'design concept images, mockups (shown as approved work), tone and voice (essence, archetypes, principles, how it sounds, key language) and strategy. '
+      + 'After creating a brand, send all of it in one call. '
       + 'Send only what you have: what is sent replaces what was there, the rest stays. Use right after creating or updating a brand, when Nicolas says '
       + '"actualiza Mi marca", "sube la marca a Braindy App", "pon los logos y colores en Braindy". Prefer SVG or PNG with transparent background for logos.',
     inputSchema: {
@@ -177,6 +179,21 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
       })).max(8).optional().describe('Brand fonts: replaces the list'),
       concept: z.array(z.object({ image: IMAGE, kind: z.enum(['design-concept', 'hero']).optional(), caption: z.string().optional() })).max(12).optional()
         .describe('Design concept and cover images (how the logo was built, the idea): replaces the list'),
+      mockups: z.array(z.object({ image: IMAGE, name: z.string().optional().describe('e.g. "Tarjetas de presentación"') })).max(24).optional()
+        .describe('Mockups of the brand applied (cards, signage, social, packaging): replaces the list'),
+      voice: z.object({
+        essence: z.object({ title: z.string().optional().describe('One line, e.g. "Serene authority that orders time."'), description: z.string().optional() }).optional(),
+        archetype: z.array(z.string()).max(3).optional().describe('Up to 3 archetypes, e.g. ["Sage", "Guardian"]'),
+        tonePrinciples: z.array(z.object({ title: z.string(), description: z.string().optional() })).max(8).optional(),
+        howItSounds: z.object({ is: z.array(z.string()).optional(), isNot: z.array(z.string()).optional() }).optional(),
+        toneBalance: z.object({ tradition: z.number().optional(), modernity: z.number().optional(), intellect: z.number().optional(), emotion: z.number().optional() }).optional().describe('0–100 each'),
+        keyLanguage: z.array(z.string()).max(24).optional().describe('Words and phrases the brand uses'),
+        example: z.string().optional().describe('A sentence in the brand voice'),
+      }).optional().describe('Tone and voice: replaces the whole voice'),
+      strategy: z.object({
+        position: z.string().optional().describe('Positioning in one or two sentences'), audiences: z.string().optional(), goals: z.string().optional(), avoid: z.string().optional(),
+        competitors: z.array(z.object({ name: z.string(), promise: z.string().optional(), price: z.string().optional(), url: z.string().optional() })).max(12).optional(),
+      }).optional().describe('Brand strategy: only the fields sent change'),
     },
   }, run(async ({ brandId, ...input }) => {
     const name = await requireBrand(brandId);
