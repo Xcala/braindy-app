@@ -95,6 +95,9 @@ p { margin: 0; max-width: 70ch; }
 .closeup.on { opacity: 1; }
 .back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1vw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
 .scene.zoomed .back { opacity: 1; pointer-events: auto; }
+.scene.zoomed { cursor: zoom-out; }
+.scene.zoomed .hot { pointer-events: none; }
+.scene.zoomed .focus { cursor: auto; }
 .zoomhint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9vw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
 .scene.zoomed .zoomhint { opacity: 0; }
 .scene-scroll:fullscreen { border: 0; border-radius: 0; display: grid; place-items: center; }
@@ -323,6 +326,7 @@ p { margin: 0; max-width: 70ch; }
     setTimeout(() => { if (!focused) { camEl.style.transform = ''; sceneEl.classList.remove('zoomed'); closeEl.pause(); } }, 350);
   }
   document.getElementById('back').addEventListener('click', zoomOut);
+  sceneEl.addEventListener('click', (e) => { if (focused && !e.target.closest('.focus') && !e.target.closest('.hot') && e.target.id !== 'back') zoomOut(); });
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && focused) zoomOut(); });
   addEventListener('resize', () => { if (focused) focusOn(focused); });
   function renderFocus(id) {

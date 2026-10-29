@@ -55,7 +55,7 @@ export function Scene({ seats, items, toSignCount }: { seats: Record<SeatId, Sea
 
   return (
     <div className="sd-scroll">
-      <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`}>
+      <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
         <div className="sd-cam" style={{ transform }}>
           <img src="/studio/studio.jpg" alt={t('st.title')} />
           {!reduce && <video className={loopOn ? 'on' : ''} src="/studio/loop.mp4" autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}

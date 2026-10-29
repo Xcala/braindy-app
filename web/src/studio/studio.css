@@ -22,6 +22,9 @@
 .sd-back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1cqw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
 .sd-scene.zoomed .sd-bubbles, .sd-scene.zoomed .sd-hint, .sd-scene.zoomed .sd-badge { opacity: 0; }
 .sd-scene.zoomed .sd-back { opacity: 1; pointer-events: auto; }
+.sd-scene.zoomed { cursor: zoom-out; }
+.sd-scene.zoomed .sd-hot { pointer-events: none; }
+.sd-scene.zoomed .sd-focus { cursor: auto; }
 
 .sd-focus { position: absolute; top: 4%; width: min(34%, 360px); max-height: 92%; overflow: auto; background: #0B1022EE; border: 1px solid #2C3558; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1cqw, 14px); backdrop-filter: blur(10px); box-shadow: 0 12px 40px #0008; opacity: 0; transform: translateY(8px); transition: opacity .5s .4s, transform .5s .4s; pointer-events: none; }
 .sd-scene.zoomed .sd-focus { opacity: 1; transform: none; pointer-events: auto; }
