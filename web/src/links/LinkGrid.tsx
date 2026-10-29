@@ -30,10 +30,12 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
         {links.map((l) => (
           <div key={l.id} className="deck">
             <a href={l.url} target="_blank" rel="noreferrer" className="cover" style={{ background: COVERS[l.kind] ?? COVERS.web, color: '#fff', textDecoration: 'none' }}>
-              <div className="col g8" style={{ alignItems: 'center' }}>
-                <Icon name="file" size={30} />
-                <span className="t-sm w7" style={{ opacity: 0.85 }}>{host(l.url)}</span>
-              </div>
+              {l.ogImage ? <img className="bg" src={l.ogImage} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : (
+                <div className="col g8" style={{ alignItems: 'center' }}>
+                  <Icon name="file" size={30} />
+                  <span className="t-sm w7" style={{ opacity: 0.85 }}>{host(l.url)}</span>
+                </div>
+              )}
             </a>
             <div className="body">
               <div className="row between g8">
