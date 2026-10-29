@@ -348,6 +348,12 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
+    // Remote Braindy connector login (OAuth clients, pending approvals, codes, hashed tokens). Server only, never the browser.
+    match /mcpClients/{id} { allow read, write: if false; }
+    match /mcpAuthRequests/{id} { allow read, write: if false; }
+    match /mcpCodes/{id} { allow read, write: if false; }
+    match /mcpTokens/{id} { allow read, write: if false; }
+
     // The Studio: NickMark's instructions to a Brain. Internal: only the admin reads or writes them, never clients.
     match /brainInbox/{noteId} {
       allow read: if isAdmin();

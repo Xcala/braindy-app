@@ -57,3 +57,16 @@ describe('Claude work log', () => {
     await assertFails(updateDoc(doc(as(env, ADMIN), 'brands/brand-a/activity/a1'), { text: 'cambiado' }));
   });
 });
+
+describe('Remote connector login', () => {
+  it('clients, approvals, codes and tokens are server-only, even for the admin', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'mcpTokens/t1'), { uid: 'admin', kind: 'access' });
+    });
+    for (const col of ['mcpClients', 'mcpAuthRequests', 'mcpCodes', 'mcpTokens']) {
+      await assertFails(getDoc(doc(as(env, ADMIN), `${col}/t1`)));
+      await assertFails(setDoc(doc(as(env, ADMIN), `${col}/x`), { a: 1 }));
+      await assertFails(getDoc(doc(as(env, OWNER), `${col}/t1`)));
+    }
+  });
+});

@@ -29,6 +29,7 @@ import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
+import { Connect } from '../pages/Connect';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
@@ -38,6 +39,8 @@ export const router = createBrowserRouter([
     element: <RequireAuth />,
     errorElement: <RouteError />,
     children: [
+      // Consent for the remote Braindy connector (Claude): outside the app shell, like the login.
+      { path: 'conectar', element: <Connect /> },
       {
         element: <AppShell />,
         children: [

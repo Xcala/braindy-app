@@ -44,6 +44,10 @@ export const linksEn = {
   'site.title': 'Website adjustments', 'site.sub': '{n} points: what was asked, what we did and what is left', 'site.updated': 'updated {date}',
   'site.filter': 'Filter by state', 'site.all': 'All', 'site.done': 'What we did', 'site.seeChange': 'See the change', 'site.state': 'State',
   'site.status.delivered': 'Delivered', 'site.status.in_progress': 'In progress', 'site.status.decision': 'Pending decision', 'site.status.client': 'Waiting on you', 'site.status.discarded': 'Discarded',
+  'connect.title': '{client} wants to use Braindy App as NickMark', 'connect.sub': 'Allow it and, from any Claude (chat, Cowork, phone), you can say "upload it to Braindy App" and it happens.',
+  'connect.can1': 'Upload files and the site triage to a brand', 'connect.can2': 'Save session summaries in the internal work log', 'connect.can3': 'Create requests and deliver versions to clients when you say so',
+  'connect.never': 'It never reads or changes client accesses or passwords. You can disconnect it at any time.', 'connect.returnTo': 'You will return to {host}.',
+  'connect.allow': 'Allow', 'connect.expired': 'This request expired. Connect Braindy App again from Claude.', 'connect.done': 'Done. You can go back to Claude.', 'connect.adminOnly': 'Only the Braindy administrator can connect Claude.',
 };
 
 export const linksEs: Record<keyof typeof linksEn, string> = {
@@ -91,4 +95,8 @@ export const linksEs: Record<keyof typeof linksEn, string> = {
   'site.title': 'Ajustes del sitio', 'site.sub': '{n} puntos: lo que pidieron, lo que hicimos y lo que falta', 'site.updated': 'actualizado el {date}',
   'site.filter': 'Filtrar por estado', 'site.all': 'Todo', 'site.done': 'Lo que hicimos', 'site.seeChange': 'Ver el cambio', 'site.state': 'Estado',
   'site.status.delivered': 'Entregado', 'site.status.in_progress': 'En curso', 'site.status.decision': 'Pendiente de decisión', 'site.status.client': 'Pendiente del cliente', 'site.status.discarded': 'Descartado',
+  'connect.title': '{client} quiere usar Braindy App como NicoMarca', 'connect.sub': 'Permítelo y, desde cualquier Claude (chat, Cowork, celular), podrás decir «súbelo a Braindy App» y sucede.',
+  'connect.can1': 'Subir archivos y el triage del sitio a una marca', 'connect.can2': 'Guardar resúmenes de sesión en el registro interno', 'connect.can3': 'Crear solicitudes y entregar versiones a clientes cuando tú lo digas',
+  'connect.never': 'Nunca lee ni cambia los accesos ni las contraseñas de clientes. Puedes desconectarlo cuando quieras.', 'connect.returnTo': 'Volverás a {host}.',
+  'connect.allow': 'Permitir', 'connect.expired': 'Esta solicitud venció. Vuelve a conectar Braindy App desde Claude.', 'connect.done': 'Listo. Ya puedes volver a Claude.', 'connect.adminOnly': 'Solo el administrador de Braindy puede conectar Claude.',
 };

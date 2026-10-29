@@ -1,17 +1,15 @@
-// Firestore/Storage operations of the Braindy connector. Admin credentials (gcloud application-default login),
-// database braindy-app only. Never reads or writes accesses (client credentials).
+// Firestore/Storage operations of the Braindy connector, shared by the local one (Nicolas's PC, his gcloud login)
+// and the remote one (Cloud Run, after OAuth). Database braindy-app only. Never reads or writes accesses (client credentials).
 import { createReadStream } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { basename, join, relative } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { getApps, initializeApp } from 'firebase-admin/app';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
-import { contentTypeOf as lookup } from '../scripts/drive/mime.js';
+import { db } from '../firebase.js';
+import { contentTypeOf as lookup } from '../lib/mime.js';
 
-const app = getApps()[0] ?? initializeApp({ projectId: 'braindy-brand-guideline' });
-export const db = getFirestore(app, 'braindy-app');
-const bucket = getStorage(app).bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
+const bucket = () => getStorage().bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
 const MAX_FILE = 500 * 1024 ** 2;
 const MAX_FILES = 200;
 
@@ -120,17 +118,46 @@ export async function uploadPath(brandId: string, path: string, folder = 'Upload
     if (size > MAX_FILE) { skipped.push(`${basename(f)} (más de 500 MB)`); continue; }
     const sub = root ? relative(root, f).split(/[\\/]/).slice(0, -1).join('/') : '';
     const name = basename(f).replace(/[\r\n]/g, '_').slice(0, 200);
-    const id = `upl-${randomUUID()}`;
-    const storagePath = `brands/${brandId}/uploads/${id}/${name}`;
-    const contentType = lookup(name);
-    await new Promise<void>((res, rej) => createReadStream(f)
-      .pipe(bucket.file(storagePath).createWriteStream({ resumable: size > 8 * 1024 ** 2, contentType }))
-      .on('finish', () => res()).on('error', rej));
-    await db.doc(`brands/${brandId}/assets/${id}`).set({
-      type: 'file', source: 'upload', title: name, folder: [folder, root ? basename(root) : '', sub].filter(Boolean).join('/'),
-      storagePath, size, contentType, status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
-    });
-    done.push({ name, assetId: id, size });
+    const assetId = await storeUpload(brandId, name, size, [folder, root ? basename(root) : '', sub].filter(Boolean).join('/'),
+      (file, contentType) => new Promise<void>((res, rej) => createReadStream(f)
+        .pipe(file.createWriteStream({ resumable: size > 8 * 1024 ** 2, contentType }))
+        .on('finish', () => res()).on('error', rej)));
+    done.push({ name, assetId, size });
   }
   return { done, skipped };
+}
+
+type BucketFile = ReturnType<ReturnType<typeof bucket>['file']>;
+
+/** Writes one file to the brand's Uploads and registers it as an asset (the same shape as an upload from the app). */
+async function storeUpload(brandId: string, name: string, size: number, folder: string, write: (file: BucketFile, contentType: string) => Promise<void>) {
+  const id = `upl-${randomUUID()}`;
+  const storagePath = `brands/${brandId}/uploads/${id}/${name}`;
+  const contentType = lookup(name);
+  await write(bucket().file(storagePath), contentType);
+  await db.doc(`brands/${brandId}/assets/${id}`).set({
+    type: 'file', source: 'upload', title: name, folder, storagePath, size, contentType,
+    status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
+  });
+  return id;
+}
+
+export const REMOTE_MAX_FILE = 25 * 1024 ** 2;
+const safeName = (n: string) => basename(n.replace(/\\/g, '/')).replace(/[\r\n]/g, '_').slice(0, 200) || 'archivo';
+
+/** Remote upload: the file comes inside the message (base64) or as an https link the server downloads. */
+export async function uploadContent(brandId: string, f: { name: string; base64?: string; url?: string }, folder = 'Uploads') {
+  let buf: Buffer;
+  if (f.base64) buf = Buffer.from(f.base64, 'base64');
+  else if (f.url && /^https:\/\//.test(f.url)) {
+    const res = await fetch(f.url, { signal: AbortSignal.timeout(60_000) });
+    if (!res.ok) throw new Error(`No pude descargar ${f.url} (${res.status}).`);
+    if (Number(res.headers.get('content-length') ?? 0) > REMOTE_MAX_FILE) throw new Error('El archivo pasa de 25 MB: súbelo con el conector local.');
+    buf = Buffer.from(await res.arrayBuffer());
+  } else throw new Error('Falta el contenido (base64) o un enlace https.');
+  if (!buf.length) throw new Error('El archivo está vacío.');
+  if (buf.length > REMOTE_MAX_FILE) throw new Error('El archivo pasa de 25 MB: súbelo con el conector local.');
+  const name = safeName(f.name);
+  const assetId = await storeUpload(brandId, name, buf.length, folder, (file, contentType) => file.save(buf, { contentType, resumable: false }));
+  return { name, assetId, size: buf.length };
 }

@@ -4,7 +4,7 @@
 //     "triage": { "items": [...], "siteUrl?", "round?", "removeMissing?" }, "log": { "text", "project?" } }
 // Every part is optional except brandId. Run with --find <text> to look up a brandId.
 import { readFile } from 'node:fs/promises';
-import { findBrands, logSession, requireBrand, setLink, syncSiteChanges } from './store.js';
+import { findBrands, logSession, requireBrand, setLink, syncSiteChanges } from '../src/connector/store.js';
 
 const APP = 'https://braindy-app-staging.web.app';
 const [arg, val] = process.argv.slice(2);

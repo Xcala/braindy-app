@@ -19,6 +19,8 @@ import { adminBilling, billing, stripeWebhook } from './billing.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
 import { criterio } from './criterio.js';
+import { connectorAuth, oauth } from './connector/oauth.js';
+import { mcp } from './connector/http.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -55,6 +57,12 @@ app.route('/webhooks', granolaWebhook);
 app.use('/cron/*', rateLimit('cron', 30, 60_000));
 app.route('/cron', cron);
 
+// Remote Braindy connector for Claude: OAuth (discovery, registration, authorize, token) and MCP at /mcp (Bearer token, admins only).
+app.use('/oauth/*', rateLimit('oauth', 60, 60_000));
+app.use('/mcp', rateLimit('mcp', 300, 60_000));
+app.route('/', oauth);
+app.route('/', mcp);
+
 app.use('/v1/*', appCheck);
 app.use('/v1/*', requireUser);
 app.use('/v1/*', rateLimit('api', 600, 60_000));
@@ -78,6 +86,7 @@ app.route('/v1', accesses);
 app.route('/v1', review);
 app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
+app.route('/v1', connectorAuth);
 app.route('/v1', onboarding);
 app.route('/v1/admin', adminOnboarding);
 app.route('/v1/admin', adminReports);

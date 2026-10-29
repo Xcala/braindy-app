@@ -67,13 +67,18 @@ requests.post('/brands/:brandId/requests', async (c) => {
   const { brandId } = c.req.param();
   const uid = c.get('user').uid;
   if (!(await brandAccess(uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
-  const b = await c.req.json<Record<string, unknown>>();
+  const r = await createRequest(brandId, uid, await c.req.json<Record<string, unknown>>());
+  return 'error' in r ? c.json(r, 400) : c.json(r);
+});
+
+/** Creates a request and routes it to its lead Brain (also used by the Braindy connector). */
+export async function createRequest(brandId: string, uid: string, b: Record<string, unknown>): Promise<{ requestId: string } | { error: string }> {
   type InFile = { assetId?: string; name?: string; size?: number; contentType?: string };
   const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[]; files?: InFile[] }>;
   // "Ask" can be one free-text box: without a type, the category is read from the words.
   const category = str(b.category, 40) || guessCategory(str(cards.product?.text, 4000));
   const route = ROUTING[category];
-  if (!route) return c.json({ error: 'invalid_category' }, 400);
+  if (!route) return { error: 'invalid_category' };
   const subcategory = str(b.subcategory, 40);
   const withNicolas = !!route.withNicolas || (route.nicolasSubs ?? []).includes(subcategory);
   const card = (k: string) => ({ text: str(cards[k]?.text, 4000), links: (cards[k]?.links ?? []).map((l) => str(l, 500)).filter(Boolean).slice(0, 10) });
@@ -94,8 +99,8 @@ requests.post('/brands/:brandId/requests', async (c) => {
   });
   // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
   await proposePlan(brandId, ref.id).catch(() => null);
-  return c.json({ requestId: ref.id });
-});
+  return { requestId: ref.id };
+}
 
 /** Approve or ask for changes on a version. Approving moves the request to Approved. */
 export async function decide(brandId: string, requestId: string, versionId: string, uid: string, state: string, note: string) {
@@ -208,22 +213,28 @@ adminRequests.post('/brands/:brandId/requests/:requestId/versions', async (c) =>
 /** Publishes a version to the client (Nicolas reviewed it): the request moves to "To approve". */
 adminRequests.post('/brands/:brandId/requests/:requestId/versions/:versionId/publish', async (c) => {
   const { brandId, requestId, versionId } = c.req.param();
+  const r = await publishVersion(brandId, requestId, versionId, c.get('user').uid);
+  return 'error' in r ? c.json(r, r.error === 'not_found' ? 404 : 409) : c.json(r);
+});
+
+/** Publishes a reviewed version to the client: the request moves to "To approve" and the review link goes out. */
+export async function publishVersion(brandId: string, requestId: string, versionId: string, uid: string) {
   const reqRef = db.doc(`brands/${brandId}/requests/${requestId}`);
   const verRef = reqRef.collection('versions').doc(versionId);
   const ver = await verRef.get();
-  if (!ver.exists) return c.json({ error: 'not_found' }, 404);
+  if (!ver.exists) return { error: 'not_found' as const };
   for (const f of (ver.get('files') as Array<{ storagePath: string }>) ?? []) {
     const [exists] = await bucket().file(f.storagePath).exists();
-    if (!exists) return c.json({ error: 'upload_missing', file: f.storagePath }, 409);
+    if (!exists) return { error: 'upload_missing' as const, file: f.storagePath };
   }
   await db.batch()
-    .update(verRef, { published: true, publishedAt: now(), reviewedBy: c.get('user').uid })
+    .update(verRef, { published: true, publishedAt: now(), reviewedBy: uid })
     .update(reqRef, { status: 'to_approve', stage: 'clientApproval', latestVersion: versionId, updatedAt: now() })
     .commit();
   // Review link to the brand's WhatsApp approver (sent by the API, or a wa.me link for Nicolas).
-  const notice = await notifyDelivery(brandId, requestId, versionId, c.get('user').uid).catch(() => ({ status: 'error' as const }));
-  return c.json({ ok: true, notice });
-});
+  const notice = await notifyDelivery(brandId, requestId, versionId, uid).catch(() => ({ status: 'error' as const }));
+  return { ok: true as const, notice };
+}
 
 /** Marks an approved request as published (live). */
 adminRequests.post('/brands/:brandId/requests/:requestId/published', async (c) => {

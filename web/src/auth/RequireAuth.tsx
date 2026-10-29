@@ -13,7 +13,7 @@ export function RequireAuth() {
       </div>
     );
   }
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   if (!profile) return <NoAccess />;
   return <Outlet />;
 }
