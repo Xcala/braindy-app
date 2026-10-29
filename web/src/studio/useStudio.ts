@@ -30,25 +30,28 @@ function useInbox() {
   return notes;
 }
 
+/** Each seat's state, current work, queue and open instructions. */
+export function buildSeats(items: WorkItem[], tasks: BrainTask[], notes: InboxNote[]) {
+  const out = {} as Record<SeatId, SeatView>;
+  for (const b of BRAINS) {
+    const queue = items.filter((i) => i.status === 'in_production' && i.leadBrain === b).sort(byDue);
+    const running = tasks.find((t) => t.brain === b && t.status === 'running');
+    const withClient = items.some((i) => i.status === 'to_approve' && i.leadBrain === b);
+    const now = running ? { title: running.title, brandId: running.brandId } : queue[0] && { title: queue[0].title, brandId: queue[0].brandId };
+    out[b] = { state: running || queue.length ? 'working' : withClient ? 'withClient' : 'free', now, queue, notes: notes.filter((n) => n.brain === b) };
+  }
+  const toSign = items.filter(needsSignature).sort(byDue);
+  out.nico = { state: toSign.length ? 'toSign' : 'free', now: toSign[0] && { title: toSign[0].title, brandId: toSign[0].brandId }, queue: toSign, notes: [] };
+  return out;
+}
+
 /** Live data of the studio: each seat's state, current work, queue and open instructions, plus the activity feed. */
 export function useStudio() {
   const { items, loading } = useOpenWork();
   const tasks = useBrainTasks(true, 30);
   const notes = useInbox();
 
-  const seats = useMemo(() => {
-    const out = {} as Record<SeatId, SeatView>;
-    for (const b of BRAINS) {
-      const queue = items.filter((i) => i.status === 'in_production' && i.leadBrain === b).sort(byDue);
-      const running = tasks.find((t) => t.brain === b && t.status === 'running');
-      const withClient = items.some((i) => i.status === 'to_approve' && i.leadBrain === b);
-      const now = running ? { title: running.title, brandId: running.brandId } : queue[0] && { title: queue[0].title, brandId: queue[0].brandId };
-      out[b] = { state: running || queue.length ? 'working' : withClient ? 'withClient' : 'free', now, queue, notes: notes.filter((n) => n.brain === b) };
-    }
-    const toSign = items.filter(needsSignature).sort(byDue);
-    out.nico = { state: toSign.length ? 'toSign' : 'free', now: toSign[0] && { title: toSign[0].title, brandId: toSign[0].brandId }, queue: toSign, notes: [] };
-    return out;
-  }, [items, tasks, notes]);
+  const seats = useMemo(() => buildSeats(items, tasks, notes), [items, tasks, notes]);
 
   const feed = useMemo(() => [
     ...tasks.slice(0, 12).map((t: BrainTask) => ({ id: 't' + t.id, brain: t.brain as BrainId, brandId: t.brandId, text: t.title, at: t.createdAt?.toMillis() ?? 0, kind: 'task' as const })),

@@ -10,6 +10,7 @@ import { useBrandsRequests, type ScopedRequest } from '../requests/useBrandsRequ
 import { useVersions } from '../requests/useRequests';
 import { useFileUrl, isImage } from '../requests/useFileUrl';
 import { HomeHero } from '../home/HomeHero';
+import { HomeStudio } from '../home/HomeStudio';
 import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
@@ -39,6 +40,7 @@ export function Home() {
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
+      <HomeStudio requests={all} />
       <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="col g32 min-w-0">
           <section className="col g12" aria-labelledby="h-moving" data-tour="home-prod">

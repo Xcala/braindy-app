@@ -18,7 +18,7 @@ function useClock() {
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number }) {
+export function Scene({ seats, items, toSignCount, brandView = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean }) {
   const { t } = useI18n();
   const { brands } = useBrands();
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
@@ -29,6 +29,8 @@ export function Scene({ seats, items, toSignCount }: { seats: Record<SeatId, Sea
   const [closeOn, setCloseOn] = useState(false);
   const [loopOn, setLoopOn] = useState(false);
   const clock = useClock();
+  // A client sees their own brand only: NicoMarca reviews (never "waiting for your signature"), idle seats read as ready.
+  const stateKey = (st: SeatView['state']) => `st.state.${brandView ? (st === 'toSign' ? 'reviewing' : st === 'free' ? 'ready' : st) : st}` as StringKey;
 
   useEffect(() => {
     if (!focused) return;
@@ -63,7 +65,7 @@ export function Scene({ seats, items, toSignCount }: { seats: Record<SeatId, Sea
             const s = SEATS[id], st = seats[id].state;
             return (
               <div key={id}>
-                <button type="button" className="sd-hot" aria-label={`${SEAT_NAME[id]}: ${t(`st.state.${st}` as StringKey)}`} onClick={() => setFocused(id)}
+                <button type="button" className="sd-hot" aria-label={`${SEAT_NAME[id]}: ${t(stateKey(st))}`} onClick={() => setFocused(id)}
                   style={{ ...pct([s.hot[0], s.hot[1]]), width: `${s.hot[2] / 20}%`, height: `${s.hot[3] / 11.16}%` }} />
                 <div className="sd-glow" style={{ ...pct(s.screen), background: `radial-gradient(ellipse, ${s.c}55 0%, ${s.c}00 65%)`, opacity: st === 'free' ? 0.15 : st === 'toSign' ? 0.9 : 0.5 }} />
               </div>
@@ -81,17 +83,17 @@ export function Scene({ seats, items, toSignCount }: { seats: Record<SeatId, Sea
             return (
               <div key={id} className="sd-bubble" style={pct(SEATS[id].bub)}>
                 <div className="who"><i style={{ background: SEATS[id].c }} />{SEAT_NAME[id]}</div>
-                <div className="st">{t(`st.state.${v.state}` as StringKey)}</div>
-                <div>{v.now ? `${v.now.title} · ${brand(v.now.brandId)}` : t('st.nothing')}</div>
+                <div className="st">{t(stateKey(v.state))}</div>
+                <div>{v.now ? (brandView ? v.now.title : `${v.now.title} · ${brand(v.now.brandId)}`) : t('st.nothing')}</div>
               </div>
             );
           })}
         </div>
-        {toSignCount > 0 && <span className="sd-badge">{t('st.toSign', { n: toSignCount })}</span>}
+        {!brandView && toSignCount > 0 && <span className="sd-badge">{t('st.toSign', { n: toSignCount })}</span>}
         <span className="sd-hint">{t('st.hint')}</span>
 
         <video ref={closeRef} className={`sd-closeup ${closeOn ? 'on' : ''}`} muted loop playsInline preload="none" aria-hidden="true" />
-        {focused && <FocusCard key={focused} id={focused} view={seats[focused]} open allItems={items} />}
+        {focused && <FocusCard key={focused} id={focused} view={seats[focused]} open allItems={items} readOnly={brandView} stateLabel={t(stateKey(seats[focused].state))} />}
         <button type="button" className="sd-back" onClick={zoomOut}>← {t('st.back')}</button>
       </div>
     </div>

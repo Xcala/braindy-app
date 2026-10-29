@@ -13,10 +13,12 @@ export const SEAT_NAME: Record<SeatId, string> = { nico: 'NicoMarca', researcher
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
 /** The card next to a zoomed-in seat: what they are doing, their queue, and the two actions: sign and write. */
-export function FocusCard({ id, view, open, allItems }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[] }) {
+export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string }) {
   const { t } = useI18n();
   const { brands, select } = useBrands();
-  const brand = (bid?: string) => brands.find((b) => b.id === bid)?.name ?? '';
+  // On a client's home every item is their own brand, so the brand name is left out.
+  const brand = (bid?: string) => (readOnly ? '' : brands.find((b) => b.id === bid)?.name ?? '');
+  const withBrand = (title: string, bid?: string) => (readOnly ? title : `${title} · ${brand(bid)}`);
   const [tab, setTab] = useState<'work' | 'write'>('work');
   const isNico = id === 'nico';
 
@@ -32,26 +34,26 @@ export function FocusCard({ id, view, open, allItems }: { id: SeatId; view: Seat
           <div className="flex flex-col"><h3>{SEAT_NAME[id]}</h3><span className="lbl">{t(`st.role.${id}` as StringKey)}</span></div>
         </div>
       </div>
-      <div className="sd-seg" role="group">
+      {!readOnly && <div className="sd-seg" role="group">
         <button type="button" className={tab === 'work' ? 'on' : ''} onClick={() => setTab('work')}>{isNico ? t('st.sign') : t('st.queue')}</button>
         <button type="button" className={tab === 'write' ? 'on' : ''} onClick={() => setTab('write')}>{t('st.write')}</button>
-      </div>
+      </div>}
 
       {tab === 'work' && <>
         {!isNico && <div className="now">
-          <span className="lbl">{t(`st.state.${view.state}` as StringKey)}</span>
-          <div>{view.now ? `${view.now.title} · ${brand(view.now.brandId)}` : t('st.nothing')}</div>
+          <span className="lbl">{stateLabel ?? t(`st.state.${view.state}` as StringKey)}</span>
+          <div>{view.now ? withBrand(view.now.title, view.now.brandId) : t('st.nothing')}</div>
         </div>}
-        <span className="lbl">{isNico ? t('st.signQueue') : t('st.queue')}</span>
+        <span className="lbl">{isNico ? t(readOnly ? 'st.reviewQueue' : 'st.signQueue') : t('st.queue')}</span>
         {view.queue.length === 0 && <span style={{ color: '#8F98B2' }}>{t('st.nothing')}</span>}
         {view.queue.slice(0, 6).map((i) => (
           <div className="row" key={i.brandId + i.id}>
-            <span className="min-w-0">{i.title} · {brand(i.brandId)}<br />
+            <span className="min-w-0">{withBrand(i.title, i.brandId)}<br />
               <small>{isNico ? (i.stage === 'plan' ? t('st.plan') : t('st.version', { n: i.versionCount ?? 1 })) : i.dueDate ?? ''}</small></span>
-            {isNico ? <SignButton i={i} fallback={openLink(i)} /> : openLink(i)}
+            {isNico && !readOnly ? <SignButton i={i} fallback={openLink(i)} /> : openLink(i)}
           </div>
         ))}
-        {!isNico && view.notes.length > 0 && <>
+        {!isNico && !readOnly && view.notes.length > 0 && <>
           <span className="lbl">{t('st.notes')}</span>
           {view.notes.map((n) => (
             <div className="row" key={n.id}><span className="min-w-0">{n.text}<br /><small>{brand(n.brandId)}</small></span>
@@ -60,7 +62,7 @@ export function FocusCard({ id, view, open, allItems }: { id: SeatId; view: Seat
         </>}
       </>}
 
-      {tab === 'write' && <WriteBox to={isNico ? null : (id as BrainId)} items={isNico ? allItems : view.queue} brandOf={brand} />}
+      {tab === 'write' && !readOnly && <WriteBox to={isNico ? null : (id as BrainId)} items={isNico ? allItems : view.queue} brandOf={brand} />}
     </aside>
   );
 }

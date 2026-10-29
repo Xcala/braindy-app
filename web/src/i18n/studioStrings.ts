@@ -17,6 +17,8 @@ export const studioEn = {
   'st.send': 'Send', 'st.sent': 'Sent to {name}', 'st.notes': 'Your instructions', 'st.done': 'Done',
   'st.request': 'Request (optional)', 'st.general': 'General, no request', 'st.brain': 'Brain',
   'st.clock': 'San Francisco and Bogotá time',
+  'st.state.reviewing': 'Reviewing', 'st.state.ready': 'Ready for what is next', 'st.reviewQueue': 'Reviews before sending it to you',
+  'st.homeTitle': 'Your team, at work', 'st.homeSub': 'NickMark and his Brains, live from San Francisco, on what you asked for. Tap anyone to see what they are doing.',
 };
 
 export const studioEs: Record<keyof typeof studioEn, string> = {
@@ -37,4 +39,6 @@ export const studioEs: Record<keyof typeof studioEn, string> = {
   'st.send': 'Enviar', 'st.sent': 'Enviado al {name}', 'st.notes': 'Tus instrucciones', 'st.done': 'Hecho',
   'st.request': 'Solicitud (opcional)', 'st.general': 'General, sin solicitud', 'st.brain': 'Brain',
   'st.clock': 'Hora de San Francisco y Bogotá',
+  'st.state.reviewing': 'Revisando', 'st.state.ready': 'Listo para lo próximo', 'st.reviewQueue': 'Revisa antes de enviártelo',
+  'st.homeTitle': 'Tu equipo, trabajando', 'st.homeSub': 'NicoMarca y sus Brains, en vivo desde San Francisco, en lo que pediste. Toca a cualquiera para ver qué hace.',
 };
