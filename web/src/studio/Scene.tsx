@@ -29,6 +29,19 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
   const [closeOn, setCloseOn] = useState(false);
   const [loopOn, setLoopOn] = useState(false);
   const clock = useClock();
+  const loopRef = useRef<HTMLVideoElement>(null);
+  const [seen, setSeen] = useState(false);
+
+  // The 3 MB loop loads only once the scene scrolls into view, and pauses whenever it leaves it.
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el || reduce || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setSeen(true); loopRef.current?.play?.().catch(() => {}); } else loopRef.current?.pause();
+    }, { rootMargin: '200px 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   // A client sees their own brand only: NicoMarca reviews (never "waiting for your signature"), idle seats read as ready.
   const stateKey = (st: SeatView['state']) => `st.state.${brandView ? (st === 'toSign' ? 'reviewing' : st === 'free' ? 'ready' : st) : st}` as StringKey;
 
@@ -59,8 +72,8 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
     <div className="sd-scroll">
       <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
         <div className="sd-cam" style={{ transform }}>
-          <img src="/studio/studio.jpg" alt={t('st.title')} />
-          {!reduce && <video className={loopOn ? 'on' : ''} src="/studio/loop.mp4" autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
+          <img src="/studio/studio.jpg" alt={t('st.title')} loading="lazy" />
+          {!reduce && seen && <video ref={loopRef} className={loopOn ? 'on' : ''} src="/studio/loop.mp4" autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
           {SEAT_ORDER.map((id) => {
             const s = SEATS[id], st = seats[id].state;
             return (
