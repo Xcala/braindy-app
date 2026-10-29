@@ -1,0 +1,574 @@
+<title>El Estudio de NicoMarca</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;400;500;700;900&family=Red+Hat+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark "night studio" world up top, then the plan as a calm single column of sections. Single-theme by choice (the world is a night scene). */
+:root {
+  color-scheme: dark;
+  --night: #0A0D19;
+  --panel: #111628;
+  --panel-2: #161C33;
+  --line: #242C49;
+  --ink: #EEF1F8;
+  --mute: #8C95B0;
+  --res: #F5B301;
+  --mkt: #8B5CF6;
+  --cre: #06B6D4;
+  --bui: #2A7FFF;
+  --nico: #FFFFFF;
+  --display: "Red Hat Display", "Segoe UI", system-ui, sans-serif;
+  --mono: "Red Hat Mono", ui-monospace, "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--night); color: var(--ink); font-family: var(--display); font-weight: 400;
+  font-size: 16px; line-height: 1.55;
+}
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+  display: flex; flex-direction: column; gap: 72px;
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 300; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1.02; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); line-height: 1.1; letter-spacing: -0.01em; }
+h3 { font-size: 1.15rem; font-weight: 700; }
+b9, .w9 { font-weight: 900; }
+p { margin: 0; max-width: 65ch; }
+.label { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
+.mute { color: var(--mute); }
+.col { display: flex; flex-direction: column; }
+.g8 { gap: 8px; } .g12 { gap: 12px; } .g16 { gap: 16px; } .g24 { gap: 24px; }
+
+/* Hero */
+.hero { display: flex; flex-direction: column; gap: 18px; }
+.hero .lead { font-size: 1.2rem; color: var(--mute); }
+.tag { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.74rem; color: var(--mute);
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; width: fit-content; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bui); box-shadow: 0 0 10px var(--bui); }
+
+/* World */
+.world-card { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; }
+.world-scroll { overflow-x: auto; border-radius: 22px; border: 1px solid var(--line); background:
+  radial-gradient(ellipse at 50% 45%, #18204000 0%, #0A0D19 70%), radial-gradient(circle at 50% 50%, #141B38 0%, #0A0D19 75%); }
+.world { position: relative; aspect-ratio: 1000 / 640; min-width: 680px; }
+.world svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bubble {
+  position: absolute; transform: translate(-50%, -100%); max-width: 24%;
+  background: #0F1426E6; border: 1px solid var(--line); border-radius: 12px; padding: 7px 10px;
+  font-size: 0.72rem; line-height: 1.3; backdrop-filter: blur(6px); pointer-events: none;
+  transition: border-color .4s;
+}
+.bubble .who { font-weight: 900; font-size: 0.7rem; display: flex; align-items: center; gap: 6px; }
+.bubble .st { font-family: var(--mono); font-size: 0.62rem; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+.bubble .task { color: var(--ink); }
+.side { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.seg { display: flex; background: var(--night); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; font: inherit; font-size: 0.78rem; font-weight: 500; color: var(--mute); background: none; border: 0; border-radius: 9px; padding: 7px 6px; cursor: pointer; }
+.seg button.on { background: var(--panel-2); color: var(--ink); }
+.seg button:focus-visible, .zone-btn:focus-visible { outline: 2px solid var(--bui); outline-offset: 2px; }
+.feed { display: flex; flex-direction: column; gap: 10px; min-height: 260px; }
+.ev { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; font-size: 0.8rem; line-height: 1.35; animation: in .5s ease; }
+.ev i { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; }
+.ev small { display: block; font-family: var(--mono); font-size: 0.66rem; color: var(--mute); }
+@keyframes in { from { opacity: .2; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.queue { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 0.8rem; }
+.queue .q { display: flex; justify-content: space-between; gap: 10px; }
+.queue .q span:last-child { font-family: var(--mono); font-size: 0.68rem; color: var(--mute); white-space: nowrap; }
+.hint { font-size: 0.74rem; color: var(--mute); }
+
+/* Sections */
+section { display: flex; flex-direction: column; gap: 24px; }
+.sec-head { display: flex; flex-direction: column; gap: 10px; }
+.zones { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.zone { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.zone .sw { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; color: #0A0D19; font-size: 0.95rem; }
+.zone p { font-size: 0.88rem; color: var(--mute); }
+.zone .does { font-size: 0.82rem; color: var(--ink); }
+.zone.nico { border-color: #ffffff40; }
+
+.flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; counter-reset: s; }
+.step { border-left: 2px solid var(--line); padding: 4px 0 4px 16px; display: flex; flex-direction: column; gap: 6px; }
+.step .n { font-family: var(--mono); font-size: 0.72rem; color: var(--mute); }
+.step p { font-size: 0.9rem; color: var(--mute); }
+
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.state { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.state .ico { flex: none; width: 12px; height: 12px; border-radius: 50%; margin-top: 6px; }
+.state p { font-size: 0.86rem; color: var(--mute); }
+
+.who-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.who-card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.who-card ul { margin: 0; padding-left: 18px; color: var(--mute); font-size: 0.88rem; display: flex; flex-direction: column; gap: 4px; }
+
+.cmp-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 560px; }
+th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); font-weight: 500; }
+td.pick { color: var(--ink); }
+.chip { font-family: var(--mono); font-size: 0.66rem; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 3px 9px; border: 1px solid; width: fit-content; }
+.chip.rec { color: var(--cre); border-color: #06B6D466; }
+.chip.later { color: var(--mute); border-color: var(--line); }
+
+.phases { display: flex; flex-direction: column; }
+.phase { display: grid; grid-template-columns: 120px minmax(0, 1fr) 220px; gap: 20px; padding: 22px 0; border-top: 1px solid var(--line); }
+.phase:last-child { border-bottom: 1px solid var(--line); }
+.phase .when { font-family: var(--mono); font-size: 0.74rem; color: var(--mute); display: flex; flex-direction: column; gap: 6px; }
+.phase .when b { color: var(--ink); font-family: var(--display); font-size: 1.6rem; font-weight: 900; line-height: 1; }
+.phase ul { margin: 6px 0 0; padding-left: 18px; color: var(--mute); font-size: 0.9rem; display: flex; flex-direction: column; gap: 3px; }
+.phase .gate { font-size: 0.84rem; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; align-self: start; display: flex; flex-direction: column; gap: 4px; }
+.phase .gate .label { font-size: 0.64rem; }
+
+.decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.dec { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { font-size: 0.82rem; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; color: var(--mute); }
+.opt.rec { color: var(--ink); border-color: #2A7FFF99; background: #2A7FFF1A; }
+
+.rules { display: flex; flex-direction: column; gap: 8px; font-size: 0.9rem; color: var(--mute); }
+.rules div { display: flex; gap: 10px; } .rules div::before { content: "—"; color: var(--line); }
+footer { font-size: 0.8rem; color: var(--mute); border-top: 1px solid var(--line); padding-top: 20px; }
+
+@media (max-width: 900px) {
+  .world-card { grid-template-columns: minmax(0, 1fr); }
+  .phase { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .phase .when { flex-direction: row; align-items: baseline; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .ev { animation: none; } }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag"><span class="dot"></span>Propuesta · prototipo con datos de ejemplo</span>
+    <h1>El <span class="w9">Estudio</span>.<br>El equipo de NicoMarca, trabajando dentro de su mente.</h1>
+    <p class="lead">Una vitrina viva de Braindy: Nicolas piensa, decide y firma; sus cuatro Brains ejecutan. Cada solicitud real viaja por el cerebro como una luz, de zona en zona, hasta volver a su mesa para la firma.</p>
+  </header>
+
+  <!-- Live world -->
+  <section aria-labelledby="h-world">
+    <div class="sec-head">
+      <p class="label">Así se vería</p>
+      <h2 id="h-world">El mundo, en movimiento</h2>
+      <p class="mute">Toca una zona para ver su cola de trabajo. Cambia la vista para ver lo que ve cada persona. Las marcas y tareas son de ejemplo.</p>
+    </div>
+    <div class="world-card">
+      <div class="world-scroll">
+        <div class="world" id="world">
+          <svg id="svg" viewBox="0 0 1000 640" role="img" aria-label="Mapa del Estudio: cinco zonas unidas por caminos neuronales"></svg>
+        </div>
+      </div>
+      <aside class="side" aria-label="Actividad">
+        <div class="col g8">
+          <span class="label">Vista</span>
+          <div class="seg" role="group" aria-label="Quién está mirando">
+            <button id="m-admin" class="on" data-mode="admin">NicoMarca</button>
+            <button id="m-client" data-mode="client">Cliente</button>
+            <button id="m-show" data-mode="show">Vitrina</button>
+          </div>
+          <span class="hint" id="mode-hint">Ves todo, con el nombre de cada marca.</span>
+        </div>
+        <div class="col g8">
+          <span class="label">En vivo</span>
+          <div class="feed" id="feed" aria-live="polite"></div>
+        </div>
+        <div class="queue" id="queue"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Zones -->
+  <section aria-labelledby="h-zones">
+    <div class="sec-head">
+      <p class="label">El lugar</p>
+      <h2 id="h-zones">Cinco zonas, una por protagonista</h2>
+      <p class="mute">No es una oficina. Es la cabeza de Nicolas por dentro: cada Brain tiene el espacio de su oficio, y la mesa de NicoMarca está en el centro porque todo pasa por su criterio.</p>
+    </div>
+    <div class="zones">
+      <div class="zone"><span class="sw" style="background:var(--res)">R</span><h3>El Observatorio</h3><p>Biblioteca con telescopio y radar de mercado.</p><span class="does">Researcher investiga competidores, analiza datos y prepara los onboardings.</span></div>
+      <div class="zone"><span class="sw" style="background:var(--mkt)">M</span><h3>La Torre de Señal</h3><p>Estudio de transmisión con pantallas y el calendario de publicaciones.</p><span class="does">Marketer redacta informes, mide resultados y planea contenido.</span></div>
+      <div class="zone nico"><span class="sw" style="background:var(--nico)">N</span><h3>La Mesa de NicoMarca</h3><p>Escritorio central, la zona más tranquila y protagonista.</p><span class="does">Nicolas recibe lo terminado, corrige o firma. Nada sale sin pasar por aquí.</span></div>
+      <div class="zone"><span class="sw" style="background:var(--cre)">C</span><h3>El Taller</h3><p>Mesa de luz, lienzos y bocetos de logos colgados.</p><span class="does">Creator diseña logos, piezas y motion.</span></div>
+      <div class="zone"><span class="sw" style="background:var(--bui)">B</span><h3>La Fábrica</h3><p>Banco de trabajo, servidores y brazos que arman bloques.</p><span class="does">Builder construye webs, apps y automatizaciones.</span></div>
+    </div>
+  </section>
+
+  <!-- Synapses -->
+  <section aria-labelledby="h-flow">
+    <div class="sec-head">
+      <p class="label">Lo que engancha en video</p>
+      <h2 id="h-flow">Las sinapsis: el trabajo se ve moverse</h2>
+      <p class="mute">Las zonas se unen por caminos neuronales. Cada luz es trabajo real cambiando de manos, con el color de quien lo envía.</p>
+    </div>
+    <div class="flow">
+      <div class="step"><span class="n">Paso 1</span><h3>Entra una solicitud</h3><p>El cliente pide en "Pedir algo". Una luz blanca llega a la mesa de NicoMarca.</p></div>
+      <div class="step"><span class="n">Paso 2</span><h3>Nicolas la asigna</h3><p>La luz viaja al Brain que lidera. Su burbuja cambia: "Diseñando el logo de Pequeloop · v1".</p></div>
+      <div class="step"><span class="n">Paso 3</span><h3>Los Brains se pasan trabajo</h3><p>El Researcher entrega hallazgos al Creator: una luz amarilla cruza el cerebro.</p></div>
+      <div class="step"><span class="n">Paso 4</span><h3>Vuelve para la firma</h3><p>Lo terminado regresa a la mesa. Nicolas corrige o firma, y el cliente recibe la versión.</p></div>
+    </div>
+  </section>
+
+  <!-- States -->
+  <section aria-labelledby="h-states">
+    <div class="sec-head">
+      <p class="label">Datos reales, no decoración</p>
+      <h2 id="h-states">Cada Brain muestra en qué está</h2>
+      <p class="mute">Los estados salen de las tareas que ya existen en la app (solicitudes, tareas de los Brains y reuniones de equipo). Sin puntos, niveles ni rankings.</p>
+    </div>
+    <div class="states">
+      <div class="state"><span class="ico" style="background:var(--bui);box-shadow:0 0 10px var(--bui)"></span><div><h3>Trabajando</h3><p>Su animación de 5 s y una burbuja con la tarea y la marca.</p></div></div>
+      <div class="state"><span class="ico" style="background:var(--mkt)"></span><div><h3>En reunión</h3><p>Cuando corre una reunión de equipo, los cuatro se juntan alrededor de la mesa central.</p></div></div>
+      <div class="state"><span class="ico" style="background:var(--nico)"></span><div><h3>Esperando a NicoMarca</h3><p>Algo está listo para revisión o firma. La mesa central brilla.</p></div></div>
+      <div class="state"><span class="ico" style="background:var(--line)"></span><div><h3>Libre</h3><p>Sin tareas activas. Animación tranquila, zona en penumbra.</p></div></div>
+    </div>
+  </section>
+
+  <!-- Who sees it -->
+  <section aria-labelledby="h-who">
+    <div class="sec-head">
+      <p class="label">Quién lo ve</p>
+      <h2 id="h-who">Un mismo mundo, tres vistas</h2>
+      <p class="mute">El flujo de trabajo no cambia: el cliente pide y NicoMarca entrega. El Estudio solo lo hace visible.</p>
+    </div>
+    <div class="who-grid">
+      <div class="who-card"><span class="label">Admin</span><h3>NicoMarca</h3><ul><li>Todo, con el nombre de cada marca.</li><li>Al tocar una zona, la cola completa de ese Brain.</li><li>Atajo a la solicitud para corregir o firmar.</li></ul></div>
+      <div class="who-card"><span class="label">Cliente</span><h3>Cada marca</h3><ul><li>El mismo mundo, pero solo ve nombres y detalles de su marca.</li><li>El resto aparece como "otra marca": ve que el equipo trabaja sin ver a otros clientes.</li><li>Las reglas de seguridad lo garantizan en el servidor, no solo en pantalla.</li></ul></div>
+      <div class="who-card"><span class="label">Público</span><h3>Modo vitrina</h3><ul><li>Datos anonimizados o de demo.</li><li>Cámara automática que recorre las zonas.</li><li>Formato vertical 9:16 para Reels y TikTok, y horizontal para braindy.co.</li><li>Botón de grabar: sale un video listo para publicar.</li></ul></div>
+    </div>
+  </section>
+
+  <!-- How -->
+  <section aria-labelledby="h-how">
+    <div class="sec-head">
+      <p class="label">Cómo se construye</p>
+      <h2 id="h-how">Isométrico 2.5D primero, 3D después si funciona</h2>
+      <p class="mute">En un video de 30 segundos el 2.5D bien ilustrado se ve casi igual que un 3D completo, cuesta mucho menos y corre en cualquier celular.</p>
+    </div>
+    <div class="cmp-scroll">
+      <table>
+        <thead><tr><th></th><th>2.5D isométrico <span class="chip rec">Recomendado</span></th><th>3D real (Three.js) <span class="chip later">Más adelante</span></th></tr></thead>
+        <tbody>
+          <tr><td class="mute">Cómo se ve</td><td class="pick">Zonas ilustradas con luz de neón y los avatares 3D que ya existen, con sus animaciones de 5 s encima</td><td>Escena navegable, cámara libre</td></tr>
+          <tr><td class="mute">Celular</td><td class="pick">Fluido, carga rápido</td><td>Pesado en equipos de gama media</td></tr>
+          <tr><td class="mute">Para video</td><td class="pick">Cámara guiada, grabación 9:16 directa</td><td>Más cinematográfico, más trabajo por toma</td></tr>
+          <tr><td class="mute">Esfuerzo</td><td class="pick">Unas 4 sesiones de trabajo hasta la vitrina</td><td>Varias semanas, modelos y rigging nuevos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Plan -->
+  <section aria-labelledby="h-plan">
+    <div class="sec-head">
+      <p class="label">El plan</p>
+      <h2 id="h-plan">Cuatro fases, cada una con tu aprobación</h2>
+      <p class="mute">Se termina y verifica una fase antes de empezar la siguiente, como el resto de la plataforma.</p>
+    </div>
+    <div class="phases">
+      <div class="phase">
+        <div class="when"><b>1</b>1 sesión</div>
+        <div><h3>Prototipo visual</h3><ul><li>Arte de las cinco zonas en la vista oscura, con los colores de cada Brain.</li><li>Sinapsis animadas y burbujas con datos de demo.</li><li>Avatares reales con sus loops de 5 s.</li></ul></div>
+        <div class="gate"><span class="label">Tú apruebas</span>El arte, los nombres de las zonas y el movimiento.</div>
+      </div>
+      <div class="phase">
+        <div class="when"><b>2</b>1 sesión</div>
+        <div><h3>Datos reales en staging</h3><ul><li>Burbujas y estados leídos de solicitudes, tareas de los Brains y reuniones.</li><li>Las luces se disparan con cambios reales: nueva solicitud, entrega, firma.</li><li>Sección "El Estudio" en tu menú de admin, con la cola de cada zona.</li></ul></div>
+        <div class="gate"><span class="label">Tú apruebas</span>Que lo que se ve corresponde a lo que pasa de verdad.</div>
+      </div>
+      <div class="phase">
+        <div class="when"><b>3</b>1 sesión</div>
+        <div><h3>Vista del cliente</h3><ul><li>El cliente ve solo su marca; el resto como "otra marca".</li><li>Reglas de seguridad escritas y probadas en el emulador antes de publicar.</li><li>Acceso desde su Inicio.</li></ul></div>
+        <div class="gate"><span class="label">Tú apruebas</span>Con un cliente de prueba, antes de mostrarlo a uno real.</div>
+      </div>
+      <div class="phase">
+        <div class="when"><b>4</b>1 sesión</div>
+        <div><h3>Modo vitrina y grabación</h3><ul><li>Datos anonimizados o de demo.</li><li>Recorrido automático de cámara.</li><li>Grabación en 9:16 y 16:9, lista para Reels, TikTok y braindy.co.</li></ul></div>
+        <div class="gate"><span class="label">Tú apruebas</span>El primer video antes de publicarlo.</div>
+      </div>
+      <div class="phase">
+        <div class="when"><b>5</b>Opcional</div>
+        <div><h3>Salto a 3D</h3><ul><li>Solo si la vitrina genera tracción en redes.</li><li>Misma lógica y mismos datos; cambia la capa visual.</li></ul></div>
+        <div class="gate"><span class="label">Tú decides</span>Con los números de los primeros videos.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guardrails -->
+  <section aria-labelledby="h-rules">
+    <div class="sec-head"><p class="label">Lo que no cambia</p><h2 id="h-rules">Reglas que El Estudio respeta</h2></div>
+    <div class="rules">
+      <div>Nicolas es siempre el autor. Los Brains aparecen "con" él, nunca como autores.</div>
+      <div>Los clientes no chatean con los Brains. El mundo se mira; se pide en "Pedir algo".</div>
+      <div>Sin métricas de juego: nada de puntos, niveles ni rankings.</div>
+      <div>Un cliente nunca ve el nombre ni el trabajo de otra marca.</div>
+      <div>Ninguna llamada a IA desde el navegador; el mundo solo lee datos.</div>
+    </div>
+  </section>
+
+  <!-- Decisions -->
+  <section aria-labelledby="h-dec">
+    <div class="sec-head">
+      <p class="label">Para arrancar</p>
+      <h2 id="h-dec">Tres decisiones tuyas</h2>
+      <p class="mute">Marcada en azul, la que recomiendo.</p>
+    </div>
+    <div class="decisions">
+      <div class="dec"><h3>El concepto</h3><div class="opts"><span class="opt rec">Dentro de la mente de NicoMarca</span><span class="opt">Estudio flotante</span><span class="opt">Ciudad</span></div></div>
+      <div class="dec"><h3>El nombre</h3><div class="opts"><span class="opt rec">El Estudio / The Studio</span><span class="opt">La Mente / The Mind</span></div></div>
+      <div class="dec"><h3>El estilo</h3><div class="opts"><span class="opt rec">Nocturno con neón</span><span class="opt">Claro, blanco y azul Braindy</span></div><p class="mute" style="font-size:.85rem">El oscuro luce más en video; el claro encaja más con el resto de la app.</p></div>
+    </div>
+  </section>
+
+  <footer>Braindy · Propuesta para NicoMarca · Octubre 2026. Las marcas y tareas del mundo de arriba son de ejemplo.</footer>
+</div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('svg');
+  const world = document.getElementById('world');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const Z = {
+    nico: { x: 500, y: 330, c: '#FFFFFF', name: 'NicoMarca', zone: 'La Mesa de NicoMarca', init: 'N' },
+    res:  { x: 230, y: 175, c: '#F5B301', name: 'Researcher', zone: 'El Observatorio', init: 'R' },
+    mkt:  { x: 770, y: 175, c: '#8B5CF6', name: 'Marketer', zone: 'La Torre de Señal', init: 'M' },
+    cre:  { x: 230, y: 495, c: '#06B6D4', name: 'Creator', zone: 'El Taller', init: 'C' },
+    bui:  { x: 770, y: 495, c: '#2A7FFF', name: 'Builder', zone: 'La Fábrica', init: 'B' },
+  };
+  const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+
+  // defs: glow
+  const defs = el('defs', {});
+  const f = el('filter', { id: 'glow', x: '-50%', y: '-50%', width: '200%', height: '200%' }, defs);
+  el('feGaussianBlur', { stdDeviation: '4', result: 'b' }, f);
+  const m = el('feMerge', {}, f); el('feMergeNode', { in: 'b' }, m); el('feMergeNode', { in: 'SourceGraphic' }, m);
+
+  // faint brain silhouette: two hemispheres of dots
+  const g0 = el('g', { opacity: '0.5' });
+  for (let i = 0; i < 260; i++) {
+    const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random());
+    const x = 500 + Math.cos(a) * r * 470, y = 330 + Math.sin(a) * r * 300;
+    el('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: (Math.random() * 1.2 + 0.3).toFixed(2), fill: '#3A4570' }, g0);
+  }
+  el('path', { d: 'M500 40 C 480 200, 520 460, 500 620', stroke: '#1E2645', 'stroke-width': '2', fill: 'none', 'stroke-dasharray': '3 7' });
+
+  // synapse paths
+  const links = [['nico','res'],['nico','mkt'],['nico','cre'],['nico','bui'],['res','mkt'],['cre','bui'],['res','cre'],['mkt','bui']];
+  const paths = {};
+  const gl = el('g', {});
+  for (const [a, b] of links) {
+    const A = Z[a], B = Z[b];
+    const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+    let cx = mx, cy = my;
+    if (a === 'nico') { cx = mx + (B.y < A.y ? -40 : 40); cy = my; }
+    else if (A.y === B.y) { cy = my + (A.y < 330 ? -70 : 70); }
+    else { cx = mx + (A.x < 500 ? -80 : 80); }
+    const d = `M${A.x} ${A.y} Q ${cx} ${cy} ${B.x} ${B.y}`;
+    el('path', { d, stroke: '#26305A', 'stroke-width': '6', fill: 'none', 'stroke-linecap': 'round', opacity: '0.5' }, gl);
+    paths[a + '-' + b] = el('path', { d, stroke: '#3B4A8A', 'stroke-width': '1.4', fill: 'none', 'stroke-dasharray': '2 6' }, gl);
+  }
+
+  // isometric islands
+  const shade = (hex, k) => { const n = parseInt(hex.slice(1), 16); const r = n >> 16, g = (n >> 8) & 255, b = n & 255; const f = (v) => Math.round(v * k).toString(16).padStart(2, '0'); return '#' + f(r) + f(g) + f(b); };
+  const zoneEls = {};
+  for (const id in Z) {
+    const z = Z[id], w = id === 'nico' ? 150 : 130, h = w / 2, d = 16;
+    const g = el('g', { class: 'zone-btn', tabindex: '0', role: 'button', 'aria-label': 'Ver la cola de ' + z.zone, style: 'cursor:pointer' });
+    const top = `${z.x},${z.y - h} ${z.x + w},${z.y} ${z.x},${z.y + h} ${z.x - w},${z.y}`;
+    el('polygon', { points: `${z.x - w},${z.y} ${z.x},${z.y + h} ${z.x},${z.y + h + d} ${z.x - w},${z.y + d}`, fill: shade(id === 'nico' ? '#7A86B8' : z.c, 0.22) }, g);
+    el('polygon', { points: `${z.x + w},${z.y} ${z.x},${z.y + h} ${z.x},${z.y + h + d} ${z.x + w},${z.y + d}`, fill: shade(id === 'nico' ? '#7A86B8' : z.c, 0.14) }, g);
+    const topEl = el('polygon', { points: top, fill: shade(id === 'nico' ? '#7A86B8' : z.c, 0.32), stroke: z.c, 'stroke-opacity': '0.55', 'stroke-width': '1.2' }, g);
+    // inner grid
+    for (let i = 1; i < 4; i++) {
+      const t = i / 4;
+      el('line', { x1: z.x - w + w * t, y1: z.y - h * t, x2: z.x + w * t, y2: z.y + h - h * t, stroke: z.c, 'stroke-opacity': '0.08' }, g);
+      el('line', { x1: z.x - w + w * t, y1: z.y + h * t, x2: z.x + w * t, y2: z.y - h + h * t, stroke: z.c, 'stroke-opacity': '0.08' }, g);
+    }
+    props(id, z, g);
+    // avatar orb
+    const orb = el('g', {}, g);
+    const halo = el('circle', { cx: z.x, cy: z.y - 18, r: 22, fill: z.c, opacity: '0.18' }, orb);
+    el('circle', { cx: z.x, cy: z.y - 18, r: 14, fill: z.c, filter: 'url(#glow)' }, orb);
+    const t = el('text', { x: z.x, y: z.y - 13.5, 'text-anchor': 'middle', 'font-family': 'Red Hat Display, sans-serif', 'font-weight': '900', 'font-size': '13', fill: '#0A0D19' }, orb); t.textContent = z.init;
+    const lbl = el('text', { x: z.x, y: z.y + h + d + 22, 'text-anchor': 'middle', 'font-family': 'Red Hat Mono, monospace', 'font-size': '11', 'letter-spacing': '1.5', fill: '#8C95B0' }, g); lbl.textContent = z.zone.toUpperCase();
+    zoneEls[id] = { g, halo, topEl };
+    const pick = () => showQueue(id);
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  }
+
+  function props(id, z, g) {
+    const c = z.c, o = '0.75';
+    if (id === 'res') { // telescope + bookshelf
+      el('line', { x1: z.x - 70, y1: z.y + 4, x2: z.x - 40, y2: z.y - 34, stroke: c, 'stroke-width': '5', 'stroke-linecap': 'round', opacity: o }, g);
+      el('line', { x1: z.x - 58, y1: z.y - 12, x2: z.x - 64, y2: z.y + 10, stroke: c, 'stroke-width': '2', opacity: o }, g);
+      for (let i = 0; i < 4; i++) el('rect', { x: z.x + 46 + i * 8, y: z.y - 30 + (i % 2) * 4, width: 6, height: 26 - (i % 2) * 4, fill: c, opacity: 0.35 + i * 0.1 }, g);
+      el('circle', { cx: z.x + 2, cy: z.y + 34, r: 16, fill: 'none', stroke: c, 'stroke-opacity': '0.4' }, g);
+      el('circle', { cx: z.x + 2, cy: z.y + 34, r: 8, fill: 'none', stroke: c, 'stroke-opacity': '0.4' }, g);
+    } else if (id === 'mkt') { // antenna + screens
+      el('line', { x1: z.x + 60, y1: z.y + 6, x2: z.x + 60, y2: z.y - 50, stroke: c, 'stroke-width': '3', opacity: o }, g);
+      for (let r = 8; r <= 24; r += 8) el('path', { d: `M${z.x + 60 - r} ${z.y - 50 - r * 0.2} A ${r} ${r} 0 0 1 ${z.x + 60 + r} ${z.y - 50 - r * 0.2}`, stroke: c, fill: 'none', 'stroke-opacity': 0.6 - r / 60 }, g);
+      el('rect', { x: z.x - 82, y: z.y - 34, width: 36, height: 24, rx: 3, fill: c, opacity: '0.35' }, g);
+      el('rect', { x: z.x - 40, y: z.y + 18, width: 30, height: 20, rx: 3, fill: c, opacity: '0.25' }, g);
+    } else if (id === 'cre') { // easel + sketches
+      el('polygon', { points: `${z.x - 70},${z.y - 44} ${z.x - 36},${z.y - 40} ${z.x - 38},${z.y - 6} ${z.x - 72},${z.y - 10}`, fill: c, opacity: '0.35' }, g);
+      el('circle', { cx: z.x - 54, cy: z.y - 25, r: 7, fill: 'none', stroke: c, 'stroke-width': '2' }, g);
+      el('line', { x1: z.x - 60, y1: z.y - 6, x2: z.x - 66, y2: z.y + 14, stroke: c, opacity: o }, g);
+      el('line', { x1: z.x - 46, y1: z.y - 6, x2: z.x - 40, y2: z.y + 14, stroke: c, opacity: o }, g);
+      for (let i = 0; i < 3; i++) el('rect', { x: z.x + 40 + i * 18, y: z.y - 36 + i * 3, width: 14, height: 18, fill: 'none', stroke: c, 'stroke-opacity': '0.5' }, g);
+    } else if (id === 'bui') { // servers + blocks
+      for (let i = 0; i < 3; i++) el('rect', { x: z.x - 84 + i * 14, y: z.y - 40 + i * 6, width: 12, height: 34, fill: c, opacity: 0.25 + i * 0.12 }, g);
+      [[46, -18], [62, -10], [54, -30]].forEach(([dx, dy]) => el('rect', { x: z.x + dx, y: z.y + dy, width: 14, height: 14, fill: c, opacity: '0.5' }, g));
+      el('path', { d: `M${z.x + 20} ${z.y + 30} l 20 -18 l 16 6`, stroke: c, 'stroke-width': '3', fill: 'none', opacity: o }, g);
+    } else { // desk
+      el('polygon', { points: `${z.x - 46},${z.y + 18} ${z.x},${z.y - 2} ${z.x + 46},${z.y + 18} ${z.x},${z.y + 38}`, fill: '#FFFFFF', opacity: '0.12', stroke: '#FFFFFF', 'stroke-opacity': '0.4' }, g);
+      el('rect', { x: z.x + 10, y: z.y + 12, width: 16, height: 10, fill: '#FFFFFF', opacity: '0.5', transform: `skewX(-20)` }, g);
+    }
+  }
+
+  // bubbles (HTML overlay)
+  const bubbles = {};
+  for (const id in Z) {
+    const z = Z[id], b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.left = (z.x / 10) + '%';
+    b.style.top = ((z.y - (id === 'nico' ? 52 : 46)) / 6.4) + '%';
+    b.innerHTML = `<div class="who"><span style="width:7px;height:7px;border-radius:50%;background:${z.c}"></span>${z.name}</div><div class="st"></div><div class="task"></div>`;
+    world.appendChild(b); bubbles[id] = b;
+  }
+
+  // demo data
+  const STATE = { working: 'Trabajando', waiting: 'Esperando a NicoMarca', meeting: 'En reunión', free: 'Libre', review: 'Revisando' };
+  const status = {
+    nico: { st: 'review', task: 'Firma del logo de Quimiolab', brand: 'Quimiolab' },
+    res: { st: 'working', task: 'Análisis de competencia', brand: 'Pequeloop' },
+    mkt: { st: 'working', task: 'Informe mensual', brand: 'Tinyroots' },
+    cre: { st: 'working', task: 'Logo · v2', brand: 'Quimiolab' },
+    bui: { st: 'working', task: 'Home en staging', brand: 'Revista Level' },
+  };
+  const queues = {
+    nico: [['Firmar logo · v2', 'Quimiolab', 'hoy'], ['Revisar home', 'Revista Level', 'mañana'], ['Aprobar plan de contenido', 'Pequeloop', 'vie']],
+    res: [['Análisis de competencia', 'Pequeloop', 'hoy'], ['Datos del mes', 'Tinyroots', 'mié'], ['Onboarding: investigación', 'Sanuteam', 'jue']],
+    mkt: [['Informe mensual', 'Tinyroots', 'hoy'], ['Post de lanzamiento', 'Pequeloop', 'jue'], ['Calendario de noviembre', 'Revista Level', 'vie']],
+    cre: [['Logo · v2', 'Quimiolab', 'hoy'], ['Carrusel de producto', 'Quimiolab', 'jue'], ['Motion del logo', 'Sanuteam', 'lun']],
+    bui: [['Home en staging', 'Revista Level', 'hoy'], ['Formulario de contacto', 'Tinyroots', 'mié'], ['Automatización de leads', 'Pequeloop', 'vie']],
+  };
+  const events = [
+    { from: 'in', to: 'nico', text: 'Nueva solicitud: post de lanzamiento', brand: 'Pequeloop', set: { nico: ['review', 'Nueva solicitud: post de lanzamiento'] } },
+    { from: 'nico', to: 'mkt', text: 'NicoMarca asigna el post de lanzamiento', brand: 'Pequeloop', set: { mkt: ['working', 'Post de lanzamiento'] } },
+    { from: 'res', to: 'cre', text: 'Researcher entrega hallazgos de competencia', brand: 'Quimiolab', set: { cre: ['working', 'Bocetos con los hallazgos'] } },
+    { from: 'cre', to: 'nico', text: 'Logo · v2 listo para firma', brand: 'Quimiolab', set: { cre: ['waiting', 'Logo · v2'], nico: ['review', 'Firma del logo · v2'] } },
+    { from: 'nico', to: 'cre', text: 'Corrección: más aire en el símbolo', brand: 'Quimiolab', set: { cre: ['working', 'Logo · v3'] } },
+    { from: 'bui', to: 'nico', text: 'Home lista en staging', brand: 'Revista Level', set: { bui: ['waiting', 'Home en staging'], nico: ['review', 'Revisar la home'] } },
+    { from: 'mkt', to: 'res', text: 'Marketer pide los datos del mes', brand: 'Tinyroots', set: { res: ['working', 'Datos del mes'] } },
+    { meeting: true, text: 'Reunión de equipo: plan de Sanuteam', brand: 'Sanuteam' },
+    { from: 'nico', to: 'bui', text: 'NicoMarca firma la home: se publica', brand: 'Revista Level', set: { bui: ['working', 'Publicando la home'], nico: ['review', 'Firma del logo · v3'] } },
+  ];
+
+  // view modes
+  let mode = 'admin';
+  const CLIENT = 'Quimiolab';
+  const alias = {}; let aliasN = 0;
+  const brandName = (b) => {
+    if (mode === 'admin') return b;
+    if (mode === 'client') return b === CLIENT ? b : 'otra marca';
+    alias[b] ??= 'Marca ' + String.fromCharCode(65 + aliasN++);
+    return alias[b];
+  };
+  const taskText = (task, b) => (mode === 'client' && b !== CLIENT) ? 'Trabajo en curso' : task;
+  const hints = { admin: 'Ves todo, con el nombre de cada marca.', client: 'Vista de Quimiolab: solo ve su marca; el resto aparece como "otra marca".', show: 'Vitrina pública: marcas anonimizadas, lista para grabar.' };
+  document.querySelectorAll('.seg button').forEach((btn) => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === btn));
+    document.getElementById('mode-hint').textContent = hints[mode];
+    renderBubbles(); renderFeed(); showQueue(currentQ);
+  }));
+
+  function renderBubbles() {
+    for (const id in status) {
+      const s = status[id], b = bubbles[id];
+      b.querySelector('.st').textContent = STATE[s.st];
+      b.querySelector('.task').textContent = s.st === 'meeting' ? taskText('Plan de ' + s.brand, s.brand).replace(s.brand, brandName(s.brand)) : `${taskText(s.task, s.brand)} · ${brandName(s.brand)}`;
+      b.style.borderColor = s.st === 'waiting' ? '#FFFFFF66' : s.st === 'meeting' ? '#8B5CF699' : '';
+      zoneEls[id].halo.setAttribute('opacity', s.st === 'free' ? '0.05' : s.st === 'waiting' ? '0.35' : '0.18');
+    }
+  }
+
+  const feed = [];
+  function renderFeed() {
+    const box = document.getElementById('feed'); box.innerHTML = '';
+    for (const e of feed.slice(0, 6)) {
+      const d = document.createElement('div'); d.className = 'ev';
+      const color = e.from === 'in' || !e.from ? '#FFFFFF' : Z[e.from].c;
+      const txt = (mode === 'client' && e.brand !== CLIENT) ? 'El equipo avanza en el trabajo de otra marca' : e.text;
+      d.innerHTML = `<i style="background:${color}"></i><div>${txt}<small>${brandName(e.brand)} · ${e.time}</small></div>`;
+      box.appendChild(d);
+    }
+  }
+
+  let currentQ = 'nico';
+  function showQueue(id) {
+    currentQ = id;
+    const z = Z[id], box = document.getElementById('queue');
+    const rows = queues[id].map(([t, b, w]) => `<div class="q"><span>${taskText(t, b)} · ${brandName(b)}</span><span>${w}</span></div>`).join('');
+    box.innerHTML = `<span class="label" style="color:${z.c === '#FFFFFF' ? 'var(--ink)' : z.c}">Cola · ${z.zone}</span>${rows}`;
+    for (const k in zoneEls) zoneEls[k].topEl.setAttribute('stroke-opacity', k === id ? '1' : '0.55');
+  }
+
+  // pulses
+  const pulses = [];
+  function pulse(from, to) {
+    let p = paths[from + '-' + to], rev = false;
+    if (!p) { p = paths[to + '-' + from]; rev = true; }
+    if (!p) return;
+    const c = Z[from].c;
+    const dot = el('circle', { r: 6, fill: c, filter: 'url(#glow)' });
+    const tail = el('circle', { r: 3, fill: c, opacity: '0.5' });
+    pulses.push({ p, rev, dot, tail, t0: performance.now(), len: p.getTotalLength() });
+  }
+  function entry() { // new request arrives from outside the brain
+    const dot = el('circle', { r: 6, fill: '#FFFFFF', filter: 'url(#glow)' });
+    const tail = el('circle', { r: 3, fill: '#FFFFFF', opacity: '0.5' });
+    const p = el('path', { d: 'M500 -20 Q 520 150 500 330', fill: 'none', stroke: 'none' });
+    pulses.push({ p, rev: false, dot, tail, t0: performance.now(), len: p.getTotalLength(), tmp: true });
+  }
+  function tick(now) {
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const q = pulses[i]; let t = (now - q.t0) / 1500;
+      if (t >= 1) { q.dot.remove(); q.tail.remove(); if (q.tmp) q.p.remove(); pulses.splice(i, 1); continue; }
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const at = (k) => q.p.getPointAtLength((q.rev ? 1 - k : k) * q.len);
+      const a = at(e), b = at(Math.max(0, e - 0.06));
+      q.dot.setAttribute('cx', a.x); q.dot.setAttribute('cy', a.y);
+      q.tail.setAttribute('cx', b.x); q.tail.setAttribute('cy', b.y);
+    }
+    requestAnimationFrame(tick);
+  }
+  if (!reduce) requestAnimationFrame(tick);
+
+  let step = 0, minute = 9 * 60 + 12;
+  let meetingTimer = null;
+  function play() {
+    const e = events[step++ % events.length];
+    minute += 3 + Math.floor(Math.random() * 6);
+    const time = `${String(Math.floor(minute / 60) % 24).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+    if (e.meeting) {
+      const saved = {};
+      for (const id of ['res', 'mkt', 'cre', 'bui']) { saved[id] = { ...status[id] }; status[id] = { st: 'meeting', task: '', brand: e.brand }; if (!reduce) pulse(id, 'nico'); }
+      clearTimeout(meetingTimer);
+      meetingTimer = setTimeout(() => { Object.assign(status, saved); renderBubbles(); }, 4200);
+    } else {
+      if (!reduce) e.from === 'in' ? entry() : pulse(e.from, e.to);
+      for (const id in e.set || {}) status[id] = { st: e.set[id][0], task: e.set[id][1], brand: e.brand };
+    }
+    feed.unshift({ ...e, time });
+    renderBubbles(); renderFeed();
+  }
+  renderBubbles(); showQueue('nico');
+  for (let i = 0; i < 3; i++) play();
+  setInterval(play, 2800);
+})();
+</script>
