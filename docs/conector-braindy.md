@@ -17,6 +17,7 @@ Ambas usan `server/src/connector/tools.ts`, así que cualquier herramienta nueva
 
 - `braindy_find_brand`: buscar el id de una marca
 - `braindy_app_link`: tarjeta en Mis apps (la misma URL actualiza la tarjeta)
+- `braindy_brand_identity`: Mi marca (logos principal, secundario, ícono y versiones; colores; tipografía; imágenes de concepto). Lo que se manda reemplaza lo anterior; lo demás queda igual
 - `braindy_site_changes_sync` / `_import_html` / `_get`: el triage del sitio (Ajustes del sitio)
 - `braindy_log_session`: registro interno de trabajo (solo Nicolas)
 - `braindy_upload`: archivos a Mis archivos › Uploads

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand, setLink, syncSiteChanges, uploadContent, uploadPath } from './store.js';
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
+import { setIdentity } from './identity.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -148,6 +149,41 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
       return `${name}: ${done.length} archivo(s) subidos (${done.map((d) => d.name).join(', ')}).\nVer: ${APP}/assets`;
     }));
   }
+
+  const IMAGE = z.object({
+    path: z.string().optional().describe(ctx.mode === 'local' ? 'Absolute path to the image' : 'Not available remotely: use url or base64'),
+    url: z.string().optional().describe('https link to the image'),
+    base64: z.string().optional().describe('Image content in base64'),
+    name: z.string().optional().describe('File name with extension (needed with base64), e.g. "logo.svg"'),
+  });
+  server.registerTool('braindy_brand_identity', {
+    title: 'Actualizar Mi marca en Braindy App',
+    description: 'Updates the brand\'s "Mi marca" page in Braindy App: logos (primary, secondary, icon and other versions), colors, typography and design concept images. '
+      + 'Send only what you have: what is sent replaces what was there, the rest stays. Use right after creating or updating a brand, when Nicolas says '
+      + '"actualiza Mi marca", "sube la marca a Braindy App", "pon los logos y colores en Braindy". Prefer SVG or PNG with transparent background for logos.',
+    inputSchema: {
+      brandId: z.string(),
+      logos: z.object({
+        primary: IMAGE.optional().describe('Main logo (horizontal lockup)'),
+        secondary: IMAGE.optional().describe('Secondary lockup (stacked, etc.)'),
+        icon: IMAGE.optional().describe('Symbol / isotype alone'),
+        variations: z.array(IMAGE).max(40).optional().describe('Other versions (colors, negatives, one ink…): replaces the list'),
+      }).optional(),
+      colors: z.array(z.object({ name: z.string().optional(), hex: z.string().describe('#RRGGBB'), pantone: z.string().optional() })).max(24).optional().describe('Brand palette, main color first: replaces the list'),
+      typography: z.array(z.object({
+        fontFamily: z.string().describe('Exact family name, e.g. "Red Hat Display"'), role: z.string().optional().describe('e.g. "Títulos", "Texto"'),
+        type: z.enum(['google', 'custom']).optional().describe('google = loads from Google Fonts'), url: z.string().optional().describe('https link to download or see the font'),
+        description: z.string().optional(), name: z.string().optional(),
+      })).max(8).optional().describe('Brand fonts: replaces the list'),
+      concept: z.array(z.object({ image: IMAGE, kind: z.enum(['design-concept', 'hero']).optional(), caption: z.string().optional() })).max(12).optional()
+        .describe('Design concept and cover images (how the logo was built, the idea): replaces the list'),
+    },
+  }, run(async ({ brandId, ...input }) => {
+    const name = await requireBrand(brandId);
+    const done = await setIdentity(brandId, input, ctx.mode === 'local');
+    return `${name}: Mi marca actualizada (${done.join(', ')}).
+Ver: ${APP}/brand`;
+  }));
 
   server.registerTool('braindy_requests', {
     title: 'Ver las solicitudes de una marca',

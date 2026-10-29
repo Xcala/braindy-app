@@ -26,6 +26,7 @@ type Identity = {
   colors?: Color[];
   typography?: Array<Record<string, string>>;
   galleryAssets?: Array<{ id?: string; url?: string; name?: string; chosen?: boolean }>;
+  concept?: Array<{ url: string; kind: 'hero' | 'design-concept'; caption?: string }>;
 };
 
 export function MyBrand() {
@@ -34,7 +35,7 @@ export function MyBrand() {
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const brainDoc = useBrandDoc(current?.id, 'context/brain');
-  const shots = deckShots(useLegacyAssets(current?.id));
+  const legacyShots = deckShots(useLegacyAssets(current?.id));
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -42,6 +43,8 @@ export function MyBrand() {
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const id = (identity.data ?? {}) as Identity;
+  // Concept images sent by the Braindy connector replace the ones rescued from the old LogoDeck.
+  const shots = id.concept?.length ? id.concept : legacyShots;
   const voice = voiceDoc.data as (VoiceDoc & { archetype?: string[] }) | null;
   const colors = brandColors(id.colors ?? []);
   const children = brands.filter((b) => b.groupId === current.id);
