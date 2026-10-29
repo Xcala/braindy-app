@@ -10,6 +10,8 @@ import type { BrainId } from '../../requests/taxonomy';
 import { useBrainTasks } from '../../brains/useBrains';
 import { GranolaInbox } from '../../team/GranolaInbox';
 
+/** Active brands Nicolas takes on at once. */
+const CAP = 50;
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 const ago = (d?: Date) => {
   if (!d) return '';
@@ -41,8 +43,8 @@ export function AdminTeam() {
 
       <div className="card row g24 wrap">
         <div className="col grow" style={{ gap: 6, minWidth: 260 }}>
-          <div className="row between"><span className="w7 t-sm">{t('team.capacity')}</span><span className="t-xs t-mute">{t('team.ceiling')}</span></div>
-          <div className="bar"><i style={{ width: `${Math.min(100, (active / 25) * 100)}%`, background: active > 20 ? 'var(--warning)' : 'var(--azul)' }} /></div>
+          <div className="row between"><span className="w7 t-sm">{t('team.capacity')}</span><span className="t-xs t-mute">{t('team.ceiling', { n: CAP })}</span></div>
+          <div className="bar"><i style={{ width: `${Math.min(100, (active / CAP) * 100)}%`, background: active > CAP * 0.8 ? 'var(--warning)' : 'var(--azul)' }} /></div>
           <span className="t-xs t-mute">{t('team.activeBrands', { n: active })}</span>
         </div>
         <div className="row g24"><Stat n={items.filter((i) => i.status === 'in_production').length} label={t('req.status.in_production')} /><Stat n={items.filter((i) => i.status === 'to_approve').length} label={t('req.status.to_approve')} /><Stat n={queue.length} label={t('team.waitingYou')} /></div>
