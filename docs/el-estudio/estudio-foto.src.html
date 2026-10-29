@@ -1,0 +1,293 @@
+<title>El Estudio · San Francisco</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;400;500;700;900&family=Red+Hat+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one photographic 16:9 scene (the Braindy studio in San Francisco) with a live layer on top, then three panels. Single dark theme by choice so the photo carries the color. */
+:root {
+  color-scheme: dark;
+  --night: #080B16;
+  --panel: #10152A;
+  --panel-2: #161C34;
+  --line: #232B48;
+  --ink: #EEF1F8;
+  --mute: #8F98B2;
+  --res: #F5B301; --mkt: #8B5CF6; --cre: #06B6D4; --bui: #2A7FFF;
+  --display: "Red Hat Display", "Segoe UI", system-ui, sans-serif;
+  --mono: "Red Hat Mono", ui-monospace, "Cascadia Mono", monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--night); color: var(--ink); font-family: var(--display); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1440px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: flex; flex-direction: column; gap: 22px; }
+h1 { margin: 0; font-weight: 300; font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; }
+.w9 { font-weight: 900; }
+p { margin: 0; max-width: 70ch; }
+.label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
+.mute { color: var(--mute); }
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.top .col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.tag { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.72rem; color: var(--mute); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; width: fit-content; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bui); box-shadow: 0 0 10px var(--bui); }
+.btn { font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; cursor: pointer; }
+.btn:hover { border-color: #3A4570; }
+.btn:focus-visible, .seg button:focus-visible, .hot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Scene */
+.scene-scroll { overflow-x: auto; border-radius: 20px; border: 1px solid var(--line); background: #000; }
+.scene { position: relative; aspect-ratio: 2752 / 1536; min-width: 720px; overflow: hidden; }
+.cam { position: absolute; inset: 0; transform-origin: 50% 40%; animation: drift 38s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.045) translate(-0.6%, 0.4%); } }
+.cam img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.cam svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sun { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 20%, #FFE2B055 0%, #FFE2B000 45%); mix-blend-mode: screen; animation: sun 9s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes sun { from { opacity: .35; } to { opacity: .8; } }
+.glow { position: absolute; width: 18%; aspect-ratio: 1.6; transform: translate(-50%, -50%); border-radius: 50%; mix-blend-mode: screen; pointer-events: none; transition: opacity .8s; }
+.hot { position: absolute; transform: translate(-50%, -50%); border-radius: 40%; background: transparent; border: 0; cursor: pointer; }
+.hot:hover + .glow, .hot:focus-visible + .glow { opacity: 1 !important; }
+.clock { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; font-family: var(--mono); font-size: clamp(9px, 0.95vw, 13px); color: #1B2340; background: #FFFFFFB3; border: 1px solid #FFFFFFCC; border-radius: 10px; padding: 5px 12px; backdrop-filter: blur(6px); white-space: nowrap; }
+.clock b { font-family: var(--display); font-weight: 900; color: #0B1020; margin-left: 5px; }
+.clock i { width: 1px; height: 12px; background: #1B234044; }
+.bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 12px; padding: 6px 10px; font-size: clamp(9px, 0.8vw, 12px); line-height: 1.3; backdrop-filter: blur(8px); pointer-events: none; transition: border-color .4s; box-shadow: 0 6px 24px #0006; }
+.bubble .who { font-weight: 900; display: flex; align-items: center; gap: 6px; }
+.bubble .who i { width: 7px; height: 7px; border-radius: 50%; }
+.bubble .st { font-family: var(--mono); font-size: .85em; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+
+/* Panels */
+.panels { display: grid; grid-template-columns: 1fr 1.25fr 1fr; gap: 14px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.seg { display: flex; flex-wrap: wrap; background: var(--night); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; font: inherit; font-size: 0.78rem; font-weight: 500; color: var(--mute); background: none; border: 0; border-radius: 9px; padding: 7px 8px; cursor: pointer; white-space: nowrap; }
+.seg button.on { background: var(--panel-2); color: var(--ink); }
+.hint { font-size: 0.76rem; color: var(--mute); }
+.feed { display: flex; flex-direction: column; gap: 10px; }
+.ev { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 10px; font-size: 0.82rem; line-height: 1.35; animation: in .5s ease; }
+.ev i { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; }
+.ev small { display: block; font-family: var(--mono); font-size: 0.66rem; color: var(--mute); }
+@keyframes in { from { opacity: .2; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.q { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.q:last-child { border-bottom: 0; }
+.q span:last-child { font-family: var(--mono); font-size: 0.68rem; color: var(--mute); white-space: nowrap; }
+.foot { font-size: 0.8rem; color: var(--mute); display: flex; flex-direction: column; gap: 6px; }
+.foot a { color: #9DB3FF; }
+.scene-scroll:fullscreen { border: 0; border-radius: 0; display: grid; place-items: center; }
+.scene-scroll:fullscreen .scene { width: min(100vw, calc(100vh * 2752 / 1536)); min-width: 0; }
+@media (max-width: 960px) { .panels { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .cam, .sun, .ev { animation: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="col">
+      <span class="tag"><span class="dot"></span>Fase 1 · versión fotográfica con datos de ejemplo</span>
+      <span class="label">Braindy · San Francisco, California</span>
+      <h1>El <span class="w9">Estudio</span>. Desde Silicon Valley, para nuestros clientes.</h1>
+      <p class="mute">NicoMarca a la cabeza de la mesa; sus cuatro Brains trabajan alrededor, cada uno en su puesto. Detrás, el Golden Gate. Toca a un Brain para ver su cola.</p>
+    </div>
+    <button class="btn" id="fs" type="button">Pantalla completa para grabar</button>
+  </header>
+
+  <div class="scene-scroll" id="scene-scroll">
+    <div class="scene" id="scene">
+      <div class="cam" id="cam">
+        <img src="__PHOTO__" alt="El estudio de Braindy en San Francisco: NicoMarca en la cabecera de una mesa redonda con los cuatro Brains trabajando en pantallas de vidrio, el Golden Gate detrás y el letrero 3D de Braindy en la pared">
+        <div class="sun"></div>
+        <svg id="svg" viewBox="0 0 2000 1116" aria-hidden="true"></svg>
+        <div id="spots"></div>
+      </div>
+      <div class="clock" aria-label="Hora en San Francisco y Bogotá"><span>SAN FRANCISCO<b id="t-sf">--:--</b></span><i></i><span>BOGOTÁ<b id="t-bog">--:--</b></span></div>
+      <div id="bubbles"></div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <span class="label">Quién mira</span>
+      <div class="seg" role="group" aria-label="Vista">
+        <button class="on" data-mode="admin" type="button">NicoMarca</button>
+        <button data-mode="client" type="button">Cliente</button>
+        <button data-mode="show" type="button">Vitrina</button>
+      </div>
+      <span class="hint" id="mode-hint">Ves todo, con el nombre de cada marca.</span>
+    </div>
+    <div class="panel">
+      <span class="label">En vivo</span>
+      <div class="feed" id="feed" aria-live="polite"></div>
+    </div>
+    <div class="panel">
+      <span class="label" id="q-title">Cola</span>
+      <div id="queue"></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <p>Fase 1, versión fotográfica: la escena es una foto hiperrealista generada a partir de la oficina de Braindy en San Francisco, los Brains en 3D y el logo 3D. Las marcas y tareas son de ejemplo; en la fase 2 se conectan a las solicitudes reales.</p>
+    <p><a href="https://claude.ai/artifact/8UG72AH18hdRkmRDedmg78" target="_blank" rel="noopener">Ver el plan completo de El Estudio</a></p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.getElementById('svg');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el = (tag, a = {}, p = svg) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+
+  // Positions in the photo (viewBox 2000 x 1131). screen = where the glass monitor sits; hot = the character; bub = bubble anchor.
+  const B = {
+    nico: { name: 'NicoMarca', role: 'Dirige y firma', c: '#FFFFFF', screen: [970, 525], hot: [975, 420, 260, 300], bub: [975, 272] },
+    res:  { name: 'Researcher', role: 'Investiga', c: '#F5B301', screen: [600, 500], hot: [330, 460, 280, 300], bub: [330, 320] },
+    mkt:  { name: 'Marketer', role: 'Comunica', c: '#8B5CF6', screen: [1360, 495], hot: [1700, 470, 300, 300], bub: [1805, 650] },
+    cre:  { name: 'Creator', role: 'Crea', c: '#06B6D4', screen: [715, 740], hot: [430, 800, 360, 420], bub: [205, 930] },
+    bui:  { name: 'Builder', role: 'Construye', c: '#2A7FFF', screen: [1225, 750], hot: [1520, 790, 380, 420], bub: [1800, 960] },
+  };
+  const pct = ([x, y]) => [x / 20, y / 11.16];
+
+  // glows over each glass screen + clickable hotspots on each character
+  const spots = document.getElementById('spots'), glows = {};
+  for (const id in B) {
+    const b = B[id], [hx, hy, hw, hh] = b.hot;
+    const btn = document.createElement('button');
+    btn.className = 'hot'; btn.type = 'button'; btn.setAttribute('aria-label', `Ver la cola de ${b.name}`);
+    Object.assign(btn.style, { left: hx / 20 + '%', top: hy / 11.16 + '%', width: hw / 20 + '%', height: hh / 11.16 + '%' });
+    btn.addEventListener('click', () => showQueue(id));
+    const g = document.createElement('div'); g.className = 'glow';
+    const [sx, sy] = pct(b.screen);
+    Object.assign(g.style, { left: sx + '%', top: sy + '%', background: `radial-gradient(ellipse, ${b.c}55 0%, ${b.c}00 65%)`, opacity: 0.5 });
+    spots.append(btn, g); glows[id] = g;
+  }
+
+  // light paths across the table surface between screens
+  const links = [['nico', 'res'], ['nico', 'mkt'], ['nico', 'cre'], ['nico', 'bui'], ['res', 'cre'], ['mkt', 'bui'], ['res', 'mkt'], ['cre', 'bui']];
+  const paths = {};
+  const tableY = (a, b) => (a[1] + b[1]) / 2 + 60;
+  for (const [a, b] of links) {
+    const A = B[a].screen, Z = B[b].screen;
+    const d = `M${A[0]} ${A[1] + 30} Q ${(A[0] + Z[0]) / 2} ${tableY(A, Z)} ${Z[0]} ${Z[1] + 30}`;
+    paths[a + '-' + b] = el('path', { d, fill: 'none', stroke: 'none' });
+  }
+  const defs = el('defs'); const f = el('filter', { id: 'glow', x: '-100%', y: '-100%', width: '300%', height: '300%' }, defs);
+  el('feGaussianBlur', { stdDeviation: 6, result: 'b' }, f); const m = el('feMerge', {}, f); el('feMergeNode', { in: 'b' }, m); el('feMergeNode', { in: 'SourceGraphic' }, m);
+  const pulses = [];
+  function pulse(from, to) {
+    let p = paths[from + '-' + to], rev = false;
+    if (!p) { p = paths[to + '-' + from]; rev = true; }
+    if (!p) return;
+    const c = B[from].c;
+    const trail = Array.from({ length: 6 }, (_, i) => el('circle', { r: 9 - i * 1.2, fill: c, opacity: 1 - i * 0.15, filter: i === 0 ? 'url(#glow)' : '' }));
+    pulses.push({ p, rev, len: p.getTotalLength(), t0: performance.now(), trail });
+  }
+  function frame(now) {
+    for (let i = pulses.length - 1; i >= 0; i--) {
+      const q = pulses[i], t = (now - q.t0) / 1700;
+      if (t >= 1) { q.trail.forEach((d) => d.remove()); pulses.splice(i, 1); continue; }
+      const e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+      q.trail.forEach((d, k) => { const pt = q.p.getPointAtLength((q.rev ? 1 - Math.max(0, e - k * 0.02) : Math.max(0, e - k * 0.02)) * q.len); d.setAttribute('cx', pt.x); d.setAttribute('cy', pt.y); });
+    }
+    for (const id in glows) if (status[id].st === 'working') glows[id].style.opacity = (0.45 + 0.25 * Math.sin(now / 700 + id.length)).toFixed(2);
+    requestAnimationFrame(frame);
+  }
+
+  // clocks
+  const fmt = (tz) => new Intl.DateTimeFormat('es-CO', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  const clocks = () => { document.getElementById('t-sf').textContent = fmt('America/Los_Angeles'); document.getElementById('t-bog').textContent = fmt('America/Bogota'); };
+  clocks(); setInterval(clocks, 20000);
+
+  // demo work
+  const STATE = { working: 'Trabajando', waiting: 'Listo para NicoMarca', meeting: 'En reunión', review: 'Revisando', free: 'Libre' };
+  const status = {
+    nico: { st: 'review', task: 'Firma del logo', brand: 'Quimiolab' },
+    res: { st: 'working', task: 'Análisis de competencia', brand: 'Pequeloop' },
+    mkt: { st: 'working', task: 'Informe mensual', brand: 'Tinyroots' },
+    cre: { st: 'working', task: 'Logo · v2', brand: 'Quimiolab' },
+    bui: { st: 'working', task: 'Home en staging', brand: 'Revista Level' },
+  };
+  const queues = {
+    nico: [['Firmar logo · v2', 'Quimiolab', 'hoy'], ['Revisar la home', 'Revista Level', 'mañana'], ['Aprobar plan de contenido', 'Pequeloop', 'vie']],
+    res: [['Análisis de competencia', 'Pequeloop', 'hoy'], ['Datos del mes', 'Tinyroots', 'mié'], ['Investigación de onboarding', 'Sanuteam', 'jue']],
+    mkt: [['Informe mensual', 'Tinyroots', 'hoy'], ['Post de lanzamiento', 'Pequeloop', 'jue'], ['Calendario de noviembre', 'Revista Level', 'vie']],
+    cre: [['Logo · v2', 'Quimiolab', 'hoy'], ['Carrusel de producto', 'Quimiolab', 'jue'], ['Motion del logo', 'Sanuteam', 'lun']],
+    bui: [['Home en staging', 'Revista Level', 'hoy'], ['Formulario de contacto', 'Tinyroots', 'mié'], ['Automatización de leads', 'Pequeloop', 'vie']],
+  };
+  const events = [
+    { from: 'nico', to: 'mkt', text: 'NicoMarca asigna el post de lanzamiento al Marketer', brand: 'Pequeloop', set: { mkt: ['working', 'Post de lanzamiento'] } },
+    { from: 'res', to: 'cre', text: 'El Researcher entrega hallazgos de competencia al Creator', brand: 'Quimiolab', set: { cre: ['working', 'Bocetos con los hallazgos'] } },
+    { from: 'cre', to: 'nico', text: 'Logo · v2 listo para la firma de NicoMarca', brand: 'Quimiolab', set: { cre: ['waiting', 'Logo · v2'], nico: ['review', 'Firma del logo · v2'] } },
+    { from: 'nico', to: 'cre', text: 'NicoMarca corrige: más aire en el símbolo', brand: 'Quimiolab', set: { cre: ['working', 'Logo · v3'] } },
+    { from: 'bui', to: 'nico', text: 'La home está lista en staging', brand: 'Revista Level', set: { bui: ['waiting', 'Home en staging'], nico: ['review', 'Revisar la home'] } },
+    { from: 'mkt', to: 'res', text: 'El Marketer pide los datos del mes al Researcher', brand: 'Tinyroots', set: { res: ['working', 'Datos del mes'] } },
+    { meeting: true, text: 'Reunión de equipo en la mesa: plan de Sanuteam', brand: 'Sanuteam' },
+    { from: 'nico', to: 'bui', text: 'NicoMarca firma la home: se publica', brand: 'Revista Level', set: { bui: ['working', 'Publicando la home'], nico: ['review', 'Firma del logo · v3'] } },
+  ];
+
+  let mode = 'admin';
+  const CLIENT = 'Quimiolab', alias = {}; let aliasN = 0;
+  const brandName = (b) => mode === 'admin' ? b : mode === 'client' ? (b === CLIENT ? b : 'otra marca') : (alias[b] ??= 'Marca ' + String.fromCharCode(65 + aliasN++));
+  const taskText = (t, b) => (mode === 'client' && b !== CLIENT) ? 'Trabajo en curso' : t;
+  const hints = { admin: 'Ves todo, con el nombre de cada marca.', client: 'Vista de Quimiolab: solo ve su marca; el resto aparece como "otra marca".', show: 'Vitrina pública: marcas anonimizadas, lista para grabar.' };
+  document.querySelectorAll('[data-mode]').forEach((btn) => btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('[data-mode]').forEach((x) => x.classList.toggle('on', x === btn));
+    document.getElementById('mode-hint').textContent = hints[mode];
+    renderBubbles(); renderFeed(); showQueue(currentQ);
+  }));
+
+  const bubbleBox = document.getElementById('bubbles'), bubbles = {};
+  for (const id in B) {
+    const b = B[id], d = document.createElement('div'); d.className = 'bubble';
+    const [x, y] = pct(b.bub); d.style.left = x + '%'; d.style.top = y + '%';
+    d.innerHTML = `<div class="who"><i style="background:${b.c}"></i>${b.name}</div><div class="st"></div><div class="task"></div>`;
+    bubbleBox.appendChild(d); bubbles[id] = d;
+  }
+  function renderBubbles() {
+    for (const id in status) {
+      const s = status[id], d = bubbles[id];
+      d.querySelector('.st').textContent = STATE[s.st];
+      d.querySelector('.task').textContent = s.st === 'meeting' ? `Plan de ${brandName(s.brand)}` : `${taskText(s.task, s.brand)} · ${brandName(s.brand)}`;
+      d.style.borderColor = s.st === 'waiting' ? '#FFFFFFAA' : s.st === 'meeting' ? '#8B5CF6' : '';
+      if (s.st !== 'working') glows[id].style.opacity = s.st === 'waiting' ? 1 : 0.35;
+    }
+  }
+  const feed = [];
+  function renderFeed() {
+    const box = document.getElementById('feed'); box.innerHTML = '';
+    for (const e of feed.slice(0, 6)) {
+      const d = document.createElement('div'); d.className = 'ev';
+      const color = e.from ? B[e.from].c : '#8B5CF6';
+      const txt = (mode === 'client' && e.brand !== CLIENT) ? 'El equipo avanza en el trabajo de otra marca' : e.text;
+      d.innerHTML = `<i style="background:${color}"></i><div>${txt}<small>${brandName(e.brand)} · ${e.time} en San Francisco</small></div>`;
+      box.appendChild(d);
+    }
+  }
+  let currentQ = 'nico';
+  function showQueue(id) {
+    currentQ = id; const b = B[id];
+    document.getElementById('q-title').innerHTML = `Cola · <span style="color:${b.c === '#FFFFFF' ? 'var(--ink)' : b.c}">${b.name}</span> <span style="text-transform:none;letter-spacing:0">(${b.role})</span>`;
+    document.getElementById('queue').innerHTML = queues[id].map(([t, br, w]) => `<div class="q"><span>${taskText(t, br)} · ${brandName(br)}</span><span>${w}</span></div>`).join('');
+  }
+
+  let step = 0, meetTimer = null;
+  function play() {
+    const e = events[step++ % events.length];
+    if (e.meeting) {
+      const saved = {};
+      for (const id of ['res', 'mkt', 'cre', 'bui']) { saved[id] = { ...status[id] }; status[id] = { st: 'meeting', task: '', brand: e.brand }; if (!reduce) pulse(id, 'nico'); }
+      clearTimeout(meetTimer);
+      meetTimer = setTimeout(() => { Object.assign(status, saved); renderBubbles(); }, 4400);
+    } else {
+      if (!reduce) pulse(e.from, e.to);
+      for (const id in e.set) status[id] = { st: e.set[id][0], task: e.set[id][1], brand: e.brand };
+    }
+    feed.unshift({ ...e, time: fmt('America/Los_Angeles') });
+    renderBubbles(); renderFeed();
+  }
+  renderBubbles(); showQueue('nico');
+  for (let i = 0; i < 3; i++) play();
+  setInterval(play, 3200);
+  if (!reduce) requestAnimationFrame(frame);
+
+  document.getElementById('fs').addEventListener('click', () => {
+    const t = document.getElementById('scene-scroll');
+    (t.requestFullscreen ? t.requestFullscreen() : Promise.reject()).catch(() => { document.getElementById('fs').textContent = 'Pantalla completa no disponible aquí'; });
+  });
+})();
+</script>
