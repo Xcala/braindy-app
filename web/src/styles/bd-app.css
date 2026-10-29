@@ -369,8 +369,8 @@ p{margin:0}
 .glass,.lg{background:var(--g-spec),var(--g-light);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);box-shadow:var(--g-sh);border:0}
 .glass-clear,.lg-clear{background:var(--g-spec-d),var(--g-clear);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:0}
 .glass-dark,.lg-dark{background:var(--g-spec-d),var(--g-dark);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);box-shadow:0 12px 40px rgba(0,0,0,.28);border:0}
-.topbar{background:var(--g-spec),rgba(255,255,255,.58);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-bottom:0;position:relative;z-index:3}
-.tabs{background:rgba(255,255,255,.42);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-bottom:1px solid rgba(11,18,32,.06);position:relative;z-index:2}
+.topbar{background:var(--g-spec),rgba(255,255,255,.58);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-bottom:0;position:relative;z-index:30}
+.tabs{background:rgba(255,255,255,.42);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-bottom:1px solid rgba(11,18,32,.06);position:relative;z-index:20}
 .mhead{background:var(--g-spec),rgba(255,255,255,.6);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-bottom:0;box-shadow:0 1px 0 rgba(11,18,32,.06)}
 .bnav{background:var(--g-spec),rgba(255,255,255,.66);border-top:0;box-shadow:0 -8px 30px rgba(11,18,32,.08)}
 .bnav .fab span.f{box-shadow:0 10px 24px rgba(47,77,224,.38),0 0 0 4px rgba(255,255,255,.8)}
@@ -379,7 +379,7 @@ p{margin:0}
 .stage .lang button,.night .lang button{color:#fff}.stage .lang button.is-on,.night .lang button.is-on{background:#fff;color:#0B1220}
 .stickybar{background:var(--g-spec),rgba(255,255,255,.6);border-bottom:0;box-shadow:var(--g-sh)}
 .toast{background:var(--g-spec-d),rgba(11,18,32,.74);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur)}
-.menu,.cmdk{background:var(--g-spec),rgba(255,255,255,.86);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:0;box-shadow:0 24px 60px rgba(11,18,32,.18)}
+.menu,.cmdk{background:var(--g-spec),rgba(255,255,255,.97);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border:0;box-shadow:0 24px 60px rgba(11,18,32,.18)}
 .shot .tag{background:var(--g-spec-d),var(--g-dark);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur)}
 .btn-outline-light{background:var(--g-spec-d),var(--g-clear);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);border-color:transparent;color:#fff}
 .stage .chip,.night .chip{background:var(--g-spec-d),var(--g-clear);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);color:#fff}
