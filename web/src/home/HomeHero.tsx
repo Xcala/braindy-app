@@ -8,6 +8,7 @@ import type { BrainId } from '../requests/taxonomy';
 import { useBrands } from '../brands/BrandProvider';
 import { dayLabel, daysFrom } from '../lib/dates';
 import { CONTACT } from '../proposals/public/copy';
+import { TypedNext } from './TypedNext';
 
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
@@ -43,7 +44,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
           </div>
           <p className="t-sm" style={{ color: '#E6EAF2' }}>
             {next ? t('home.nicoNowDue', { title: next.title, day: dayLabel(next.dueDate, lang) })
-              : current ? t('home.nicoNow', { title: current.title }) : t('home.nicoIdle')}
+              : current ? t('home.nicoNow', { title: current.title }) : <TypedNext />}
           </p>
           <div className="row g12 wrap" style={{ borderTop: '1px solid rgba(255,255,255,.12)', paddingTop: 12 }}>
             <span className="row" aria-label={BRAINS.map(brainName).join(', ')}>
