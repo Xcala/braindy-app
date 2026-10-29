@@ -79,6 +79,7 @@ p { margin: 0; max-width: 70ch; }
 .focus { position: absolute; top: 4%; width: min(34%, 340px); max-height: 92%; overflow: auto; background: #0B1022EE; border: 1px solid #2C3558; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1vw, 14px); backdrop-filter: blur(10px); box-shadow: 0 12px 40px #0008; opacity: 0; transform: translateY(8px); transition: opacity .5s .4s, transform .5s .4s; pointer-events: none; }
 .scene.zoomed .focus { opacity: 1; transform: none; pointer-events: auto; }
 .focus.left { left: 3%; } .focus.right { right: 3%; }
+.focus.bl { left: 3%; top: auto; bottom: 4%; } .focus.br { right: 3%; top: auto; bottom: 4%; }
 .focus .fh { display: flex; align-items: center; gap: 10px; }
 .focus .fh i { width: 12px; height: 12px; border-radius: 50%; }
 .focus h3 { margin: 0; font-size: 1.25em; font-weight: 900; }
@@ -90,6 +91,8 @@ p { margin: 0; max-width: 70ch; }
 .focus .fq small { font-family: var(--mono); color: var(--mute); }
 .focus .ok { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
 .focus .ok.done { background: #1F7A4D; }
+.closeup { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s ease; pointer-events: none; }
+.closeup.on { opacity: 1; }
 .back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1vw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
 .scene.zoomed .back { opacity: 1; pointer-events: auto; }
 .zoomhint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9vw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
@@ -122,6 +125,7 @@ p { margin: 0; max-width: 70ch; }
         <div class="clock" aria-label="Reloj de pared: hora en San Francisco y Bogotá"><b id="t-sf">--:--</b><b id="t-bog">--:--</b></div>
       </div>
             <div id="bubbles"></div>
+      <video class="closeup" id="closeup" muted loop playsinline preload="none" aria-hidden="true"></video>
       <aside class="focus right" id="focus" aria-live="polite"></aside>
       <button class="back" id="back" type="button">← Ver todo el estudio</button>
       <span class="zoomhint">Toca a cualquiera para acercarte a su puesto</span>
@@ -291,7 +295,8 @@ p { margin: 0; max-width: 70ch; }
   let currentQ = 'nico';
   // Zoom: the camera moves to a station and a card shows what that member is doing.
   const sceneEl = document.getElementById('scene'), camEl = document.getElementById('cam'), focusEl = document.getElementById('focus');
-  let focused = null; const approved = new Set();
+  let focused = null, cuTimer = null; const approved = new Set();
+  const closeEl = document.getElementById('closeup');
   function focusOn(id) {
     focused = id; showQueue(id);
     const [hx, hy] = B[id].hot, W = sceneEl.clientWidth, H = sceneEl.clientHeight, s = 2.1;
@@ -302,10 +307,21 @@ p { margin: 0; max-width: 70ch; }
     camEl.style.transformOrigin = '0 0';
     camEl.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + s + ')';
     sceneEl.classList.add('zoomed');
-    focusEl.className = 'focus ' + side;
+    focusEl.className = 'focus ' + ({ res: 'bl', mkt: 'left', cre: 'br', bui: 'left', nico: 'left' }[id] || side);
+    clearTimeout(cuTimer);
+    closeEl.classList.remove('on');
+    if (!reduce) {
+      closeEl.src = 'cu-' + id + '.mp4';
+      closeEl.play?.().catch(() => {});
+      cuTimer = setTimeout(() => { if (focused === id) closeEl.classList.add('on'); }, 800);
+    }
     renderFocus(id);
   }
-  function zoomOut() { focused = null; camEl.style.transform = ''; sceneEl.classList.remove('zoomed'); }
+  function zoomOut() {
+    focused = null; clearTimeout(cuTimer);
+    closeEl.classList.remove('on');
+    setTimeout(() => { if (!focused) { camEl.style.transform = ''; sceneEl.classList.remove('zoomed'); closeEl.pause(); } }, 350);
+  }
   document.getElementById('back').addEventListener('click', zoomOut);
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && focused) zoomOut(); });
   addEventListener('resize', () => { if (focused) focusOn(focused); });

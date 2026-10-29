@@ -9,3 +9,4 @@ Showroom of NicoMarca and his four Brains working at a round table in the Braind
 - `plan.html`: the plan and phases.
 
 Rules for new images: Nicolas must look like himself (use his photos as references, crop of the face helps); no Apple products, he uses PC and Samsung.
+- `closeups/cu-*.mp4`: 8 s close-up loops per station (Nano Banana 2.1 4K stills -> Kling 3.0 4K, start = end frame), shown after the camera zooms in. Published next to the page with the same names.
