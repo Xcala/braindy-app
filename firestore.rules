@@ -321,6 +321,20 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
+    // The Studio: NickMark's instructions to a Brain. Internal: only the admin reads or writes them, never clients.
+    match /brainInbox/{noteId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.by == uid()
+        && request.resource.data.brain in ['researcher', 'marketer', 'creator', 'builder']
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && onlyChanges(['status', 'doneAt']) && request.resource.data.status in ['open', 'done'];
+      allow delete: if isAdmin();
+    }
 
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
     match /brainTasks/{taskId} {

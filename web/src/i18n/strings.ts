@@ -10,6 +10,7 @@ import { uxEn, uxEs } from './uxStrings';
 import { brainEn, brainEs } from './brainStrings';
 import { polishEn, polishEs } from './polishStrings';
 import { criterioEn, criterioEs } from './criterioStrings';
+import { studioEn, studioEs } from './studioStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -175,7 +176,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -343,4 +344,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs };

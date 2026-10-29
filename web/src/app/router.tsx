@@ -27,6 +27,7 @@ import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
 import { AdminCriterio } from '../pages/admin/Criterio';
+import { AdminStudio } from '../pages/admin/Studio';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
             element: <RequireAdmin />,
             children: [
               { path: 'admin/today', element: <AdminToday /> },
+              { path: 'admin/studio', element: <AdminStudio /> },
               { path: 'admin/brands', element: <AdminBrands /> },
               { path: 'admin/criterio', element: <AdminCriterio /> },
               { path: 'admin/proposals', element: <AdminProposals /> },

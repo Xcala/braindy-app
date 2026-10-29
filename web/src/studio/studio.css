@@ -1,0 +1,46 @@
+/* El Estudio: photographic scene with a live layer. Dark by design (it sits on the photo). */
+.sd-scroll { overflow-x: auto; border-radius: 20px; background: #000; }
+.sd-scene { position: relative; aspect-ratio: 2752 / 1536; min-width: 720px; overflow: hidden; container-type: inline-size; color: #EEF1F8; font-family: inherit; }
+.sd-cam { position: absolute; inset: 0; transform-origin: 0 0; transition: transform 1s cubic-bezier(.22,.7,.18,1); }
+.sd-cam img, .sd-cam video, .sd-closeup { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-cam video { opacity: 0; transition: opacity .6s; }
+.sd-cam video.on { opacity: 1; }
+.sd-cam svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sd-glow { position: absolute; width: 18%; aspect-ratio: 1.6; transform: translate(-50%, -50%); border-radius: 50%; mix-blend-mode: screen; pointer-events: none; transition: opacity .8s; }
+.sd-hot { position: absolute; transform: translate(-50%, -50%); border-radius: 40%; background: transparent; border: 0; cursor: pointer; }
+.sd-hot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.sd-clock b { position: absolute; display: grid; place-items: center; background: #0B0D12; font-family: 'Red Hat Mono', ui-monospace, monospace; font-weight: 400; font-size: 1.85cqw; font-variant-numeric: tabular-nums; color: #F4F7FF; text-shadow: 0 0 .5cqw #FFFFFFAA; border-radius: .2cqw; overflow: hidden; white-space: nowrap; }
+.sd-bubbles { position: absolute; inset: 0; pointer-events: none; transition: opacity .4s; }
+.sd-bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 12px; padding: 6px 10px; font-size: clamp(9px, .8cqw, 12px); line-height: 1.3; backdrop-filter: blur(8px); box-shadow: 0 6px 24px #0006; }
+.sd-bubble .who { font-weight: 900; display: flex; align-items: center; gap: 6px; }
+.sd-bubble .who i { width: 7px; height: 7px; border-radius: 50%; }
+.sd-bubble .st { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .85em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
+.sd-badge { position: absolute; right: 3%; top: 4%; font-size: clamp(10px, .95cqw, 14px); font-weight: 700; color: #fff; background: #2F4DE0; border-radius: 999px; padding: 6px 12px; pointer-events: none; }
+.sd-hint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9cqw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
+.sd-closeup { opacity: 0; transition: opacity .7s ease; pointer-events: none; }
+.sd-closeup.on { opacity: 1; }
+.sd-back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1cqw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
+.sd-scene.zoomed .sd-bubbles, .sd-scene.zoomed .sd-hint, .sd-scene.zoomed .sd-badge { opacity: 0; }
+.sd-scene.zoomed .sd-back { opacity: 1; pointer-events: auto; }
+
+.sd-focus { position: absolute; top: 4%; width: min(34%, 360px); max-height: 92%; overflow: auto; background: #0B1022EE; border: 1px solid #2C3558; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1cqw, 14px); backdrop-filter: blur(10px); box-shadow: 0 12px 40px #0008; opacity: 0; transform: translateY(8px); transition: opacity .5s .4s, transform .5s .4s; pointer-events: none; }
+.sd-scene.zoomed .sd-focus { opacity: 1; transform: none; pointer-events: auto; }
+.sd-focus.left { left: 3%; } .sd-focus.right { right: 3%; }
+.sd-focus.bl { left: 3%; top: auto; bottom: 4%; } .sd-focus.br { right: 3%; top: auto; bottom: 4%; }
+.sd-focus h3 { margin: 0; font-size: 1.25em; font-weight: 900; color: #fff; }
+.sd-focus .lbl { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .74em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
+.sd-focus .now { background: #151C36; border-radius: 10px; padding: 8px 10px; }
+.sd-focus .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #222A47; }
+.sd-focus .row:last-child { border-bottom: 0; }
+.sd-focus .row small { font-family: 'Red Hat Mono', ui-monospace, monospace; color: #8F98B2; }
+.sd-focus a { color: #9DB3FF; }
+.sd-btn { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.sd-btn.ghost { background: transparent; border: 1px solid #3A4570; }
+.sd-btn.ok { background: #1F7A4D; }
+.sd-btn:disabled { opacity: .5; cursor: default; }
+.sd-focus textarea, .sd-focus select { font: inherit; font-size: .95em; color: #EEF1F8; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 10px; padding: 8px 10px; width: 100%; }
+.sd-focus textarea { min-height: 70px; resize: vertical; }
+.sd-seg { display: flex; gap: 4px; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 10px; padding: 3px; }
+.sd-seg button { flex: 1; font: inherit; font-size: .85em; font-weight: 700; color: #8F98B2; background: none; border: 0; border-radius: 7px; padding: 6px; cursor: pointer; }
+.sd-seg button.on { background: #1B2342; color: #fff; }
+@media (prefers-reduced-motion: reduce) { .sd-cam, .sd-closeup, .sd-focus { transition: none; } }
