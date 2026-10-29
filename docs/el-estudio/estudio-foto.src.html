@@ -44,9 +44,11 @@ p { margin: 0; max-width: 70ch; }
 .glow { position: absolute; width: 18%; aspect-ratio: 1.6; transform: translate(-50%, -50%); border-radius: 50%; mix-blend-mode: screen; pointer-events: none; transition: opacity .8s; }
 .hot { position: absolute; transform: translate(-50%, -50%); border-radius: 40%; background: transparent; border: 0; cursor: pointer; }
 .hot:hover + .glow, .hot:focus-visible + .glow { opacity: 1 !important; }
-.clock { position: absolute; left: 50%; top: 4%; transform: translateX(-50%); display: flex; gap: 14px; align-items: center; font-family: var(--mono); font-size: clamp(9px, 0.95vw, 13px); color: #1B2340; background: #FFFFFFB3; border: 1px solid #FFFFFFCC; border-radius: 10px; padding: 5px 12px; backdrop-filter: blur(6px); white-space: nowrap; }
-.clock b { font-family: var(--display); font-weight: 900; color: #0B1020; margin-left: 5px; }
-.clock i { width: 1px; height: 12px; background: #1B234044; }
+.scene { container-type: inline-size; }
+.clock { position: absolute; left: 45.4%; top: 71.4%; width: 7.7%; height: 4.6%; display: grid; grid-template-columns: 1fr 1fr; align-items: center; padding: 0 0.3cqw; background: #07090D; border-radius: 0.3cqw; color: #F2F5FF; text-align: center; pointer-events: none; }
+.clock span { display: flex; flex-direction: column; align-items: center; line-height: 1; gap: 0.15cqw; }
+.clock small { font-family: var(--mono); font-size: 0.34cqw; letter-spacing: .04em; color: #AEB6C8; }
+.clock b { font-family: var(--mono); font-weight: 500; font-size: 0.92cqw; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; text-shadow: 0 0 0.4cqw #FFFFFF99; }
 .bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 12px; padding: 6px 10px; font-size: clamp(9px, 0.8vw, 12px); line-height: 1.3; backdrop-filter: blur(8px); pointer-events: none; transition: border-color .4s; box-shadow: 0 6px 24px #0006; }
 .bubble .who { font-weight: 900; display: flex; align-items: center; gap: 6px; }
 .bubble .who i { width: 7px; height: 7px; border-radius: 50%; }
@@ -81,7 +83,7 @@ p { margin: 0; max-width: 70ch; }
       <span class="tag"><span class="dot"></span>Fase 1 · versión fotográfica con datos de ejemplo</span>
       <span class="label">Braindy · San Francisco, California</span>
       <h1>El <span class="w9">Estudio</span>. Desde Silicon Valley, para nuestros clientes.</h1>
-      <p class="mute">NicoMarca a la cabeza de la mesa; sus cuatro Brains trabajan alrededor, cada uno en su puesto. Detrás, el Golden Gate. Toca a un Brain para ver su cola.</p>
+      <p class="mute">NicoMarca trabaja en la mesa redonda con sus cuatro Brains, cada uno en su puesto. Sobre la mesa, la hora de San Francisco y de Bogotá. Detrás, el Golden Gate. Toca a un Brain para ver su cola.</p>
     </div>
     <button class="btn" id="fs" type="button">Pantalla completa para grabar</button>
   </header>
@@ -89,13 +91,13 @@ p { margin: 0; max-width: 70ch; }
   <div class="scene-scroll" id="scene-scroll">
     <div class="scene" id="scene">
       <div class="cam" id="cam">
-        <img src="__PHOTO__" alt="El estudio de Braindy en San Francisco: NicoMarca en la cabecera de una mesa redonda con los cuatro Brains trabajando en pantallas de vidrio, el Golden Gate detrás y el letrero 3D de Braindy en la pared">
+        <img src="__PHOTO__" alt="El estudio de Braindy en San Francisco: NicoMarca de espaldas en una mesa redonda con los cuatro Brains trabajando en pantallas de vidrio, un reloj con la hora de San Francisco y Bogotá y una taza de Café de Colombia, el Golden Gate detrás y el letrero 3D de Braindy en la pared">
         <div class="sun"></div>
         <svg id="svg" viewBox="0 0 2000 1116" aria-hidden="true"></svg>
         <div id="spots"></div>
+        <div class="clock" aria-label="Reloj de la mesa: hora en San Francisco y Bogotá"><span><small>SAN FRANCISCO</small><b id="t-sf">--:--</b></span><span><small>BOGOTÁ</small><b id="t-bog">--:--</b></span></div>
       </div>
-      <div class="clock" aria-label="Hora en San Francisco y Bogotá"><span>SAN FRANCISCO<b id="t-sf">--:--</b></span><i></i><span>BOGOTÁ<b id="t-bog">--:--</b></span></div>
-      <div id="bubbles"></div>
+            <div id="bubbles"></div>
     </div>
   </div>
 
@@ -134,11 +136,11 @@ p { margin: 0; max-width: 70ch; }
 
   // Positions in the photo (viewBox 2000 x 1131). screen = where the glass monitor sits; hot = the character; bub = bubble anchor.
   const B = {
-    nico: { name: 'NicoMarca', role: 'Dirige y firma', c: '#FFFFFF', screen: [970, 525], hot: [975, 420, 260, 300], bub: [975, 272] },
+    nico: { name: 'NicoMarca', role: 'Dirige y firma', c: '#FFFFFF', screen: [1240, 745], hot: [1540, 800, 440, 600], bub: [1790, 970] },
     res:  { name: 'Researcher', role: 'Investiga', c: '#F5B301', screen: [600, 500], hot: [330, 460, 280, 300], bub: [330, 320] },
-    mkt:  { name: 'Marketer', role: 'Comunica', c: '#8B5CF6', screen: [1360, 495], hot: [1700, 470, 300, 300], bub: [1805, 650] },
+    mkt:  { name: 'Marketer', role: 'Comunica', c: '#8B5CF6', screen: [1340, 500], hot: [1720, 470, 260, 300], bub: [1815, 335] },
     cre:  { name: 'Creator', role: 'Crea', c: '#06B6D4', screen: [715, 740], hot: [430, 800, 360, 420], bub: [205, 930] },
-    bui:  { name: 'Builder', role: 'Construye', c: '#2A7FFF', screen: [1225, 750], hot: [1520, 790, 380, 420], bub: [1800, 960] },
+    bui:  { name: 'Builder', role: 'Construye', c: '#2A7FFF', screen: [995, 490], hot: [995, 400, 280, 300], bub: [995, 262] },
   };
   const pct = ([x, y]) => [x / 20, y / 11.16];
 
