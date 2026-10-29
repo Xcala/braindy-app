@@ -10,7 +10,7 @@ $p = "braindy-brand-guideline"
 $sa = "serviceAccount:braindy-api@braindy-brand-guideline.iam.gserviceaccount.com"
 ```
 
-## 1 · Accesses: Cloud KMS (wave D)
+## 1 · Accesses: Cloud KMS (wave D) — DONE 2026-10-28 (key active, API can encrypt; first access saved on staging)
 
 Until this is done, adding or revealing an access on staging returns an error.
 
