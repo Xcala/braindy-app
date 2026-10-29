@@ -72,6 +72,28 @@ p { margin: 0; max-width: 70ch; }
 .q span:last-child { font-family: var(--mono); font-size: 0.68rem; color: var(--mute); white-space: nowrap; }
 .foot { font-size: 0.8rem; color: var(--mute); display: flex; flex-direction: column; gap: 6px; }
 .foot a { color: #9DB3FF; }
+.cam { transition: transform 1s cubic-bezier(.22,.7,.18,1); }
+.scene.zoomed .cam { animation: none; }
+#bubbles { transition: opacity .4s; }
+.scene.zoomed #bubbles { opacity: 0; pointer-events: none; }
+.focus { position: absolute; top: 4%; width: min(34%, 340px); max-height: 92%; overflow: auto; background: #0B1022EE; border: 1px solid #2C3558; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1vw, 14px); backdrop-filter: blur(10px); box-shadow: 0 12px 40px #0008; opacity: 0; transform: translateY(8px); transition: opacity .5s .4s, transform .5s .4s; pointer-events: none; }
+.scene.zoomed .focus { opacity: 1; transform: none; pointer-events: auto; }
+.focus.left { left: 3%; } .focus.right { right: 3%; }
+.focus .fh { display: flex; align-items: center; gap: 10px; }
+.focus .fh i { width: 12px; height: 12px; border-radius: 50%; }
+.focus h3 { margin: 0; font-size: 1.25em; font-weight: 900; }
+.focus .role { font-family: var(--mono); font-size: .75em; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+.focus .now { background: #151C36; border-radius: 10px; padding: 8px 10px; }
+.focus .now b { display: block; font-family: var(--mono); font-size: .72em; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+.focus .fq { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #222A47; }
+.focus .fq:last-child { border-bottom: 0; }
+.focus .fq small { font-family: var(--mono); color: var(--mute); }
+.focus .ok { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+.focus .ok.done { background: #1F7A4D; }
+.back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1vw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
+.scene.zoomed .back { opacity: 1; pointer-events: auto; }
+.zoomhint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9vw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
+.scene.zoomed .zoomhint { opacity: 0; }
 .scene-scroll:fullscreen { border: 0; border-radius: 0; display: grid; place-items: center; }
 .scene-scroll:fullscreen .scene { width: min(100vw, calc(100vh * 2752 / 1536)); min-width: 0; }
 @media (max-width: 960px) { .panels { grid-template-columns: minmax(0, 1fr); } }
@@ -100,6 +122,9 @@ p { margin: 0; max-width: 70ch; }
         <div class="clock" aria-label="Reloj de pared: hora en San Francisco y Bogotá"><b id="t-sf">--:--</b><b id="t-bog">--:--</b></div>
       </div>
             <div id="bubbles"></div>
+      <aside class="focus right" id="focus" aria-live="polite"></aside>
+      <button class="back" id="back" type="button">← Ver todo el estudio</button>
+      <span class="zoomhint">Toca a cualquiera para acercarte a su puesto</span>
     </div>
   </div>
 
@@ -153,7 +178,7 @@ p { margin: 0; max-width: 70ch; }
     const btn = document.createElement('button');
     btn.className = 'hot'; btn.type = 'button'; btn.setAttribute('aria-label', `Ver la cola de ${b.name}`);
     Object.assign(btn.style, { left: hx / 20 + '%', top: hy / 11.16 + '%', width: hw / 20 + '%', height: hh / 11.16 + '%' });
-    btn.addEventListener('click', () => showQueue(id));
+    btn.addEventListener('click', () => focusOn(id));
     const g = document.createElement('div'); g.className = 'glow';
     const [sx, sy] = pct(b.screen);
     Object.assign(g.style, { left: sx + '%', top: sy + '%', background: `radial-gradient(ellipse, ${b.c}55 0%, ${b.c}00 65%)`, opacity: 0.5 });
@@ -232,7 +257,7 @@ p { margin: 0; max-width: 70ch; }
     mode = btn.dataset.mode;
     document.querySelectorAll('[data-mode]').forEach((x) => x.classList.toggle('on', x === btn));
     document.getElementById('mode-hint').textContent = hints[mode];
-    renderBubbles(); renderFeed(); showQueue(currentQ);
+    renderBubbles(); renderFeed(); showQueue(currentQ); if (focused) renderFocus(focused);
   }));
 
   const bubbleBox = document.getElementById('bubbles'), bubbles = {};
@@ -250,6 +275,7 @@ p { margin: 0; max-width: 70ch; }
       d.style.borderColor = s.st === 'waiting' ? '#FFFFFFAA' : s.st === 'meeting' ? '#8B5CF6' : '';
       if (s.st !== 'working') glows[id].style.opacity = s.st === 'waiting' ? 1 : 0.35;
     }
+    if (focused) renderFocus(focused);
   }
   const feed = [];
   function renderFeed() {
@@ -263,6 +289,41 @@ p { margin: 0; max-width: 70ch; }
     }
   }
   let currentQ = 'nico';
+  // Zoom: the camera moves to a station and a card shows what that member is doing.
+  const sceneEl = document.getElementById('scene'), camEl = document.getElementById('cam'), focusEl = document.getElementById('focus');
+  let focused = null; const approved = new Set();
+  function focusOn(id) {
+    focused = id; showQueue(id);
+    const [hx, hy] = B[id].hot, W = sceneEl.clientWidth, H = sceneEl.clientHeight, s = 2.1;
+    const px = hx / 2000 * W, py = (hy - 40) / 1116 * H;
+    const side = hx > 1000 ? 'left' : 'right';
+    const cx = side === 'left' ? W * 0.66 : W * 0.34;
+    const tx = Math.min(0, Math.max(W - W * s, cx - px * s)), ty = Math.min(0, Math.max(H - H * s, H * 0.5 - py * s));
+    camEl.style.transformOrigin = '0 0';
+    camEl.style.transform = 'translate(' + tx + 'px, ' + ty + 'px) scale(' + s + ')';
+    sceneEl.classList.add('zoomed');
+    focusEl.className = 'focus ' + side;
+    renderFocus(id);
+  }
+  function zoomOut() { focused = null; camEl.style.transform = ''; sceneEl.classList.remove('zoomed'); }
+  document.getElementById('back').addEventListener('click', zoomOut);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && focused) zoomOut(); });
+  addEventListener('resize', () => { if (focused) focusOn(focused); });
+  function renderFocus(id) {
+    const b = B[id], s = status[id];
+    const now = s.st === 'meeting' ? 'Reunión de equipo · plan de ' + brandName(s.brand) : taskText(s.task, s.brand) + ' · ' + brandName(s.brand);
+    const canApprove = id === 'nico' && mode !== 'client';
+    const rows = queues[id].map(([t, br, w], i) => {
+      const key = id + i, done = approved.has(key);
+      const btn = canApprove ? '<button class="ok' + (done ? ' done' : '') + '" data-k="' + key + '">' + (done ? 'Firmado' : 'Firmar') + '</button>' : '';
+      return '<div class="fq"><span>' + taskText(t, br) + ' · ' + brandName(br) + '<br><small>' + w + '</small></span>' + btn + '</div>';
+    }).join('');
+    focusEl.innerHTML = '<div class="fh"><i style="background:' + b.c + '"></i><div><h3>' + b.name + '</h3><span class="role">' + b.role + '</span></div></div>'
+      + '<div class="now"><b>' + STATE[s.st] + '</b>' + now + '</div>'
+      + '<span class="role">' + (id === 'nico' ? 'Esperan tu firma' : 'En su cola') + '</span>' + rows;
+    focusEl.querySelectorAll('.ok').forEach((el) => el.addEventListener('click', () => { approved.add(el.dataset.k); renderFocus(id); }));
+  }
+
   function showQueue(id) {
     currentQ = id; const b = B[id];
     document.getElementById('q-title').innerHTML = `Cola · <span style="color:${b.c === '#FFFFFF' ? 'var(--ink)' : b.c}">${b.name}</span> <span style="text-transform:none;letter-spacing:0">(${b.role})</span>`;
