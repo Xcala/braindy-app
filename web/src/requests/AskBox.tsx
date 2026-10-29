@@ -5,24 +5,29 @@ import { askSteps } from '../tour/steps';
 import { useI18n } from '../i18n/I18nProvider';
 import { TAXONOMY, findCategory } from './taxonomy';
 import { AskDetails, type AskDetailValue } from './AskDetails';
+import { AskAttachments } from './AskAttachments';
+import { ASK_EXAMPLES, exampleFor, type AskExample } from './askExamples';
 import { createRequest } from './api';
-import type { Card } from './types';
+import type { AttachedFile, Card } from './types';
 import { LessonForCategory } from '../criterio/LessonCards';
 
 /**
- * "Do you need something?": the ask box at the top of My requests. One message like WhatsApp;
- * links, date, type of piece and details open only if the client wants them.
+ * "Do you need something?": the ask box in My requests. One message like WhatsApp, files by drag and drop,
+ * examples of a complete ask; links, date, type of piece and details open only if wanted.
  */
 export function AskBox({ brandId }: { brandId: string }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const [text, setText] = useState('');
+  const [files, setFiles] = useState<AttachedFile[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [links, setLinks] = useState<string[]>([]);
   const [link, setLink] = useState('');
   const [cat, setCat] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [more, setMore] = useState(false);
   const [open, setOpen] = useState(false);
+  const [example, setExample] = useState<AskExample | null>(null);
   const [detail, setDetail] = useState<AskDetailValue>({ sub: '', type: '', application: {}, scene: {}, format: '', language: lang === 'es' ? 'Español' : 'English' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -30,17 +35,18 @@ export function AskBox({ brandId }: { brandId: string }) {
   useTour('ask', () => askSteps(lang), true, false);
   const category = findCategory(cat);
   const withNicolas = !!category?.withNicolas || !!category?.subs.find((s) => s.id === detail.sub)?.withNicolas;
-  const ready = text.trim().length > 5;
+  const ready = text.trim().length > 5 && !uploading;
 
   const addLink = () => {
     const v = link.trim();
     if (!/^https?:\/\//i.test(v)) return;
     setLinks((l) => [...l, v].slice(0, 10)); setLink('');
   };
+  const useExample = (e: AskExample) => { setText(e.text[lang]); setCat(e.category); setExample(null); };
 
   async function submit() {
     setBusy(true); setError(false);
-    const product: Card = { text, links };
+    const product: Card = { text, links, files };
     const firstLine = text.trim().split('\n')[0].slice(0, 80);
     try {
       const { requestId } = await createRequest(brandId, {
@@ -57,8 +63,26 @@ export function AskBox({ brandId }: { brandId: string }) {
         <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-11 w-11 flex-none rounded-full object-cover" />
         <span className="col"><h2 className="h3" id="h-ask">{t('ask.need')}</h2><span className="t-xs t-mute">{withNicolas ? t('ask.levelNicolas') : t('ask.levelSelf')}</span></span>
       </div>
-      <textarea className="input" aria-label={t('ask.need')} style={{ minHeight: 110, padding: '14px 16px', resize: 'vertical', fontSize: 16, lineHeight: 1.5 }}
-        placeholder={t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} />
+      <textarea className="input" aria-label={t('ask.need')} style={{ minHeight: 130, padding: '14px 16px', resize: 'vertical', fontSize: 16, lineHeight: 1.5 }}
+        placeholder={exampleFor(cat)?.text[lang] ?? t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} />
+
+      <div className="row g8 wrap" role="group" aria-label={t('ask.examples')}>
+        <span className="t-xs t-mute">{t('ask.examples')}</span>
+        {ASK_EXAMPLES.map((e) => (
+          <button key={e.id} type="button" className={`btn btn-sm ${example?.id === e.id ? 'btn-primary' : 'btn-secondary'}`} style={{ height: 30 }}
+            aria-pressed={example?.id === e.id} onClick={() => setExample(example?.id === e.id ? null : e)}>{e.label[lang]}</button>
+        ))}
+      </div>
+      {example && (
+        <div className="col g8" style={{ background: '#F4F7FF', border: '1px solid #DCE4FF', borderRadius: 12, padding: '12px 14px' }}>
+          <span className="label">{t('ask.exampleOf', { piece: example.label[lang] })}</span>
+          <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{example.text[lang]}</p>
+          <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => useExample(example)}>{t('ask.useExample')}</button>
+        </div>
+      )}
+
+      <AskAttachments brandId={brandId} files={files} onChange={setFiles} onBusy={setUploading} />
+
       {links.map((l) => (
         <div key={l} className="row g8 t-sm">
           <a href={l} target="_blank" rel="noreferrer" className="grow truncate">{l}</a>
@@ -67,12 +91,13 @@ export function AskBox({ brandId }: { brandId: string }) {
       ))}
       {more && (
         <div className="col g12" data-tour="ask-cards">
-          <div className="grid gap-3 md:grid-cols-[1fr_auto_200px]">
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <input className="input" style={{ height: 44 }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')}
               value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())} />
             <button type="button" className="btn btn-secondary btn-sm" style={{ height: 44 }} onClick={addLink}>{t('ask.addLink')}</button>
-            <input className="input" style={{ height: 44 }} type="date" aria-label={t('ask.due')} title={t('ask.due')} value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
+          <label className="col g4"><span className="t-sm w7">{t('ask.due')}</span>
+            <input className="input" style={{ height: 44, maxWidth: 220 }} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></label>
           <p className="t-sm w7">{t('ask.typeOptional')}</p>
           <div className="row g8 wrap">
             {TAXONOMY.map((c) => (
@@ -88,7 +113,7 @@ export function AskBox({ brandId }: { brandId: string }) {
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('ask.error')}</p>}
       <div className="row between g12 wrap" data-tour="ask-summary">
         <button type="button" className="btn btn-ghost btn-sm" aria-expanded={more} onClick={() => setMore((m) => !m)}>{more ? t('ask.lessOptions') : t('ask.moreOptions')}</button>
-        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={submit}>{t('ask.sendSimple')}</button>
+        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={submit}>{uploading ? t('ask.uploading') : t('ask.sendSimple')}</button>
       </div>
     </section>
   );

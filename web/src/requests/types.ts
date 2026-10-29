@@ -4,7 +4,8 @@ import type { BrainId } from './taxonomy';
 export type RequestStatus = 'in_production' | 'to_approve' | 'approved' | 'published';
 export type Stage = 'plan' | 'work' | 'clientApproval' | 'approved' | 'published';
 
-export interface Card { text?: string; links?: string[] }
+export interface AttachedFile { assetId: string; name: string; size: number; contentType: string }
+export interface Card { text?: string; links?: string[]; files?: AttachedFile[] }
 
 export interface BrandRequest {
   id: string;

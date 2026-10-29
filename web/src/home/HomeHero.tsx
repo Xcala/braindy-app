@@ -6,6 +6,7 @@ import { useFileUrl, isImage } from '../requests/useFileUrl';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
 import type { BrainId } from '../requests/taxonomy';
 import { useBrands } from '../brands/BrandProvider';
+import { useBrandDoc } from '../brands/useBrandDoc';
 import { dayLabel, daysFrom } from '../lib/dates';
 import { CONTACT } from '../proposals/public/copy';
 import { TypedNext } from './TypedNext';
@@ -22,6 +23,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
     .filter((r) => r.status === 'in_production' && r.dueDate && (daysFrom(r.dueDate) ?? -1) >= 0)
     .sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)))[0];
   const current = open.find((r) => r.status === 'in_production');
+  const logo = useBrandLogo();
 
   return (
     <section className="stage grid gap-10 rounded-[28px] p-6 sm:p-12 lg:grid-cols-[1.25fr_1fr]" aria-labelledby="h-home">
@@ -34,6 +36,11 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
         </h1>
         {shown.length > 0 && <div className="col g12">{shown.map((r) => <NeedItem key={`${r.brandId}/${r.id}`} r={r} />)}</div>}
         {needsYou.length > 3 && <Link to="/requests" className="t-sm w7" style={{ color: '#fff' }}>{t('home.moreToReview', { n: needsYou.length - 3 })}</Link>}
+        {logo && (
+          <div className="self-start rounded-[16px] bg-white" style={{ padding: '12px 18px', boxShadow: '0 8px 30px rgba(0,0,0,.25)' }}>
+            <img src={logo} alt={brandName} style={{ height: 44, maxWidth: 220, objectFit: 'contain', display: 'block' }} />
+          </div>
+        )}
       </div>
       <div className="col g16 min-w-0 justify-end" data-tour="home-brains">
         <div className="widget col g16" style={{ position: 'static' }}>
@@ -81,4 +88,12 @@ function NeedItem({ r }: { r: ScopedRequest }) {
       <Link className="btn btn-white btn-sm flex-none" to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)}>{t('home.review')}</Link>
     </div>
   );
+}
+
+/** The current brand's main logo (identity first, then the logo saved on the brand), so the home shows whose space this is. */
+function useBrandLogo() {
+  const { current } = useBrands();
+  const identity = useBrandDoc(current?.id, 'context/identity');
+  const logos = (identity.data as { logos?: { primary?: string; secondary?: string } } | null)?.logos;
+  return logos?.primary ?? current?.logoUrl ?? logos?.secondary ?? null;
 }

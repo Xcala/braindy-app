@@ -19,6 +19,7 @@ import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
+import { AttachedFiles } from '../requests/AttachedFiles';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -74,6 +75,7 @@ export function RequestDetail() {
               <span className={`kind ${k === 'scene' ? '' : 'kind-logodeck'}`}>{t(`ask.card.${k}`)}</span>
               <p className={`t-sm ${r.cards?.[k]?.text ? '' : 't-mute'}`} style={{ whiteSpace: 'pre-line' }}>{r.cards?.[k]?.text || t(`req.emptyCard.${k}`)}</p>
               {(r.cards?.[k]?.links ?? []).map((l) => <a key={l} href={l} target="_blank" rel="noreferrer" className="t-sm truncate">{l}</a>)}
+              {k === 'product' && <AttachedFiles brandId={current.id} files={r.cards?.product?.files} />}
             </div>
           ))}
           {(r.format || r.language) && <p className="t-sm t-mute">{[r.format, r.language].filter(Boolean).join(' · ')}</p>}

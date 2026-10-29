@@ -14,8 +14,8 @@ export async function download(brandId: string, assetId: string) {
   window.location.assign(await signedUrl(brandId, assetId));
 }
 
-/** Uploads a file to the brand's Uploads folder through a signed URL, reporting progress 0–1. */
-export async function upload(brandId: string, file: File, onProgress: (p: number) => void) {
+/** Uploads a file to the brand's Uploads folder through a signed URL, reporting progress 0–1. Returns the asset id. */
+export async function upload(brandId: string, file: File, onProgress: (p: number) => void): Promise<string> {
   const start = await api<{ assetId: string; url: string; contentType: string }>(`/v1/brands/${brandId}/uploads`, {
     method: 'POST',
     body: JSON.stringify({ fileName: file.name, contentType: file.type || 'application/octet-stream', size: file.size }),
@@ -33,6 +33,7 @@ export async function upload(brandId: string, file: File, onProgress: (p: number
   await fetch(`${API_URL}/v1/brands/${brandId}/uploads/${start.assetId}/complete`, {
     method: 'POST', headers: { Authorization: `Bearer ${token}` },
   });
+  return start.assetId;
 }
 
 export const formatBytes = (n: number) =>

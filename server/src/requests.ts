@@ -68,7 +68,8 @@ requests.post('/brands/:brandId/requests', async (c) => {
   const uid = c.get('user').uid;
   if (!(await brandAccess(uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
   const b = await c.req.json<Record<string, unknown>>();
-  const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[] }>;
+  type InFile = { assetId?: string; name?: string; size?: number; contentType?: string };
+  const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[]; files?: InFile[] }>;
   // "Ask" can be one free-text box: without a type, the category is read from the words.
   const category = str(b.category, 40) || guessCategory(str(cards.product?.text, 4000));
   const route = ROUTING[category];
@@ -77,11 +78,15 @@ requests.post('/brands/:brandId/requests', async (c) => {
   const withNicolas = !!route.withNicolas || (route.nicolasSubs ?? []).includes(subcategory);
   const card = (k: string) => ({ text: str(cards[k]?.text, 4000), links: (cards[k]?.links ?? []).map((l) => str(l, 500)).filter(Boolean).slice(0, 10) });
 
+  // Files the client attached (previous deck, photos, PDFs…): uploaded to the brand's Uploads first, referenced here.
+  const attachments = (list?: InFile[]) => (list ?? []).slice(0, 20)
+    .map((x) => ({ assetId: str(x.assetId, 80), name: str(x.name, 200), size: Number(x.size) || 0, contentType: str(x.contentType, 120) }))
+    .filter((x) => x.assetId.startsWith('upl-'));
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
-    cards: { product: card('product'), application: card('application'), scene: card('scene') },
+    cards: { product: { ...card('product'), files: attachments(cards.product?.files) }, application: card('application'), scene: card('scene') },
     dueDate: str(b.dueDate, 20) || null, format: str(b.format, 160), language: str(b.language, 60),
     status: 'in_production', stage: 'plan',
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',

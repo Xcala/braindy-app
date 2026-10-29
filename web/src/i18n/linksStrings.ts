@@ -28,6 +28,17 @@ export const linksEn = {
   'ask.need': 'Do you need something?',
   'ask.moreOptions': 'Add links, date or type',
   'ask.lessOptions': 'Hide options',
+  'ask.examples': 'Examples:',
+  'ask.exampleOf': 'A complete request for a {piece}',
+  'ask.useExample': 'Use it as a starting point',
+  'ask.attach': 'Attach files',
+  'ask.attachHint': 'Drag them here or click. Any type: previous decks, photos, PDFs, HTML, videos (up to 500 MB each).',
+  'ask.removeFile': 'Remove',
+  'ask.uploading': 'Uploading files…',
+  'req.inMotion': 'In motion',
+  'req.inMotionEmpty': 'Nothing in motion yet. Your first request will show up here.',
+  'req.allRequests': 'All requests',
+  'req.attached': 'Attached files · {n}',
 };
 
 export const linksEs: Record<keyof typeof linksEn, string> = {
@@ -59,4 +70,15 @@ export const linksEs: Record<keyof typeof linksEn, string> = {
   'ask.need': '¿Necesitas algo?',
   'ask.moreOptions': 'Agregar links, fecha o tipo',
   'ask.lessOptions': 'Ocultar opciones',
+  'ask.examples': 'Ejemplos:',
+  'ask.exampleOf': 'Una solicitud completa de {piece}',
+  'ask.useExample': 'Usarla como base',
+  'ask.attach': 'Adjuntar archivos',
+  'ask.attachHint': 'Arrástralos aquí o haz clic. Cualquier tipo: presentaciones anteriores, fotos, PDF, HTML, videos (hasta 500 MB cada uno).',
+  'ask.removeFile': 'Quitar',
+  'ask.uploading': 'Subiendo archivos…',
+  'req.inMotion': 'En movimiento',
+  'req.inMotionEmpty': 'Todavía no hay nada en movimiento. Tu primera solicitud aparece aquí.',
+  'req.allRequests': 'Todas las solicitudes',
+  'req.attached': 'Archivos adjuntos · {n}',
 };

@@ -32,16 +32,21 @@ export function Requests() {
     <div className="col g24">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="col g8"><p className="label">{current.name}</p><h1 className="h1"><span className="w9">{t('nav.requests')}.</span> {t('req.tagline')}</h1></div>
-        <div className="row g12 wrap">
-          {toApprove > 1 && <Link className="btn btn-secondary" to="/requests/approve">{t('req.batch', { n: toApprove })}</Link>}
-          <div className="seg" role="group" aria-label={t('files.view')}>
-            <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('req.list')}</button>
-            <button className={view === 'board' ? 'is-on' : ''} aria-pressed={view === 'board'} onClick={() => setView('board')}>{t('req.board')}</button>
-          </div>
-        </div>
+        {toApprove > 1 && <Link className="btn btn-secondary" to="/requests/approve">{t('req.batch', { n: toApprove })}</Link>}
       </div>
 
-      <AskBox brandId={current.id} />
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,600px)_minmax(0,1fr)]">
+        <AskBox brandId={current.id} />
+        <InMotion list={list} loading={loading} />
+      </div>
+
+      <div className="row between g12 wrap">
+        <h2 className="h3">{t('req.allRequests')}</h2>
+        <div className="seg" role="group" aria-label={t('files.view')}>
+          <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} onClick={() => setView('list')}>{t('req.list')}</button>
+          <button className={view === 'board' ? 'is-on' : ''} aria-pressed={view === 'board'} onClick={() => setView('board')}>{t('req.board')}</button>
+        </div>
+      </div>
 
       {loading ? <div className="grid gap-5 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 300 }} />)}</div>
         : list.length === 0 ? (
@@ -89,5 +94,30 @@ export function Requests() {
           </div>
         )}
     </div>
+  );
+}
+
+/** Right of the ask box: what is moving now (waiting for the client first, then in production by due date). */
+function InMotion({ list, loading }: { list: BrandRequest[]; loading: boolean }) {
+  const { t, lang } = useI18n();
+  const items = list.filter((r) => r.status === 'to_approve' || r.status === 'in_production')
+    .sort((a, b) => (a.status === b.status ? String(a.dueDate ?? '9999').localeCompare(String(b.dueDate ?? '9999')) : a.status === 'to_approve' ? -1 : 1))
+    .slice(0, 6);
+  return (
+    <section className="card col g12" aria-labelledby="h-motion">
+      <h2 className="h3" id="h-motion">{t('req.inMotion')}</h2>
+      {loading && <div className="skel" style={{ height: 120 }} />}
+      {!loading && items.length === 0 && <p className="t-sm t-mute">{t('req.inMotionEmpty')}</p>}
+      {items.map((r) => (
+        <Link key={r.id} to={`/requests/${r.id}`} className="row g12" style={{ textDecoration: 'none', color: 'var(--ink)', padding: '8px 0', borderTop: '1px solid var(--line)' }}>
+          {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-8 w-8 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
+          <span className="col grow min-w-0">
+            <span className="w7 truncate">{r.title}</span>
+            <span className="t-xs t-mute truncate">{r.status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : t('req.madeByReviewed')}{r.dueDate ? ` · ${dayLabel(r.dueDate, lang)}` : ''}</span>
+          </span>
+          <span className={`chip flex-none ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>
+        </Link>
+      ))}
+    </section>
   );
 }
