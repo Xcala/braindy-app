@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "estudio", "runtimeExecutable": "node", "runtimeArgs": ["server.cjs"], "port": 5190 }
+  ]
+}
