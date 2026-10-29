@@ -70,6 +70,25 @@ export async function listSiteChanges(brandId: string) {
   return snap.docs.map((d) => { const x = d.data(); return { key: x.key, group: x.group, title: x.title, status: x.status, delivered: x.delivered }; });
 }
 
+export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';
+export interface LinkInput { title: string; url: string; kind?: LinkKind; description?: string; status?: 'live' | 'building'; section?: 'apps' | 'research' }
+
+/** Adds or updates a link in My apps (or My research). Same URL = same card, so repeating it never duplicates. */
+export async function setLink(brandId: string, l: LinkInput) {
+  const url = l.url.trim();
+  if (!/^https:\/\/[^\s]+\.[^\s]+/.test(url)) throw new Error('El enlace debe empezar por https://');
+  const section = l.section ?? 'apps';
+  const col = db.collection(`brands/${brandId}/links`);
+  const same = (await col.where('url', '==', url).get()).docs.find((d) => d.get('section') === section);
+  const data = {
+    section, kind: l.kind ?? 'web', title: l.title.trim().slice(0, 120), url: url.slice(0, 1000),
+    description: (l.description ?? '').trim().slice(0, 300), status: l.status ?? 'live', updatedAt: FieldValue.serverTimestamp(),
+  };
+  if (same) { await same.ref.update(data); return { id: same.id, created: false }; }
+  const ref = await col.add({ ...data, createdAt: FieldValue.serverTimestamp() });
+  return { id: ref.id, created: true };
+}
+
 export async function logSession(brandId: string, text: string, opts: { project?: string; requestId?: string }) {
   const ref = await db.collection(`brands/${brandId}/activity`).add({
     text: text.slice(0, 20000), project: opts.project ?? null, requestId: opts.requestId ?? null,

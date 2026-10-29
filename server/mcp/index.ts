@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { findBrands, listSiteChanges, logSession, requireBrand, syncSiteChanges, uploadPath } from './store.js';
+import { findBrands, listSiteChanges, logSession, requireBrand, setLink, syncSiteChanges, uploadPath } from './store.js';
 import { parseTriageHtml } from './triageHtml.js';
 
 const APP = 'https://braindy-app-staging.web.app';
@@ -24,6 +24,26 @@ server.registerTool('braindy_find_brand', {
   try {
     const list = await findBrands(query);
     return reply(list.length ? list.map((b) => `${b.id} · ${b.name} · ${b.kind}${b.status !== 'active' ? ' · archivada' : ''}${b.groupId ? ` · grupo ${b.groupId}` : ''}`).join('\n') : 'Ninguna marca coincide.');
+  } catch (e) { return fail(e); }
+});
+
+server.registerTool('braindy_app_link', {
+  title: 'Publicar un sitio o app en Mis apps',
+  description: 'Adds (or updates, same URL) a card in the brand\'s "Mis apps" in Braindy App: the website or web app built for it. '
+    + 'Use when Nicolas says "publícala en Braindy App", "ponla en Mis apps".',
+  inputSchema: {
+    brandId: z.string(),
+    title: z.string().describe('Card title, e.g. "Revista Level"'),
+    url: z.string().describe('https URL'),
+    kind: z.enum(['web', 'app', 'dashboard', 'research', 'marketmap']).optional().describe('web = sitio web (default), app = web app, dashboard'),
+    description: z.string().optional().describe('One sentence in Spanish'),
+    status: z.enum(['live', 'building']).optional().describe('live = Publicado (default), building = En construcción'),
+  },
+}, async ({ brandId, ...l }) => {
+  try {
+    const name = await requireBrand(brandId);
+    const r = await setLink(brandId, l);
+    return reply(`${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\nVer: ${APP}/apps`);
   } catch (e) { return fail(e); }
 });
 
