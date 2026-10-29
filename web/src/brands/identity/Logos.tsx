@@ -1,5 +1,6 @@
 import { useI18n } from '../../i18n/I18nProvider';
 import { Icon } from '../../components/Icon';
+import { LogoTile } from './LogoTile';
 
 type LogoSet = { primary?: string; secondary?: string; icon?: string; variations?: string[] } | null;
 
@@ -18,7 +19,7 @@ export function Logos({ logos }: { logos: LogoSet }) {
     [t('brand.logoSecondary'), logos?.secondary],
     [t('brand.logoIcon'), logos?.icon],
   ].filter((r): r is [string, string] => typeof r[1] === 'string' && r[1].startsWith('http'));
-  // Variations are often full artworks with their own background: shown as they are, never recolored.
+  // Variations are often full artworks with their own background: never recolored; the viewer switches the ground behind them.
   const variations = (logos?.variations ?? []).filter((v) => typeof v === 'string' && v.startsWith('http'));
   if (!rows.length && !variations.length) return null;
 
@@ -36,15 +37,8 @@ export function Logos({ logos }: { logos: LogoSet }) {
     {variations.length > 0 && (
       <div className="col g12">
         <p className="label">{t('brand.logoVariations')}</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {variations.map((url, i) => (
-            <div key={url} className="vcell" style={{ background: '#FFFFFF', border: '1px solid #E3E7F0' }}>
-              <img src={url} alt={`${t('brand.logoVariation')} ${i + 1}`} loading="lazy" />
-              <a className="btn btn-ghost btn-icon btn-sm dl" href={url} target="_blank" rel="noreferrer" aria-label={`${t('common.download')} ${t('brand.logoVariation')} ${i + 1}`} style={{ width: 36 }}>
-                <Icon name="download" size={16} />
-              </a>
-            </div>
-          ))}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+          {variations.map((url, i) => <LogoTile key={url} url={url} label={`${t('brand.logoVariation')} ${i + 1}`} />)}
         </div>
       </div>
     )}

@@ -264,6 +264,10 @@ p{margin:0}
 .vcell{border-radius:16px;min-height:132px;display:flex;align-items:center;justify-content:center;padding:20px;position:relative}
 .vcell img{max-width:80%;max-height:64px;object-fit:contain}
 .vcell .dl{position:absolute;right:8px;bottom:8px}
+.vtile{aspect-ratio:1;min-height:0;padding:28px}
+.vtile img{max-width:82%;max-height:62%}
+.vtile .vt-ground{position:absolute;left:10px;top:10px}
+.vtile .vt-actions{position:absolute;right:10px;top:10px}
 .prop{display:flex;height:96px;border-radius:20px;overflow:hidden;border:1px solid var(--line)}
 .prop > div{display:flex;align-items:flex-end;padding:12px 14px;font:700 12px/16px var(--f-text)}
 .spec{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:8px 10px;align-items:center;font-size:13px}
