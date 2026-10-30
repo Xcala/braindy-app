@@ -47,5 +47,7 @@
     return { open: false, holiday: holiday(b), back: new Date(day + OPEN * 3600e3), days: Math.round((day - dayStart(b)) / 864e5) };
   }
 
-  window.HORARIO = { now, estado, OPEN };
+  const dia = () => bog(now()).getUTCDay(); // 0 = Sunday, in Bogotá
+
+  window.HORARIO = { now, estado, dia, OPEN };
 })();

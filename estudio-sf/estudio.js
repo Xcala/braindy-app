@@ -37,6 +37,9 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const scene = document.querySelector('.sd-scene');
 const cam = scene.querySelector('.sd-cam');
 const close = scene.querySelector('.sd-closeup');
+// NicoMarca wears a different outfit each weekday (Bogotá): photo, loop and his close-up share the suffix.
+const OUTFIT = ['', '', '-mar', '-mie', '-jue', '-vie', ''][H.dia()];
+cam.querySelector('img').src = `media/studio${OUTFIT}.jpg`;
 const focus = scene.querySelector('.sd-focus');
 let focused = null;
 
@@ -88,7 +91,7 @@ tick(); setInterval(tick, 20000);
 if (!reduce) {
   const loop = cam.querySelector('video');
   new IntersectionObserver(([e]) => {
-    if (e.isIntersecting) { if (!loop.src) loop.src = 'media/loop.mp4'; loop.play().catch(() => {}); } else loop.pause();
+    if (e.isIntersecting) { if (!loop.src) loop.src = `media/loop${OUTFIT}.mp4`; loop.play().catch(() => {}); } else loop.pause();
   }, { rootMargin: '200px 0px' }).observe(scene);
   loop.addEventListener('playing', () => loop.classList.add('on'));
 }
@@ -115,7 +118,7 @@ function open(id) {
   scene.classList.add('zoomed');
   place();
   close.classList.remove('on');
-  if (!reduce && !away) { close.src = `media/${CLOSEUP[id]}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
+  if (!reduce && !away) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? OUTFIT : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
 }
 function zoomOut() {
   close.classList.remove('on');

@@ -8,7 +8,7 @@ This folder is only the Braindy studio in San Francisco, split out of the Braind
 - `estudio.js`: seats, zoom into each seat, close-up videos, live SF and Bogotá clocks. `SEATS` holds where each person sits in a 2000 × 1116 frame (same as `web/src/studio/geometry.ts`).
 - `horario.js`: NicoMarca's office hours (Mon–Fri 7:00–19:00 Bogotá, off on US federal holidays). Outside them his seat dims and he shows "Fuera de la oficina"; the Brains work 24/7. Simulate a moment with `?hora=2026-11-26T21:30` (Bogotá time).
 - `datos.js`: demo content (what each Brain and NicoMarca are doing, their queue, language es/en). Edit this to change texts.
-- `media/`: `studio.jpg` (the photo), `loop.mp4` (10 s scene loop), `cu-*.mp4` (8 s close-up per seat).
+- `media/`: `studio.jpg` (the photo), `loop.mp4` (10 s scene loop), `cu-*.mp4` (8 s close-up per seat). NicoMarca changes outfit by weekday (Bogotá): Monday and weekends use the files above (camel corduroy); `-mar` white linen shirt, `-mie` navy sweater, `-jue` olive overshirt, `-vie` denim jacket over a black tee, as `studio-<day>.jpg`, `loop-<day>.mp4` and `cu-nico-<day>.mp4`. Made by masked inpainting of only his clothes (Nano Banana 2.1) pasted back over the original frame, so his face and the rest stay pixel-identical; loops with MiniMax H3 (scene) and Kling 3.0 4K (close-up), start = end frame.
 - `server.cjs`: preview with `node server.cjs` → http://localhost:5190 (port 5173 belongs to another project).
 
 ## Who is in the studio
