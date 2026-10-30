@@ -8,7 +8,7 @@ import { FocusCard, SEAT_NAME } from './FocusCard';
 import type { SeatView } from './useStudio';
 import { isSimulated, officeState, outfit, studioNow } from './officeHours';
 import { internalWork } from './internalWork';
-import { light, lit } from './light';
+import { light, lit, litCloseup } from './light';
 import { cityById } from '../brands/cities';
 import './studio.css';
 
@@ -80,7 +80,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city }: { 
     setCloseOn(false);
     const v = closeRef.current;
     let timer = 0;
-    if (v && !reduce) { v.src = `/studio/${CLOSEUP[focused]}${focused === 'nico' ? lit(officeState().open ? look : '-away', light()) : ''}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
+    if (v && !reduce) { v.src = `/studio/${litCloseup(CLOSEUP[focused] + (focused === 'nico' ? (officeState().open ? look : '-away') : ''), light())}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
     addEventListener('resize', place);
     return () => { clearTimeout(timer); removeEventListener('resize', place); };
   }, [focused]);

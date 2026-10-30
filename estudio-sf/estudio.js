@@ -42,6 +42,8 @@ const OUTFIT = ['', '', '-mar', '-mie', '-jue', '-vie', ''][H.dia()];
 // Out of the office the studio switches to its empty-chair version (photo, loop and close-up), screen off.
 // At night in San Francisco a set uses its -night files, where they exist (so far only the empty chair).
 const NOCHE = new Set(['-away']);
+const NOCHE_CU = new Set(['cu-res', 'cu-mkt', 'cu-cre', 'cu-bui', 'cu-nico-away']);
+const litCu = (n) => (H.luz() === 'noche' && NOCHE_CU.has(n) ? n + '-night' : n);
 const lit = (m) => (H.luz() === 'noche' && NOCHE.has(m) ? m + '-night' : m);
 const media = () => lit(H.estado().open ? OUTFIT : '-away');
 let shownMedia = media();
@@ -131,7 +133,7 @@ function open(id) {
   scene.classList.add('zoomed');
   place();
   close.classList.remove('on');
-  if (!reduce) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? lit(away ? '-away' : OUTFIT) : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
+  if (!reduce) { close.src = `media/${litCu(CLOSEUP[id] + (id === 'nico' ? (away ? '-away' : OUTFIT) : ''))}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
 }
 function zoomOut() {
   close.classList.remove('on');

@@ -20,7 +20,11 @@ export type Light = 'day' | 'night';
 /** Night once the sun is 4° below the horizon (city lights on, sky dark). */
 export const light = (d = studioNow()): Light => (sunElevation(d) < -4 ? 'night' : 'day');
 
-// Media made so far for each light: the empty-chair studio has a night version; the rest keep their daylight files until theirs are made.
+// Media made so far with a night version: the empty-chair studio and the close-ups of the four Brains and of the empty desk.
+// Everything else keeps its daylight file until its night one is made.
 const NIGHT = new Set(['-away']);
+const NIGHT_CLOSEUPS = new Set(['cu-res', 'cu-mkt', 'cu-cre', 'cu-bui', 'cu-nico-away']);
 /** File suffix for a studio media set (outfit or '-away') under the current light, falling back to daylight. */
 export const lit = (media: string, l: Light) => (l === 'night' && NIGHT.has(media) ? `${media}-night` : media);
+/** File name of a close-up (e.g. 'cu-res', 'cu-nico-away') under the current light, falling back to daylight. */
+export const litCloseup = (name: string, l: Light) => (l === 'night' && NIGHT_CLOSEUPS.has(name) ? `${name}-night` : name);
