@@ -13,7 +13,8 @@ export const SEAT_NAME: Record<SeatId, string> = { nico: 'NicoMarca', researcher
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
 /** The card next to a zoomed-in seat: what they are doing, their queue, and the two actions: sign and write. */
-export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string }) {
+/** away: NicoMarca is out of the office (when he is back, and the US holiday if there is one). */
+export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel, away }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string; away?: { back: string; holiday?: string } }) {
   const { t } = useI18n();
   const { brands, select } = useBrands();
   // On a client's home every item is their own brand, so the brand name is left out.
@@ -27,7 +28,7 @@ export function FocusCard({ id, view, open, allItems, readOnly = false, stateLab
   );
 
   return (
-    <aside className={`sd-focus ${SEATS[id].card}`} aria-hidden={!open} aria-live="polite">
+    <aside className="sd-focus" aria-hidden={!open} aria-live="polite">
       <div className="row" style={{ borderBottom: 0, padding: 0 }}>
         <div className="flex items-center gap-2.5">
           <i style={{ width: 12, height: 12, borderRadius: '50%', background: SEATS[id].c }} />
@@ -40,6 +41,11 @@ export function FocusCard({ id, view, open, allItems, readOnly = false, stateLab
       </div>}
 
       {tab === 'work' && <>
+        {away && <>
+          <div className="now"><span className="lbl">{t('st.state.away')}</span><div>{away.back}</div></div>
+          {away.holiday && <span className="lbl">{t('st.holiday', { name: away.holiday })}</span>}
+          <p className="note">{t('st.awayNote')}</p>
+        </>}
         {!isNico && <div className="now">
           <span className="lbl">{stateLabel ?? t(`st.state.${view.state}` as StringKey)}</span>
           <div>{view.now ? withBrand(view.now.title, view.now.brandId) : t('st.nothing')}</div>
