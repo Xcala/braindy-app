@@ -10,11 +10,12 @@ import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toaster';
 import { useOpenWork } from '../../team/useWork';
 import { daysFrom } from '../../lib/dates';
+import { CITIES } from '../../brands/cities';
 
 type Health = { open: number; late: number; last: number };
 
 type Status = 'all' | 'active' | 'archived';
-const COLS = 'minmax(0,1fr) 110px 220px 170px';
+const COLS = 'minmax(0,1fr) 110px 200px 170px 170px';
 
 export function AdminBrands() {
   const { brands } = useBrands();
@@ -92,8 +93,8 @@ export function AdminBrands() {
       </div>
 
       <div className="table overflow-x-auto">
-        <div className="trow head label min-w-[760px]" style={{ gridTemplateColumns: COLS }}>
-          <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colStatus')}</span>
+        <div className="trow head label min-w-[920px]" style={{ gridTemplateColumns: COLS }}>
+          <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
         </div>
         {rows.map(({ brand, depth }) => (
           <Row key={brand.id} brand={brand} depth={depth} health={health.get(brand.id)} collapsed={collapsed.has(brand.id)}
@@ -108,12 +109,12 @@ export function AdminBrands() {
 function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
   brand: Brand; depth: number; health?: Health; collapsed: boolean; onCollapse: () => void; onToggle: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { select } = useBrands();
   const navigate = useNavigate();
   const on = brand.status === 'active';
   return (
-    <div className={`trow min-w-[760px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
+    <div className={`trow min-w-[920px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
       <span className="row g12" style={{ paddingLeft: depth * 44 }}>
         {brand.kind === 'group' ? (
           <button className="btn btn-ghost btn-icon btn-sm" onClick={onCollapse} aria-expanded={!collapsed}
@@ -131,6 +132,13 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
           : health?.open ? <span className="chip c-active">{t('brands.ok')}</span>
           : <span className="chip chip-plain">{t('brands.quiet')}</span>}
         {health?.open ? <span className="t-mute">{health.open} {t('brands.open').toLowerCase()}</span> : null}
+      </span>
+      <span>
+        <select className="input" style={{ height: 34, padding: '0 8px' }} aria-label={`${t('admin.brands.colCity')} ${brand.name}`} value={brand.city ?? ''}
+          onChange={(e) => updateDoc(doc(db, 'brands', brand.id), { city: e.target.value || null })}>
+          <option value="">{t('admin.brands.noCity')}</option>
+          {CITIES.map((c) => <option key={c.id} value={c.id}>{lang === 'es' ? c.es : c.en}</option>)}
+        </select>
       </span>
       <span className="row g12">
         <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />

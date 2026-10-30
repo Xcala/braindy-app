@@ -9,7 +9,7 @@ export const studioEn = {
   'st.live': 'Live',
   'st.feedEmpty': 'When the Brains work or you write to them, it shows up here.',
   'st.state.working': 'Working', 'st.state.withClient': 'With the client', 'st.state.toSign': 'Waiting for your signature', 'st.state.free': 'Free',
-  'st.role.nico': 'Directs and signs', 'st.role.researcher': 'Researches', 'st.role.marketer': 'Communicates', 'st.role.creator': 'Creates', 'st.role.builder': 'Builds',
+  'st.role.nico': 'Directs, designs, codes and signs', 'st.role.researcher': 'Researches', 'st.role.marketer': 'Communicates', 'st.role.creator': 'Creates', 'st.role.builder': 'Builds',
   'st.queue': 'In their queue', 'st.signQueue': 'Waiting for your signature', 'st.nothing': 'Nothing in progress.',
   'st.sign': 'Sign', 'st.signed': 'Signed', 'st.open': 'Open', 'st.plan': 'Plan', 'st.version': 'Version {n}',
   'st.noPlan': 'This plan has no scope yet: open it to complete it.', 'st.signErr': 'Could not sign: {e}',
@@ -18,6 +18,8 @@ export const studioEn = {
   'st.request': 'Request (optional)', 'st.general': 'General, no request', 'st.brain': 'Brain',
   'st.clock': 'San Francisco and Bogotá time',
   'st.state.reviewing': 'Reviewing', 'st.state.ready': 'Ready for what is next', 'st.reviewQueue': 'Reviews before sending it to you',
+  'st.state.away': 'Out of the office', 'st.back7': 'Back {when} at 7:00 a.m. (San Francisco time)', 'st.today': 'today', 'st.tomorrow': 'tomorrow', 'st.onDay': 'on {day}',
+  'st.awayNote': 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', 'st.holiday': 'US holiday: {name}', 'st.simulated': 'Simulating {when} in San Francisco', 'st.realTime': 'See real time',
   'st.homeTitle': 'Your team, at work', 'st.homeSub': 'NickMark and his Brains, live from San Francisco, on what you asked for. Tap anyone to see what they are doing.',
 };
 
@@ -31,7 +33,7 @@ export const studioEs: Record<keyof typeof studioEn, string> = {
   'st.live': 'En vivo',
   'st.feedEmpty': 'Cuando los Brains trabajen o les escribas, aparece aquí.',
   'st.state.working': 'Trabajando', 'st.state.withClient': 'Con el cliente', 'st.state.toSign': 'Esperan tu firma', 'st.state.free': 'Libre',
-  'st.role.nico': 'Dirige y firma', 'st.role.researcher': 'Investiga', 'st.role.marketer': 'Comunica', 'st.role.creator': 'Crea', 'st.role.builder': 'Construye',
+  'st.role.nico': 'Dirige, diseña, codifica y firma', 'st.role.researcher': 'Investiga', 'st.role.marketer': 'Comunica', 'st.role.creator': 'Crea', 'st.role.builder': 'Construye',
   'st.queue': 'En su cola', 'st.signQueue': 'Esperan tu firma', 'st.nothing': 'Sin trabajo en curso.',
   'st.sign': 'Firmar', 'st.signed': 'Firmado', 'st.open': 'Abrir', 'st.plan': 'Plan', 'st.version': 'Versión {n}',
   'st.noPlan': 'Este plan aún no tiene alcance: ábrelo para completarlo.', 'st.signErr': 'No se pudo firmar: {e}',
@@ -40,5 +42,7 @@ export const studioEs: Record<keyof typeof studioEn, string> = {
   'st.request': 'Solicitud (opcional)', 'st.general': 'General, sin solicitud', 'st.brain': 'Brain',
   'st.clock': 'Hora de San Francisco y Bogotá',
   'st.state.reviewing': 'Revisando', 'st.state.ready': 'Listo para lo próximo', 'st.reviewQueue': 'Revisa antes de enviártelo',
+  'st.state.away': 'Fuera de la oficina', 'st.back7': 'Vuelve {when} a las 7:00 a. m. (hora San Francisco)', 'st.today': 'hoy', 'st.tomorrow': 'mañana', 'st.onDay': 'el {day}',
+  'st.awayNote': 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', 'st.holiday': 'Festivo en EE. UU.: {name}', 'st.simulated': 'Simulando {when} en San Francisco', 'st.realTime': 'Ver hora real',
   'st.homeTitle': 'Tu equipo, trabajando', 'st.homeSub': 'NicoMarca y sus Brains, en vivo desde San Francisco, en lo que pediste. Toca a cualquiera para ver qué hace.',
 };

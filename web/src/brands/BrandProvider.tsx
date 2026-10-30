@@ -14,6 +14,8 @@ export interface Brand {
   sources: string[];
   /** First 11 days (wave F). Absent for brands that were already running. */
   onboarding: Onboarding | null;
+  /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
+  city: string | null;
 }
 
 export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
@@ -38,6 +40,7 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   logoUrl: (d.logoUrl as string) ?? null,
   sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
   onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
+  city: (d.city as string) ?? null,
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
