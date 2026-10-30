@@ -82,8 +82,8 @@ export function formatMoney(amount: string, currency: string) {
   return `$${n.toLocaleString('es-CO')} ${currency}`;
 }
 
-/** Fills the template. Missing client data stays as a visible blank line until the client signs. */
-export function fill(terms: Terms, contractor: Partial<Contractor>, client: Partial<ClientData> | null): string {
+/** Fills the template except the client data, which stays as {{cliente.x}} until signing (see withClient). */
+export function fill(terms: Terms, contractor: Partial<Contractor>): string {
   const n = Number(String(terms['valor.monto']).replace(/[^\d]/g, ''));
   const values: Record<string, string> = {
     ...terms,
@@ -92,9 +92,13 @@ export function fill(terms: Terms, contractor: Partial<Contractor>, client: Part
     'terceros.incluidos': terms['terceros.incluidos'] ? `Sí están incluidos: ${terms['terceros.incluidos']}` : '',
   };
   for (const k of CONTRACTOR_KEYS) values[`contratista.${k}`] = contractor[k] ?? '';
-  for (const k of CLIENT_KEYS) values[`cliente.${k}`] = client?.[k] ?? '';
   const optional = new Set(['terceros.incluidos', 'propuesta.id', 'propuesta.fecha']);
   return TEMPLATE_V1
-    .replace(/\{\{([\w.]+)\}\}/g, (_, key: string) => values[key]?.trim() || (optional.has(key) ? '' : '________'))
+    .replace(/\{\{([\w.]+)\}\}/g, (m, key: string) => (CLIENT_KEYS.some((k) => key === `cliente.${k}`) ? m : values[key]?.trim() || (optional.has(key) ? '' : '________')))
     .replace(/ +\n/g, '\n').replace(/aceptada  del /, 'aceptada del ').replace(/aceptada del \./, 'aceptada.');
+}
+
+/** Puts the client data into the sent text. Same function in web/src/contracts/text.ts (what the signer sees). */
+export function withClient(text: string, client: Partial<ClientData>): string {
+  return text.replace(/{{cliente.(w+)}}/g, (_, k: string) => (client as Record<string, string>)[k]?.trim() || '________');
 }
