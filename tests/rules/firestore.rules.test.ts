@@ -293,6 +293,12 @@ describe('audit and brains', () => {
     await assertFails(setDoc(doc(as(env, ADMIN), 'audit/e2'), { type: 'fake' }));
   });
 
+  it('only admin reads hosting signups; nobody writes them from the client', async () => {
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'hostingSignups/cs_1')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'hostingSignups/cs_1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'hostingSignups/cs_2'), { plan: 'pro' }));
+  });
+
   it('signed-in users read Brain status; only admin edits it', async () => {
     await assertSucceeds(getDoc(doc(as(env, MEMBER), 'brains/creator')));
     await assertFails(updateDoc(doc(as(env, MEMBER), 'brains/creator'), { status: 'working' }));

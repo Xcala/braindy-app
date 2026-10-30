@@ -16,6 +16,7 @@ import { adminLinks } from './og.js';
 import { adminOnboarding, onboarding } from './onboarding.js';
 import { adminReports } from './reports.js';
 import { adminBilling, billing, stripeWebhook } from './billing.js';
+import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
 import { criterio } from './criterio.js';
@@ -45,10 +46,12 @@ app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type
 app.use('/public/p/:token/accept', rateLimit('accept', 10, 10 * 60_000));
 app.use('/public/p/:token/pay', rateLimit('pay', 10, 10 * 60_000));
 app.use('/public/r/:token/decision', rateLimit('decision', 20, 10 * 60_000));
+app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
+app.route('/public', hostingCheckout);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));

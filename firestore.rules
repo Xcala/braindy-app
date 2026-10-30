@@ -275,6 +275,11 @@ service cloud.firestore {
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }
+    // Paid hosting plans from the public pricing page (no brand yet): admin reads, backend writes.
+    match /hostingSignups/{sessionId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
 
     // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
     match /{path=**}/requests/{requestId} {
