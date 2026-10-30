@@ -11,6 +11,7 @@ export const CITIES: City[] = [
   { id: 'quito', es: 'Quito', en: 'Quito', tz: 'America/Guayaquil' },
   { id: 'panama', es: 'Panamá', en: 'Panama City', tz: 'America/Panama' },
   { id: 'santiago', es: 'Santiago', en: 'Santiago', tz: 'America/Santiago' },
+  { id: 'montevideo', es: 'Montevideo', en: 'Montevideo', tz: 'America/Montevideo' },
   { id: 'buenosaires', es: 'Buenos Aires', en: 'Buenos Aires', tz: 'America/Argentina/Buenos_Aires' },
   { id: 'saopaulo', es: 'São Paulo', en: 'São Paulo', tz: 'America/Sao_Paulo' },
   { id: 'miami', es: 'Miami', en: 'Miami', tz: 'America/New_York' },
