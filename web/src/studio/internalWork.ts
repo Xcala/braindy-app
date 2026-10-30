@@ -43,3 +43,38 @@ export function internalWork(id: SeatId, lang: string, d = studioNow()) {
   const i = Math.floor(d.getTime() / STEP) % list.length;
   return [...list.slice(i), ...list.slice(0, i)];
 }
+
+/** On a client's home the team, when free, keeps working on that client's brand (never on others). */
+const FOR_BRAND: Record<SeatId, Text[]> = {
+  nico: [
+    { es: 'Estrategia de {b}', en: '{b} strategy' },
+    { es: 'Revisando y ajustando el trabajo de {b}', en: 'Reviewing and adjusting the {b} work' },
+    { es: 'Definiendo con sus Brains lo próximo de {b}', en: 'Planning what is next for {b} with his Brains' },
+  ],
+  researcher: [
+    { es: 'Investigación de mercado de {b}', en: '{b} market research' },
+    { es: 'Competencia de {b}', en: '{b} competitors' },
+    { es: 'Tendencias del sector de {b}', en: 'Trends in the {b} industry' },
+  ],
+  marketer: [
+    { es: 'Ideas de contenido para {b}', en: 'Content ideas for {b}' },
+    { es: 'Métricas de {b}', en: '{b} metrics' },
+    { es: 'Plan de comunicación de {b}', en: '{b} communication plan' },
+  ],
+  creator: [
+    { es: 'Identidad de {b}', en: '{b} identity' },
+    { es: 'Piezas para {b}', en: 'Visuals for {b}' },
+    { es: 'Ideas visuales para {b}', en: 'Visual ideas for {b}' },
+  ],
+  builder: [
+    { es: 'Sitio web de {b}', en: '{b} website' },
+    { es: 'Automatizaciones para {b}', en: 'Automations for {b}' },
+    { es: 'Mejoras digitales de {b}', en: 'Digital improvements for {b}' },
+  ],
+};
+
+export function brandWork(id: SeatId, lang: string, brand: string, d = studioNow()) {
+  const list = FOR_BRAND[id].map((x) => (lang === 'es' ? x.es : x.en).replace('{b}', brand));
+  const i = Math.floor(d.getTime() / STEP) % list.length;
+  return [...list.slice(i), ...list.slice(0, i)];
+}

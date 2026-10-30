@@ -7,7 +7,7 @@ import { CLOSEUP, SEAT_ORDER, SEATS, pct, zoomTo, type SeatId } from './geometry
 import { FocusCard, SEAT_NAME } from './FocusCard';
 import type { SeatView } from './useStudio';
 import { isSimulated, officeState, outfit, studioNow } from './officeHours';
-import { internalWork } from './internalWork';
+import { brandWork, internalWork } from './internalWork';
 import { light, lit, litCloseup } from './light';
 import { cityById, type CityPlace } from '../brands/cities';
 import './studio.css';
@@ -30,7 +30,7 @@ function useClock(lang: string, tz = 'America/Bogota') {
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false, city }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city, brandName }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string }) {
   const { t, lang } = useI18n();
   const { brands } = useBrands();
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
@@ -56,7 +56,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city }: { 
   // ...and its light follows the sun in San Francisco (night files where they exist).
   const media = lit(away ? '-away' : look, clock.light);
   const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state === 'free' ? 'working' : seats[id].state);
-  const idle = (id: SeatId) => internalWork(id, lang, studioNow());
+  const idle = (id: SeatId) => (brandView && brandName ? brandWork(id, lang, brandName, studioNow()) : internalWork(id, lang, studioNow()));
   const loopRef = useRef<HTMLVideoElement>(null);
   const [seen, setSeen] = useState(false);
 

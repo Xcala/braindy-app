@@ -18,7 +18,7 @@ export function HomeStudio({ requests }: { requests: ScopedRequest[] }) {
         <h2 className="h3" id="h-studio">{t('st.homeTitle')}</h2>
         <p className="t-sm t-mute">{t('st.homeSub')}</p>
       </div>
-      <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} />
+      <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} />
     </section>
   );
 }
