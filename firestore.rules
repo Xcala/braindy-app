@@ -232,6 +232,15 @@ service cloud.firestore {
         allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
       }
+      // Contracts (rules of the game + schedule, signed in the app). Drafts are admin only. Once sent, the
+      // signer named by NickMark and the people who see billing read it. Nobody writes from the client:
+      // the backend fills, signs and seals it, and a signed contract never changes (amendments are new documents).
+      match /contracts/{contractId} {
+        allow read: if isAdmin()
+          || (isMember(brandId) && resource.data.status != 'draft'
+              && (can(brandId, 'billing') || request.auth.token.get('email', '') == resource.data.signer.email));
+        allow write: if false;
+      }
       match /invoices/{invoiceId} {
         allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
@@ -318,6 +327,11 @@ service cloud.firestore {
     // ---------- pending invitations (backend only; claimed on first sign-in) ----------
     match /invites/{inviteId} {
       allow read, write: if false;
+    }
+
+    // ---------- contractor profile for contracts (NickMark's legal data): admin only ----------
+    match /config/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // ---------- audit (backend writes only) ----------
