@@ -22,3 +22,14 @@ export async function completeAccessLink(email: string) {
   try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ }
   history.replaceState(null, '', '/login');
 }
+
+/** Identity check before signing a contract: a one-time link back to the onboarding page, then a fresh sign-in. */
+export async function sendVerifyLink(email: string, lang: 'es' | 'en') {
+  auth.languageCode = lang;
+  await sendSignInLinkToEmail(auth, email, { url: `${location.origin}/onboarding?verify=1`, handleCodeInApp: true });
+}
+
+export async function completeVerifyLink(email: string) {
+  await signInWithEmailLink(auth, email, location.href);
+  history.replaceState(null, '', '/onboarding');
+}

@@ -20,6 +20,8 @@ for (const path of ['/brands/:brandId/contracts', '/brands/:brandId/contracts/*'
 
 const contractor = async () => pickRecord(CONTRACTOR_KEYS, (await db.doc('config/contractor').get()).data()) as Contractor;
 const brandRef = (id: string) => db.doc(`brands/${id}`);
+/** Brands that already started onboarding (e.g. in the brief) keep their step: the contract never moves them back. */
+const atContractStep = async (brandId: string) => [undefined, 'contract'].includes((await brandRef(brandId).get()).get('onboarding.step'));
 
 /** Terms from the accepted proposal converted into this brand, when there is one. */
 async function fromProposal(brandId: string): Promise<{ proposalId?: string; terms: Partial<Terms> }> {
@@ -50,7 +52,8 @@ adminContracts.post('/brands/:brandId/contracts', async (c) => {
     schedule: PRESETS[preset](mondayOf()), checklist: DEFAULT_CHECKLIST, signer: { email: '', name: '' },
     createdBy: c.get('user').uid, createdAt: now(), updatedAt: now(),
   });
-  await brandRef(brandId).set({ onboarding: { contractId: ref.id } }, { merge: true });
+  const fresh = await atContractStep(brandId);
+  await brandRef(brandId).set({ onboarding: fresh ? { step: 'contract', contractId: ref.id, startedAt: now() } : { contractId: ref.id } }, { merge: true });
   return c.json({ id: ref.id });
 });
 
@@ -91,7 +94,7 @@ adminContracts.post('/brands/:brandId/contracts/:id/send', async (c) => {
   if (!(snap.get('schedule.groups') ?? []).length) missing.push('schedule');
   if (missing.length) return c.json({ error: 'missing', fields: missing }, 400);
   await ref.update({ status: 'sent', sentText: fill(terms, who), sentAt: now(), sentBy: c.get('user').uid });
-  await brandRef(brandId).set({ onboarding: { step: 'contract', contractId: id } }, { merge: true });
+  await brandRef(brandId).set({ onboarding: (await atContractStep(brandId)) ? { step: 'contract', contractId: id } : { contractId: id } }, { merge: true });
   await notify(brandId, 'contract_ready');
   return c.json({ ok: true });
 });
@@ -125,12 +128,13 @@ adminContracts.post('/brands/:brandId/contracts/:id/countersign', async (c) => {
   const contract = { ...snap.data(), signatures: { ...snap.get('signatures'), contractor: signature } };
   const pdf = await seal(brandId, id, contract);
   const start = String(snap.get('schedule.start'));
+  const toKickoff = await atContractStep(brandId);
   const ok = await db.runTransaction(async (tx) => {
     if ((await tx.get(ref)).get('status') !== 'clientSigned') return false;
     tx.update(ref, { status: 'signed', 'signatures.contractor': signature, pdf, signedAt: now() });
     tx.set(db.doc(`brands/${brandId}/context/schedule`), { ...snap.get('schedule'), contractId: id, updatedAt: now() });
     tx.set(db.doc(`brands/${brandId}/context/kickoff`), { start, items: snap.get('checklist'), contractId: id, updatedAt: now() });
-    tx.set(brandRef(brandId), { onboarding: { step: 'kickoff', contractId: id, contractSignedAt: now() } }, { merge: true });
+    tx.set(brandRef(brandId), { onboarding: { ...(toKickoff ? { step: 'kickoff' } : {}), contractId: id, contractSignedAt: now() } }, { merge: true });
     tx.set(db.collection('audit').doc(), { type: 'contract_signed', brandId, contractId: id, by: user.uid, textHash: snap.get('textHash'), pdfSha256: pdf.sha256, at: now() });
     return true;
   });

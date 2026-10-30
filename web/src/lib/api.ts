@@ -16,6 +16,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init.headers,
     },
   });
-  if (!res.ok) throw new Error(`API ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw Object.assign(new Error(`API ${res.status}`), { status: res.status, body: body as Record<string, unknown> | null });
+  }
   return res.json() as Promise<T>;
 }
