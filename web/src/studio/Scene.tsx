@@ -80,7 +80,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
     setCloseOn(false);
     const v = closeRef.current;
     let timer = 0;
-    if (v && !reduce) { v.src = `/studio/${litCloseup(CLOSEUP[focused] + (focused === 'nico' ? (officeState().open ? look : '-away') : ''), light())}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
+    if (v && !reduce) { v.src = `/studio/${litCloseup(CLOSEUP[focused] + (focused === 'nico' ? (officeState().open ? look : '-away') : ''), lit(officeState().open ? look : '-away', light()))}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
     addEventListener('resize', place);
     return () => { clearTimeout(timer); removeEventListener('resize', place); };
   }, [focused]);

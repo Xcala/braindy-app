@@ -26,5 +26,6 @@ const NIGHT = new Set(['-away']);
 const NIGHT_CLOSEUPS = new Set(['cu-res', 'cu-mkt', 'cu-cre', 'cu-bui', 'cu-nico-away']);
 /** File suffix for a studio media set (outfit or '-away') under the current light, falling back to daylight. */
 export const lit = (media: string, l: Light) => (l === 'night' && NIGHT.has(media) ? `${media}-night` : media);
-/** File name of a close-up (e.g. 'cu-res', 'cu-nico-away') under the current light, falling back to daylight. */
-export const litCloseup = (name: string, l: Light) => (l === 'night' && NIGHT_CLOSEUPS.has(name) ? `${name}-night` : name);
+/** File name of a close-up (e.g. 'cu-res', 'cu-nico-away'). It follows the scene on screen (`scene` is its media from `lit`): night only while
+ *  the scene itself shows night, so zooming never jumps from a daylit studio into a night close-up (e.g. at dawn, with NicoMarca already in). */
+export const litCloseup = (name: string, scene: string) => (scene.endsWith('-night') && NIGHT_CLOSEUPS.has(name) ? `${name}-night` : name);
