@@ -18,8 +18,8 @@ export const studioEn = {
   'st.request': 'Request (optional)', 'st.general': 'General, no request', 'st.brain': 'Brain',
   'st.clock': 'San Francisco and Bogotá time',
   'st.state.reviewing': 'Reviewing', 'st.state.ready': 'Ready for what is next', 'st.reviewQueue': 'Reviews before sending it to you',
-  'st.state.away': 'Out of the office', 'st.back7': 'Back {when} at 7:00 a.m. (Bogotá time)', 'st.today': 'today', 'st.tomorrow': 'tomorrow', 'st.onDay': 'on {day}',
-  'st.awayNote': 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', 'st.holiday': 'US holiday: {name}', 'st.simulated': 'Simulating {when} Bogotá', 'st.realTime': 'See real time',
+  'st.state.away': 'Out of the office', 'st.back7': 'Back {when} at 7:00 a.m. (San Francisco time)', 'st.today': 'today', 'st.tomorrow': 'tomorrow', 'st.onDay': 'on {day}',
+  'st.awayNote': 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', 'st.holiday': 'US holiday: {name}', 'st.simulated': 'Simulating {when} in San Francisco', 'st.realTime': 'See real time',
   'st.homeTitle': 'Your team, at work', 'st.homeSub': 'NickMark and his Brains, live from San Francisco, on what you asked for. Tap anyone to see what they are doing.',
 };
 
@@ -42,7 +42,7 @@ export const studioEs: Record<keyof typeof studioEn, string> = {
   'st.request': 'Solicitud (opcional)', 'st.general': 'General, sin solicitud', 'st.brain': 'Brain',
   'st.clock': 'Hora de San Francisco y Bogotá',
   'st.state.reviewing': 'Revisando', 'st.state.ready': 'Listo para lo próximo', 'st.reviewQueue': 'Revisa antes de enviártelo',
-  'st.state.away': 'Fuera de la oficina', 'st.back7': 'Vuelve {when} a las 7:00 a. m. (hora Bogotá)', 'st.today': 'hoy', 'st.tomorrow': 'mañana', 'st.onDay': 'el {day}',
-  'st.awayNote': 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', 'st.holiday': 'Festivo en EE. UU.: {name}', 'st.simulated': 'Simulando {when} en Bogotá', 'st.realTime': 'Ver hora real',
+  'st.state.away': 'Fuera de la oficina', 'st.back7': 'Vuelve {when} a las 7:00 a. m. (hora San Francisco)', 'st.today': 'hoy', 'st.tomorrow': 'mañana', 'st.onDay': 'el {day}',
+  'st.awayNote': 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', 'st.holiday': 'Festivo en EE. UU.: {name}', 'st.simulated': 'Simulando {when} en San Francisco', 'st.realTime': 'Ver hora real',
   'st.homeTitle': 'Tu equipo, trabajando', 'st.homeSub': 'NicoMarca y sus Brains, en vivo desde San Francisco, en lo que pediste. Toca a cualquiera para ver qué hace.',
 };

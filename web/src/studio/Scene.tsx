@@ -8,6 +8,7 @@ import { FocusCard, SEAT_NAME } from './FocusCard';
 import type { SeatView } from './useStudio';
 import { isSimulated, officeState, outfit, studioNow } from './officeHours';
 import { internalWork } from './internalWork';
+import { light, lit } from './light';
 import { cityById } from '../brands/cities';
 import './studio.css';
 
@@ -21,7 +22,7 @@ const fmtDate = (tz: string, lang: string) => new Intl.DateTimeFormat(locale(lan
 function useClock(lang: string, tz = 'America/Bogota') {
   const read = () => ({
     sf: fmtTime('America/Los_Angeles'), bog: fmtTime(tz),
-    sfDate: fmtDate('America/Los_Angeles', lang), bogDate: fmtDate(tz, lang), office: officeState(),
+    sfDate: fmtDate('America/Los_Angeles', lang), bogDate: fmtDate(tz, lang), office: officeState(), light: light(),
   });
   const [now, setNow] = useState(read);
   useEffect(() => { setNow(read()); const id = setInterval(() => setNow(read()), 20000); return () => clearInterval(id); }, [lang, tz]);
@@ -52,7 +53,8 @@ export function Scene({ seats, items, toSignCount, brandView = false, city }: { 
   };
   // Nobody is ever idle: without client work, a seat works on Braindy or Revista Level.
   // Out of the office the studio switches to its empty-chair version (photo, loop and close-up), screen off.
-  const media = away ? '-away' : look;
+  // ...and its light follows the sun in San Francisco (night files where they exist).
+  const media = lit(away ? '-away' : look, clock.light);
   const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state === 'free' ? 'working' : seats[id].state);
   const idle = (id: SeatId) => internalWork(id, lang, studioNow());
   const loopRef = useRef<HTMLVideoElement>(null);
@@ -78,7 +80,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city }: { 
     setCloseOn(false);
     const v = closeRef.current;
     let timer = 0;
-    if (v && !reduce) { v.src = `/studio/${CLOSEUP[focused]}${focused === 'nico' ? (officeState().open ? look : '-away') : ''}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
+    if (v && !reduce) { v.src = `/studio/${CLOSEUP[focused]}${focused === 'nico' ? lit(officeState().open ? look : '-away', light()) : ''}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
     addEventListener('resize', place);
     return () => { clearTimeout(timer); removeEventListener('resize', place); };
   }, [focused]);
@@ -133,7 +135,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city }: { 
         <span className="sd-hint">{t('st.hint')}</span>
         {isSimulated && (
           <button type="button" className="sd-sim" onClick={() => { location.href = location.pathname; }}>
-            {t('st.simulated', { when: new Intl.DateTimeFormat(locale(lang), { timeZone: 'America/Bogota', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(studioNow()) })} · <u>{t('st.realTime')}</u>
+            {t('st.simulated', { when: new Intl.DateTimeFormat(locale(lang), { timeZone: 'America/Los_Angeles', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(studioNow()) })} · <u>{t('st.realTime')}</u>
           </button>
         )}
 

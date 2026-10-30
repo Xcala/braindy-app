@@ -15,14 +15,14 @@ const T = {
   es: {
     hint: 'Toca a cualquiera para acercarte a su puesto', back: 'Ver todo el estudio', nothing: 'Trabajando en Braindy y Revista Level.', queue: 'En su cola', signQueue: 'Esperan tu firma',
     state: { working: 'Trabajando', withClient: 'Con el cliente', toSign: 'Esperan tu firma', free: 'Libre', away: 'Fuera de la oficina' },
-    back7: (when) => `Vuelve ${when} a las 7:00 a. m. (hora Bogotá)`, today: 'hoy', tomorrow: 'mañana', on: (day) => `el ${day}`, onDesk: 'En su mesa',
+    back7: (when) => `Vuelve ${when} a las 7:00 a. m. (hora San Francisco)`, today: 'hoy', tomorrow: 'mañana', on: (day) => `el ${day}`, onDesk: 'En su mesa',
     awayNote: 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', holiday: (name) => `Festivo en EE. UU.: ${name}`,
     role: { nico: 'Dirige, diseña, codifica y firma', researcher: 'Investiga', marketer: 'Comunica', creator: 'Crea', builder: 'Construye' },
   },
   en: {
     hint: 'Tap anyone to zoom into their desk', back: 'See the whole studio', nothing: 'Working on Braindy and Revista Level.', queue: 'In their queue', signQueue: 'Waiting for your signature',
     state: { working: 'Working', withClient: 'With the client', toSign: 'Waiting for your signature', free: 'Free', away: 'Out of the office' },
-    back7: (when) => `Back ${when} at 7:00 a.m. (Bogotá time)`, today: 'today', tomorrow: 'tomorrow', on: (day) => `on ${day}`, onDesk: 'On his desk',
+    back7: (when) => `Back ${when} at 7:00 a.m. (San Francisco time)`, today: 'today', tomorrow: 'tomorrow', on: (day) => `on ${day}`, onDesk: 'On his desk',
     awayNote: 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', holiday: (name) => `US holiday: ${name}`,
     role: { nico: 'Directs, designs, codes and signs', researcher: 'Research', marketer: 'Communicate', creator: 'Create', builder: 'Build' },
   },
@@ -37,10 +37,13 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 const scene = document.querySelector('.sd-scene');
 const cam = scene.querySelector('.sd-cam');
 const close = scene.querySelector('.sd-closeup');
-// NicoMarca wears a different outfit each weekday (Bogotá): photo, loop and his close-up share the suffix.
+// NicoMarca wears a different outfit each weekday (San Francisco): photo, loop and his close-up share the suffix.
 const OUTFIT = ['', '', '-mar', '-mie', '-jue', '-vie', ''][H.dia()];
 // Out of the office the studio switches to its empty-chair version (photo, loop and close-up), screen off.
-const media = () => (H.estado().open ? OUTFIT : '-away');
+// At night in San Francisco a set uses its -night files, where they exist (so far only the empty chair).
+const NOCHE = new Set(['-away']);
+const lit = (m) => (H.luz() === 'noche' && NOCHE.has(m) ? m + '-night' : m);
+const media = () => lit(H.estado().open ? OUTFIT : '-away');
 let shownMedia = media();
 cam.querySelector('img').src = `media/studio${shownMedia}.jpg`;
 const focus = scene.querySelector('.sd-focus');
@@ -128,7 +131,7 @@ function open(id) {
   scene.classList.add('zoomed');
   place();
   close.classList.remove('on');
-  if (!reduce) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? (away ? '-away' : OUTFIT) : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
+  if (!reduce) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? lit(away ? '-away' : OUTFIT) : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
 }
 function zoomOut() {
   close.classList.remove('on');
