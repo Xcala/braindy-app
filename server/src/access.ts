@@ -4,6 +4,19 @@ export interface Access {
   admin: boolean;
   member: boolean;
   role: 'client_owner' | 'client_member' | null;
+  /** App sections this person may use on the brand (all of them for the admin). */
+  sections: Section[];
+}
+
+/** Parts of the app NickMark can open or close per person. Home is always open. */
+export const SECTIONS = ['brand', 'requests', 'files', 'apps', 'research', 'results', 'learn', 'accesses', 'billing'] as const;
+export type Section = (typeof SECTIONS)[number];
+const SENSITIVE: Section[] = ['accesses', 'billing'];
+
+/** A member's sections: the ones NickMark picked, or by role (owners everything, members all but accesses and billing). Same as firestore.rules allowsAt. */
+export function sectionsOf(m: { role?: string; sections?: unknown }): Section[] {
+  if (Array.isArray(m.sections)) return SECTIONS.filter((x) => (m.sections as string[]).includes(x));
+  return m.role === 'client_owner' ? [...SECTIONS] : SECTIONS.filter((x) => !SENSITIVE.includes(x));
 }
 
 /**
@@ -12,16 +25,16 @@ export interface Access {
  */
 export async function brandAccess(uid: string, brandId: string): Promise<Access> {
   const user = await db.doc(`users/${uid}`).get();
-  if (user.get('role') === 'admin') return { admin: true, member: true, role: null };
+  if (user.get('role') === 'admin') return { admin: true, member: true, role: null, sections: [...SECTIONS] };
 
   const brand = await db.doc(`brands/${brandId}`).get();
-  if (!brand.exists) return { admin: false, member: false, role: null };
+  if (!brand.exists) return { admin: false, member: false, role: null, sections: [] };
   const chain = [brandId, ...((brand.get('ancestors') as string[]) ?? [])];
   for (const id of chain) {
     const m = await db.doc(`brands/${id}/members/${uid}`).get();
-    if (m.exists) return { admin: false, member: true, role: m.get('role') ?? 'client_member' };
+    if (m.exists) return { admin: false, member: true, role: m.get('role') ?? 'client_member', sections: sectionsOf(m.data() ?? {}) };
   }
-  return { admin: false, member: false, role: null };
+  return { admin: false, member: false, role: null, sections: [] };
 }
 
 type FileAccess = { mode?: string; folders?: string[] };

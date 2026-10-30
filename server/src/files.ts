@@ -24,6 +24,9 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
   const asset = await db.doc(`brands/${brandId}/assets/${assetId}`).get();
   const storagePath = asset.get('storagePath') as string | undefined;
   if (!asset.exists || !storagePath || !storagePath.startsWith(`brands/${brandId}/`)) return c.json({ error: 'not_found' }, 404);
+  // My files needs the files section; files attached to a request (Uploads) also open from Requests.
+  const viaRequests = access.sections.includes('requests') && asset.get('folder') === 'Uploads';
+  if (!access.sections.includes('files') && !viaRequests) return c.json({ error: 'forbidden' }, 403);
   if (!access.admin && !(await fileFilter(brandId))(asset)) return c.json({ error: 'not_found' }, 404);
 
   const disposition = c.req.query('inline') === '1' ? 'inline' : 'attachment';
@@ -39,7 +42,7 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
 files.post('/brands/:brandId/assets/urls', async (c) => {
   const { brandId } = c.req.param();
   const access = await brandAccess(c.get('user').uid, brandId);
-  if (!access.member) return c.json({ error: 'forbidden' }, 403);
+  if (!access.member || !access.sections.includes('files')) return c.json({ error: 'forbidden' }, 403);
 
   const { ids } = await c.req.json<{ ids?: string[] }>();
   const list = [...new Set((ids ?? []).filter((x) => typeof x === 'string'))].slice(0, 60);
@@ -60,7 +63,7 @@ files.post('/brands/:brandId/uploads', async (c) => {
   const { brandId } = c.req.param();
   const uid = c.get('user').uid;
   const access = await brandAccess(uid, brandId);
-  if (!access.member) return c.json({ error: 'forbidden' }, 403);
+  if (!access.member || !(access.sections.includes('files') || access.sections.includes('requests'))) return c.json({ error: 'forbidden' }, 403);
 
   const body = await c.req.json<{ fileName?: string; contentType?: string; size?: number; folder?: string }>();
   const fileName = String(body.fileName ?? '').replace(/[\\/\r\n]/g, '_').slice(0, 200);

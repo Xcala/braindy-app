@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BottomNav } from './BottomNav';
 import { Toaster } from '../components/Toaster';
 import { requestTour } from '../tour/useTour';
@@ -11,6 +11,7 @@ import { LangToggle } from '../i18n/LangToggle';
 import { CommandK } from '../components/CommandK';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
+import { sectionOfPath, useMySections } from '../team/sections';
 
 const TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/home', label: 'nav.home' },
@@ -69,17 +70,32 @@ export function AppShell() {
         </header>
         <div className={adminSpace ? '' : 'hidden md:block'}>
         <nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
-          {(adminSpace ? ADMIN_TABS : TABS).map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin={adminSpace} />)}
+          {adminSpace ? ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />) : <ClientTabs />}
         </nav>
         </div>
         <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
-          <Outlet />
+          <SectionGate><Outlet /></SectionGate>
         </main>
         {!adminSpace && <BottomNav />}
       </div>
       </Toaster>
     </BrandProvider>
   );
+}
+
+/** Client tabs, only the sections this person may use on the current brand. */
+function ClientTabs() {
+  const { t } = useI18n();
+  const { can } = useMySections();
+  return <>{TABS.filter((tab) => can(sectionOfPath(tab.to))).map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} />)}</>;
+}
+
+/** A closed section sends the person back home (the rules and the API block its data anyway). */
+function SectionGate({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const { ready, can } = useMySections();
+  if (ready && !can(sectionOfPath(pathname))) return <Navigate to="/home" replace />;
+  return <>{children}</>;
 }
 
 function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
@@ -95,6 +111,7 @@ function AccountMenu() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const { can } = useMySections();
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -119,7 +136,7 @@ function AccountMenu() {
         <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
           <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
           <div className="md:hidden">
-            {([['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).map(([to, k]) => (
+            {([['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).filter(([to]) => can(sectionOfPath(to))).map(([to, k]) => (
               <NavLink key={to} role="menuitem" to={to} onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: 'none', color: 'var(--ink)' }}>{t(k)}</NavLink>
             ))}
           </div>
