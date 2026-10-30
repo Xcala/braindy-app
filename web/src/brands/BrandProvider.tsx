@@ -120,6 +120,11 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   return <BrandContext.Provider value={{ brands, current, select, loading }}>{children}</BrandContext.Provider>;
 }
 
+/** Same as useBrands, but null outside the app shell (the sign-in page shows the studio without brands). */
+export function useBrandsMaybe(): BrandState | null {
+  return useContext(BrandContext);
+}
+
 export function useBrands(): BrandState {
   const ctx = useContext(BrandContext);
   if (!ctx) throw new Error('useBrands must be used inside BrandProvider');

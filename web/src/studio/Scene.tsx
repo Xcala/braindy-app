@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useBrands } from '../brands/BrandProvider';
+import { useBrandsMaybe } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import type { WorkItem } from '../team/useWork';
@@ -30,9 +30,9 @@ function useClock(lang: string, tz = 'America/Bogota') {
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false, city, brandName }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city, brandName, compact = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string; compact?: boolean }) {
   const { t, lang } = useI18n();
-  const { brands } = useBrands();
+  const brands = useBrandsMaybe()?.brands ?? [];
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
   const sceneRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLVideoElement>(null);
@@ -97,7 +97,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
   }
 
   return (
-    <div className="sd-scroll">
+    <div className={`sd-scroll ${compact ? 'sd-compact' : ''}`}>
       <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
         <div className="sd-cam" style={{ transform }}>
           <img src={`/studio/studio${media}.jpg`} alt={t('st.title')} loading="lazy" />

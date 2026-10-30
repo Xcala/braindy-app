@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
-import { useBrands } from '../brands/BrandProvider';
+import { useBrandsMaybe } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import type { BrainId } from '../requests/taxonomy';
@@ -17,7 +17,9 @@ const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
  *  idle: internal work (Braindy, Revista Level) shown when there is no client work, so nobody reads as idle. */
 export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel, away, idle = [] }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string; away?: { back: string; holiday?: string }; idle?: string[] }) {
   const { t } = useI18n();
-  const { brands, select } = useBrands();
+  const ctx = useBrandsMaybe();
+  const brands = ctx?.brands ?? [];
+  const select = (id: string) => ctx?.select(id);
   // On a client's home every item is their own brand, so the brand name is left out.
   const brand = (bid?: string) => (readOnly ? '' : brands.find((b) => b.id === bid)?.name ?? '');
   const withBrand = (title: string, bid?: string) => (readOnly ? title : `${title} · ${brand(bid)}`);
