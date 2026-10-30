@@ -53,7 +53,7 @@ export function AppShell() {
           <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
             <>
-              <Link to="/admin/today" className="ws" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span>Braindy admin</Link>
+              <Link to="/admin/today" className="ws" aria-label="Braindy admin" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span><span className="hidden sm:inline">Braindy admin</span></Link>
               <span className="hidden sm:inline-flex"><BrandMenu isAdmin onPicked={() => navigate('/home')} /></span>
             </>
           ) : (
