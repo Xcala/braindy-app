@@ -42,3 +42,15 @@ describe('The Studio · brainInbox', () => {
     await assertFails(addDoc(collection(as(env, OWNER), 'brainInbox'), note(OWNER)));
   });
 });
+
+describe('The Studio · launches', () => {
+  it('launches are server-only: no client and not even the admin reads or writes them directly', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'launches/l1'), { brandId: 'brand-a', brandName: 'A', title: 'Nuevo logo', imagePath: 'launches/l1.png' });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'launches/l1')));
+    await assertFails(getDocs(collection(as(env, MEMBER), 'launches')));
+    await assertFails(getDoc(doc(as(env, ADMIN), 'launches/l1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'launches/l2'), { title: 'x' }));
+  });
+});

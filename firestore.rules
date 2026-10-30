@@ -397,6 +397,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ---------- launches (work NickMark shows to every client): served only by the API, which signs the images ----------
+    match /launches/{launchId} {
+      allow read, write: if false;
+    }
+
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------
     match /brainTasks/{taskId} {
       allow read: if isAdmin();

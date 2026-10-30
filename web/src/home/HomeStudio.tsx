@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { Scene } from '../studio/Scene';
+import { Launches } from '../studio/Launches';
 import { buildSeats } from '../studio/useStudio';
 import type { WorkItem } from '../team/useWork';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
@@ -18,7 +19,10 @@ export function HomeStudio({ requests }: { requests: ScopedRequest[] }) {
         <h2 className="h3" id="h-studio">{t('st.homeTitle')}</h2>
         <p className="t-sm t-mute">{t('st.homeSub')}</p>
       </div>
-      <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} />
+      <div className="sd-with-launches">
+        <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} brandLogo={current?.logoUrl} />
+        <Launches ask />
+      </div>
     </section>
   );
 }

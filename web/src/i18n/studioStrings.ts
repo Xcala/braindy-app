@@ -20,6 +20,8 @@ export const studioEn = {
   'st.state.reviewing': 'Reviewing', 'st.state.ready': 'Ready for what is next', 'st.reviewQueue': 'Reviews before sending it to you',
   'st.state.away': 'Out of the office', 'st.back7': 'Back {when} at 7:00 a.m. (San Francisco time)', 'st.today': 'today', 'st.tomorrow': 'tomorrow', 'st.onDay': 'on {day}',
   'st.awayNote': 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', 'st.holiday': 'US holiday: {name}', 'st.simulated': 'Simulating {when} in San Francisco', 'st.realTime': 'See real time',
+  'st.launches': 'Just launched', 'st.launchesSub': 'What NickMark and his Brains just launched for other brands.', 'st.launchesAsk': 'I want something like this',
+  'st.launchMark': 'Show as a launch', 'st.launchUnmark': 'Stop showing as a launch', 'st.launchTitle': 'Launch headline (other clients see it)', 'st.launchTitlePh': 'New logo for {brand}', 'st.launchOn': 'Shown to every client beside the studio.', 'st.launchErr': 'Could not save the launch: the version needs an image.',
   'st.homeTitle': 'Your team, at work', 'st.homeSub': 'NickMark and his Brains, live from San Francisco, on what you asked for. Tap anyone to see what they are doing.',
 };
 
@@ -44,5 +46,7 @@ export const studioEs: Record<keyof typeof studioEn, string> = {
   'st.state.reviewing': 'Revisando', 'st.state.ready': 'Listo para lo próximo', 'st.reviewQueue': 'Revisa antes de enviártelo',
   'st.state.away': 'Fuera de la oficina', 'st.back7': 'Vuelve {when} a las 7:00 a. m. (hora San Francisco)', 'st.today': 'hoy', 'st.tomorrow': 'mañana', 'st.onDay': 'el {day}',
   'st.awayNote': 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', 'st.holiday': 'Festivo en EE. UU.: {name}', 'st.simulated': 'Simulando {when} en San Francisco', 'st.realTime': 'Ver hora real',
+  'st.launches': 'Recién lanzado', 'st.launchesSub': 'Lo que NicoMarca y sus Brains acaban de lanzar para otras marcas.', 'st.launchesAsk': 'Quiero algo así',
+  'st.launchMark': 'Mostrar como lanzamiento', 'st.launchUnmark': 'Dejar de mostrarlo', 'st.launchTitle': 'Titular del lanzamiento (lo ven los demás clientes)', 'st.launchTitlePh': 'Nuevo logo de {brand}', 'st.launchOn': 'Se muestra a todos los clientes al lado del estudio.', 'st.launchErr': 'No se pudo guardar el lanzamiento: la versión necesita una imagen.',
   'st.homeTitle': 'Tu equipo, trabajando', 'st.homeSub': 'NicoMarca y sus Brains, en vivo desde San Francisco, en lo que pediste. Toca a cualquiera para ver qué hace.',
 };

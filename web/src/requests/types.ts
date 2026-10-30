@@ -30,6 +30,8 @@ export interface BrandRequest {
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
   legacy?: { briefRequestId?: string };
+  /** Shown to every client as a launch beside the studio (set by the API when NickMark marks it). */
+  launch?: { versionId: string; title: string } | null;
 }
 
 export interface VersionFile { name: string; contentType: string; size: number; storagePath?: string; url?: string }

@@ -62,3 +62,19 @@
 .sd-compact .sd-bubble { padding: 4px 7px; border-radius: 9px; max-width: 24%; }
 .sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
 .sd-live { transition: opacity .3s; }
+
+/* Screens: each seat's real work (or the brand's logo) bent into the screen's perspective. Measured in the 2000 × 1116 frame, scaled to the scene. */
+.sd-screens { position: absolute; left: 0; top: 0; width: 2000px; height: 1116px; transform-origin: 0 0; pointer-events: none; }
+.sd-screen { position: absolute; left: 0; top: 0; width: 320px; height: 180px; transform-origin: 0 0; overflow: hidden; border-radius: 3px; background: #0B1022; box-shadow: 0 0 22px color-mix(in srgb, var(--c) 60%, transparent); opacity: .93; animation: sd-screen-on .8s ease both; }
+.sd-cam .sd-screen img { position: static; width: 100%; height: 100%; object-fit: cover; display: block; }
+.sd-screen.logo { background: #F4F6FB; }
+.sd-cam .sd-screen.logo img { object-fit: contain; padding: 30px 60px; box-sizing: border-box; }
+@keyframes sd-screen-on { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sd-screen { animation: none; } }
+
+/* Launches beside the studio: never over the photo. On wide screens a column as tall as the scene (its list scrolls); below it on phones. */
+.sd-with-launches { display: grid; gap: 16px; }
+@media (min-width: 1100px) {
+  .sd-with-launches:has(.sd-launches) { grid-template-columns: minmax(0, 1fr) 280px; }
+  .sd-launches { height: 0; min-height: 100%; overflow-y: auto; }
+}

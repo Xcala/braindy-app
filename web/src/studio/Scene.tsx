@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useBrandsMaybe } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -10,6 +10,8 @@ import { isSimulated, officeState, outfit, studioNow } from './officeHours';
 import { brandWork, internalWork } from './internalWork';
 import { light, lit, litCloseup } from './light';
 import { cityById, type CityPlace } from '../brands/cities';
+import { SCREEN_QUADS, quadMatrix } from './screens';
+import { useScreens } from './useScreens';
 import './studio.css';
 
 const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -29,8 +31,21 @@ function useClock(lang: string, tz = 'America/Bogota') {
   return now;
 }
 
+/** Scene width over the 2000 px frame the screens are measured in, kept current on resize. */
+function useSceneScale(ref: RefObject<HTMLDivElement | null>) {
+  const [k, setK] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setK(el.clientWidth / 2000));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return k;
+}
+
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false, city, brandName, compact = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string; compact?: boolean }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city, brandName, brandLogo, compact = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string; brandLogo?: string | null; compact?: boolean }) {
   const { t, lang } = useI18n();
   const brands = useBrandsMaybe()?.brands ?? [];
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
@@ -59,6 +74,9 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
   const idle = (id: SeatId) => (brandView && brandName ? brandWork(id, lang, brandName, studioNow()) : internalWork(id, lang, studioNow()));
   const loopRef = useRef<HTMLVideoElement>(null);
   const [seen, setSeen] = useState(false);
+  // Each screen shows the work its seat is doing (a client only ever sees their own brand), bent into the screen's perspective.
+  const shots = useScreens(seats, (id) => brands.find((b) => b.id === id)?.logoUrl ?? null, brandView, brandLogo);
+  const k = useSceneScale(sceneRef);
 
   // The 3 MB loop loads only once the scene scrolls into view, and pauses whenever it leaves it.
   useEffect(() => {
@@ -102,6 +120,13 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
         <div className="sd-cam" style={{ transform }}>
           <img src={`/studio/studio${media}.jpg`} alt={t('st.title')} loading="lazy" />
           {!reduce && seen && <video ref={loopRef} className={loopOn ? 'on' : ''} src={`/studio/loop${media}.mp4`} autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
+          <div className="sd-screens" style={{ transform: `scale(${k})` }} aria-hidden="true">
+            {SEAT_ORDER.map((id) => {
+              const s = shots[id];
+              if (!s || (id === 'nico' && away)) return null;
+              return <div key={id} className={`sd-screen ${s.logo ? 'logo' : ''}`} style={{ transform: quadMatrix(SCREEN_QUADS[id]), ['--c' as string]: SEATS[id].c }}><img src={s.src} alt="" /></div>;
+            })}
+          </div>
           {SEAT_ORDER.map((id) => {
             const s = SEATS[id], st = shown(id);
             return (

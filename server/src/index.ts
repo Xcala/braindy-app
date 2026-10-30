@@ -9,6 +9,7 @@ import { db } from './firebase.js';
 import { files } from './files.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
+import { adminLaunches, launches } from './launches.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
@@ -83,6 +84,8 @@ app.get('/v1/me', async (c) => {
 app.route('/v1', files);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
+app.route('/v1', launches);
+app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
 app.route('/v1', accesses);
 app.route('/v1', review);
