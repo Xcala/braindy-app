@@ -1,11 +1,11 @@
 // El Estudio (standalone): the SF office photo with its live layer, no app or database behind it.
 // Geometry mirrors web/src/studio/geometry.ts (2000 × 1116 frame).
 const SEATS = {
-  nico: { c: '#FFFFFF', screen: [1240, 745], hot: [1540, 800, 440, 600], bub: [1790, 970], card: 'left' },
-  researcher: { c: '#F5B301', screen: [600, 500], hot: [330, 460, 280, 300], bub: [330, 320], card: 'bl' },
-  marketer: { c: '#8B5CF6', screen: [1340, 500], hot: [1720, 470, 260, 300], bub: [1815, 335], card: 'left' },
-  creator: { c: '#06B6D4', screen: [715, 740], hot: [430, 800, 360, 420], bub: [205, 930], card: 'br' },
-  builder: { c: '#2A7FFF', screen: [995, 490], hot: [995, 400, 280, 300], bub: [995, 262], card: 'left' },
+  nico: { c: '#FFFFFF', screen: [1240, 745], hot: [1540, 800, 440, 600], bub: [1790, 970] },
+  researcher: { c: '#F5B301', screen: [600, 500], hot: [330, 460, 280, 300], bub: [330, 320] },
+  marketer: { c: '#8B5CF6', screen: [1340, 500], hot: [1720, 470, 260, 300], bub: [1815, 335] },
+  creator: { c: '#06B6D4', screen: [715, 740], hot: [430, 800, 360, 420], bub: [205, 930] },
+  builder: { c: '#2A7FFF', screen: [995, 490], hot: [995, 400, 280, 300], bub: [995, 262] },
 };
 const ORDER = ['researcher', 'marketer', 'nico', 'creator', 'builder'];
 const CLOSEUP = { nico: 'cu-nico', researcher: 'cu-res', marketer: 'cu-mkt', creator: 'cu-cre', builder: 'cu-bui' };
@@ -65,7 +65,7 @@ if (!reduce) {
 function zoomTo(id, w, h, s = 2.1) {
   const [hx, hy] = SEATS[id].hot;
   const px = (hx / 2000) * w, py = ((hy - 40) / 1116) * h;
-  const cx = hx > 1000 ? w * 0.66 : w * 0.34;
+  const cx = w * 0.36; // center of the area left of the card panel
   const tx = Math.min(0, Math.max(w - w * s, cx - px * s));
   const ty = Math.min(0, Math.max(h - h * s, h * 0.5 - py * s));
   return `translate(${tx}px, ${ty}px) scale(${s})`;
@@ -75,7 +75,6 @@ const place = () => { if (focused) cam.style.transform = zoomTo(focused, scene.c
 function open(id) {
   focused = id;
   const v = D.puestos[id], isNico = id === 'nico';
-  focus.className = `sd-focus ${SEATS[id].card}`;
   focus.innerHTML =
     `<div class="hd"><i style="background:${SEATS[id].c}"></i><div><h3>${NAME[id]}</h3><span class="lbl">${t.role[id]}</span></div></div>` +
     (isNico ? '' : `<div class="now"><span class="lbl">${t.state[v.state]}</span><div>${esc(v.now || t.nothing)}</div></div>`) +
