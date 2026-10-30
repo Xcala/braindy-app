@@ -7,13 +7,14 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { cancelInvite, inviteMember, listInvites, removeMember, updateMember } from './membersApi';
 import { MemberAccess, profilePatch } from './MemberAccess';
 import { profileOf } from './sections';
+import { sendAccessLink } from '../auth/emailLink';
 import { useBrands } from '../brands/BrandProvider';
 
 type Member = { uid: string; email?: string; name?: string; role: 'client_owner' | 'client_member'; canApprove?: boolean; sections?: string[] | null };
 
 /** Members of one brand: role, approval rights, remove, invite by email (design 11 + 20 · team and approvers). */
 export function MembersCard({ brandId, brandName }: { brandId: string; brandName: string }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const isGroup = useBrands().brands.find((b) => b.id === brandId)?.kind === 'group';
@@ -40,7 +41,9 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
     try {
       const pp = isAdmin ? profilePatch(invProfile) : { role, sections: null };
       const r = await inviteMember(brandId, email.trim(), pp.role as typeof role, pp.role === 'client_owner', pp.sections);
-      setMsg({ ok: true, text: r.status === 'added' ? t('team.added', { email }) : t('team.invited', { email }) });
+      // Firebase emails them a one-time link to come in (any inbox, no password).
+      const sent = await sendAccessLink(email.trim(), lang, false).then(() => true, () => false);
+      setMsg({ ok: true, text: `${r.status === 'added' ? t('team.added', { email }) : t('team.invited', { email })}${sent ? ` ${t('team.linkSent', { email })}` : ''}` });
       setEmail(''); loadInvites();
     } catch { setMsg({ ok: false, text: t('team.inviteError') }); }
   }
@@ -82,6 +85,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         <div key={i.id} className="row g12">
           <span className="avatar-txt">?</span>
           <div className="col grow"><span className="w7 truncate">{i.email}</span><span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span></div>
+          <button className="btn btn-ghost btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
           <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
         </div>
       ))}
