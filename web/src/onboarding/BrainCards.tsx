@@ -22,7 +22,7 @@ export function BrainCards({ brain, onChange }: { brain: BrainDraft; onChange?: 
     onChange?.({ ...brain, competitors: comps.map((c, j) => (j === i ? { ...c, [k]: v } : c)) });
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
       {CARDS.filter((c) => edit || !c.adminOnly || brain[c.key]).map((c) => (
         <div key={c.key} className="card col g8" style={{ padding: 22 }}>
           <div className="row between g8"><h3 className="h3">{t(c.title)}</h3><span className="t-xs t-mute">{t(c.source)}</span></div>

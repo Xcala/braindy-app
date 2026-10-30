@@ -11,7 +11,7 @@ const STEPS: Array<{ id: OnboardingStep | 'access'; day: StringKey; title: Strin
   { id: 'live', day: 'ob.day11', title: 'ob.s.live', sub: 'ob.s.liveSub' },
 ];
 
-/** "Your first 11 days" timeline (design 17): done, current, upcoming. */
+/** Onboarding timeline, step 1 to 6 (design 17): done, current, upcoming. */
 export function Steps({ step }: { step: OnboardingStep }) {
   const { t } = useI18n();
   const at = STEPS.findIndex((s) => s.id === step);

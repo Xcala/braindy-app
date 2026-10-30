@@ -55,3 +55,10 @@
 .sd-seg button { flex: 1; font: inherit; font-size: .85em; font-weight: 700; color: #8F98B2; background: none; border: 0; border-radius: 7px; padding: 6px; cursor: pointer; }
 .sd-seg button.on { background: #1B2342; color: #fff; }
 @media (prefers-reduced-motion: reduce) { .sd-cam, .sd-closeup, .sd-focus { transition: none; } }
+
+/* Compact: the sign-in stage shows the whole studio in a narrow column (no horizontal scroll, no hint). */
+.sd-compact .sd-scene { min-width: 0; }
+.sd-compact .sd-hint { display: none; }
+.sd-compact .sd-bubble { padding: 4px 7px; border-radius: 9px; max-width: 24%; }
+.sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
+.sd-live { transition: opacity .3s; }

@@ -21,7 +21,7 @@ const txt = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
 
 async function ownerOrAdmin(uid: string, brandId: string) {
   const a = await brandAccess(uid, brandId);
-  return a.admin || a.role === 'client_owner';
+  return a.admin || a.sections.includes('billing');
 }
 
 /** First payment (or confirmed transfer): onboarding starts if it had not. */

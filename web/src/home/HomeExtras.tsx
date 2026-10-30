@@ -36,7 +36,7 @@ export function WhatsappCard({ brandId }: { brandId: string }) {
   );
 }
 
-/** Day 11 (design 17): for two weeks after going live, Home opens with "your brand system is live". */
+/** Step 6 (design 17): for two weeks after going live, Home opens with "your brand system is live". */
 export function LiveBanner({ liveAt }: { liveAt?: Date | null }) {
   const { t } = useI18n();
   if (!liveAt || Date.now() - liveAt.getTime() > 14 * 864e5) return null;

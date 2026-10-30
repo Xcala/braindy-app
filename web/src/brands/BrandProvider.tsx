@@ -13,7 +13,7 @@ export interface Brand {
   logoUrl: string | null;
   /** Old apps this brand was migrated from: brands, orbit, brief, brandbook. */
   sources: string[];
-  /** First 11 days (wave F). Absent for brands that were already running. */
+  /** Onboarding steps 1 to 6 (wave F). Absent for brands that were already running. */
   onboarding: Onboarding | null;
   /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
   city: string | CityPlace | null;
@@ -118,6 +118,11 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   };
 
   return <BrandContext.Provider value={{ brands, current, select, loading }}>{children}</BrandContext.Provider>;
+}
+
+/** Same as useBrands, but null outside the app shell (the sign-in page shows the studio without brands). */
+export function useBrandsMaybe(): BrandState | null {
+  return useContext(BrandContext);
 }
 
 export function useBrands(): BrandState {
