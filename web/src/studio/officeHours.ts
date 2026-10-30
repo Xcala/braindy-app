@@ -7,6 +7,8 @@ const CLOSE_HOUR = 19;
 const sim = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hora') : null;
 const simMs = sim ? Date.parse(sim + (sim.length <= 16 ? ':00' : '') + '-05:00') : NaN;
 const offset = Number.isNaN(simMs) ? 0 : simMs - Date.now();
+/** True when ?hora= is simulating another moment (the studio shows a notice so nobody mistakes it for the real time). */
+export const isSimulated = offset !== 0;
 /** Now, or the simulated moment when the page has ?hora=. */
 export const studioNow = () => new Date(Date.now() + offset);
 

@@ -6,7 +6,8 @@ import type { WorkItem } from '../team/useWork';
 import { CLOSEUP, SEAT_ORDER, SEATS, pct, zoomTo, type SeatId } from './geometry';
 import { FocusCard, SEAT_NAME } from './FocusCard';
 import type { SeatView } from './useStudio';
-import { officeState, outfit, studioNow } from './officeHours';
+import { isSimulated, officeState, outfit, studioNow } from './officeHours';
+import { internalWork } from './internalWork';
 import './studio.css';
 
 const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,7 +47,9 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
       : t('st.onDay', { day: new Intl.DateTimeFormat(locale(lang), { weekday: 'long', timeZone: 'UTC' }).format(office.back) }) }),
     holiday: office.holiday,
   };
-  const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state);
+  // Nobody is ever idle: without client work, a seat works on Braindy or Revista Level.
+  const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state === 'free' ? 'working' : seats[id].state);
+  const idle = (id: SeatId) => internalWork(id, lang, studioNow());
   const loopRef = useRef<HTMLVideoElement>(null);
   const [seen, setSeen] = useState(false);
 
@@ -98,7 +101,7 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
               <div key={id}>
                 <button type="button" className="sd-hot" aria-label={`${SEAT_NAME[id]}: ${t(stateKey(st))}`} onClick={() => setFocused(id)}
                   style={{ ...pct([s.hot[0], s.hot[1]]), width: `${s.hot[2] / 20}%`, height: `${s.hot[3] / 11.16}%` }} />
-                <div className="sd-glow" style={{ ...pct(s.screen), background: `radial-gradient(ellipse, ${s.c}55 0%, ${s.c}00 65%)`, opacity: st === 'away' ? 0 : st === 'free' ? 0.15 : st === 'toSign' ? 0.9 : 0.5 }} />
+                <div className="sd-glow" style={{ ...pct(s.screen), background: `radial-gradient(ellipse, ${s.c}55 0%, ${s.c}00 65%)`, opacity: st === 'away' ? 0 : st === 'toSign' ? 0.9 : 0.5 }} />
               </div>
             );
           })}
@@ -116,16 +119,17 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
               <div key={id} className="sd-bubble" style={pct(SEATS[id].bub)}>
                 <div className="who"><i style={{ background: st === 'away' ? '#5A6280' : SEATS[id].c }} />{SEAT_NAME[id]}</div>
                 <div className="st">{t(stateKey(st))}</div>
-                <div>{st === 'away' ? away?.back : v.now ? (brandView ? v.now.title : `${v.now.title} · ${brand(v.now.brandId)}`) : t('st.nothing')}</div>
+                <div>{st === 'away' ? away?.back : v.now ? (brandView ? v.now.title : `${v.now.title} · ${brand(v.now.brandId)}`) : idle(id)[0]}</div>
               </div>
             );
           })}
         </div>
         {!brandView && toSignCount > 0 && <span className="sd-badge">{t('st.toSign', { n: toSignCount })}</span>}
         <span className="sd-hint">{t('st.hint')}</span>
+        {isSimulated && <span className="sd-sim">{t('st.simulated')}</span>}
 
         <video ref={closeRef} className={`sd-closeup ${closeOn ? 'on' : ''}`} muted loop playsInline preload="none" aria-hidden="true" />
-        {focused && <FocusCard key={focused} id={focused} view={seats[focused]} open allItems={items} readOnly={brandView} stateLabel={t(stateKey(shown(focused)))} away={focused === 'nico' ? away : undefined} />}
+        {focused && <FocusCard key={focused} id={focused} view={seats[focused]} open allItems={items} readOnly={brandView} stateLabel={t(stateKey(shown(focused)))} away={focused === 'nico' ? away : undefined} idle={idle(focused)} />}
         <button type="button" className="sd-back" onClick={zoomOut}>← {t('st.back')}</button>
       </div>
     </div>

@@ -13,8 +13,9 @@ export const SEAT_NAME: Record<SeatId, string> = { nico: 'NicoMarca', researcher
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
 /** The card next to a zoomed-in seat: what they are doing, their queue, and the two actions: sign and write. */
-/** away: NicoMarca is out of the office (when he is back, and the US holiday if there is one). */
-export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel, away }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string; away?: { back: string; holiday?: string } }) {
+/** away: NicoMarca is out of the office (when he is back, and the US holiday if there is one).
+ *  idle: internal work (Braindy, Revista Level) shown when there is no client work, so nobody reads as idle. */
+export function FocusCard({ id, view, open, allItems, readOnly = false, stateLabel, away, idle = [] }: { id: SeatId; view: SeatView; open: boolean; allItems: WorkItem[]; readOnly?: boolean; stateLabel?: string; away?: { back: string; holiday?: string }; idle?: string[] }) {
   const { t } = useI18n();
   const { brands, select } = useBrands();
   // On a client's home every item is their own brand, so the brand name is left out.
@@ -46,12 +47,12 @@ export function FocusCard({ id, view, open, allItems, readOnly = false, stateLab
           {away.holiday && <span className="lbl">{t('st.holiday', { name: away.holiday })}</span>}
           <p className="note">{t('st.awayNote')}</p>
         </>}
-        {!isNico && <div className="now">
+        {!away && <div className="now">
           <span className="lbl">{stateLabel ?? t(`st.state.${view.state}` as StringKey)}</span>
-          <div>{view.now ? withBrand(view.now.title, view.now.brandId) : t('st.nothing')}</div>
+          <div>{view.now ? withBrand(view.now.title, view.now.brandId) : idle[0]}</div>
         </div>}
-        <span className="lbl">{isNico ? t(readOnly ? 'st.reviewQueue' : 'st.signQueue') : t('st.queue')}</span>
-        {view.queue.length === 0 && <span style={{ color: '#8F98B2' }}>{t('st.nothing')}</span>}
+        {(view.queue.length > 0 || !isNico) && <span className="lbl">{isNico ? t(readOnly ? 'st.reviewQueue' : 'st.signQueue') : t('st.queue')}</span>}
+        {view.queue.length === 0 && !isNico && idle.slice(view.now ? 0 : 1, 3).map((x) => <div className="row" key={x}><span className="min-w-0">{x}</span></div>)}
         {view.queue.slice(0, 6).map((i) => (
           <div className="row" key={i.brandId + i.id}>
             <span className="min-w-0">{withBrand(i.title, i.brandId)}<br />

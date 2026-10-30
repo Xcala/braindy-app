@@ -13,14 +13,14 @@ const NAME = { nico: 'NicoMarca', researcher: 'Researcher', marketer: 'Marketer'
 
 const T = {
   es: {
-    hint: 'Toca a cualquiera para acercarte a su puesto', back: 'Ver todo el estudio', nothing: 'Sin trabajo en curso.', queue: 'En su cola', signQueue: 'Esperan tu firma',
+    hint: 'Toca a cualquiera para acercarte a su puesto', back: 'Ver todo el estudio', nothing: 'Trabajando en Braindy y Revista Level.', queue: 'En su cola', signQueue: 'Esperan tu firma',
     state: { working: 'Trabajando', withClient: 'Con el cliente', toSign: 'Esperan tu firma', free: 'Libre', away: 'Fuera de la oficina' },
     back7: (when) => `Vuelve ${when} a las 7:00 a. m. (hora Bogotá)`, today: 'hoy', tomorrow: 'mañana', on: (day) => `el ${day}`, onDesk: 'En su mesa',
     awayNote: 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', holiday: (name) => `Festivo en EE. UU.: ${name}`,
     role: { nico: 'Dirige, diseña, codifica y firma', researcher: 'Investiga', marketer: 'Comunica', creator: 'Crea', builder: 'Construye' },
   },
   en: {
-    hint: 'Tap anyone to zoom into their desk', back: 'See the whole studio', nothing: 'Nothing in progress.', queue: 'In their queue', signQueue: 'Waiting for your signature',
+    hint: 'Tap anyone to zoom into their desk', back: 'See the whole studio', nothing: 'Working on Braindy and Revista Level.', queue: 'In their queue', signQueue: 'Waiting for your signature',
     state: { working: 'Working', withClient: 'With the client', toSign: 'Waiting for your signature', free: 'Free', away: 'Out of the office' },
     back7: (when) => `Back ${when} at 7:00 a.m. (Bogotá time)`, today: 'today', tomorrow: 'tomorrow', on: (day) => `on ${day}`, onDesk: 'On his desk',
     awayNote: 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', holiday: (name) => `US holiday: ${name}`,
@@ -78,6 +78,8 @@ function paint() {
   scene.classList.toggle('nico-away', state('nico') === 'away');
 }
 scene.querySelector('.sd-hint').textContent = t.hint;
+// A visible notice while ?hora= simulates another moment, so nobody mistakes it for the real time.
+if (new URLSearchParams(location.search).has('hora')) scene.insertAdjacentHTML('beforeend', '<span class="sd-sim">' + (D.idioma === 'en' ? 'Simulated time (?hora= in the address)' : 'Hora simulada (?hora= en la dirección)') + '</span>');
 scene.querySelector('.sd-back').textContent = `← ${t.back}`;
 
 // Live SF and Bogotá time and date over the wall clock digits; also repaints the seats.
