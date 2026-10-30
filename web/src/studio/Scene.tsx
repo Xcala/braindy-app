@@ -8,6 +8,7 @@ import { FocusCard, SEAT_NAME } from './FocusCard';
 import type { SeatView } from './useStudio';
 import { isSimulated, officeState, outfit, studioNow } from './officeHours';
 import { internalWork } from './internalWork';
+import { cityById } from '../brands/cities';
 import './studio.css';
 
 const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,19 +17,19 @@ const fmtTime = (tz: string) => new Intl.DateTimeFormat('es-CO', { timeZone: tz,
 const fmtDate = (tz: string, lang: string) => new Intl.DateTimeFormat(locale(lang), { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short' })
   .format(studioNow()).replace(/\.| de/g, '').replace(',', '');
 
-/** Wall clock times and dates, and whether NicoMarca is in the office, refreshed every 20 s. */
-function useClock(lang: string) {
+/** Wall clock times and dates, and whether NicoMarca is in the office, refreshed every 20 s. The second clock reads `tz` (Bogotá, or the client's city). */
+function useClock(lang: string, tz = 'America/Bogota') {
   const read = () => ({
-    sf: fmtTime('America/Los_Angeles'), bog: fmtTime('America/Bogota'),
-    sfDate: fmtDate('America/Los_Angeles', lang), bogDate: fmtDate('America/Bogota', lang), office: officeState(),
+    sf: fmtTime('America/Los_Angeles'), bog: fmtTime(tz),
+    sfDate: fmtDate('America/Los_Angeles', lang), bogDate: fmtDate(tz, lang), office: officeState(),
   });
   const [now, setNow] = useState(read);
-  useEffect(() => { setNow(read()); const id = setInterval(() => setNow(read()), 20000); return () => clearInterval(id); }, [lang]);
+  useEffect(() => { setNow(read()); const id = setInterval(() => setNow(read()), 20000); return () => clearInterval(id); }, [lang, tz]);
   return now;
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | null }) {
   const { t, lang } = useI18n();
   const { brands } = useBrands();
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
@@ -38,7 +39,9 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
   const [transform, setTransform] = useState('');
   const [closeOn, setCloseOn] = useState(false);
   const [loopOn, setLoopOn] = useState(false);
-  const clock = useClock(lang);
+  // A client sees their own city on the second clock (its label painted in the photo is covered); NicoMarca sees Bogotá.
+  const place = brandView ? cityById(city) : undefined;
+  const clock = useClock(lang, place?.tz);
   const [look] = useState(outfit);
   // The Brains work 24/7; NicoMarca only in office hours, so outside them his seat reads "out of the office".
   const office = clock.office;
@@ -110,6 +113,7 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
           <div className="sd-clock" aria-label={t('st.clock')}>
             <b style={{ left: '68.4%', top: '7%', width: '6.4%', height: '4.9%' }}><span>{clock.sf}</span><small>{clock.sfDate}</small></b>
             <b style={{ left: '76.9%', top: '7%', width: '6.4%', height: '4.9%' }}><span>{clock.bog}</span><small>{clock.bogDate}</small></b>
+            {place && place.id !== 'bogota' && <i style={{ left: '76.9%', top: '5.5%', width: '6.4%', height: '1.6%' }}>{lang === 'es' ? place.es : place.en}</i>}
           </div>
         </div>
 
