@@ -394,3 +394,8 @@ p{margin:0}
 .widget.light{color:#0B1220;background:var(--g-spec),var(--g-light);box-shadow:var(--g-sh)}
 @media (prefers-reduced-transparency: reduce){.glass,.lg,.glass-clear,.lg-clear,.glass-dark,.lg-dark,.topbar,.tabs,.mhead,.bnav,.lang,.stickybar,.toast,.menu,.cmdk,.shot .tag,.btn-outline-light,.b3d .st,.play,.widget{-webkit-backdrop-filter:none;backdrop-filter:none}.glass,.lg,.topbar,.mhead,.bnav,.stickybar,.menu,.cmdk,.play,.widget.light{background:#fff}.glass-dark,.lg-dark,.toast,.shot .tag,.widget{background:#0E1424}.tabs,.lang{background:#fff}.glass-clear,.lg-clear,.btn-outline-light,.b3d .st,.stage .chip,.stage .lang{background:#1C2436}}
 .b3d .st{white-space:nowrap}
+
+/* Sign-in stage: pulsing "live" dot over the studio. */
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #FF4D4D; box-shadow: 0 0 0 0 #FF4D4D88; animation: live-pulse 1.8s infinite; }
+@keyframes live-pulse { 70% { box-shadow: 0 0 0 7px #FF4D4D00; } 100% { box-shadow: 0 0 0 0 #FF4D4D00; } }
+@media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
