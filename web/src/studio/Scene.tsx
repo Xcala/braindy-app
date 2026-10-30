@@ -126,7 +126,11 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
         </div>
         {!brandView && toSignCount > 0 && <span className="sd-badge">{t('st.toSign', { n: toSignCount })}</span>}
         <span className="sd-hint">{t('st.hint')}</span>
-        {isSimulated && <span className="sd-sim">{t('st.simulated')}</span>}
+        {isSimulated && (
+          <button type="button" className="sd-sim" onClick={() => { location.href = location.pathname; }}>
+            {t('st.simulated', { when: new Intl.DateTimeFormat(locale(lang), { timeZone: 'America/Bogota', weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false }).format(studioNow()) })} · <u>{t('st.realTime')}</u>
+          </button>
+        )}
 
         <video ref={closeRef} className={`sd-closeup ${closeOn ? 'on' : ''}`} muted loop playsInline preload="none" aria-hidden="true" />
         {focused && <FocusCard key={focused} id={focused} view={seats[focused]} open allItems={items} readOnly={brandView} stateLabel={t(stateKey(shown(focused)))} away={focused === 'nico' ? away : undefined} idle={idle(focused)} />}
