@@ -48,6 +48,8 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
     holiday: office.holiday,
   };
   // Nobody is ever idle: without client work, a seat works on Braindy or Revista Level.
+  // Out of the office the studio switches to its empty-chair version (photo, loop and close-up), screen off.
+  const media = away ? '-away' : look;
   const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state === 'free' ? 'working' : seats[id].state);
   const idle = (id: SeatId) => internalWork(id, lang, studioNow());
   const loopRef = useRef<HTMLVideoElement>(null);
@@ -73,7 +75,7 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
     setCloseOn(false);
     const v = closeRef.current;
     let timer = 0;
-    if (v && !reduce && !(focused === 'nico' && !officeState().open)) { v.src = `/studio/${CLOSEUP[focused]}${focused === 'nico' ? look : ''}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
+    if (v && !reduce) { v.src = `/studio/${CLOSEUP[focused]}${focused === 'nico' ? (officeState().open ? look : '-away') : ''}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
     addEventListener('resize', place);
     return () => { clearTimeout(timer); removeEventListener('resize', place); };
   }, [focused]);
@@ -91,10 +93,10 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
 
   return (
     <div className="sd-scroll">
-      <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''} ${away ? 'nico-away' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
+      <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
         <div className="sd-cam" style={{ transform }}>
-          <img src={`/studio/studio${look}.jpg`} alt={t('st.title')} loading="lazy" />
-          {!reduce && seen && <video ref={loopRef} className={loopOn ? 'on' : ''} src={`/studio/loop${look}.mp4`} autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
+          <img src={`/studio/studio${media}.jpg`} alt={t('st.title')} loading="lazy" />
+          {!reduce && seen && <video ref={loopRef} className={loopOn ? 'on' : ''} src={`/studio/loop${media}.mp4`} autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
           {SEAT_ORDER.map((id) => {
             const s = SEATS[id], st = shown(id);
             return (
@@ -105,7 +107,6 @@ export function Scene({ seats, items, toSignCount, brandView = false }: { seats:
               </div>
             );
           })}
-          <div className="sd-dim" style={pct([SEATS.nico.hot[0], SEATS.nico.hot[1]])} />
           <div className="sd-clock" aria-label={t('st.clock')}>
             <b style={{ left: '68.4%', top: '7%', width: '6.4%', height: '4.9%' }}><span>{clock.sf}</span><small>{clock.sfDate}</small></b>
             <b style={{ left: '76.9%', top: '7%', width: '6.4%', height: '4.9%' }}><span>{clock.bog}</span><small>{clock.bogDate}</small></b>

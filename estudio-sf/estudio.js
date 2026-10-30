@@ -39,7 +39,10 @@ const cam = scene.querySelector('.sd-cam');
 const close = scene.querySelector('.sd-closeup');
 // NicoMarca wears a different outfit each weekday (Bogotá): photo, loop and his close-up share the suffix.
 const OUTFIT = ['', '', '-mar', '-mie', '-jue', '-vie', ''][H.dia()];
-cam.querySelector('img').src = `media/studio${OUTFIT}.jpg`;
+// Out of the office the studio switches to its empty-chair version (photo, loop and close-up), screen off.
+const media = () => (H.estado().open ? OUTFIT : '-away');
+let shownMedia = media();
+cam.querySelector('img').src = `media/studio${shownMedia}.jpg`;
 const focus = scene.querySelector('.sd-focus');
 let focused = null;
 
@@ -59,7 +62,6 @@ for (const id of ORDER) {
   const s = SEATS[id];
   cam.insertAdjacentHTML('beforeend', `<button type="button" class="sd-hot" data-id="${id}" style="${pct(s.hot)};width:${s.hot[2] / 20}%;height:${s.hot[3] / 11.16}%"></button>`);
 }
-cam.insertAdjacentHTML('beforeend', `<div class="sd-dim" style="${pct(SEATS.nico.hot)}"></div>`);
 let painted = '';
 function paint() {
   const key = ORDER.map((id) => state(id) + nowText(id)).join('|');
@@ -75,7 +77,13 @@ function paint() {
     bubbles.insertAdjacentHTML('beforeend',
       `<div class="sd-bubble" style="${pct(s.bub)}"><div class="who"><i style="background:${st === 'away' ? '#5A6280' : s.c}"></i>${NAME[id]}</div><div class="st">${t.state[st]}</div><div>${esc(nowText(id))}</div></div>`);
   }
-  scene.classList.toggle('nico-away', state('nico') === 'away');
+  // Arriving or leaving swaps the photo and the loop.
+  if (media() !== shownMedia) {
+    shownMedia = media();
+    cam.querySelector('img').src = `media/studio${shownMedia}.jpg`;
+    const loop = cam.querySelector('video');
+    if (loop.src) { loop.classList.remove('on'); loop.src = `media/loop${shownMedia}.mp4`; loop.play().catch(() => {}); }
+  }
 }
 scene.querySelector('.sd-hint').textContent = t.hint;
 // A visible notice while ?hora= simulates another moment, so nobody mistakes it for the real time.
@@ -93,7 +101,7 @@ tick(); setInterval(tick, 20000);
 if (!reduce) {
   const loop = cam.querySelector('video');
   new IntersectionObserver(([e]) => {
-    if (e.isIntersecting) { if (!loop.src) loop.src = `media/loop${OUTFIT}.mp4`; loop.play().catch(() => {}); } else loop.pause();
+    if (e.isIntersecting) { if (!loop.src) loop.src = `media/loop${shownMedia}.mp4`; loop.play().catch(() => {}); } else loop.pause();
   }, { rootMargin: '200px 0px' }).observe(scene);
   loop.addEventListener('playing', () => loop.classList.add('on'));
 }
@@ -120,7 +128,7 @@ function open(id) {
   scene.classList.add('zoomed');
   place();
   close.classList.remove('on');
-  if (!reduce && !away) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? OUTFIT : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
+  if (!reduce) { close.src = `media/${CLOSEUP[id]}${id === 'nico' ? (away ? '-away' : OUTFIT) : ''}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
 }
 function zoomOut() {
   close.classList.remove('on');
