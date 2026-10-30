@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
+import type { CityPlace } from './cities';
 
 export interface Brand {
   id: string;
@@ -15,7 +16,7 @@ export interface Brand {
   /** First 11 days (wave F). Absent for brands that were already running. */
   onboarding: Onboarding | null;
   /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
-  city: string | null;
+  city: string | CityPlace | null;
   /** Drive folders the client sees in My files; absent or mode 'all' means every folder. */
   fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
 }
@@ -42,7 +43,7 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   logoUrl: (d.logoUrl as string) ?? null,
   sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
   onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
-  city: (d.city as string) ?? null,
+  city: (d.city as Brand['city']) ?? null,
   fileAccess: (d.fileAccess as Brand['fileAccess']) ?? null,
 });
 

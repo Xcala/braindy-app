@@ -9,7 +9,7 @@ import type { SeatView } from './useStudio';
 import { isSimulated, officeState, outfit, studioNow } from './officeHours';
 import { internalWork } from './internalWork';
 import { light, lit, litCloseup } from './light';
-import { cityById } from '../brands/cities';
+import { cityById, type CityPlace } from '../brands/cities';
 import './studio.css';
 
 const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -30,7 +30,7 @@ function useClock(lang: string, tz = 'America/Bogota') {
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false, city }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | null }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null }) {
   const { t, lang } = useI18n();
   const { brands } = useBrands();
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';

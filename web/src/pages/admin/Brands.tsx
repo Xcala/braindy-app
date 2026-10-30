@@ -10,7 +10,7 @@ import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toaster';
 import { useOpenWork } from '../../team/useWork';
 import { daysFrom } from '../../lib/dates';
-import { CITIES } from '../../brands/cities';
+import { CityInput } from '../../brands/CityInput';
 
 type Health = { open: number; late: number; last: number };
 
@@ -109,7 +109,7 @@ export function AdminBrands() {
 function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
   brand: Brand; depth: number; health?: Health; collapsed: boolean; onCollapse: () => void; onToggle: () => void;
 }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { select } = useBrands();
   const navigate = useNavigate();
   const on = brand.status === 'active';
@@ -134,11 +134,7 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
         {health?.open ? <span className="t-mute">{health.open} {t('brands.open').toLowerCase()}</span> : null}
       </span>
       <span>
-        <select className="input" style={{ height: 34, padding: '0 8px' }} aria-label={`${t('admin.brands.colCity')} ${brand.name}`} value={brand.city ?? ''}
-          onChange={(e) => updateDoc(doc(db, 'brands', brand.id), { city: e.target.value || null })}>
-          <option value="">{t('admin.brands.noCity')}</option>
-          {CITIES.map((c) => <option key={c.id} value={c.id}>{lang === 'es' ? c.es : c.en}</option>)}
-        </select>
+        <CityInput brand={brand} />
       </span>
       <span className="row g12">
         <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />

@@ -30,4 +30,10 @@ export const CITIES: City[] = [
   { id: 'paris', es: 'París', en: 'Paris', tz: 'Europe/Paris' },
 ];
 
-export const cityById = (id?: string | null) => CITIES.find((c) => c.id === id);
+/** A city NickMark typed and picked from the search: stored on the brand as is. */
+export interface CityPlace { name: string; country: string; tz: string }
+const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]+/g, '');
+
+/** The brand's city: an id from the old list, or a searched place. */
+export const cityById = (v?: string | CityPlace | null): City | undefined =>
+  !v ? undefined : typeof v === 'string' ? CITIES.find((c) => c.id === v) : { id: slug(v.name), es: v.name, en: v.name, tz: v.tz };
