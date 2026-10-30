@@ -7,13 +7,13 @@ import { normalizeSearch } from '../lib/text';
 import { Icon } from '../components/Icon';
 import { download, previewKind } from './fileApi';
 import { kindOf, type FileItem, type FileKind } from './fileKinds';
-import { FileGrid, FileList, FolderGrid } from './FileViews';
+import { FileGrid, FileList, FolderGrid, ShareSwitch } from './FileViews';
 import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { folderVisible, UPLOADS } from './folderRules';
-import { FolderAccess } from './FolderAccess';
+import { useFolderShare } from './useFolderShare';
 
 type Folder = { path: string; files: number; bytes: number };
 type Filter = 'all' | FileKind;
@@ -35,7 +35,11 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const brand = useBrands().brands.find((b) => b.id === brandId);
   const forClient = folderVisible(brand ?? { fileAccess: null }, false);
   const visible = isAdmin ? () => true : forClient;
-  const [access, setAccess] = useState(false);
+  // Top-level folders NickMark can share; '' is the loose files at the root (only when there are any).
+  const tops = useMemo(() => [...folders.filter((f) => f.path && !f.path.includes('/')).map((f) => f.path), ...(folders.some((f) => f.path === '' && f.files > 0) ? [''] : [])], [folders]);
+  const share = useFolderShare(brand, tops);
+  const [shareError, setShareError] = useState(false);
+  const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(''); }, [brandId]);
   useEffect(() => { setLimit(PAGE); setQ(''); }, [brandId, path]);
@@ -52,11 +56,11 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
 
   const subfolders = useMemo(() => {
     const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path))
-      .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path) }));
-    if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false });
+      .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path), toggle: isAdmin && !path ? () => toggle(f.path) : undefined }));
+    if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false, toggle: undefined });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folders, path, isAdmin, brand?.fileAccess]);
+  }, [folders, path, isAdmin, brand?.fileAccess, tops]);
 
   const needle = normalizeSearch(q);
   const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)));
@@ -65,12 +69,6 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
   const crumbs = path ? path.split('/') : [];
   return (
-    <>
-    {isAdmin && brand && (access
-      ? <FolderAccess brand={brand} folders={folders} onClose={() => setAccess(false)} />
-      : <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAccess(true)}>
-          <Icon name="folder" size={16} /> {t(brand.fileAccess?.mode === 'selected' ? 'fa.buttonSome' : 'fa.buttonAll', { n: String(brand.fileAccess?.folders.length ?? 0) })}
-        </button>)}
     <section className="card" style={{ padding: 0, overflow: 'hidden' }} aria-labelledby="files-crumbs">
       <div className="flex flex-wrap items-center gap-4 border-b px-4 py-4 sm:px-6" style={{ borderColor: 'var(--line)' }}>
         <nav className="crumbs grow" aria-label="Breadcrumb" id="files-crumbs">
@@ -101,12 +99,23 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
       <div className="col g24 p-4 sm:p-6">
         {subfolders.length > 0 && !needle && (
           <div className="col g12">
-            <p className="label">{t('files.folders')} · {subfolders.length}</p>
+            <div className="row between g8 wrap">
+              <p className="label">{t('files.folders')} · {subfolders.length}</p>
+              {isAdmin && !path && tops.length > 0 && (
+                <span className="t-xs t-mute row g8" role="status">
+                  {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
+                  {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
+                </span>
+              )}
+            </div>
             <FolderGrid folders={subfolders} onOpen={setPath} />
           </div>
         )}
         <div className="col g12">
-          <p className="label">{t('files.files')} · {shown.length}</p>
+          <div className="row between g8 wrap">
+            <p className="label">{t('files.files')} · {shown.length}</p>
+            {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
+          </div>
           {index.loading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
           ) : shown.length === 0 ? (
@@ -125,6 +134,5 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
       </div>
       {preview && <Preview brandId={brandId} file={preview} onClose={() => setPreview(null)} />}
     </section>
-    </>
   );
 }
