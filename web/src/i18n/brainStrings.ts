@@ -34,6 +34,9 @@ export const brainEn = {
   'team.meetingsSub': 'Paste the notes of each session (or a Granola summary). The four Brains read them before every task, like a team that was in the room.',
   'team.meetingTitle': 'Meeting title', 'team.meetingDate': 'Date', 'team.meetingNotes': 'Notes',
   'team.meetingNotesPh': 'What was agreed, what the client liked, what to avoid, next steps…', 'team.meetingAdd': 'Save meeting',
+  'mt.sub': 'The history of every meeting with this client, straight from its Granola folder. The four Brains read it before every task.', 'mt.pull': 'Bring from Granola', 'mt.pulling': 'Reading Granola…',
+  'mt.pulled': '{filed} meetings up to date', 'mt.empty': 'No meetings yet. Put this client’s meetings in their Granola folder and they will appear here.', 'mt.manual': 'Add a meeting by hand',
+  'mt.open': 'Open in Granola', 'mt.people': '{n} people', 'mt.more': 'Show {n} older', 'mt.unmatched': 'Granola folders without a brand: {list}',
 } as const;
 
 export const brainEs: Record<keyof typeof brainEn, string> = {
@@ -71,4 +74,7 @@ export const brainEs: Record<keyof typeof brainEn, string> = {
   'team.meetingsSub': 'Pega las notas de cada sesión (o el resumen de Granola). Los cuatro Brains las leen antes de cada tarea, como un equipo que estuvo en la reunión.',
   'team.meetingTitle': 'Título de la reunión', 'team.meetingDate': 'Fecha', 'team.meetingNotes': 'Notas',
   'team.meetingNotesPh': 'Qué se acordó, qué le gustó al cliente, qué evitar, próximos pasos…', 'team.meetingAdd': 'Guardar reunión',
+  'mt.sub': 'El historial de cada reunión con este cliente, directo de su carpeta de Granola. Los cuatro Brains lo leen antes de cada tarea.', 'mt.pull': 'Traer de Granola', 'mt.pulling': 'Leyendo Granola…',
+  'mt.pulled': '{filed} reuniones al día', 'mt.empty': 'Aún no hay reuniones. Pon las reuniones de este cliente en su carpeta de Granola y aparecen aquí.', 'mt.manual': 'Agregar una reunión a mano',
+  'mt.open': 'Abrir en Granola', 'mt.people': '{n} personas', 'mt.more': 'Ver {n} anteriores', 'mt.unmatched': 'Carpetas de Granola sin marca: {list}',
 };

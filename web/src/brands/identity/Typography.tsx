@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { useI18n } from '../../i18n/I18nProvider';
+import type { StringKey } from '../../i18n/strings';
 
 type Font = { id?: string; name?: string; fontFamily?: string; role?: string; description?: string; type?: string; downloadUrl?: string; url?: string };
 
@@ -14,25 +16,37 @@ function useGoogleFonts(families: string[]) {
   }, [key]);
 }
 
+/** Every font gets a download link: its own file or link, else Google Fonts, Adobe Fonts or a search for it. */
+export function fontLink(f: Font): { href: string; label: StringKey } {
+  const own = f.downloadUrl || f.url;
+  const family = (f.fontFamily ?? f.name ?? '').trim();
+  const type = (f.type ?? '').toLowerCase();
+  if (own) return { href: own, label: type.includes('adobe') && own.includes('adobe') ? 'brand.fontAdobe' : 'brand.fontDownload' };
+  if (type === 'google') return { href: `https://fonts.google.com/specimen/${family.replace(/\s+/g, '+')}`, label: 'brand.fontDownload' };
+  if (type.includes('adobe')) return { href: `https://fonts.adobe.com/fonts/${family.toLowerCase().replace(/\s+/g, '-')}`, label: 'brand.fontAdobe' };
+  return { href: `https://www.google.com/search?q=${encodeURIComponent(`${family} font download`)}`, label: 'brand.fontFind' };
+}
+
 export function Typography({ fonts }: { fonts: Font[] }) {
+  const { t } = useI18n();
   useGoogleFonts([...new Set(fonts.filter((f) => f.type === 'google' && f.fontFamily).map((f) => f.fontFamily!))]);
   if (!fonts.length) return null;
   return (
     <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       {fonts.map((f) => {
-        const link = f.downloadUrl || f.url;
+        const link = fontLink(f);
         return (
-          <div key={f.id ?? f.name} className="card col g20">
+          <div key={f.id ?? f.name ?? f.fontFamily} className="card col g20">
             <div className="row between g8">
               <p className="label">{f.role ?? ''}</p>
-              {f.type && <span className="chip c-type">{f.type === 'google' ? 'Google Fonts' : f.type}</span>}
+              {f.type && <span className="chip c-type">{f.type === 'google' ? 'Google Fonts' : f.type.toLowerCase().includes('adobe') ? 'Adobe Fonts' : f.type}</span>}
             </div>
             <p style={{ fontFamily: f.fontFamily, fontSize: 64, lineHeight: '64px', color: 'var(--ink)' }}>Aa</p>
             <div className="col g4">
               <span className="h3" style={{ fontFamily: f.fontFamily }}>{f.name ?? f.fontFamily}</span>
               {f.description && <p className="t-sm t-mute">{f.description}</p>}
             </div>
-            {link && <a href={link} target="_blank" rel="noreferrer" className="t-sm w7">{f.fontFamily ?? f.name} ↗</a>}
+            <a href={link.href} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm self-start" style={{ textDecoration: 'none' }}>↓ {t(link.label)}</a>
           </div>
         );
       })}

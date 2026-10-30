@@ -12,7 +12,6 @@ import { DeckConcept, deckShots } from '../brands/identity/DeckConcept';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { GroupWork } from '../brands/GroupWork';
 import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
-import { MeetingsCard } from '../brains/TeamNotes';
 import { useAuth } from '../auth/AuthProvider';
 import { useCanApprove } from '../requests/useCanApprove';
 import { ApprovedWork } from '../brands/identity/ApprovedWork';
@@ -157,7 +156,6 @@ export function MyBrand() {
         </section>
       )}
       <LearningsSection brandId={current.id} />
-      {isAdmin && <MeetingsCard brandId={current.id} />}
     </div>
   );
 }
