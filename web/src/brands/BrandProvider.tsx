@@ -13,7 +13,7 @@ export interface Brand {
   logoUrl: string | null;
   /** Old apps this brand was migrated from: brands, orbit, brief, brandbook. */
   sources: string[];
-  /** First 11 days (wave F). Absent for brands that were already running. */
+  /** Onboarding steps 1 to 6 (wave F). Absent for brands that were already running. */
   onboarding: Onboarding | null;
   /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
   city: string | CityPlace | null;

@@ -5,7 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { billingApi, money, useBilling } from '../billing/useBilling';
 import { CONTACT } from '../proposals/public/copy';
 
-/** Day 0 · Payment and access (design 17/20): choose how to pay, invoice details, secure page or transfer. */
+/** Step 1 · Payment and access (design 17/20): choose how to pay, invoice details, secure page or transfer. */
 export function Pay() {
   const { current } = useBrands();
   const { t, lang } = useI18n();

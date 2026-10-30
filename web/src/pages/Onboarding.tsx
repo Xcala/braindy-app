@@ -9,7 +9,7 @@ import { SessionPicker } from '../onboarding/SessionPicker';
 import type { BrainDraft } from '../onboarding/api';
 import { OnboardingLessons } from '../criterio/LessonCards';
 
-/** First 11 days (design 17): one page that follows the brand's onboarding step. */
+/** Onboarding, step by step (design 17): one page that follows the brand's onboarding step. */
 export function Onboarding() {
   const { current } = useBrands();
   const { t } = useI18n();

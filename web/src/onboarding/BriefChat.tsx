@@ -6,7 +6,7 @@ import { QUESTIONS } from './questions';
 
 const AVATAR = '/brand/proposal/b3d-researcher.jpg';
 
-/** Day 0-1 · Brief with the Researcher (design 17): eight questions, answered once, remembered forever. */
+/** Step 2 · Brief with the Researcher (design 17): eight questions, answered once, remembered forever. */
 export function BriefChat({ brandId, brandName }: { brandId: string; brandName: string }) {
   const { t, lang } = useI18n();
   const brief = useBrandDoc(brandId, 'context/brief');

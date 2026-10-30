@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { onboardingApi } from './api';
 
-/** Day 2 · Session with Nicolas (design 17): pick a slot, confirm, add to calendar. */
+/** Step 4 · Session with Nicolas (design 17): pick a slot, confirm, add to calendar. */
 export function SessionPicker({ brandId, brandName, bookedAt }: { brandId: string; brandName: string; bookedAt?: Date | null }) {
   const { t, lang } = useI18n();
   const [slots, setSlots] = useState<string[]>([]);
