@@ -14,17 +14,21 @@ const NAME = { nico: 'NicoMarca', researcher: 'Researcher', marketer: 'Marketer'
 const T = {
   es: {
     hint: 'Toca a cualquiera para acercarte a su puesto', back: 'Ver todo el estudio', nothing: 'Sin trabajo en curso.', queue: 'En su cola', signQueue: 'Esperan tu firma',
-    state: { working: 'Trabajando', withClient: 'Con el cliente', toSign: 'Esperan tu firma', free: 'Libre' },
-    role: { nico: 'Dirige y firma', researcher: 'Investiga', marketer: 'Comunica', creator: 'Crea', builder: 'Construye' },
+    state: { working: 'Trabajando', withClient: 'Con el cliente', toSign: 'Esperan tu firma', free: 'Libre', away: 'Fuera de la oficina' },
+    back7: (when) => `Vuelve ${when} a las 7:00 a. m. (hora Bogotá)`, today: 'hoy', tomorrow: 'mañana', on: (day) => `el ${day}`, onDesk: 'En su mesa',
+    awayNote: 'Sus Brains siguen trabajando. NicoMarca revisa, ajusta y firma cuando vuelve.', holiday: (name) => `Festivo en EE. UU.: ${name}`,
+    role: { nico: 'Dirige, diseña, codifica y firma', researcher: 'Investiga', marketer: 'Comunica', creator: 'Crea', builder: 'Construye' },
   },
   en: {
     hint: 'Tap anyone to zoom into their desk', back: 'See the whole studio', nothing: 'Nothing in progress.', queue: 'In their queue', signQueue: 'Waiting for your signature',
-    state: { working: 'Working', withClient: 'With the client', toSign: 'Waiting for your signature', free: 'Free' },
-    role: { nico: 'Directs and signs', researcher: 'Research', marketer: 'Communicate', creator: 'Create', builder: 'Build' },
+    state: { working: 'Working', withClient: 'With the client', toSign: 'Waiting for your signature', free: 'Free', away: 'Out of the office' },
+    back7: (when) => `Back ${when} at 7:00 a.m. (Bogotá time)`, today: 'today', tomorrow: 'tomorrow', on: (day) => `on ${day}`, onDesk: 'On his desk',
+    awayNote: 'His Brains keep working. NickMark reviews, adjusts and signs when he is back.', holiday: (name) => `US holiday: ${name}`,
+    role: { nico: 'Directs, designs, codes and signs', researcher: 'Research', marketer: 'Communicate', creator: 'Create', builder: 'Build' },
   },
 };
 
-const D = window.ESTUDIO_DATOS;
+const D = window.ESTUDIO_DATOS, H = window.HORARIO;
 const t = T[D.idioma] ?? T.es;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const pct = ([x, y]) => `left:${x / 20}%;top:${y / 11.16}%`;
@@ -36,21 +40,48 @@ const close = scene.querySelector('.sd-closeup');
 const focus = scene.querySelector('.sd-focus');
 let focused = null;
 
-// Hotspots, screen glows and bubbles.
+// The Brains work 24/7; NicoMarca only in office hours (horario.js).
+const state = (id) => (id === 'nico' && !H.estado().open ? 'away' : D.puestos[id].state);
+function backText() {
+  const e = H.estado();
+  const day = new Intl.DateTimeFormat(D.idioma === 'en' ? 'en-US' : 'es-CO', { weekday: 'long', timeZone: 'UTC' }).format(e.back);
+  return t.back7(e.days === 0 ? t.today : e.days === 1 ? t.tomorrow : t.on(day));
+}
+// `now` may be a list: it then rotates every few minutes (NicoMarca does many kinds of work).
+const current = (now) => (Array.isArray(now) ? now[Math.floor(H.now() / 180e3) % now.length] : now);
+const nowText = (id) => (state(id) === 'away' ? backText() : current(D.puestos[id].now) || t.nothing);
+
+// Hotspots once; glows and bubbles are repainted when something changes.
 for (const id of ORDER) {
-  const s = SEATS[id], v = D.puestos[id];
-  cam.insertAdjacentHTML('beforeend',
-    `<button type="button" class="sd-hot" data-id="${id}" aria-label="${NAME[id]}: ${t.state[v.state]}" style="${pct(s.hot)};width:${s.hot[2] / 20}%;height:${s.hot[3] / 11.16}%"></button>` +
-    `<div class="sd-glow" style="${pct(s.screen)};background:radial-gradient(ellipse, ${s.c}55 0%, ${s.c}00 65%);opacity:${v.state === 'free' ? 0.15 : v.state === 'toSign' ? 0.9 : 0.5}"></div>`);
-  scene.querySelector('.sd-bubbles').insertAdjacentHTML('beforeend',
-    `<div class="sd-bubble" style="${pct(s.bub)}"><div class="who"><i style="background:${s.c}"></i>${NAME[id]}</div><div class="st">${t.state[v.state]}</div><div>${esc(v.now || t.nothing)}</div></div>`);
+  const s = SEATS[id];
+  cam.insertAdjacentHTML('beforeend', `<button type="button" class="sd-hot" data-id="${id}" style="${pct(s.hot)};width:${s.hot[2] / 20}%;height:${s.hot[3] / 11.16}%"></button>`);
+}
+cam.insertAdjacentHTML('beforeend', `<div class="sd-dim" style="${pct(SEATS.nico.hot)}"></div>`);
+let painted = '';
+function paint() {
+  const key = ORDER.map((id) => state(id) + nowText(id)).join('|');
+  if (key === painted) return;
+  painted = key;
+  cam.querySelectorAll('.sd-glow').forEach((g) => g.remove());
+  const bubbles = scene.querySelector('.sd-bubbles');
+  bubbles.innerHTML = '';
+  for (const id of ORDER) {
+    const s = SEATS[id], st = state(id);
+    cam.querySelector(`.sd-hot[data-id="${id}"]`).setAttribute('aria-label', `${NAME[id]}: ${t.state[st]}`);
+    cam.insertAdjacentHTML('beforeend', `<div class="sd-glow" style="${pct(s.screen)};background:radial-gradient(ellipse, ${s.c}55 0%, ${s.c}00 65%);opacity:${st === 'away' ? 0 : st === 'free' ? 0.15 : st === 'toSign' ? 0.9 : 0.5}"></div>`);
+    bubbles.insertAdjacentHTML('beforeend',
+      `<div class="sd-bubble" style="${pct(s.bub)}"><div class="who"><i style="background:${st === 'away' ? '#5A6280' : s.c}"></i>${NAME[id]}</div><div class="st">${t.state[st]}</div><div>${esc(nowText(id))}</div></div>`);
+  }
+  scene.classList.toggle('nico-away', state('nico') === 'away');
 }
 scene.querySelector('.sd-hint').textContent = t.hint;
 scene.querySelector('.sd-back').textContent = `← ${t.back}`;
 
-// Live SF and Bogotá times over the wall clock digits.
-const fmt = (tz) => new Intl.DateTimeFormat('es-CO', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
-const tick = () => { document.getElementById('sf').textContent = fmt('America/Los_Angeles'); document.getElementById('bog').textContent = fmt('America/Bogota'); };
+// Live SF and Bogotá time and date over the wall clock digits; also repaints the seats.
+const fmtT = (tz) => new Intl.DateTimeFormat('es-CO', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(H.now());
+const fmtD = (tz) => new Intl.DateTimeFormat(D.idioma === 'en' ? 'en-US' : 'es-CO', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short' }).format(H.now()).replace(/\.| de/g, '').replace(',', '');
+const clock = (el, tz) => { el.innerHTML = `<span>${fmtT(tz)}</span><small>${fmtD(tz)}</small>`; };
+const tick = () => { clock(document.getElementById('sf'), 'America/Los_Angeles'); clock(document.getElementById('bog'), 'America/Bogota'); paint(); };
 tick(); setInterval(tick, 20000);
 
 // The loop video starts only when the studio is on screen.
@@ -74,16 +105,17 @@ const place = () => { if (focused) cam.style.transform = zoomTo(focused, scene.c
 
 function open(id) {
   focused = id;
-  const v = D.puestos[id], isNico = id === 'nico';
+  const v = D.puestos[id], isNico = id === 'nico', st = state(id), away = st === 'away', hol = H.estado().holiday;
   focus.innerHTML =
     `<div class="hd"><i style="background:${SEATS[id].c}"></i><div><h3>${NAME[id]}</h3><span class="lbl">${t.role[id]}</span></div></div>` +
-    (isNico ? '' : `<div class="now"><span class="lbl">${t.state[v.state]}</span><div>${esc(v.now || t.nothing)}</div></div>`) +
-    `<span class="lbl">${isNico ? t.signQueue : t.queue}</span>` +
+    `<div class="now"><span class="lbl">${t.state[st]}</span><div>${esc(nowText(id))}</div></div>` +
+    (away ? (hol ? `<span class="lbl">${esc(t.holiday(hol))}</span>` : '') + `<p class="note">${t.awayNote}</p>` : '') +
+    `<span class="lbl">${isNico ? t.onDesk : t.queue}</span>` +
     (v.queue.length ? v.queue.map((q) => `<div class="row">${esc(q)}</div>`).join('') : `<span style="color:#8F98B2">${t.nothing}</span>`);
   scene.classList.add('zoomed');
   place();
   close.classList.remove('on');
-  if (!reduce) { close.src = `media/${CLOSEUP[id]}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
+  if (!reduce && !away) { close.src = `media/${CLOSEUP[id]}.mp4`; close.play().catch(() => {}); setTimeout(() => focused === id && close.classList.add('on'), 800); }
 }
 function zoomOut() {
   close.classList.remove('on');

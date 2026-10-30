@@ -6,6 +6,7 @@ This folder is only the Braindy studio in San Francisco, split out of the Braind
 - `index.html`: the page.
 - `estudio.css`: the styles (the `.sd-*` part is a copy of `web/src/studio/studio.css` in the app).
 - `estudio.js`: seats, zoom into each seat, close-up videos, live SF and Bogotá clocks. `SEATS` holds where each person sits in a 2000 × 1116 frame (same as `web/src/studio/geometry.ts`).
+- `horario.js`: NicoMarca's office hours (Mon–Fri 7:00–19:00 Bogotá, off on US federal holidays). Outside them his seat dims and he shows "Fuera de la oficina"; the Brains work 24/7. Simulate a moment with `?hora=2026-11-26T21:30` (Bogotá time).
 - `datos.js`: demo content (what each Brain and NicoMarca are doing, their queue, language es/en). Edit this to change texts.
 - `media/`: `studio.jpg` (the photo), `loop.mp4` (10 s scene loop), `cu-*.mp4` (8 s close-up per seat).
 - `server.cjs`: preview with `node server.cjs` → http://localhost:5190 (port 5173 belongs to another project).
