@@ -45,7 +45,7 @@ function useSceneScale(ref: RefObject<HTMLDivElement | null>) {
 }
 
 /** The studio photo with its live layer: loop video, glowing screens, bubbles, wall clock and zoom into each seat. */
-export function Scene({ seats, items, toSignCount, brandView = false, city, brandName, brandLogo, compact = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string; brandLogo?: string | null; compact?: boolean }) {
+export function Scene({ seats, items, toSignCount, brandView = false, city, brandName, compact = false }: { seats: Record<SeatId, SeatView>; items: WorkItem[]; toSignCount: number; brandView?: boolean; city?: string | CityPlace | null; brandName?: string; compact?: boolean }) {
   const { t, lang } = useI18n();
   const brands = useBrandsMaybe()?.brands ?? [];
   const brand = (id?: string) => brands.find((b) => b.id === id)?.name ?? '';
@@ -74,8 +74,8 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
   const idle = (id: SeatId) => (brandView && brandName ? brandWork(id, lang, brandName, studioNow()) : internalWork(id, lang, studioNow()));
   const loopRef = useRef<HTMLVideoElement>(null);
   const [seen, setSeen] = useState(false);
-  // Each screen shows the work its seat is doing (a client only ever sees their own brand), bent into the screen's perspective.
-  const shots = useScreens(seats, (id) => brands.find((b) => b.id === id)?.logoUrl ?? null, brandView, brandLogo);
+  // Each Brain's screen shows the work it is doing as a hologram (a client only ever sees their own brand), bent into the screen's perspective.
+  const shots = useScreens(seats, brandView);
   const k = useSceneScale(sceneRef);
 
   // The 3 MB loop loads only once the scene scrolls into view, and pauses whenever it leaves it.
@@ -122,9 +122,9 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
           {!reduce && seen && <video ref={loopRef} className={loopOn ? 'on' : ''} src={`/studio/loop${media}.mp4`} autoPlay muted loop playsInline aria-hidden="true" onPlaying={() => setLoopOn(true)} />}
           <div className="sd-screens" style={{ transform: `scale(${k})` }} aria-hidden="true">
             {SEAT_ORDER.map((id) => {
-              const s = shots[id];
-              if (!s || (id === 'nico' && away)) return null;
-              return <div key={id} className={`sd-screen ${s.logo ? 'logo' : ''}`} style={{ transform: quadMatrix(SCREEN_QUADS[id]), ['--c' as string]: SEATS[id].c }}><img src={s.src} alt="" /></div>;
+              const src = shots[id];
+              if (!src) return null;
+              return <div key={id} className="sd-screen" style={{ transform: quadMatrix(SCREEN_QUADS[id]), ['--c' as string]: SEATS[id].c }}><img src={src} alt="" /></div>;
             })}
           </div>
           {SEAT_ORDER.map((id) => {

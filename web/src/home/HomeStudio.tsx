@@ -20,7 +20,7 @@ export function HomeStudio({ requests }: { requests: ScopedRequest[] }) {
         <p className="t-sm t-mute">{t('st.homeSub')}</p>
       </div>
       <div className="sd-with-launches">
-        <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} brandLogo={current?.logoUrl} />
+        <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} />
         <Launches ask />
       </div>
     </section>
