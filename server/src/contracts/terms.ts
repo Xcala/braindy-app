@@ -100,5 +100,5 @@ export function fill(terms: Terms, contractor: Partial<Contractor>): string {
 
 /** Puts the client data into the sent text. Same function in web/src/contracts/text.ts (what the signer sees). */
 export function withClient(text: string, client: Partial<ClientData>): string {
-  return text.replace(/{{cliente.(w+)}}/g, (_, k: string) => (client as Record<string, string>)[k]?.trim() || '________');
+  return text.replace(/\{\{cliente\.(\w+)\}\}/g, (_, k: string) => (client as Record<string, string>)[k]?.trim() || '________');
 }

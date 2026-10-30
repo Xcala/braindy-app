@@ -60,7 +60,10 @@ check('draft locked after send', (await call(admin.token, 'POST', C(id), { scope
 
 const sent = (await db.doc(`brands/e2e/contracts/${id}`).get()).data()!;
 const client = { razonSocial: 'Marca E2E S.A.S.', nit: '000-1', direccion: 'Calle prueba', representante: 'Rep Prueba', tipoDoc: 'C.C.', doc: '111', cargo: 'Representante legal' };
-const hash = createHash('sha256').update(withClient(sent.sentText, { ...client, correo: 'rep@e2e.local' })).digest('hex');
+// Same replacement the web page does (web/src/contracts/text.ts), written out here so a server bug cannot hide.
+const seen = String(sent.sentText).replace(/\{\{cliente\.(\w+)\}\}/g, (_, k: string) => ({ ...client, correo: 'rep@e2e.local' } as Record<string, string>)[k] ?? '________');
+check('server fills client data like the page', withClient(sent.sentText, { ...client, correo: 'rep@e2e.local' }) === seen && !seen.includes('{{') && seen.includes('Marca E2E S.A.S.'));
+const hash = createHash('sha256').update(seen).digest('hex');
 const S = `/v1/brands/e2e/contracts/${id}/sign`;
 check('other member cannot sign', (await call(other.token, 'POST', S, { client, signature: sig, consent: true, textHash: hash })).status === 403);
 check('admin cannot sign as client', (await call(admin.token, 'POST', S, { client, signature: sig, consent: true })).status === 403);
@@ -75,6 +78,7 @@ const counter = await call(admin.token, 'POST', C(id, '/countersign'), { signatu
 check('admin countersigns and seals', counter.status === 200, counter);
 const final = (await db.doc(`brands/e2e/contracts/${id}`).get()).data()!;
 check('status signed with pdf', final.status === 'signed' && !!final.pdf?.sha256);
+check('sealed text has the client data and no blanks', String(final.text).includes('Marca E2E S.A.S.') && !String(final.text).includes('{{') && !String(final.text).includes('________'));
 check('ip and browser recorded', final.signatures.client.ip === '203.0.113.9' && final.signatures.client.userAgent === 'e2e-test');
 check('brand moves to kickoff', (await db.doc('brands/e2e').get()).get('onboarding.step') === 'kickoff');
 check('live schedule and checklist created', (await db.doc('brands/e2e/context/schedule').get()).exists && (await db.doc('brands/e2e/context/kickoff').get()).get('items').length > 0);
