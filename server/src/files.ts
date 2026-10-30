@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
-import { brandAccess } from './access.js';
+import { brandAccess, fileFilter } from './access.js';
 import type { AuthEnv } from './auth.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
@@ -24,6 +24,7 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
   const asset = await db.doc(`brands/${brandId}/assets/${assetId}`).get();
   const storagePath = asset.get('storagePath') as string | undefined;
   if (!asset.exists || !storagePath || !storagePath.startsWith(`brands/${brandId}/`)) return c.json({ error: 'not_found' }, 404);
+  if (!access.admin && !(await fileFilter(brandId))(asset)) return c.json({ error: 'not_found' }, 404);
 
   const disposition = c.req.query('inline') === '1' ? 'inline' : 'attachment';
   const filename = String(asset.get('title') ?? 'file').replace(/["\\\r\n]/g, '');
@@ -44,9 +45,10 @@ files.post('/brands/:brandId/assets/urls', async (c) => {
   const list = [...new Set((ids ?? []).filter((x) => typeof x === 'string'))].slice(0, 60);
   const snaps = list.length ? await db.getAll(...list.map((id) => db.doc(`brands/${brandId}/assets/${id}`))) : [];
   const urls: Record<string, string> = {};
+  const visible = access.admin ? () => true : await fileFilter(brandId);
   await Promise.all(snaps.map(async (s) => {
     const path = s.get('storagePath') as string | undefined;
-    if (!s.exists || !path || !path.startsWith(`brands/${brandId}/`)) return;
+    if (!s.exists || !path || !path.startsWith(`brands/${brandId}/`) || !visible(s)) return;
     const [url] = await bucket().file(path).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
     urls[s.id] = url;
   }));

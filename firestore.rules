@@ -73,6 +73,15 @@ service cloud.firestore {
         || (a.size() > 2 && approverAt(a[2])));
     }
 
+    function fileAllowed(brandId, a) {
+      let fa = get(/databases/$(database)/documents/brands/$(brandId)).data.get('fileAccess', {});
+      // Fields read directly (no defaults), so a query on a hidden folder cannot be proven safe and is denied.
+      return fa.get('mode', 'all') != 'selected'
+        || a.source == 'legacy'
+        || a.folder.split('/')[0] == 'Uploads'
+        || a.folder.split('/')[0] in fa.get('folders', []);
+    }
+
     function canReadBrand(brandId) {
       return isAdmin() || isMember(brandId);
     }
@@ -103,8 +112,10 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Drive folders the client may see: brands/{id}.fileAccess = { mode: 'all' | 'selected', folders: [top-level names] }.
+      // The Uploads folder and legacy documents are always visible to the brand; '' stands for files at the root.
       match /assets/{assetId} {
-        allow read: if canReadBrand(brandId);
+        allow read: if isAdmin() || (isMember(brandId) && fileAllowed(brandId, resource.data));
         allow write: if isAdmin();
       }
 

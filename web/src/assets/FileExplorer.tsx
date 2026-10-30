@@ -10,10 +10,13 @@ import { kindOf, type FileItem, type FileKind } from './fileKinds';
 import { FileGrid, FileList, FolderGrid } from './FileViews';
 import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
+import { useAuth } from '../auth/AuthProvider';
+import { useBrands } from '../brands/BrandProvider';
+import { folderVisible, UPLOADS } from './folderRules';
+import { FolderAccess } from './FolderAccess';
 
 type Folder = { path: string; files: number; bytes: number };
 type Filter = 'all' | FileKind;
-const UPLOADS = 'Uploads';
 const PAGE = 48;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
 
@@ -28,23 +31,32 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const [preview, setPreview] = useState<FileItem | null>(null);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
+  const isAdmin = useAuth().profile?.role === 'admin';
+  const brand = useBrands().brands.find((b) => b.id === brandId);
+  const forClient = folderVisible(brand ?? { fileAccess: null }, false);
+  const visible = isAdmin ? () => true : forClient;
+  const [access, setAccess] = useState(false);
 
   useEffect(() => { setPath(''); }, [brandId]);
   useEffect(() => { setLimit(PAGE); setQ(''); }, [brandId, path]);
+  const pathShared = visible(path);
   useEffect(() => {
+    if (!pathShared) { setFiles([]); return; }
     const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
     return onSnapshot(qy, (s) => setFiles(
       s.docs.filter((d) => d.get('status') !== 'uploading')
         .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>) }))
         .sort((a, b) => a.title.localeCompare(b.title)),
     ), () => setFiles([]));
-  }, [brandId, path]);
+  }, [brandId, path, pathShared]);
 
   const subfolders = useMemo(() => {
-    const list = folders.filter((f) => f.path && parentOf(f.path) === path).map((f) => ({ ...f, highlight: false }));
-    if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true });
+    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path))
+      .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path) }));
+    if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false });
     return list;
-  }, [folders, path]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [folders, path, isAdmin, brand?.fileAccess]);
 
   const needle = normalizeSearch(q);
   const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)));
@@ -52,8 +64,13 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
   const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
   const crumbs = path ? path.split('/') : [];
-
   return (
+    <>
+    {isAdmin && brand && (access
+      ? <FolderAccess brand={brand} folders={folders} onClose={() => setAccess(false)} />
+      : <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAccess(true)}>
+          <Icon name="folder" size={16} /> {t(brand.fileAccess?.mode === 'selected' ? 'fa.buttonSome' : 'fa.buttonAll', { n: String(brand.fileAccess?.folders.length ?? 0) })}
+        </button>)}
     <section className="card" style={{ padding: 0, overflow: 'hidden' }} aria-labelledby="files-crumbs">
       <div className="flex flex-wrap items-center gap-4 border-b px-4 py-4 sm:px-6" style={{ borderColor: 'var(--line)' }}>
         <nav className="crumbs grow" aria-label="Breadcrumb" id="files-crumbs">
@@ -108,5 +125,6 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
       </div>
       {preview && <Preview brandId={brandId} file={preview} onClose={() => setPreview(null)} />}
     </section>
+    </>
   );
 }

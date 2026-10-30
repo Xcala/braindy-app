@@ -11,6 +11,7 @@ import { normalizeSearch } from '../lib/text';
 import { useCopy } from '../brands/identity/useCopy';
 import { Icon } from './Icon';
 import type { StringKey } from '../i18n/strings';
+import { folderVisible } from '../assets/folderRules';
 
 type Item = { id: string; group: StringKey; label: string; hint?: string; run: () => void; brand?: { name: string; logoUrl: string | null }; swatch?: string; path?: string };
 
@@ -66,7 +67,7 @@ function Palette({ onClose }: { onClose: () => void }) {
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));
     const reqItems: Item[] = requests.map((r) => ({ id: `r-${r.id}`, group: 'search.requests' as StringKey, label: r.title, hint: `${r.brandId !== current?.id ? `${brands.find((b) => b.id === r.brandId)?.name ?? ''} · ` : ''}${t(`req.status.${r.status}`)}`, run: () => { if (r.brandId !== current?.id) select(r.brandId); go(`/requests/${r.id}`)(); } }));
     const propItems: Item[] = proposals.map((p) => ({ id: `p-${p.id}`, group: 'search.proposals' as StringKey, label: `${p.prospect?.company ?? ''} ${p.title}`.trim(), hint: t(`proposals.status.${p.status}`), run: go(`/admin/proposals/${p.id}`, `p-${p.id}`, p.title) }));
-    const folderItems: Item[] = ((index.data?.folders as Array<{ path: string }>) ?? []).filter((f) => f.path)
+    const folderItems: Item[] = ((index.data?.folders as Array<{ path: string }>) ?? []).filter((f) => f.path && (isAdmin || !current || folderVisible(current, false)(f.path)))
       .map((f) => ({ id: `f-${f.path}`, group: 'search.folders' as StringKey, label: f.path.split('/').pop()!, hint: f.path, run: go('/assets') }));
     const idn = (identity.data ?? {}) as { colors?: Array<{ hex?: string; name?: string }>; typography?: Array<{ fontFamily?: string; name?: string }> };
     const valueItems: Item[] = [

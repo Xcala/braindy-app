@@ -54,19 +54,19 @@ export function FileList({ files, onOpen, onDownload }: { files: FileItem[]; onO
   );
 }
 
-export function FolderGrid({ folders, onOpen }: { folders: Array<{ path: string; files: number; bytes: number; highlight?: boolean }>; onOpen: (p: string) => void }) {
+export function FolderGrid({ folders, onOpen }: { folders: Array<{ path: string; files: number; bytes: number; highlight?: boolean; hidden?: boolean }>; onOpen: (p: string) => void }) {
   const { t } = useI18n();
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {folders.map((f) => (
         <button key={f.path} type="button" className="folder text-left" onClick={() => onOpen(f.path)}
-          style={{ cursor: 'pointer', ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}) }}>
+          style={{ cursor: 'pointer', ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { opacity: 0.55, borderStyle: 'dashed' } : {}) }}>
           <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
             <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
           </span>
           <span className="col grow" style={{ minWidth: 0 }}>
             <span className="w7 truncate">{f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
-            <span className="t-sm t-mute">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}</span>
+            <span className="t-sm t-mute">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden ? ` · ${t('fa.hiddenTag')}` : ''}</span>
           </span>
         </button>
       ))}

@@ -16,6 +16,8 @@ export interface Brand {
   onboarding: Onboarding | null;
   /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
   city: string | null;
+  /** Drive folders the client sees in My files; absent or mode 'all' means every folder. */
+  fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
 }
 
 export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
@@ -41,6 +43,7 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
   onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
   city: (d.city as string) ?? null,
+  fileAccess: (d.fileAccess as Brand['fileAccess']) ?? null,
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
