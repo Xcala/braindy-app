@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { Gantt } from '../contracts/Gantt';
@@ -35,7 +36,7 @@ export function KickoffStep({ brand }: { brand: Brand }) {
       )}
       {schedule && (
         <div className="card col g12" style={{ padding: 22 }}>
-          <h2 className="h3">{t('ctr.schedule')}</h2>
+          <div className="row between g8 wrap"><h2 className="h3">{t('ctr.schedule')}</h2><Link to="/plan" className="btn btn-secondary btn-sm">{t('plan.seeOnboarding')}</Link></div>
           <Gantt schedule={schedule} />
         </div>
       )}

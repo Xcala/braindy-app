@@ -1,44 +1,122 @@
+import { Fragment, type CSSProperties } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import type { RowStatus, Schedule } from './types';
+import type { StringKey } from '../i18n/strings';
+import type { RowStatus, Schedule, ScheduleRow, Tone } from './types';
 import { weekDate } from './text';
 
-const COLOR: Record<RowStatus, string> = { pending: '#9FB1F5', doing: '#2F4DE0', done: '#0E7A4E', blocked: '#D23B3B' };
-const LABEL_W = 230, COL_W = 38;
+/** Bar colors by kind of work: the Brains' palette, so the schedule reads like the rest of the app. */
+export const TONE_COLOR: Record<Tone, string> = {
+  strategy: '#F5B301', brand: '#06B6D4', content: '#8B5CF6', web: '#2A7FFF', agents: '#2F4DE0', ads: '#E0428A', knowledge: '#10B981',
+};
+const BY_GROUP: Tone[] = ['brand', 'agents', 'strategy', 'web', 'content', 'knowledge', 'ads'];
+const MILESTONE = 'linear-gradient(90deg,#F26B1D,#F7943C)';
+const TODAY = '#E0428A';
+// The activity column stays put while the weeks scroll; on phones it shrinks so the bars keep room.
+const LABEL_W = 'min(240px, 40vw)';
+const COL_MIN = 44;
+const cell: CSSProperties = { borderBottom: '1px solid var(--line)', padding: '8px 10px' };
 
-/** The schedule as a Gantt by week: groups, bars by status, diamonds for contract deliveries, today's week. */
-export function Gantt({ schedule }: { schedule: Schedule }) {
+/** Week (0-based) that contains today, or -1 outside the schedule. */
+export const todayWeek = (s: Schedule) => {
+  const w = Math.floor((Date.now() - Date.parse(`${s.start}T00:00:00Z`)) / (7 * 864e5));
+  return w >= 0 && w < s.weeks ? w : -1;
+};
+
+/** Contract deliveries done vs total. */
+export const deliveries = (s: Schedule) => {
+  const ms = s.groups.flatMap((g) => g.rows.filter((r) => r.milestone));
+  return { done: ms.filter((r) => r.status === 'done').length, total: ms.length };
+};
+
+/** The schedule by week (Anexo 2 of the contract, then the live one): a band of months, one column per week, a bar per
+ *  activity colored by kind of work, contract deliveries in orange with ⚡ and a check once delivered, and today's week.
+ *  With onStatus (admin) each delivery can be ticked as delivered. */
+export function Gantt({ schedule: s, onStatus }: { schedule: Schedule; onStatus?: (group: number, row: number, status: RowStatus) => void }) {
   const { t, lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
-  const day = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' });
-  const today = Math.floor((Date.now() - Date.parse(`${schedule.start}T00:00:00Z`)) / (7 * 864e5));
-  const cols = `${LABEL_W}px repeat(${schedule.weeks}, ${COL_W}px)`;
-  const week = (w: number) => ({ gridColumn: `${w + 2} / span 1` });
+  const n = s.weeks;
+  const today = todayWeek(s);
+  const toneOf = (r: ScheduleRow, gi: number) => r.tone ?? BY_GROUP[gi % BY_GROUP.length];
+  const tones = [...new Set(s.groups.flatMap((g, gi) => g.rows.filter((r) => !r.milestone).map((r) => toneOf(r, gi))))];
+  const months: Array<{ label: string; span: number }> = [];
+  for (let w = 0; w < n; w++) {
+    const label = weekDate(s.start, w).toLocaleDateString(locale, { month: 'short', year: '2-digit', timeZone: 'UTC' });
+    if (months.at(-1)?.label === label) months.at(-1)!.span++; else months.push({ label, span: 1 });
+  }
+  const grid: CSSProperties = { display: 'grid', gridTemplateColumns: `${LABEL_W} repeat(${n}, minmax(${COL_MIN}px, 1fr))`, minWidth: `calc(${LABEL_W} + ${n * COL_MIN}px)` };
+  const sticky: CSSProperties = { position: 'sticky', left: 0, zIndex: 2, background: 'var(--white)', borderRight: '1px solid var(--line)' };
+  const head: CSSProperties = { ...cell, background: 'var(--niebla)', textAlign: 'center', padding: '6px 2px' };
+  const wd = t(`ctr.wd.${s.meeting.weekday}` as StringKey);
 
   return (
-    <div style={{ overflowX: 'auto' }} role="region" aria-label={t('ctr.gantt')} tabIndex={0}>
-      <div style={{ display: 'grid', gridTemplateColumns: cols, rowGap: 4, minWidth: LABEL_W + schedule.weeks * COL_W, position: 'relative' }}>
-        <span />
-        {Array.from({ length: schedule.weeks }, (_, w) => (
-          <span key={w} className="t-xs" style={{ ...week(w), textAlign: 'center', color: w === today ? '#2F4DE0' : 'var(--mute, #6B7385)', fontWeight: w === today ? 800 : 600, lineHeight: 1.2 }}>
-            {t('ctr.weekShort', { n: w + 1 })}<br /><span style={{ fontWeight: 400, fontSize: 10 }}>{day(weekDate(schedule.start, w))}</span>
-          </span>
-        ))}
-        {schedule.groups.map((g) => [
-          <span key={`${g.id}-t`} className="t-xs w9" style={{ gridColumn: '1 / -1', color: '#2F4DE0', textTransform: 'uppercase', letterSpacing: '.04em', marginTop: 10 }}>{g.title}</span>,
-          ...g.rows.flatMap((r) => [
-            <span key={`${r.id}-l`} className={`t-sm truncate ${r.milestone ? 'w7' : ''}`} title={r.note || r.title} style={{ gridColumn: 1, paddingRight: 8 }}>{r.title}</span>,
-            r.milestone
-              ? <span key={`${r.id}-b`} aria-label={`${r.title}: ${t('ctr.weekShort', { n: r.from + 1 })}`} style={{ ...week(r.from), justifySelf: 'center', alignSelf: 'center', width: 12, height: 12, transform: 'rotate(45deg)', background: r.status === 'done' ? COLOR.done : '#F07319', borderRadius: 2 }} />
-              : <span key={`${r.id}-b`} aria-label={`${r.title}: ${t(`ctr.st.${r.status}`)}`} style={{ gridColumn: `${r.from + 2} / ${r.to + 3}`, alignSelf: 'center', height: 12, borderRadius: 6, background: COLOR[r.status], margin: '0 2px' }} />,
-          ]),
-        ])}
-        {today >= 0 && today < schedule.weeks && (
-          <span aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: LABEL_W + today * COL_W + COL_W / 2, width: 2, background: 'rgba(47,77,224,.25)' }} />
-        )}
+    <div className="col g12">
+      <div className="row g16 t-sm" style={{ flexWrap: 'wrap' }} aria-label={t('plan.legend')}>
+        {tones.map((k) => <span key={k} className="row g8"><i style={{ width: 22, height: 10, borderRadius: 4, background: TONE_COLOR[k] }} />{t(`plan.tone.${k}`)}</span>)}
+        <span className="row g8"><i style={{ width: 22, height: 10, borderRadius: 4, background: MILESTONE }} />{t('ctr.milestone')}</span>
+        {today >= 0 && <span className="row g8"><i style={{ width: 2, height: 14, background: TODAY }} />{t('plan.today')}</span>}
       </div>
-      <div className="row g16 wrap t-xs t-mute" style={{ marginTop: 12 }}>
-        {(['pending', 'doing', 'done', 'blocked'] as const).map((s) => <span key={s} className="row g4"><span style={{ width: 14, height: 8, borderRadius: 4, background: COLOR[s] }} />{t(`ctr.st.${s}`)}</span>)}
-        <span className="row g4"><span style={{ width: 9, height: 9, transform: 'rotate(45deg)', background: '#F07319' }} />{t('ctr.milestone')}</span>
+      <div className="card" style={{ padding: 0, overflowX: 'auto' }} role="region" aria-label={t('ctr.gantt')} tabIndex={0}>
+        <div role="table" aria-label={t('ctr.gantt')} style={grid}>
+          <div role="row" style={{ display: 'contents' }}>
+            <div role="columnheader" className="label" style={{ ...cell, ...sticky, background: 'var(--niebla)', gridRow: 'span 2', display: 'flex', alignItems: 'flex-end' }}>{t('plan.activity')}</div>
+            {months.map((m, i) => <div key={i} role="columnheader" className="label" style={{ ...head, gridColumn: `span ${m.span}`, color: 'var(--azul)', borderLeft: i ? '1px solid var(--line)' : undefined }}>{m.label}</div>)}
+          </div>
+          <div role="row" style={{ display: 'contents' }}>
+            {Array.from({ length: n }, (_, w) => (
+              <div key={w} role="columnheader" style={{ ...head, background: w === today ? '#FDEFF5' : 'var(--niebla)' }}>
+                <div className="w9" style={{ fontSize: 12, color: w === today ? '#C2185B' : 'var(--ink)' }}>{t('ctr.weekShort', { n: w + 1 })}</div>
+                <div className="t-mute" style={{ fontSize: 10 }}>{weekDate(s.start, w).toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' })}</div>
+              </div>
+            ))}
+          </div>
+          <div role="row" style={{ display: 'contents' }}>
+            <div role="rowheader" style={{ ...cell, ...sticky }}><div className="w7 t-sm">{t('plan.meeting', { minutes: s.meeting.minutes })}</div><div className="t-mute" style={{ fontSize: 12 }}>{wd} · {s.meeting.time}</div></div>
+            {Array.from({ length: n }, (_, w) => <div key={w} role="cell" style={{ ...cell, padding: '8px 3px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><i aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: w < today ? '#9DB0FF' : '#C9D3FF', border: w === today ? `2px solid ${TODAY}` : undefined }} /></div>)}
+          </div>
+          {s.groups.map((g, gi) => (
+            <Fragment key={g.id}>
+              <div role="row" style={{ display: 'contents' }}>
+                <div role="rowheader" className="label" style={{ ...cell, ...sticky, background: '#F8F9FC', color: 'var(--azul)' }}>{g.title}</div>
+                <div style={{ ...cell, gridColumn: `span ${n}`, background: '#F8F9FC' }} />
+              </div>
+              {g.rows.map((r, ri) => <Bar key={r.id} r={r} n={n} today={today} fill={r.milestone ? MILESTONE : TONE_COLOR[toneOf(r, gi)]} sticky={sticky}
+                onDone={onStatus && r.milestone ? (d) => onStatus(gi, ri, d ? 'done' : 'pending') : undefined} />)}
+            </Fragment>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Bar({ r, n, today, fill, sticky, onDone }: { r: ScheduleRow; n: number; today: number; fill: string; sticky: CSSProperties; onDone?: (done: boolean) => void }) {
+  const { t } = useI18n();
+  const done = r.status === 'done';
+  const late = r.milestone && !done && today > r.to;
+  const text = r.milestone ? `${done ? '✓ ' : ''}${r.label ?? ''}` : r.label ?? (done ? '✓' : '');
+  const status = r.status === 'blocked' ? { color: '#B42318', text: t('ctr.st.blocked') } : done ? { color: '#0E8A5F', text: t('ctr.delivered') } : late ? { color: '#B45309', text: t('plan.inReview') } : null;
+  return (
+    <div role="row" style={{ display: 'contents' }}>
+      <div role="rowheader" style={{ ...cell, ...sticky }}>
+        <div className="row g8" style={{ alignItems: 'flex-start' }}>
+          {r.milestone && <span aria-hidden="true" style={{ color: '#F26B1D' }}>⚡</span>}
+          <div className="col" style={{ minWidth: 0 }}>
+            <span className={`t-sm ${r.milestone ? 'w9' : 'w7'}`}>{r.title}</span>
+            {r.note && <span className="t-mute" style={{ fontSize: 12, lineHeight: '16px' }}>{r.note}</span>}
+            {onDone ? (
+              <label className="row g4" style={{ fontSize: 12, marginTop: 4, cursor: 'pointer' }}><input type="checkbox" checked={done} onChange={(e) => onDone(e.target.checked)} />{t('ctr.delivered')}</label>
+            ) : status && <span className="w7" style={{ fontSize: 12, marginTop: 2, color: status.color }}>{status.text}</span>}
+          </div>
+        </div>
+      </div>
+      <div role="cell" style={{ ...cell, gridColumn: `span ${n}`, display: 'grid', gridTemplateColumns: `repeat(${n}, 1fr)`, alignItems: 'center', padding: '8px 0', position: 'relative' }}>
+        {today >= 0 && <i aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: `${((today + 0.5) / n) * 100}%`, width: 2, background: TODAY, opacity: 0.5 }} />}
+        <div title={`${r.title} · ${t(`ctr.st.${r.status}`)}`} style={{
+          gridColumn: `${r.from + 1} / ${r.to + 2}`, height: 24, margin: '0 3px', borderRadius: 6, background: fill,
+          opacity: r.status === 'pending' && !r.milestone ? 0.75 : 1, outline: r.status === 'blocked' ? '2px solid #B42318' : undefined,
+          color: '#fff', fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: r.milestone ? '0 4px 14px rgba(242,107,29,.35)' : undefined, whiteSpace: 'nowrap', overflow: 'hidden',
+        }}>{text}</div>
       </div>
     </div>
   );

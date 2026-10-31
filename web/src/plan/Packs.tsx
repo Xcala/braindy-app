@@ -1,6 +1,6 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { money } from '../billing/useBilling';
-import type { Contract, PackStatus } from './types';
+import type { BrandPlan, PackStatus } from './types';
 
 const STATUS_STYLE: Record<PackStatus, { color: string; background: string }> = {
   pending: { color: '#5C6375', background: '#F4F6FB' },
@@ -11,7 +11,7 @@ const CHECK = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke
 const CROSS = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#9AA1B2" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{ flex: 'none', marginTop: 3 }}><path d="M7 7l10 10M17 7 7 17" /></svg>;
 
 /** Block 1 · The plans or packs the client bought, with what each includes, plus total, payment terms and exclusions. */
-export function Packs({ c, onStatus }: { c: Contract; onStatus?: (i: number, s: PackStatus) => void }) {
+export function Packs({ c, onStatus }: { c: BrandPlan; onStatus?: (i: number, s: PackStatus) => void }) {
   const { t, lang } = useI18n();
   if (!c.packs.length) return null;
   const cols = c.packs.length === 1 ? '' : c.packs.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 xl:grid-cols-3';

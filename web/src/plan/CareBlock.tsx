@@ -1,12 +1,12 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { money } from '../billing/useBilling';
-import type { Contract } from './types';
+import type { BrandPlan } from './types';
 
 const ACCENTS = ['#8B5CF6', '#2A7FFF', '#E0428A', '#F5B301', '#06B6D4', '#10B981'];
 const HOSTING_NAME = { esencial: 'Esencial', pro: 'Pro', ultra: 'Ultra' } as const;
 
 /** Block 3 · The website's hosting and the maintenance that follows the project: what enters every month, the numbers, the fee. */
-export function CareBlock({ c }: { c: Contract }) {
+export function CareBlock({ c }: { c: BrandPlan }) {
   const { t, lang } = useI18n();
   const care = c.care;
   if (!care) return null;

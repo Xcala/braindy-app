@@ -1,9 +1,10 @@
 import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
 import { Gantt } from '../Gantt';
-import type { RowStatus, Schedule, ScheduleGroup, ScheduleRow } from '../types';
+import type { RowStatus, Schedule, ScheduleGroup, ScheduleRow, Tone } from '../types';
 
 const STATUSES: RowStatus[] = ['pending', 'doing', 'done', 'blocked'];
+const TONES: Tone[] = ['strategy', 'brand', 'web', 'content', 'agents', 'ads', 'knowledge'];
 const uid = () => Math.random().toString(36).slice(2, 8);
 
 /** Edit the schedule: start, weeks, weekly meeting, groups (stages) and rows (activities or deliveries). */
@@ -49,6 +50,13 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
               <select className="input" style={{ width: 130 }} value={r.status} aria-label={t('ctr.g.status')} onChange={(e) => setRow(gi, ri, { status: e.target.value as RowStatus })}>
                 {STATUSES.map((s) => <option key={s} value={s}>{t(`ctr.st.${s}`)}</option>)}
               </select>
+              {!r.milestone && (
+                <select className="input" style={{ width: 170 }} value={r.tone ?? ''} aria-label={t('plan.toneLabel')} onChange={(e) => setRow(gi, ri, { tone: (e.target.value || undefined) as Tone | undefined })}>
+                  <option value="">{t('plan.toneAuto')}</option>
+                  {TONES.map((k) => <option key={k} value={k}>{t(`plan.tone.${k}`)}</option>)}
+                </select>
+              )}
+              <input className="input" style={{ width: 120 }} value={r.label ?? ''} maxLength={30} placeholder={t('plan.barLabel')} aria-label={t('plan.barLabel')} onChange={(e) => setRow(gi, ri, { label: e.target.value || undefined })} />
               <button className="btn btn-ghost btn-sm" aria-label={t('ctr.g.removeRow')} onClick={() => setGroup(gi, { ...g, rows: g.rows.filter((_, i) => i !== ri) })}>×</button>
             </div>
           ))}

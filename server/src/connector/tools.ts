@@ -9,7 +9,7 @@ import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand,
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
 import { setIdentity } from './identity.js';
-import { ContractSchema, setContract } from '../contract.js';
+import { PlanSchema, WeekSchedule, setPlan, setSchedule } from '../brandPlan.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -54,18 +54,21 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
     return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\nVer: ${APP}/apps`;
   }));
 
-  server.registerTool('braindy_contract', {
+  server.registerTool('braindy_plan', {
     title: 'Cargar el plan contratado en Mi plan',
-    description: 'Sets the brand\'s "Mi plan" page in Braindy App: what the client contracted, read from the accepted proposal. Three blocks: '
-      + '(1) packs: the plans or packs bought, each with price, what it includes and excludes (only the ones the client bought, not the alternatives); '
-      + '(2) schedule: the work plan as a Gantt, periods are the columns (quincenas, weeks or months) and each row a bar from period index to period index, '
-      + 'milestone = contract deliverable; (3) care: website hosting and the maintenance plan that follows. Replaces the whole plan, so send all of it. '
-      + 'Amounts are numbers in full units (9500000, not "9.5M"). Never put internal notes or other clients\' names. '
+    description: 'Sets the brand\'s "Mi plan" page in Braindy App from the accepted proposal: '
+      + '(1) packs: only the plans or packs the client bought (not the alternatives), each with price and what it includes and excludes, plus total and payment terms; '
+      + '(2) care: website hosting and the maintenance plan that follows; '
+      + '(3) schedule (optional): the work plan BY WEEK (week 0 = the Monday in start), groups by stage or pack, rows from week to week, milestone = contract delivery. '
+      + 'The schedule goes into the draft contract (its Anexo 2) or, once signed, into the live schedule; create the contract in Onboarding first. '
+      + 'Plan replaces the previous one, so send all of it. Amounts are numbers in full units (9500000, not "9.5M"). Never put internal notes or other clients\' names. '
       + 'Use when Nicolas says "carga el plan en Braindy App", "sube la propuesta a Mi plan", "pon lo que contrató".',
-    inputSchema: { brandId: z.string(), plan: ContractSchema },
-  }, run(async ({ brandId, plan }) => {
+    inputSchema: { brandId: z.string(), plan: PlanSchema, schedule: WeekSchedule.optional() },
+  }, run(async ({ brandId, plan, schedule }) => {
     const name = await requireBrand(brandId);
-    return `${name}: Mi plan actualizado (${await setContract(brandId, plan, ctx.uid)}).\nVer: ${APP}/plan`;
+    const parts = [await setPlan(brandId, plan, ctx.uid)];
+    if (schedule) parts.push(await setSchedule(brandId, schedule));
+    return `${name}: Mi plan actualizado (${parts.join('; ')}).\nVer: ${APP}/plan`;
   }));
 
   server.registerTool('braindy_site_changes_sync', {

@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { contractApi } from './useContract';
+import { planApi } from './usePlan';
 import { EXAMPLE } from './example';
-import type { Contract } from './types';
+import type { BrandPlan } from './types';
 
-/** Admin only · Load or replace the brand's plan as JSON (same shape as the connector tool braindy_contract). */
-export function AdminContract({ brandId, contract }: { brandId: string; contract: Contract | null }) {
+/** Admin only · Load or replace what the brand contracted as JSON (same shape as the connector tool braindy_plan).
+ *  The schedule is edited in the contract panel (Onboarding), where it is Anexo 2. */
+export function AdminPlan({ brandId, plan }: { brandId: string; plan: BrandPlan | null }) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(!contract);
-  const [text, setText] = useState(() => JSON.stringify(contract ?? EXAMPLE, null, 2));
+  const [open, setOpen] = useState(!plan);
+  const [text, setText] = useState(() => JSON.stringify(plan ?? EXAMPLE, null, 2));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function save() {
     setBusy(true); setMsg(null);
     try {
-      const r = await contractApi.set(brandId, JSON.parse(text));
+      const r = await planApi.set(brandId, JSON.parse(text));
       setMsg({ ok: true, text: `${t('plan.a.saved')} ${r.summary}.` });
     } catch (e) {
       const m = String((e as Error).message ?? e);
@@ -24,7 +25,7 @@ export function AdminContract({ brandId, contract }: { brandId: string; contract
   }
   async function remove() {
     if (!window.confirm(t('plan.a.removeConfirm'))) return;
-    await contractApi.remove(brandId); setText(JSON.stringify(EXAMPLE, null, 2));
+    await planApi.remove(brandId); setText(JSON.stringify(EXAMPLE, null, 2));
   }
 
   return (
@@ -42,7 +43,7 @@ export function AdminContract({ brandId, contract }: { brandId: string; contract
           <div className="row g8" style={{ flexWrap: 'wrap' }}>
             <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy ? `${t('common.loading')}…` : t('plan.a.save')}</button>
             <button className="btn btn-secondary btn-sm" onClick={() => setText(JSON.stringify(EXAMPLE, null, 2))}>{t('plan.a.example')}</button>
-            {contract && <button className="btn btn-ghost btn-sm" onClick={remove}>{t('plan.a.remove')}</button>}
+            {plan && <button className="btn btn-ghost btn-sm" onClick={remove}>{t('plan.a.remove')}</button>}
           </div>
         </>
       )}

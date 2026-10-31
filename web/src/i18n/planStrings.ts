@@ -18,7 +18,16 @@ export const planEn = {
   'plan.payments': 'Payments, invoices and payment method are in',
   'plan.a.title': 'Load or edit this plan', 'plan.a.edit': 'Edit', 'plan.a.hide': 'Close', 'plan.a.save': 'Save plan', 'plan.a.example': 'Load the example',
   'plan.a.remove': 'Delete plan', 'plan.a.removeConfirm': 'Delete this brand’s plan? The client stops seeing it.', 'plan.a.saved': 'Saved:', 'plan.a.badJson': 'The JSON is not valid:',
-  'plan.a.help': 'Same format as the connector: from any Claude say “carga el plan de esta propuesta en Braindy App” and it fills this in. Only what the client bought, no alternatives or internal notes. Periods count from 0.',
+  'plan.a.help': 'Same format as the connector: from any Claude say “carga el plan de esta propuesta en Braindy App” and it fills this in. Only what the client bought, no alternatives or internal notes. The weekly schedule lives in the contract (Anexo 2): edit it in the contract panel.',
+  'plan.meeting': 'Weekly meeting · {minutes} min', 'plan.toneLabel': 'Bar color', 'plan.toneAuto': 'Color by group', 'plan.barLabel': 'Text on the bar (optional)',
+  'plan.weeksNote': '{weeks} weeks from {start}. Each orange mark is a contract deliverable.', 'plan.bKickoff': 'To get started',
+  'plan.c.label': 'Your contract', 'plan.c.panel': 'Open contract panel', 'plan.c.prep': 'In preparation',
+  'plan.c.prepBody': 'Nicolas is preparing your contract. When it is ready you sign it right here.',
+  'plan.c.prepAdmin': 'No contract sent yet. Create, edit and send it from the contract panel; its schedule (Anexo 2) is the one shown below.',
+  'plan.c.toSign': 'Ready to sign', 'plan.c.toSignBody': 'Read it and sign it below. Once Nicolas countersigns, the signed PDF stays here.',
+  'plan.c.waitingSigner': 'Waiting for {name} to sign.', 'plan.c.clientSigned': 'Signed by you',
+  'plan.c.countersignAdmin': 'The client signed. Countersign it in the contract panel to seal it.', 'plan.c.signed': 'Contract signed',
+  'plan.seeOnboarding': 'See My plan',
 } as const;
 
 export const planEs: Record<keyof typeof planEn, string> = {
@@ -40,5 +49,14 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.payments': 'Los pagos, facturas y medio de pago están en',
   'plan.a.title': 'Cargar o editar este plan', 'plan.a.edit': 'Editar', 'plan.a.hide': 'Cerrar', 'plan.a.save': 'Guardar plan', 'plan.a.example': 'Cargar el ejemplo',
   'plan.a.remove': 'Borrar plan', 'plan.a.removeConfirm': '¿Borrar el plan de esta marca? El cliente deja de verlo.', 'plan.a.saved': 'Guardado:', 'plan.a.badJson': 'El JSON no es válido:',
-  'plan.a.help': 'Mismo formato que el conector: desde cualquier Claude di «carga el plan de esta propuesta en Braindy App» y lo llena. Solo lo que el cliente compró, sin alternativas ni notas internas. Los períodos cuentan desde 0.',
+  'plan.a.help': 'Mismo formato que el conector: desde cualquier Claude di «carga el plan de esta propuesta en Braindy App» y lo llena. Solo lo que el cliente compró, sin alternativas ni notas internas. El cronograma semanal vive en el contrato (Anexo 2): se edita en el panel del contrato.',
+  'plan.meeting': 'Reunión semanal · {minutes} min', 'plan.toneLabel': 'Color de la barra', 'plan.toneAuto': 'Color por grupo', 'plan.barLabel': 'Texto en la barra (opcional)',
+  'plan.weeksNote': '{weeks} semanas desde el {start}. Cada marca naranja es un entregable del contrato.', 'plan.bKickoff': 'Para arrancar',
+  'plan.c.label': 'Tu contrato', 'plan.c.panel': 'Abrir panel del contrato', 'plan.c.prep': 'En preparación',
+  'plan.c.prepBody': 'Nicolas está preparando tu contrato. Cuando esté listo lo firmas aquí mismo.',
+  'plan.c.prepAdmin': 'Aún no hay contrato enviado. Créalo, edítalo y envíalo desde el panel del contrato; su cronograma (Anexo 2) es el que se ve abajo.',
+  'plan.c.toSign': 'Listo para firmar', 'plan.c.toSignBody': 'Léelo y fírmalo abajo. Cuando Nicolas lo contrafirme, el PDF firmado queda aquí.',
+  'plan.c.waitingSigner': 'Esperando la firma de {name}.', 'plan.c.clientSigned': 'Firmado por ti',
+  'plan.c.countersignAdmin': 'El cliente firmó. Contrafírmalo en el panel del contrato para sellarlo.', 'plan.c.signed': 'Contrato firmado',
+  'plan.seeOnboarding': 'Ver Mi plan',
 };
