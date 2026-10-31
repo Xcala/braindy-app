@@ -4,69 +4,41 @@ import { brainName } from '../components/BrainStack';
 import { useVersions } from '../requests/useRequests';
 import { useFileUrl, isImage } from '../requests/useFileUrl';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
-import type { BrainId } from '../requests/taxonomy';
 import { useBrands } from '../brands/BrandProvider';
-import { useBrandDoc } from '../brands/useBrandDoc';
-import { dayLabel, daysFrom } from '../lib/dates';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
-import { TypedNext } from './TypedNext';
+import { HomeStudio } from './HomeStudio';
 
-const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
-
-/** Home hero: what needs you (every item, up to three) and NickMark, who makes the work, with his Brains as a signature. */
+/**
+ * Home hero: the studio is the screen. Above it, one line (date + what needs you, or "anything is possible")
+ * and the button to talk to NickMark; what needs approval sits as a short row in between. The studio already
+ * shows him and his Brains, so the hero repeats neither.
+ */
 export function HomeHero({ brandName, needsYou, open }: { brandName: string; needsYou: ScopedRequest[]; open: ScopedRequest[] }) {
   const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const today = new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const shown = needsYou.slice(0, 3);
-  const working = (b: BrainId) => open.some((r) => r.leadBrain === b && r.status === 'in_production');
-  const next = open
-    .filter((r) => r.status === 'in_production' && r.dueDate && (daysFrom(r.dueDate) ?? -1) >= 0)
-    .sort((a, b) => String(a.dueDate).localeCompare(String(b.dueDate)))[0];
-  const current = open.find((r) => r.status === 'in_production');
-  const logo = useBrandLogo();
 
   return (
-    <section className="stage grid gap-10 rounded-[28px] p-6 sm:p-12 lg:grid-cols-[1.25fr_1fr]" aria-labelledby="h-home">
-      <div className="col g24 min-w-0" data-tour="home-needs">
-        <p className="label" style={{ color: '#C9D0DE' }}>{today} · {brandName}</p>
-        <h1 className="d-lg" id="h-home" style={{ color: '#fff' }}>
-          {needsYou.length
-            ? <><span className="w9">{t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length })}</span> {t('home.restMoving')}</>
-            : <><span className="w9">{t('home.nothingNeeds')}</span><br />{t('home.possibleSub')}</>}
-        </h1>
-        {shown.length > 0 && <div className="col g12">{shown.map((r) => <NeedItem key={`${r.brandId}/${r.id}`} r={r} />)}</div>}
-        {needsYou.length > 3 && <Link to="/requests" className="t-sm w7" style={{ color: '#fff' }}>{t('home.moreToReview', { n: needsYou.length - 3 })}</Link>}
-        {logo && (
-          <div className="self-start rounded-[16px] bg-white" style={{ padding: '12px 18px', boxShadow: '0 8px 30px rgba(0,0,0,.25)' }}>
-            <img src={logo} alt={brandName} style={{ height: 44, maxWidth: 220, objectFit: 'contain', display: 'block' }} />
-          </div>
-        )}
-      </div>
-      <div className="col g16 min-w-0 justify-end" data-tour="home-brains">
-        <div className="widget col g16" style={{ position: 'static' }}>
-          <div className="row g12">
-            <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-14 w-14 flex-none rounded-full object-cover" />
-            <div className="col grow"><span className="w7">{t('sig.card')}</span><span className="t-xs muted">{t('home.orchestrator')}</span></div>
-            <a className="btn btn-white btn-sm" href={wa()} target="_blank" rel="noreferrer">{t('home.talk')}</a>
-          </div>
-          <p className="t-sm" style={{ color: '#E6EAF2' }}>
-            {next ? t('home.nicoNowDue', { title: next.title, day: dayLabel(next.dueDate, lang) })
-              : current ? t('home.nicoNow', { title: current.title }) : <TypedNext />}
-          </p>
-          <div className="row g12 wrap" style={{ borderTop: '1px solid rgba(255,255,255,.12)', paddingTop: 12 }}>
-            <span className="row" aria-label={BRAINS.map(brainName).join(', ')}>
-              {BRAINS.map((b, i) => (
-                <span key={b} title={`${brainName(b)}${working(b) ? ` · ${t('team.state.working')}` : ''}`} className="relative" style={{ marginLeft: i ? -8 : 0 }}>
-                  <img src={`/brand/brains/${b}.png`} alt="" className="h-9 w-9 rounded-full" style={{ background: '#0B1020', boxShadow: '0 0 0 2px #0B1020' }} />
-                  {working(b) && <i className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full" style={{ background: '#8FA0FF', boxShadow: '0 0 0 2px #0B1020' }} />}
-                </span>
-              ))}
-            </span>
-            <span className="t-xs muted">{t('home.withBrains')}</span>
-          </div>
+    <section className="col g16" aria-labelledby="h-home">
+      <div className="row between g16 wrap" data-tour="home-needs">
+        <div className="col g4 min-w-0">
+          <p className="label">{today} · {brandName}</p>
+          <h1 className="h2" id="h-home">
+            {needsYou.length
+              ? <><span className="w9">{t(needsYou.length === 1 ? 'home.needsOne' : 'home.needsN', { n: needsYou.length })}</span> {t('home.restMoving')}</>
+              : <><span className="w9">{t('home.nothingNeeds')}</span> {t('home.possibleSub')}</>}
+          </h1>
         </div>
+        <a className="btn btn-primary" href={wa()} target="_blank" rel="noreferrer">{t('home.talkNico')}</a>
       </div>
+      {shown.length > 0 && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {shown.map((r) => <NeedItem key={`${r.brandId}/${r.id}`} r={r} />)}
+          {needsYou.length > 3 && <Link to="/requests" className="t-sm w7 self-center">{t('home.moreToReview', { n: needsYou.length - 3 })}</Link>}
+        </div>
+      )}
+      <div data-tour="home-brains"><HomeStudio requests={open} /></div>
     </section>
   );
 }
@@ -78,23 +50,15 @@ function NeedItem({ r }: { r: ScopedRequest }) {
   const v = versions.find((x) => x.id === r.latestVersion);
   const url = useFileUrl(r.brandId, r.id, v);
   return (
-    <div className="widget row g16" style={{ position: 'static', padding: 14 }}>
-      <div className="flex h-14 w-14 flex-none items-center justify-center overflow-hidden rounded-xl" style={{ background: 'rgba(255,255,255,.1)' }}>
-        {url && isImage(v?.files?.[0]?.contentType) ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="t-xs muted">{v?.n ?? ''}</span>}
+    <div className="card row g12" style={{ padding: 12 }}>
+      <div className="flex h-12 w-12 flex-none items-center justify-center overflow-hidden rounded-xl" style={{ background: 'var(--niebla)' }}>
+        {url && isImage(v?.files?.[0]?.contentType) ? <img src={url} alt="" className="h-full w-full object-cover" /> : <span className="t-xs t-mute">{v?.n ?? ''}</span>}
       </div>
-      <div className="col g4 grow" style={{ minWidth: 0 }}>
+      <div className="col grow" style={{ minWidth: 0 }}>
         <span className="w7 truncate">{r.title}</span>
-        <span className="t-xs muted">{v?.n ? `${t('home.version', { n: v.n })} · ` : ''}{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(r.leadBrain) })}</span>
+        <span className="t-xs t-mute truncate">{v?.n ? `${t('home.version', { n: v.n })} · ` : ''}{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(r.leadBrain) })}</span>
       </div>
-      <Link className="btn btn-white btn-sm flex-none" to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)}>{t('home.review')}</Link>
+      <Link className="btn btn-secondary btn-sm flex-none" to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)}>{t('home.review')}</Link>
     </div>
   );
-}
-
-/** The current brand's main logo (identity first, then the logo saved on the brand), so the home shows whose space this is. */
-function useBrandLogo() {
-  const { current } = useBrands();
-  const identity = useBrandDoc(current?.id, 'context/identity');
-  const logos = (identity.data as { logos?: { primary?: string; secondary?: string } } | null)?.logos;
-  return logos?.primary ?? current?.logoUrl ?? logos?.secondary ?? null;
 }
