@@ -9,7 +9,7 @@ const date = (ms?: number, lang = 'en') =>
 export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void }) {
   const { lang } = useI18n();
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {files.map((f) => {
         const kind = kindOf(f);
         const thumb = thumbs[f.id];
@@ -72,20 +72,20 @@ export function ShareSwitch({ on, label, onToggle }: { on: boolean; label: strin
 export function FolderGrid({ folders, onOpen }: { folders: Array<{ path: string; files: number; bytes: number; highlight?: boolean; hidden?: boolean; toggle?: () => void }>; onOpen: (p: string) => void }) {
   const { t } = useI18n();
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {folders.map((f) => (
-        <div key={f.path} className="relative">
-        <button type="button" className="folder w-full text-left" onClick={() => onOpen(f.path)}
-          style={{ cursor: 'pointer', ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { opacity: 0.55, borderStyle: 'dashed' } : {}) }}>
-          <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
-            <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
-          </span>
-          <span className="col grow" style={{ minWidth: 0 }}>
-            <span className="w7 truncate">{f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
-            <span className="t-sm t-mute">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
-          </span>
-        </button>
-        {f.toggle && <span className="absolute" style={{ right: 12, bottom: 12 }}><ShareSwitch on={!f.hidden} label={f.path} onToggle={f.toggle} /></span>}
+        <div key={f.path} className="folder fcard"
+          style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
+          <button type="button" className="fopen" onClick={() => onOpen(f.path)} style={f.hidden ? { opacity: 0.55 } : undefined}>
+            <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
+              <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
+            </span>
+            <span className="col grow" style={{ minWidth: 0 }}>
+              <span className="w7 fname">{f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
+              <span className="t-sm t-mute truncate">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
+            </span>
+          </button>
+          {f.toggle && <ShareSwitch on={!f.hidden} label={f.path} onToggle={f.toggle} />}
         </div>
       ))}
     </div>

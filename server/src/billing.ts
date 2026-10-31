@@ -12,8 +12,9 @@ import type { AuthEnv } from './auth.js';
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const now = () => FieldValue.serverTimestamp();
 const PATHS = ['transform', 'continuity', 'launch'] as const;
+const HOSTING = ['esencial', 'pro', 'ultra'];
 type Plan = {
-  path?: (typeof PATHS)[number]; monthly?: number; project?: number; currency?: string; addons?: string[]; agentsMonthly?: number;
+  path?: (typeof PATHS)[number]; monthly?: number; project?: number; currency?: string; addons?: string[]; agentsMonthly?: number; hosting?: string | null;
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; stripeCustomerId?: string; stripeSubscriptionId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string };
 };
@@ -177,7 +178,8 @@ adminBilling.put('/brands/:brandId/billing/plan', async (c) => {
   if (!PATHS.includes(b.path as (typeof PATHS)[number])) return c.json({ error: 'invalid_path' }, 400);
   await planRef(brandId).set({
     path: b.path, monthly: Number(b.monthly) || null, project: Number(b.project) || null, currency: txt(b.currency, 3).toLowerCase() || 'usd',
-    addons: (b.addons ?? []).map((x) => txt(x, 40)).slice(0, 10), agentsMonthly: Number(b.agentsMonthly) || null, status: (await planRef(brandId).get()).get('status') ?? 'pending',
+    addons: (b.addons ?? []).map((x) => txt(x, 40)).slice(0, 10), agentsMonthly: Number(b.agentsMonthly) || null,
+    hosting: HOSTING.includes(String(b.hosting)) ? b.hosting : null, status: (await planRef(brandId).get()).get('status') ?? 'pending',
     updatedBy: c.get('user').uid, updatedAt: now(),
   }, { merge: true });
   return c.json({ ok: true });

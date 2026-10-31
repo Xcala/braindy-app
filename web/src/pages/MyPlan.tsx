@@ -9,10 +9,12 @@ import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/
 import { PlanView } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
 import { AdminPlan } from '../plan/AdminPlan';
+import { Subscription } from '../plan/Subscription';
 import { planApi, usePlan } from '../plan/usePlan';
 
 /** Mi plan: everything the client contracted in one place. What they bought, the contract (sign it here, download it
- *  signed), the schedule by week with its deliveries, the kickoff checklist, the website's hosting and maintenance, and the apps the brand runs on. */
+ *  signed), the schedule by week with its deliveries, the kickoff checklist, the website's hosting and maintenance, the apps the brand runs on,
+ *  and below, the design plan being billed and the site hosting tiers. */
 export function MyPlan() {
   const { current } = useBrands();
   const { profile } = useAuth();
@@ -47,7 +49,8 @@ export function MyPlan() {
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
       {!plan && !schedule && !stack?.length && <div className="card t-mute">{t('plan.empty')}</div>}
-      <p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.payments')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p>
+      <Subscription current={current} />
+      <p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p>
       {admin && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
     </div>
   );

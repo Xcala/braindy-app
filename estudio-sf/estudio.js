@@ -43,7 +43,8 @@ const OUTFIT = ['', '', '-mar', '-mie', '-jue', '-vie', ''][H.dia()];
 // At night in San Francisco a set uses its -night files, where they exist (so far only the empty chair).
 const NOCHE = new Set(['-away']);
 const NOCHE_CU = new Set(['cu-res', 'cu-mkt', 'cu-cre', 'cu-bui', 'cu-nico-away']);
-const litCu = (n) => (H.luz() === 'noche' && NOCHE_CU.has(n) ? n + '-night' : n);
+// Close-ups follow the scene on screen: night only while the scene itself is at night (at dawn with NicoMarca in, all stays day).
+const litCu = (n) => (media().endsWith('-night') && NOCHE_CU.has(n) ? n + '-night' : n);
 const lit = (m) => (H.luz() === 'noche' && NOCHE.has(m) ? m + '-night' : m);
 const media = () => lit(H.estado().open ? OUTFIT : '-away');
 let shownMedia = media();

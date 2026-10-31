@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { ALL_COLS, AccessRow, gridFor, type AccessCol } from '../accesses/AccessRow';
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
+import { BackToAccount } from './Account';
 
 /** Accesses (design 07): encrypted credentials, reveal on demand, read-only access log. */
 export function Accesses() {
@@ -26,6 +27,7 @@ export function Accesses() {
 
   return (
     <div className="col g32">
+      <BackToAccount />
       <div className="row between g16 wrap">
         <div className="col g8">
           <p className="label">{current.name}</p>
@@ -44,7 +46,7 @@ export function Accesses() {
               <button key={c} type="button" aria-pressed={cols.includes(c)} onClick={() => toggle(c)} className={`btn btn-sm ${cols.includes(c) ? 'btn-primary' : 'btn-secondary'}`}>{cols.includes(c) ? '✓ ' : ''}{label[c]}</button>
             ))}
           </div>
-          <div className="table overflow-x-auto">
+          <div className="table acc-table overflow-x-auto">
             <div className="trow head label" style={{ gridTemplateColumns: gridFor(cols), minWidth: 260 + cols.length * 170 }}>
               <span>{t('acc.platform')}</span>{cols.map((c) => <span key={c}>{label[c]}</span>)}<span />
             </div>

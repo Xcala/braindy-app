@@ -1,6 +1,7 @@
 import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Scene } from '../../studio/Scene';
+import { Launches } from '../../studio/Launches';
 import { SEATS } from '../../studio/geometry';
 import { SEAT_NAME } from '../../studio/FocusCard';
 import { useStudio } from '../../studio/useStudio';
@@ -21,7 +22,10 @@ export function AdminStudio() {
         <h1 className="h1"><span className="w9">{t('st.title')}.</span></h1>
         <p className="t-mute">{t('st.sub')}</p>
       </div>
-      <Scene seats={seats} items={items} toSignCount={toSignCount} />
+      <div className="sd-with-launches">
+        <Scene seats={seats} items={items} toSignCount={toSignCount} />
+        <Launches />
+      </div>
       <section className="card col g12" aria-labelledby="h-live">
         <h2 className="h3" id="h-live">{t('st.live')}</h2>
         {feed.length === 0 && <p className="t-sm t-mute">{t('st.feedEmpty')}</p>}

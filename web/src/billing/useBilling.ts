@@ -3,8 +3,13 @@ import { collection, doc, onSnapshot, orderBy, query, type Timestamp } from 'fir
 import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 
+/** Site hosting plans (approved offer 2026-10-30), USD per month. */
+export const HOSTING = ['esencial', 'pro', 'ultra'] as const;
+export type Hosting = (typeof HOSTING)[number];
+export const HOSTING_USD: Record<Hosting, number> = { esencial: 5, pro: 15, ultra: 35 };
+
 export type Plan = {
-  path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[]; agentsMonthly?: number | null; addonRequests?: string[];
+  path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[]; agentsMonthly?: number | null; addonRequests?: string[]; hosting?: Hosting | null;
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; nextChargeAt?: Timestamp; stripeCustomerId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string }; cancelRequestedAt?: Timestamp;
 };

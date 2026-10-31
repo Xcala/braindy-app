@@ -32,7 +32,7 @@ const str = (v: unknown, max = 2000) => String(v ?? '').trim().slice(0, max);
 
 const GUESS: Array<[string, RegExp]> = [
   ['branding', /\b(logo|logotipo|marca nueva|naming|nombre de marca|identidad|rebrand|brand)\b/i],
-  ['web', /\b(web|p[aá]gina|landing|sitio|home|seo|website|hero)\b/i],
+  ['web', /\b(web|p[aá]gina|landing|sitio|home|seo|website|hero|dominio|subdominio|microsite|micrositio|url)\b|(?<![\w./-])(?!(www\.)?(instagram|tiktok|facebook|linkedin|youtube|youtu|twitter|x|drive|docs|canva|figma|wa|bit)\.)[a-z0-9-]+(\.[a-z0-9-]+)*\.(com|co|net|org|io|app|edu|dev|store|shop|online|site)\b/i],
   ['ai', /\b(app|automatiza\w*|agente|chatbot|bot|dashboard|plataforma|ia|ai)\b/i],
   ['multimedia', /\b(video|reel|motion|animaci[oó]n|podcast|fotos?)\b/i],
   ['marketing', /\b(campa[nñ]a|ads|pauta|anuncios?|embudo|funnel|copy)\b/i],
@@ -41,6 +41,16 @@ const GUESS: Array<[string, RegExp]> = [
 ];
 /** Category for a free-text request; "other" (Nicolas reviews it) when nothing matches. */
 export const guessCategory = (text: string) => GUESS.find(([, re]) => re.test(text))?.[0] ?? 'other';
+
+const ES_WORDS = /\b(quiero|necesito|para|una?|el|la|los|las|que|con|crear|hacer|nuestr[oa]s?|por favor|también|página|sitio)\b|[ñáéíóú¿¡]/gi;
+const EN_WORDS = /\b(i|we|want|need|the|and|for|with|create|make|our|please|website|page)\b/gi;
+/** Language of a free-text request, when the client did not pick one: what they wrote, not the app's language. */
+export function guessLanguage(text: string) {
+  const es = text.match(ES_WORDS)?.length ?? 0;
+  const en = text.match(EN_WORDS)?.length ?? 0;
+  if (!es && !en) return '';
+  return es >= en ? 'Español' : 'English';
+}
 const now = () => FieldValue.serverTimestamp();
 
 async function isAdmin(uid: string) {
@@ -92,7 +102,7 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
     cards: { product: { ...card('product'), files: attachments(cards.product?.files) }, application: card('application'), scene: card('scene') },
-    dueDate: str(b.dueDate, 20) || null, format: str(b.format, 160), language: str(b.language, 60),
+    dueDate: str(b.dueDate, 20) || null, format: str(b.format, 160), language: str(b.language, 60) || guessLanguage(str(cards.product?.text, 4000)),
     status: 'in_production', stage: 'plan',
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',
     plan: null, versionCount: 0, createdBy: uid, createdAt: now(), updatedAt: now(),

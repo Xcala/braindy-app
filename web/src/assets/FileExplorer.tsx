@@ -20,9 +20,10 @@ type Filter = 'all' | FileKind;
 const PAGE = 48;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
 
-export function FileExplorer({ brandId, brandName }: { brandId: string; brandName: string }) {
+/** startPath/openId come from a search result: open that folder and show that file. */
+export function FileExplorer({ brandId, brandName, startPath = '', openId }: { brandId: string; brandName: string; startPath?: string; openId?: string }) {
   const { t } = useI18n();
-  const [path, setPath] = useState('');
+  const [path, setPath] = useState(startPath);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
@@ -41,7 +42,7 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const [shareError, setShareError] = useState(false);
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
-  useEffect(() => { setPath(''); }, [brandId]);
+  useEffect(() => { setPath(startPath); }, [brandId, startPath]);
   useEffect(() => { setLimit(PAGE); setQ(''); }, [brandId, path]);
   const pathShared = visible(path);
   useEffect(() => {
@@ -66,6 +67,10 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
   const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)));
   const page = shown.slice(0, limit);
   const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
+  useEffect(() => {
+    const f = openId ? files.find((x) => x.id === openId) : undefined;
+    if (f && previewKind(f.contentType)) setPreview(f);
+  }, [openId, files]);
   const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
   const crumbs = path ? path.split('/') : [];
   return (
@@ -86,7 +91,7 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
           <input className="input" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('files.search')}
             placeholder={t('files.searchIn', { name: crumbs[crumbs.length - 1] ?? brandName })} />
         </div>
-        <div className="seg overflow-x-auto" role="group" aria-label={t('files.filter')}>
+        <div className="seg seg-scroll fseg" role="group" aria-label={t('files.filter')}>
           {(['all', 'image', 'video', 'pdf', 'design'] as Filter[]).map((k) => (
             <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{t(`files.kind.${k}`)}</button>
           ))}
@@ -117,7 +122,7 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
             {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
           </div>
           {index.loading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' ? (

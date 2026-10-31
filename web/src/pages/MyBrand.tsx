@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useBrands, type Brand } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { BrandHero } from '../brands/BrandHero';
@@ -41,6 +41,12 @@ export function MyBrand() {
   const isAdmin = useAuth().profile?.role === 'admin';
   const [editing, setEditing] = useState(false);
   const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id]);
+  const bar = useRef<HTMLDivElement>(null);
+  // On mobile the bar is one scrolling line: keep the current section chip in view.
+  useEffect(() => {
+    const el = bar.current, on = el?.querySelector<HTMLElement>('a.is-on');
+    if (el && on && el.scrollWidth > el.clientWidth) el.scrollTo({ left: on.offsetLeft - 12, behavior: 'smooth' });
+  }, [active]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const id = (identity.data ?? {}) as Identity;
@@ -68,7 +74,7 @@ export function MyBrand() {
   const font = ((id.typography ?? [])[0] as { fontFamily?: string; name?: string } | undefined)?.fontFamily ?? ((id.typography ?? [])[0] as { name?: string } | undefined)?.name;
 
   return (
-    <div className="col g48">
+    <div className="col g48 brandpage">
       <BrandHero brand={current} logo={id.logos?.primary ?? current.logoUrl ?? undefined}
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />
       {isAdmin && (
@@ -79,12 +85,12 @@ export function MyBrand() {
       {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} onClose={() => setEditing(false)} />}
 
       {visible.length > 1 && (
-        <div className="stickybar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
+        <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
           <nav className="anchors" aria-label={t('brand.onThisPage')}>
             {visible.map((s) => <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-on' : ''} aria-current={active === s.id ? 'location' : undefined}>{t(s.label)}</a>)}
           </nav>
           {colors.length > 0 && (
-            <div className="row g8 wrap">
+            <div className="qrow row g8 wrap">
               <span className="label">{t('brand.quickCopy')}</span>
               {colors.slice(0, 3).map((c) => (
                 <button key={c.hex} className="qcopy" onClick={() => copy(c.hex!.toUpperCase())}>

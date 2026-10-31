@@ -11,10 +11,10 @@ export function ApprovedWork({ items }: { items: Item[] }) {
   if (!list.length) return null;
   return (
     <>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {list.map((i, k) => (
           <button key={i.id ?? i.url} type="button" className="tile text-left" style={{ cursor: 'zoom-in' }} onClick={() => setOpen(k)}>
-            <div className="thumb" style={{ height: 240, overflow: 'hidden' }}>
+            <div className="thumb thumb-work" style={{ overflow: 'hidden' }}>
               <img className="cover h-full w-full object-cover" src={i.url} alt={i.name ?? ''} loading="lazy" />
             </div>
             {i.name && <div className="tile-meta"><span className="tile-name">{i.name}</span></div>}

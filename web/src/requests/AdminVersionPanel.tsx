@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { brainName } from '../components/BrainStack';
 import { markPublished, uploadVersion } from './api';
+import { LaunchToggle } from './LaunchToggle';
 import type { BrainId } from './taxonomy';
 import type { BrandRequest } from './types';
 
@@ -54,6 +55,7 @@ export function AdminVersionPanel({ brandId, r }: { brandId: string; r: BrandReq
         <span className="t-sm t-mute">{t('req.deliverHint')}</span>
       </div>
       {notice && <NoticeResult notice={notice} />}
+      {(r.status === 'approved' || r.status === 'published') && <LaunchToggle brandId={brandId} r={r} />}
     </section>
   );
 }
