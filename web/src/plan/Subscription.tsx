@@ -1,12 +1,13 @@
 import { Link } from 'react-router';
 import type { Brand } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { HOSTING, HOSTING_USD, money, useBilling } from '../billing/useBilling';
+import { money, useBilling } from '../billing/useBilling';
+import { HostingPlans } from './HostingPlans';
 import { CONTACT } from '../proposals/public/copy';
 
 const wa = (text: string) => `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
 
-/** In Mi plan · The design plan being billed (subscription or project, with its status and next charge) and the site hosting plan. */
+/** In Mi plan · The design plan being billed (subscription or project, with its status and next charge) and the full website hosting offer with the current plan outlined. */
 export function Subscription({ current }: { current: Brand }) {
   const { t, lang } = useI18n();
   const { plan } = useBilling(current?.id);
@@ -42,24 +43,7 @@ export function Subscription({ current }: { current: Brand }) {
         )}
       </section>
 
-      <section className="col g12" aria-labelledby="plan-h">
-        <h2 className="h3" id="plan-h">{t('plan.hosting')}</h2>
-        {!plan?.hosting && <p className="t-sm t-mute">{t('plan.noHosting')}</p>}
-        <div className="grid gap-3 md:grid-cols-3">
-          {HOSTING.map((h) => {
-            const mine = plan?.hosting === h;
-            return (
-              <div key={h} className="card col g8" style={mine ? { borderColor: '#2F4DE0', boxShadow: '0 0 0 2px #2F4DE0' } : plan?.hosting ? { opacity: 0.75 } : undefined}>
-                <div className="row between g8"><span className="h3">{t(`plan.h.${h}`)}</span>{mine && <span className="chip c-active">{t('plan.current')}</span>}</div>
-                <span className="w7">{t('plan.monthly', { amount: money(HOSTING_USD[h], 'usd', lang) })}</span>
-                <span className="t-sm">{t(`plan.h.${h}For`)}</span>
-                <span className="t-xs t-mute grow">{t(`plan.h.${h}Spec`)}</span>
-                {!mine && <a className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} href={wa(`${t('plan.hosting')} ${t(`plan.h.${h}`)} · ${current.name}`)} target="_blank" rel="noreferrer">{plan?.hosting ? t('plan.change') : t('plan.activate')}</a>}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <HostingPlans current={plan?.hosting} brandName={current.name} />
     </div>
   );
 }
