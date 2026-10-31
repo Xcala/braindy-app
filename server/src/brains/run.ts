@@ -31,7 +31,7 @@ export async function runBrain<T>(o: {
   try {
     if (aiConfigured()) {
       const ctx = await brandContext(o.brandId);
-      output = await claudeJson<T>(o.team ? teamPrompt() : systemPrompt(o.brain), `Brand Brain:\n${ctx.text}\n\nWrite in ${ctx.lang === 'en' ? 'English' : 'Spanish'}.\n\n${o.ask}`, o.maxTokens ?? 1800);
+      output = await claudeJson<T>(o.team ? teamPrompt() : systemPrompt(o.brain), `Brand Brain:\n${ctx.text}\n\nWrite in ${ctx.lang === 'en' ? 'English' : 'Spanish'}.\n\n${o.ask}`, o.maxTokens ?? 1800, { brandId: o.brandId, kind: `brain:${o.kind}`, taskId: task.id });
       ai = true;
     } else output = await o.fallback();
   } catch (e) {

@@ -31,6 +31,7 @@ const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/proposals', label: 'nav.proposals' },
   { to: '/admin/onboarding', label: 'nav.onboarding' },
   { to: '/admin/billing', label: 'nav.billing' },
+  { to: '/admin/costs', label: 'cost.nav' },
   { to: '/team', label: 'nav.team' },
   { to: '/admin/criterio', label: 'cra.nav' },
 ];

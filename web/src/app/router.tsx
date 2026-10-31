@@ -24,6 +24,7 @@ import { Onboarding } from '../pages/Onboarding';
 import { Report } from '../pages/Report';
 import { AdminOnboarding } from '../pages/admin/Onboarding';
 import { AdminBilling } from '../pages/admin/Billing';
+import { AdminCosts } from '../pages/admin/Costs';
 import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
               { path: 'team', element: <AdminTeam /> },
               { path: 'admin/onboarding', element: <AdminOnboarding /> },
               { path: 'admin/billing', element: <AdminBilling /> },
+              { path: 'admin/costs', element: <AdminCosts /> },
             ],
           },
         ],

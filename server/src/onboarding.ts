@@ -22,7 +22,7 @@ async function member(uid: string, brandId: string) {
 }
 
 /** Draft from the brief. With Claude: the Researcher writes it. Without: the answers, organized. */
-async function draftBrain(brandName: string, answers: Record<string, string>): Promise<Brain> {
+async function draftBrain(brandId: string, brandName: string, answers: Record<string, string>): Promise<Brain> {
   const fallback: Brain = {
     voice: answers.voice ?? '', audiences: answers.audiences ?? '',
     competitors: (answers.competitors ?? '').split(/[,\n;]| y | and /).map((s) => s.trim()).filter(Boolean).slice(0, 5).map((name) => ({ name, promise: '', price: '' })),
@@ -33,6 +33,7 @@ async function draftBrain(brandName: string, answers: Record<string, string>): P
     const out = await claudeJson<Partial<Brain>>(
       'You are the Researcher, one of the four Brains on the team of NickMark (Nicolas, founder of Braindy). With him, you turn a client brief into a Brand Brain draft that he will review and sign. Be concrete and short. Write in the language of the answers. Never invent numbers: leave unknown fields as empty strings.',
       `Brand: ${brandName}\nBrief answers (JSON): ${JSON.stringify(answers)}\n\nReturn {"voice": three traits plus "sounds like"/"never" examples, "audiences": main and secondary audience and what each needs to believe, "competitors": [{"name","promise","price"}], "lookAndFeel", "goals": goals in sales not likes, "avoid", "position": "", "criterio": ""}`,
+      2000, { brandId, kind: 'onboarding:brain-draft' },
     );
     return { ...fallback, ...out, competitors: Array.isArray(out.competitors) ? out.competitors.slice(0, 6) : fallback.competitors };
   } catch (e) {
@@ -61,7 +62,7 @@ onboarding.post('/brands/:brandId/brief/complete', async (c) => {
   const [brand, brief] = await Promise.all([brandRef(brandId).get(), briefRef(brandId).get()]);
   const answers = (brief.get('answers') ?? {}) as Record<string, string>;
   if (Object.values(answers).filter((v) => v?.trim()).length < 4) return c.json({ error: 'too_short' }, 400);
-  const draft = await draftBrain(String(brand.get('name')), answers);
+  const draft = await draftBrain(brandId, String(brand.get('name')), answers);
   await brainRef(brandId).set({ ...draft, status: 'draft', draftedBy: 'researcher', draftedWithAi: aiConfigured(), draftedAt: now() });
   await briefRef(brandId).set({ status: 'complete', completedAt: now() }, { merge: true });
   await brandRef(brandId).set({ onboarding: { step: 'brain', briefDoneAt: now() } }, { merge: true });

@@ -508,3 +508,7 @@ p{margin:0}
   .setnav .menu-item.is-on{border-color:var(--ink)!important;color:var(--ink)}
 }
 @media (max-width:639px){.seg.fseg{flex:1 1 0;min-width:0}}
+
+/* Admin · AI costs: thin share bar under each brand's percentage */
+.costbar{display:block;height:4px;border-radius:99px;background:var(--line);overflow:hidden;width:100%}
+.costbar i{display:block;height:100%;background:var(--azul,#2F4DE0);border-radius:99px}
