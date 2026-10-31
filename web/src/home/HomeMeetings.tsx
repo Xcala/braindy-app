@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 import { useI18n } from '../i18n/I18nProvider';
 import { dayLabel } from '../lib/dates';
+import { MeetingNotes, topics } from './MeetingNotes';
 
 type Meeting = { id: string; title: string; date: string; notes: string; source?: string; webUrl?: string | null; attendees?: string[] };
 type Report = { filed?: number; unmatched?: string[]; skipped?: boolean; error?: string };
@@ -40,24 +41,32 @@ export function HomeMeetings({ brandId }: { brandId: string }) {
         </p>
       )}
       {list.length === 0 && <div className="card t-mute">{t('mt.empty')}</div>}
-      {shown.map((m) => (
-        <details key={m.id} className="card col" style={{ padding: '14px 18px' }}>
-          <summary className="row between g12" style={{ cursor: 'pointer', listStyle: 'none' }}>
-            <span className="col g4" style={{ minWidth: 0 }}>
-              <span className="w7 truncate">{m.title}</span>
-              <span className="t-xs t-mute">{dayLabel(m.date, lang)}{m.attendees?.length ? ` · ${t('mt.people', { n: String(m.attendees.length) })}` : ''}</span>
+      {shown.map((m) => {
+        const d = new Date(`${m.date.slice(0, 10)}T12:00:00`);
+        const tps = topics(m.notes);
+        return (
+        <details key={m.id} className="card mcard">
+          <summary className="mcard-s">
+            <span className="mdate" aria-hidden="true">
+              <b>{d.getDate()}</b><span>{d.toLocaleDateString(lang, { month: 'short' }).replace('.', '')}</span>
             </span>
-            {m.source === 'granola' && <span className="chip c-type">Granola</span>}
+            <span className="col g4 grow" style={{ minWidth: 0 }}>
+              <span className="w7 truncate">{m.title}</span>
+              <span className="t-xs t-mute">{dayLabel(m.date, lang)}{m.attendees?.length ? ` · ${t('mt.people', { n: String(m.attendees.length) })}` : ''}{m.source === 'granola' ? ' · Granola' : ''}</span>
+              {tps.length > 0 && <span className="mtags">{tps.slice(0, 3).map((x) => <span key={x}>{x}</span>)}{tps.length > 3 && <span>+{tps.length - 3}</span>}</span>}
+            </span>
+            <span className="mchev" aria-hidden="true" />
           </summary>
-          <div className="col g8" style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 12 }}>
-            <p className="t-sm" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>{m.notes.replace(/^#+\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')}</p>
+          <div className="mcard-b">
+            <MeetingNotes notes={m.notes} />
             <div className="row g8 wrap">
               {m.webUrl && <a href={m.webUrl} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }}>{t('mt.open')} ↗</a>}
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'DELETE' })}>{t('acc.delete')}</button>
             </div>
           </div>
         </details>
-      ))}
+        );
+      })}
       {!all && list.length > SHOW && <button type="button" className="btn btn-ghost btn-sm self-start" onClick={() => setAll(true)}>{t('mt.more', { n: String(list.length - SHOW) })}</button>}
       <ManualMeeting brandId={brandId} />
     </section>
