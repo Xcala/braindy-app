@@ -27,7 +27,7 @@ export function BrandDocs({ assets, title }: { assets: LegacyAsset[]; title?: st
         <h2 className="h3" id="docs">{title ?? t('assets.docs')}</h2>
         {!title && <span className="t-sm t-mute">{t('assets.docsSub')}</span>}
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {list.map((a) => {
           const kind = a.type === 'logodeck' ? 'LogoDeck' : a.type === 'marketmap' ? 'MarketMap' : t('assets.document');
           const Tag = a.url ? 'a' : 'div';
