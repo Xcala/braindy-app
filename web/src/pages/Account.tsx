@@ -7,6 +7,8 @@ import type { StringKey } from '../i18n/strings';
 import { useBilling } from '../billing/useBilling';
 import { useAccesses } from '../accesses/useAccesses';
 import { requestTour } from '../tour/useTour';
+import { useEffect, useState } from 'react';
+import { noticesApi } from '../review/api';
 import { sectionOfPath, useMySections } from '../team/sections';
 
 const svg = (d: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
@@ -15,6 +17,7 @@ const I = {
   billing: svg(<><path d="M12 3v18" /><path d="M16.5 7.5c0-1.7-2-3-4.5-3s-4.5 1.3-4.5 3S9.5 10.5 12 11s4.5 1.3 4.5 3.5-2 3-4.5 3-4.5-1.3-4.5-3" /></>),
   connectors: svg(<><rect x="3" y="12" width="9" height="9" rx="2" /><rect x="12" y="12" width="9" height="9" rx="2" /><rect x="12" y="3" width="9" height="9" rx="2" /></>),
   team: svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.2 2.5 3.5 5.5" /></>),
+  group: svg(<><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z" /><path d="M9 10.5c.5 2 2 3.5 4.5 4.5l1.3-1.2 2 1-.6 1.6c-3.5.3-7.8-3.5-8.1-7l1.6-.6 1 2z" /></>),
   notices: svg(<><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9" /><path d="M10 20a2 2 0 0 0 4 0" /></>),
   research: svg(<><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>),
   report: svg(<><path d="M4 20V10M10 20V4M16 20v-7M20 20H3" /></>),
@@ -36,6 +39,8 @@ export function Account() {
   const { plan } = useBilling(can('billing') ? current?.id : undefined);
   const acc = useAccesses(can('accesses') ? current?.id : undefined);
   const isAdmin = profile?.role === 'admin';
+  const [group, setGroup] = useState<string | null>(null);
+  useEffect(() => { setGroup(null); if (current) noticesApi.get(current.id).then((s) => setGroup(s.groupLink || null)).catch(() => setGroup(null)); }, [current?.id]);
   const name = profile?.name ?? user?.email ?? '';
   const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
   const ok = (r: Row) => !r.to || can(sectionOfPath(r.to.split('?')[0]!));
@@ -46,6 +51,7 @@ export function Account() {
     { to: '/accesses', icon: I.connectors, label: 'nav.accesses', value: acc.loading || acc.denied ? undefined : t('acct.connected', { n: String(acc.list.length) }) },
     { to: '/settings?tab=team', icon: I.team, label: 'set.tab.team' },
     { to: '/settings?tab=notices', icon: I.notices, label: 'set.tab.notices' },
+    ...(group ? [{ onClick: () => window.open(group, '_blank', 'noopener'), icon: I.group, label: 'set.group' as StringKey, value: t('set.groupOpen') }] : []),
   ] as Row[]).filter((r) => ok(r) && (!r.to?.includes('billing') || can('billing')));
   const more = ([
     { to: '/research', icon: I.research, label: 'nav.research' },

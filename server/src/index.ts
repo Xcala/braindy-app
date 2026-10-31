@@ -7,6 +7,7 @@ import { clientErrors, logError, rateLimit } from './guard.js';
 import { appCheck, requireUser, type AuthEnv } from './auth.js';
 import { db } from './firebase.js';
 import { files } from './files.js';
+import { search } from './search.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { adminLaunches, launches } from './launches.js';
@@ -82,6 +83,7 @@ app.get('/v1/me', async (c) => {
 });
 
 app.route('/v1', files);
+app.route('/v1', search);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
 app.route('/v1', launches);

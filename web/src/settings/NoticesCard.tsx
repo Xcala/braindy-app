@@ -6,6 +6,8 @@ import { noticesApi, type NoticeSettings } from '../review/api';
 
 type Approver = { uid: string; email: string; role: string };
 const KEYS = ['delivery', 'approved', 'brandBrain', 'report'] as const;
+/** Same rule as the API: an invite link of WhatsApp itself. */
+const GROUP = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{10,40}$/;
 
 /** Settings · WhatsApp and notices: the number that receives review links and which notices go out. */
 export function NoticesCard({ brandId }: { brandId: string }) {
@@ -28,6 +30,7 @@ export function NoticesCard({ brandId }: { brandId: string }) {
   const set = (patch: Partial<NoticeSettings>) => setS({ ...s, ...patch });
 
   async function save() {
+    if (s!.groupLink && !GROUP.test(s!.groupLink)) { setMsg({ ok: false, text: t('set.badGroup') }); return; }
     setBusy(true); setMsg(null);
     try { await noticesApi.save(brandId, s!); setMsg({ ok: true, text: t('set.saved') }); }
     catch (e) { setMsg({ ok: false, text: String(e).includes('403') ? t('set.ownersOnly') : String(e).includes('400') ? t('set.badPhone') : t('set.saveError') }); }
@@ -53,6 +56,14 @@ export function NoticesCard({ brandId }: { brandId: string }) {
               {approvers.map((a) => <option key={a.uid} value={a.uid}>{a.email}</option>)}
             </select>
           </div>
+        </div>
+        <div className="field">
+          <label htmlFor="wa-group">{t('set.group')}</label>
+          <div className="row g8">
+            <input id="wa-group" className="input grow" inputMode="url" placeholder="https://chat.whatsapp.com/…" value={s.groupLink ?? ''} onChange={(e) => set({ groupLink: e.target.value.trim() })} />
+            {s.groupLink && GROUP.test(s.groupLink) && <a className="btn btn-secondary" href={s.groupLink} target="_blank" rel="noreferrer">{t('set.groupOpen')}</a>}
+          </div>
+          <p className="help">{t('set.groupHelp')}</p>
         </div>
         <p className="help">{t('set.waHelp')}</p>
         {!s.whatsappApi && <p className="help">{t('set.apiPending')}</p>}

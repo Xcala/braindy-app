@@ -15,7 +15,7 @@ const LINK_DAYS = 7;
 const now = () => FieldValue.serverTimestamp();
 const NOTICES = ['delivery', 'approved', 'brandBrain', 'report'] as const;
 
-type Notices = { whatsapp?: string; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
+type Notices = { whatsapp?: string; groupLink?: string; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
 const settingsRef = (brandId: string) => db.doc(`brands/${brandId}/settings/notices`);
 
 /** Creates a review link and sends it (WhatsApp API) or returns a wa.me link to send by hand. */
@@ -60,10 +60,13 @@ review.put('/brands/:brandId/settings/notices', async (c) => {
   const b = await c.req.json<Notices>();
   const whatsapp = b.whatsapp ? normalizePhone(b.whatsapp) : '';
   if (b.whatsapp && !whatsapp) return c.json({ error: 'invalid_phone' }, 400);
+  // The WhatsApp group NickMark keeps with the client: only an invite link of WhatsApp itself.
+  const groupLink = String(b.groupLink ?? '').trim();
+  if (groupLink && !/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{10,40}$/.test(groupLink)) return c.json({ error: 'invalid_group' }, 400);
   if (b.approverUid && !(await canApprove(String(b.approverUid), brandId))) return c.json({ error: 'not_an_approver' }, 400);
   const notices = Object.fromEntries(NOTICES.map((k) => [k, b.notices?.[k] !== false]));
   await settingsRef(brandId).set({
-    whatsapp: whatsapp ?? '', approverUid: String(b.approverUid ?? '').slice(0, 128), lang: b.lang === 'en' ? 'en' : 'es',
+    whatsapp: whatsapp ?? '', groupLink, approverUid: String(b.approverUid ?? '').slice(0, 128), lang: b.lang === 'en' ? 'en' : 'es',
     notices, updatedBy: uid, updatedAt: now(),
   }, { merge: true });
   return c.json({ ok: true });

@@ -551,3 +551,5 @@ div.acct-row:hover{background:none}
 .notif-dot.is-production{background:#8B5CF6}
 .notif-dot.is-comment{background:#2A7FFF}
 .notif-dot.is-app{background:#06B6D4}
+/* Search box: solid sheet so the page behind does not show through the results */
+.cmdk{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
