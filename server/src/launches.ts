@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
 import { bucket, URL_TTL_MS } from './requests.js';
+import { brandAccess } from './access.js';
 import type { AuthEnv } from './auth.js';
 
 const str = (v: unknown, max = 2000) => String(v ?? '').trim().slice(0, max);
@@ -29,11 +30,29 @@ launches.get('/launches', async (c) => {
     ]);
     const counts = Object.fromEntries(REACTIONS.map((r) => [r, Math.max(0, (x.reactions?.[r] as number) ?? 0)]));
     return {
-      id: d.id, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', at: x.at?.toMillis?.() ?? null, url,
+      id: d.id, brandId: x.brandId, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', at: x.at?.toMillis?.() ?? null, url,
       counts, mine: ((mine.get('reactions') as Reaction[]) ?? []).filter((r) => REACTIONS.includes(r)),
     };
   }));
   return c.json({ items });
+});
+
+/** The brand's own latest finished work (approved or live), each with a short-lived URL of its first image or video. Members of the brand only. */
+launches.get('/brands/:brandId/launches/own', async (c) => {
+  const { brandId } = c.req.param();
+  if (!(await brandAccess(c.get('user').uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
+  const snap = await db.collection(`brands/${brandId}/requests`).where('status', 'in', ['approved', 'published']).get();
+  const ms = (v: unknown) => (v as { toMillis?: () => number })?.toMillis?.() ?? 0;
+  const done = snap.docs.filter((d) => d.get('latestVersion')).sort((a, b) => ms(b.get('updatedAt')) - ms(a.get('updatedAt'))).slice(0, 8);
+  const items = await Promise.all(done.map(async (d) => {
+    const ver = await d.ref.collection('versions').doc(d.get('latestVersion')).get();
+    const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string }>) ?? [];
+    const file = files.find((f) => isShowable(f) && f.storagePath?.startsWith(`brands/${brandId}/`));
+    if (!file) return null;
+    const [url] = await bucket().file(file.storagePath!).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
+    return { id: d.id, title: str(d.get('title'), 120), category: d.get('category') ?? null, kind: String(file.contentType).startsWith('video/') ? 'video' : 'image', at: ms(d.get('updatedAt')) || null, url };
+  }));
+  return c.json({ items: items.filter(Boolean) });
 });
 
 /** A client turns one of their reactions on a launch on or off. The launch keeps a count per reaction. */
