@@ -456,3 +456,27 @@ p{margin:0}
 .mtopic.is-next .mlist li{padding-left:28px}
 .mtopic.is-next .mlist li::before{left:0;top:2px;width:16px;height:16px;border-radius:5px;background:#fff;border:1.5px solid var(--azul)}
 @media (max-width:480px){.mcard-s{padding:14px;gap:12px}.mcard-b{padding:2px 14px 14px}.mdate{width:44px;height:48px}}
+/* Strategy fields (My brand): intro line, then each audience / goal / no-go as a titled row */
+.sf-intro{font:600 16px/24px var(--f-text);color:var(--ink);margin:0}
+.sf-list{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column}
+.sf-list li{position:relative;display:flex;flex-direction:column;gap:2px;padding:12px 0 12px 22px;border-top:1px solid var(--line)}
+.sf-list li:first-child{border-top:0;padding-top:4px}
+.sf-list li::before{content:"";position:absolute;left:2px;top:19px;width:8px;height:8px;border-radius:50%;background:var(--azul)}
+.sf-list li:first-child::before{top:11px}
+.sf-k{font:800 15px/20px var(--f-display);color:var(--ink);letter-spacing:-.01em}
+.sf-v{font-size:14px;line-height:21px;color:var(--graphite)}
+.sf-goals .sf-list{counter-reset:g}
+.sf-goals .sf-list li::before{counter-increment:g;content:counter(g);width:16px;height:16px;left:-2px;top:14px;border-radius:5px;background:rgba(47,77,224,.1);color:var(--azul);font:900 10px/16px var(--f-display);text-align:center}
+.sf-goals .sf-list li:first-child::before{top:6px}
+.sf-avoid .sf-list li::before{content:"✕";background:none;width:auto;height:auto;left:0;top:12px;color:var(--danger);font:900 12px/16px var(--f-text)}
+.sf-avoid .sf-list li:first-child::before{top:4px}
+.sf-solo{font-size:15px;line-height:22px;color:var(--ink)}
+/* Segmented tabs that never wrap: one line, swipe sideways when they do not fit */
+.seg.seg-scroll{display:flex;max-width:100%;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;align-self:flex-start}
+.seg.seg-scroll::-webkit-scrollbar{display:none}
+.seg.seg-scroll button{flex:none;white-space:nowrap}
+/* Design concept slides: tap opens them full screen */
+.dc-shot{position:relative;display:block;width:100%;padding:0;border:0;background:#fff;cursor:zoom-in}
+.dc-img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#fff}
+.dc-img.dc-cover{object-fit:cover}
+@media (max-width:767px){.dc-pan{overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}.dc-pan::-webkit-scrollbar{display:none}.dc-pan .dc-shot{width:max-content}.dc-pan .dc-img{height:260px;width:auto;max-width:none;aspect-ratio:16/9}.dc-cap{padding:8px 14px 12px!important}}
