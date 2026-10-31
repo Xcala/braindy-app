@@ -52,7 +52,7 @@ export function TalkToNico({ brandName }: { brandName: string }) {
         {t('home.talkNico')}<Icon name="chevronDown" size={16} />
       </button>
       {open && (
-        <div className="menu absolute right-0 top-[52px] z-40 flex w-[min(300px,calc(100vw-32px))] flex-col gap-0.5" role="menu" aria-label={t('home.talkNico')}>
+        <div className="menu absolute left-0 top-[52px] z-40 flex w-[min(300px,calc(100vw-32px))] flex-col gap-0.5" role="menu" aria-label={t('home.talkNico')}>
           {group
             ? <a href={group} {...ext}><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.group')}</a>
             : admin

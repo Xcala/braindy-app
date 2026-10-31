@@ -9,7 +9,6 @@ type Status = 'delivered' | 'in_progress' | 'decision' | 'client' | 'discarded';
 interface SiteChange { id: string; key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: Status; link?: string; round?: string; updatedAt?: Timestamp }
 
 const STATUSES: Status[] = ['delivered', 'in_progress', 'decision', 'client', 'discarded'];
-const CHIP: Record<Status, string> = { delivered: 'c-approved', in_progress: 'c-prod', decision: 'c-approve', client: 'c-approve', discarded: 'c-archived' };
 
 function useSiteChanges(brandId: string) {
   const [list, setList] = useState<SiteChange[]>([]);
@@ -18,7 +17,14 @@ function useSiteChanges(brandId: string) {
   return list;
 }
 
-/** Site adjustments: the website triage synced from each site's working session (asked, delivered, state). */
+/** Share delivered, leaving out what was discarded. */
+const pct = (items: SiteChange[]) => {
+  const live = items.filter((x) => x.status !== 'discarded');
+  return live.length ? Math.round((live.filter((x) => x.status === 'delivered').length / live.length) * 100) : 100;
+};
+
+/** Site adjustments: the website triage synced from each site's working session (asked, delivered, state).
+ *  Builder's craft, signed by NickMark: progress at a glance, a legend that filters, one card per point. */
 export function SiteChanges({ brandId }: { brandId: string }) {
   const { t, lang } = useI18n();
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -27,58 +33,78 @@ export function SiteChanges({ brandId }: { brandId: string }) {
   const counts = useMemo(() => Object.fromEntries(STATUSES.map((s) => [s, list.filter((x) => x.status === s).length])) as Record<Status, number>, [list]);
   const groups = useMemo(() => {
     const out = new Map<string, SiteChange[]>();
-    for (const x of list) if (!filter || x.status === filter) out.set(x.group || '—', [...(out.get(x.group || '—') ?? []), x]);
-    return [...out];
+    for (const x of list) out.set(x.group || '—', [...(out.get(x.group || '—') ?? []), x]);
+    return [...out].map(([g, all]) => [g, all, all.filter((x) => !filter || x.status === filter)] as const).filter(([, , shown]) => shown.length);
   }, [list, filter]);
   if (!list.length) return null;
   const last = Math.max(...list.map((x) => x.updatedAt?.toMillis() ?? 0));
   const status = (s: Status) => t(`site.status.${s}` as StringKey);
+  const total = pct(list);
 
   return (
-    <section className="col g16" aria-labelledby="h-site">
-      <div className="row between g12 wrap" style={{ alignItems: 'flex-end' }}>
-        <div className="col g4">
-          <h2 className="h3" id="h-site">{t('site.title')}</h2>
-          <p className="t-sm t-mute">{t('site.sub', { n: list.length })}{last ? ` · ${t('site.updated', { date: new Date(last).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long' }) })}` : ''}</p>
-        </div>
-      </div>
-      <div className="row g8 wrap" role="group" aria-label={t('site.filter')}>
-        <button type="button" className={`btn btn-sm ${!filter ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={!filter} onClick={() => setFilter('')}>{t('site.all')} · {list.length}</button>
-        {STATUSES.filter((s) => counts[s]).map((s) => (
-          <button key={s} type="button" className={`btn btn-sm ${filter === s ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={filter === s} onClick={() => setFilter(filter === s ? '' : s)}>{status(s)} · {counts[s]}</button>
-        ))}
-      </div>
-      {groups.map(([group, items]) => (
-        <details key={group} className="card col" open={groups.length <= 3 || items.some((x) => x.status !== 'delivered')} style={{ padding: '14px 18px' }}>
-          <summary className="row between g12" style={{ cursor: 'pointer', listStyle: 'none' }}>
-            <span className="w7">{group}</span><span className="t-xs t-mute">{items.length}</span>
-          </summary>
-          <div className="col" style={{ marginTop: 8 }}>
-            {items.map((x) => (
-              <article key={x.id} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_170px]" style={{ padding: '14px 0', borderTop: '1px solid var(--line)' }}>
-                <div className="col g4 min-w-0">
-                  <span className="t-xs t-mute">{x.key}</span>
-                  <span className="w7">{x.title}</span>
-                  {x.request && <span className="t-sm">{x.request}</span>}
-                  {x.source && <span className="t-xs t-mute">{x.source}</span>}
-                </div>
-                <div className="col g4 min-w-0">
-                  {x.delivered && <><span className="label">{t('site.done')}</span><span className="t-sm" style={{ whiteSpace: 'pre-line' }}>{x.delivered}</span></>}
-                  {x.link && <a href={x.link} target="_blank" rel="noreferrer" className="t-sm">{t('site.seeChange')}</a>}
-                </div>
-                <div>
-                  {isAdmin ? (
-                    <select className="input" style={{ height: 36, fontSize: 13 }} aria-label={`${t('site.state')} ${x.key}`} value={x.status}
-                      onChange={(e) => updateDoc(doc(db, 'brands', brandId, 'siteChanges', x.id), { status: e.target.value, updatedAt: serverTimestamp() })}>
-                      {STATUSES.map((s) => <option key={s} value={s}>{status(s)}</option>)}
-                    </select>
-                  ) : <span className={`chip ${CHIP[x.status]}`}>{status(x.status)}</span>}
-                </div>
-              </article>
-            ))}
+    <section className="sx col g16" aria-labelledby="h-site">
+      <header className="sx-head">
+        <div className="sx-top">
+          <div className="col g8 min-w-0">
+            <span className="sx-by"><span className="brain b-builder"><img src="/brand/brains/builder.png" alt="" /></span>{t('site.by')}</span>
+            <h2 className="sx-title" id="h-site">{t('site.title')}</h2>
+            <p className="t-sm t-mute" style={{ margin: 0 }}>{t('site.sub', { n: list.length })}{last ? ` · ${t('site.updated', { date: new Date(last).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long' }) })}` : ''}</p>
           </div>
-        </details>
-      ))}
+          <div className="sx-pct" aria-label={`${total}% ${t('site.pct')}`}><b>{total}<small>%</small></b><span>{t('site.pct')}</span></div>
+        </div>
+        <div className="sx-bar" aria-hidden="true">
+          {STATUSES.filter((s) => counts[s]).map((s) => <span key={s} className={`is-${s}`} style={{ flexGrow: counts[s] }} />)}
+        </div>
+        <div className="sx-legend" role="group" aria-label={t('site.filter')}>
+          <button type="button" aria-pressed={!filter} onClick={() => setFilter('')}>{t('site.all')}<em>{list.length}</em></button>
+          {STATUSES.filter((s) => counts[s]).map((s) => (
+            <button key={s} type="button" className={`is-${s}`} aria-pressed={filter === s} onClick={() => setFilter(filter === s ? '' : s)}>
+              <i />{status(s)}<em>{counts[s]}</em>
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {groups.map(([group, all, items]) => {
+        const done = all.filter((x) => x.status === 'delivered').length;
+        const live = all.filter((x) => x.status !== 'discarded').length;
+        return (
+          <details key={group} className="sx-group" open={groups.length <= 3 || !!filter || items.some((x) => x.status !== 'delivered')}>
+            <summary>
+              <span className="sx-gname">{group}</span>
+              <span className="sx-gprog"><span className="sx-mini"><span style={{ width: `${pct(all)}%` }} /></span><span className="t-xs t-mute">{done}/{live}</span></span>
+              <svg className="sx-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div className="sx-items">
+              {items.map((x) => (
+                <article key={x.id} className={`sx-item is-${x.status}`}>
+                  <div className="sx-itop">
+                    <span className="sx-key">{x.key}</span>
+                    {isAdmin ? (
+                      <select className={`sx-status is-${x.status}`} aria-label={`${t('site.state')} ${x.key}`} value={x.status}
+                        onChange={(e) => updateDoc(doc(db, 'brands', brandId, 'siteChanges', x.id), { status: e.target.value, updatedAt: serverTimestamp() })}>
+                        {STATUSES.map((s) => <option key={s} value={s}>{status(s)}</option>)}
+                      </select>
+                    ) : <span className={`sx-status is-${x.status}`}>{status(x.status)}</span>}
+                  </div>
+                  <h3 className="sx-ititle">{x.title}</h3>
+                  {x.source && <span className="sx-src">{x.source}</span>}
+                  <div className="sx-cols">
+                    {x.request && <div className="sx-asked"><span className="sx-lbl">{t('site.asked')}</span><p>{x.request}</p></div>}
+                    {x.delivered && (
+                      <div className="sx-done">
+                        <span className="sx-lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>{t('site.done')}</span>
+                        <p>{x.delivered}</p>
+                      </div>
+                    )}
+                  </div>
+                  {x.link && <a className="sx-link" href={x.link} target="_blank" rel="noreferrer">{t('site.seeChange')}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg></a>}
+                </article>
+              ))}
+            </div>
+          </details>
+        );
+      })}
     </section>
   );
 }
