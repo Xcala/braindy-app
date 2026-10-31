@@ -32,6 +32,7 @@ import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
 import { MyPlan } from '../pages/MyPlan';
+import { Account } from '../pages/Account';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
@@ -63,6 +64,7 @@ export const router = createBrowserRouter([
           { path: 'learn', element: <Learn /> },
           { path: 'learn/:id', element: <LearnLesson /> },
           { path: 'plan', element: <MyPlan /> },
+          { path: 'account', element: <Account /> },
           { path: 'pay', element: <Pay /> },
           { path: 'pay/success', element: <PaySuccess /> },
           {

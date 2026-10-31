@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { BottomNav } from './BottomNav';
 import { Toaster } from '../components/Toaster';
-import { requestTour } from '../tour/useTour';
 import { useAuth } from '../auth/AuthProvider';
 import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
@@ -108,49 +106,19 @@ function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean 
   );
 }
 
+/** Your photo: opens the account page (ChatGPT-style list), where every setting has its own row. */
 function AccountMenu() {
-  const { profile, user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { profile, user } = useAuth();
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
-  const { can } = useMySections();
-  const box = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
-
   const name = profile?.name ?? user?.email ?? '';
-  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
+  const initials = name.split(/[s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
   return (
-    <div ref={box} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label={t('nav.account')}
-        className="row g12" style={{ appearance: 'none', border: 0, background: 'none', cursor: 'pointer', padding: 2, borderRadius: 999 }}>
-        {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
-        <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
-          <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
-          <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
-        </span>
-      </button>
-      {open && (
-        <div className="menu absolute right-0 top-[52px] z-40 w-60" role="menu">
-          <p className="t-sm t-mute truncate" style={{ padding: '8px 12px' }}>{user?.email}</p>
-          <div className="md:hidden">
-            {([['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/report', 'nav.report'], ['/learn', 'cr.nav'], ['/accesses', 'nav.accesses']] as Array<[string, StringKey]>).filter(([to]) => can(sectionOfPath(to))).map(([to, k]) => (
-              <NavLink key={to} role="menuitem" to={to} onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: 'none', color: 'var(--ink)' }}>{t(k)}</NavLink>
-            ))}
-          </div>
-          {profile?.role === 'admin' && <div className="sm:hidden"><NavLink role="menuitem" to="/admin/today" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.backToAdmin")}</NavLink></div>}
-          <button role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}
-            onClick={() => { setOpen(false); if (!requestTour()) navigate('/home?tour=1'); }}>{t('tour.see')}</button>
-          <NavLink role="menuitem" to="/settings" onClick={() => setOpen(false)} className="menu-item" style={{ textDecoration: "none", color: "var(--ink)" }}>{t("nav.settings")}</NavLink>
-          <button role="menuitem" onClick={logout} className="menu-item w-full text-left" style={{ border: 0, background: 'none', cursor: 'pointer' }}>
-            {t('common.signOut')}
-          </button>
-        </div>
-      )}
-    </div>
+    <Link to="/account" aria-label={t('acct.account')} className="row g12" style={{ textDecoration: 'none', padding: 2, borderRadius: 999 }}>
+      {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
+      <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
+        <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
+        <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
+      </span>
+    </Link>
   );
 }

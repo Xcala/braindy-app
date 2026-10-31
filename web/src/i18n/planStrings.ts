@@ -16,6 +16,7 @@ export const planEn = {
   'plan.h.proSpec': 'Up to 3 editors · ~10,000 visits / month · 5 GB · reply in 1 business day',
   'plan.h.ultraSpec': 'Everything in Pro, plus edits by asking from your AI or WhatsApp',
   'plan.talk': 'Talk to NickMark',
+  'acct.connected': '{n} connected', 'acct.more': 'More from your brand', 'acct.account': 'Account', 'acct.back': 'Back to account',
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
@@ -35,4 +36,5 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.h.proSpec': 'Hasta 3 editores · ~10.000 visitas / mes · 5 GB · respuesta en 1 día hábil',
   'plan.h.ultraSpec': 'Todo lo de Pro, más cambios pidiéndolos desde tu IA o tu WhatsApp',
   'plan.talk': 'Hablar con NicoMarca',
+  'acct.connected': '{n} conectados', 'acct.more': 'Más de tu marca', 'acct.account': 'Cuenta', 'acct.back': 'Volver a la cuenta',
 };

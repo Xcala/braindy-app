@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { ALL_COLS, AccessRow, gridFor, type AccessCol } from '../accesses/AccessRow';
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
+import { BackToAccount } from './Account';
 
 /** Accesses (design 07): encrypted credentials, reveal on demand, read-only access log. */
 export function Accesses() {
@@ -26,6 +27,7 @@ export function Accesses() {
 
   return (
     <div className="col g32">
+      <BackToAccount />
       <div className="row between g16 wrap">
         <div className="col g8">
           <p className="label">{current.name}</p>
