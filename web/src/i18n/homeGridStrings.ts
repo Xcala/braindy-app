@@ -2,6 +2,9 @@
 export const homeGridEn = {
   'hg.group': 'WhatsApp group',
   'hg.groupAdd': 'Add the WhatsApp group',
+  'hg.waNico': 'WhatsApp Nick',
+  'hg.emailNico': 'Email Nick',
+  'hg.textNico': 'Text Nick',
   'hg.groupAsk': 'Ask for a WhatsApp group',
   'hg.groupAskText': 'Hi Nick, can you set up the WhatsApp group for {brand}?',
   'hg.delivered': 'Delivered · waiting for your approval',
@@ -30,6 +33,9 @@ export const homeGridEn = {
 export const homeGridEs: Record<keyof typeof homeGridEn, string> = {
   'hg.group': 'Grupo de WhatsApp',
   'hg.groupAdd': 'Agregar grupo de WhatsApp',
+  'hg.waNico': 'WhatsApp Nico',
+  'hg.emailNico': 'Email Nico',
+  'hg.textNico': 'Mensaje de texto a Nico',
   'hg.groupAsk': 'Pedir grupo de WhatsApp',
   'hg.groupAskText': 'Hola Nico, ¿nos creas el grupo de WhatsApp de {brand}?',
   'hg.delivered': 'Entregado · espera tu aprobación',

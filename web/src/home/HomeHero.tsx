@@ -1,29 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
-import { useBrands } from '../brands/BrandProvider';
-import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
-import { noticesApi } from '../review/api';
 import { HomeStudio } from './HomeStudio';
-import { WhatsAppIcon } from '../components/Icon';
+import { TalkToNico } from './TalkToNico';
 
 /**
  * Home hero: the studio is the screen. Above it, one line (date + what needs you, or "anything is possible")
- * and WhatsApp: the brand's group first, NickMark directly second. The studio already shows him and his
- * Brains, so the hero repeats neither.
+ * and "Talk to Nick" with every way to reach him. The studio already shows him and his Brains, so the hero
+ * repeats neither.
  */
 export function HomeHero({ brandName, needsYou, open }: { brandName: string; needsYou: ScopedRequest[]; open: ScopedRequest[] }) {
-  const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
-  const { current } = useBrands();
-  const admin = useAuth().profile?.role === 'admin';
-  const [group, setGroup] = useState<{ name?: string; url: string } | null>(null);
-  useEffect(() => {
-    setGroup(null);
-    if (current) noticesApi.get(current.id).then((s) => setGroup((s.groups ?? []).find((g): g is { name?: string; url: string } => !!g.url) ?? null)).catch(() => setGroup(null));
-  }, [current?.id]);
   const today = new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
@@ -37,14 +23,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
               : <><span className="w9">{t('home.nothingNeeds')}</span> {t('home.possibleSub')}</>}
           </h1>
         </div>
-        <div className="row g8 wrap">
-          {group
-            ? <a className="btn btn-wa" href={group.url} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('hg.group')}</a>
-            : admin
-              ? <Link className="btn btn-wa" to="/settings?tab=notices"><WhatsAppIcon />{t('hg.groupAdd')}</Link>
-              : <a className="btn btn-wa" href={wa(t('hg.groupAskText', { brand: brandName }))} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('hg.groupAsk')}</a>}
-          <a className="btn btn-secondary" href={wa()} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('home.talkNico')}</a>
-        </div>
+        <TalkToNico brandName={brandName} />
       </div>
       <div data-tour="home-brains"><HomeStudio requests={open} /></div>
     </section>

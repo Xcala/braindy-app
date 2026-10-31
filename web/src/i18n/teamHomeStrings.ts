@@ -88,7 +88,7 @@ export const teamHomeEs: Record<keyof typeof teamHomeEn, string> = {
   'home.nothingNeeds': 'Hoy todo es posible.',
   'home.possibleSub': 'Hasta lo más extraño se hace.',
   'home.restMoving': 'Lo demás avanza.',
-  'home.talkNico': 'Hablar con Nico',
+  'home.talkNico': 'Habla con Nico',
   'home.brainLine.researcher': 'Conoce tu mercado en 72 horas.',
   'home.brainLine.marketer': 'Un motor de contenido que vende.',
   'home.brainLine.creator': 'Una marca que la gente recuerda.',
