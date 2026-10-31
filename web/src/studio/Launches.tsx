@@ -61,7 +61,7 @@ export function Launches() {
   const item = (w: Item, i: number, copy: boolean) => (
     <li key={`${i}-${key(w)}`} aria-hidden={copy || undefined}>
       <button type="button" className="sd-ticker-item" tabIndex={copy ? -1 : undefined} onClick={() => setOpen(key(w))}>
-        {w.kind === 'video' ? <video src={w.url} muted playsInline preload="metadata" aria-hidden="true" /> : <img src={w.url} alt="" loading="lazy" />}
+        {w.kind === 'video' ? <video src={w.url} muted playsInline preload="metadata" aria-hidden="true" /> : <img src={w.url} alt="" decoding="async" fetchPriority="low" />}
         <span className="col min-w-0">
           {w.community && <span className="sd-community">{t('st.community')}</span>}
           <b className="t-sm truncate">{w.title}</b>
