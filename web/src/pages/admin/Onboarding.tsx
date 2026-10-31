@@ -9,8 +9,11 @@ import { BrainCards } from '../../onboarding/BrainCards';
 import { NoticesList } from '../../onboarding/NoticesList';
 import { brainsApi } from '../../brains/useBrains';
 import { onboardingApi, type BrainDraft } from '../../onboarding/api';
+import { ContractPanel } from '../../contracts/admin/ContractPanel';
+import { ContractorForm } from '../../contracts/admin/ContractorForm';
+import { contractsApi } from '../../contracts/api';
 
-/** Admin · onboarding queue and "review and sign the Brand Brain" (design 18). */
+/** Admin · onboarding queue: step 1 contract, step 2 kickoff, step 3 review and sign the Brand Brain (design 18). */
 export function AdminOnboarding() {
   const { brands } = useBrands();
   const { t, lang } = useI18n();
@@ -26,7 +29,7 @@ export function AdminOnboarding() {
   const fmt = (d: Date) => d.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Bogota' });
 
   return (
-    <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-7 lg:grid-cols-[320px_minmax(0,1fr)]">
       <aside className="col g16">
         <div className="card col g8">
           <h2 className="h3">{t('ob.a.queue')}</h2>
@@ -43,13 +46,14 @@ export function AdminOnboarding() {
           {sessions.length === 0 && <p className="t-sm t-mute">{t('ob.a.noSessions')}</p>}
           {sessions.map((s) => <div key={s.id} className="row between t-sm"><span>{fmt(s.at)}</span><span className="w7 truncate">{brands.find((b) => b.id === s.brandId)?.name}</span></div>)}
         </div>
+        <ContractorForm />
         <div className="card col g8">
           <h2 className="h3">{t('ob.a.start')}</h2>
           <select className="input" value={startId} onChange={(e) => setStartId(e.target.value)} aria-label={t('ob.a.start')}>
             <option value="">{t('ob.a.pickBrand')}</option>
             {brands.filter((b) => !b.onboarding && b.status === 'active').map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
-          <button className="btn btn-secondary btn-sm" disabled={!startId} onClick={() => onboardingApi.start(startId).then(() => { setSel(startId); setStartId(''); })}>{t('ob.a.startBtn')}</button>
+          <button className="btn btn-secondary btn-sm" disabled={!startId} onClick={() => contractsApi.create(startId, 'brand3m').then(() => { setSel(startId); setStartId(''); })}>{t('ob.a.startBtn')}</button>
         </div>
       </aside>
       {selected ? <SignPanel key={selected.id} brand={selected} /> : <div className="card t-mute">{t('ob.a.queueEmpty')}</div>}
@@ -74,10 +78,17 @@ function SignPanel({ brand }: { brand: Brand }) {
     <section className="col g20">
       <div className="col g8">
         <p className="t-sm t-mute w7">{brand.name} · {t(`ob.a.step.${step}`)}</p>
-        <div className="row g12 wrap"><h1 className="h1">{t('ob.a.title')}</h1><span className="chip c-draft">{t('ob.namePending')}</span></div>
+        <div className="row g12 wrap"><h1 className="h1">{t(step === 'contract' || step === 'kickoff' ? 'ctr.a.pageTitle' : 'ob.a.title')}</h1>{step !== 'contract' && step !== 'kickoff' && <span className="chip c-draft">{t('ob.namePending')}</span>}</div>
       </div>
       <NoticesList brandId={brand.id} />
-      {!draft ? <div className="card t-mute">{step === 'brief' ? t('ob.a.briefInProgress') : t('common.loading')}</div> : (
+      <ContractPanel brand={brand} />
+      {step === 'kickoff' && (
+        <div className="card row between g12 wrap" style={{ padding: 22 }}>
+          <span className="t-sm">{t('ctr.a.kickoffNote')}</span>
+          <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => run(() => onboardingApi.start(brand.id), t('ob.a.saved'))}>{t('ctr.a.toStrategy')}</button>
+        </div>
+      )}
+      {(step === 'contract' || step === 'kickoff') ? (msg && <p className="t-sm" role="status">{msg}</p>) : !draft ? <div className="card t-mute">{step === 'brief' ? t('ob.a.briefInProgress') : t('common.loading')}</div> : (
         <>
           <BrainCards brain={draft} onChange={setDraft} />
           <div className="card row between g16 wrap" style={{ padding: 22 }}>

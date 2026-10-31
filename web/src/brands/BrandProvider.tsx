@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
+import type { CityPlace } from './cities';
 
 export interface Brand {
   id: string;
@@ -12,12 +13,17 @@ export interface Brand {
   logoUrl: string | null;
   /** Old apps this brand was migrated from: brands, orbit, brief, brandbook. */
   sources: string[];
-  /** First 11 days (wave F). Absent for brands that were already running. */
+  /** Onboarding steps 1 to 6 (wave F). Absent for brands that were already running. */
   onboarding: Onboarding | null;
+  /** Where the client is (an id from cities.ts); their home studio shows its time on the second wall clock. */
+  city: string | CityPlace | null;
+  /** Drive folders the client sees in My files; absent or mode 'all' means every folder. */
+  fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
 }
 
-export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
-export interface Onboarding { step: OnboardingStep; sessionAt?: Date | null; signedAt?: Date | null; liveAt?: Date | null }
+/** contract = step 1 (rules of the game), kickoff = step 2, brief → firstDelivery = step 3 (strategy and training). */
+export type OnboardingStep = 'contract' | 'kickoff' | 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
+export interface Onboarding { step: OnboardingStep; contractId?: string | null; kickoffAt?: Date | null; sessionAt?: Date | null; signedAt?: Date | null; liveAt?: Date | null }
 
 interface BrandState {
   brands: Brand[];
@@ -38,10 +44,14 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   logoUrl: (d.logoUrl as string) ?? null,
   sources: sourcesOf(d.legacyIds as Record<string, unknown[]> | undefined),
   onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
+  city: (d.city as Brand['city']) ?? null,
+  fileAccess: (d.fileAccess as Brand['fileAccess']) ?? null,
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
   step: o.step as OnboardingStep,
+  contractId: (o.contractId as string) ?? null,
+  kickoffAt: (o.kickoffAt as { toDate?: () => Date })?.toDate?.() ?? null,
   sessionAt: (o.sessionAt as { toDate?: () => Date })?.toDate?.() ?? null,
   signedAt: (o.signedAt as { toDate?: () => Date })?.toDate?.() ?? null,
   liveAt: (o.liveAt as { toDate?: () => Date })?.toDate?.() ?? null,
@@ -111,6 +121,11 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   };
 
   return <BrandContext.Provider value={{ brands, current, select, loading }}>{children}</BrandContext.Provider>;
+}
+
+/** Same as useBrands, but null outside the app shell (the sign-in page shows the studio without brands). */
+export function useBrandsMaybe(): BrandState | null {
+  return useContext(BrandContext);
 }
 
 export function useBrands(): BrandState {

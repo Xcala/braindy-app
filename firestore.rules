@@ -73,6 +73,32 @@ service cloud.firestore {
         || (a.size() > 2 && approverAt(a[2])));
     }
 
+    // Sections NickMark opens per person (brand, requests, files, apps, research, results, learn, accesses, billing).
+    // Without a list: owners everything, members all but accesses and billing. The nearest membership decides (as the API).
+    function allowsAt(id, s) {
+      let m = get(memberPath(id)).data;
+      return m.get('sections', null) == null
+        ? (m.role == 'client_owner' || !(s in ['accesses', 'billing']))
+        : s in m.sections;
+    }
+
+    function can(brandId, s) {
+      let a = ancestors(brandId);
+      return signedIn() && (memberAt(brandId) ? allowsAt(brandId, s)
+        : a.size() > 0 && memberAt(a[0]) ? allowsAt(a[0], s)
+        : a.size() > 1 && memberAt(a[1]) ? allowsAt(a[1], s)
+        : a.size() > 2 && memberAt(a[2]) && allowsAt(a[2], s));
+    }
+
+    function fileAllowed(brandId, a) {
+      let fa = get(/databases/$(database)/documents/brands/$(brandId)).data.get('fileAccess', {});
+      // Fields read directly (no defaults), so a query on a hidden folder cannot be proven safe and is denied.
+      return fa.get('mode', 'all') != 'selected'
+        || a.source == 'legacy'
+        || a.folder.split('/')[0] == 'Uploads'
+        || a.folder.split('/')[0] in fa.get('folders', []);
+    }
+
     function canReadBrand(brandId) {
       return isAdmin() || isMember(brandId);
     }
@@ -103,8 +129,10 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Drive folders the client may see: brands/{id}.fileAccess = { mode: 'all' | 'selected', folders: [top-level names] }.
+      // The Uploads folder and legacy documents are always visible to the brand; '' stands for files at the root.
       match /assets/{assetId} {
-        allow read: if canReadBrand(brandId);
+        allow read: if isAdmin() || (can(brandId, 'files') && fileAllowed(brandId, resource.data));
         allow write: if isAdmin();
       }
 
@@ -195,21 +223,30 @@ service cloud.firestore {
       // Credential metadata only; secrets are encrypted server-side (KMS) and revealed
       // through the backend, which writes the audit log. No client writes, ever.
       match /accesses/{accessId} {
-        allow read: if isAdmin() || isOwner(brandId);
+        allow read: if isAdmin() || can(brandId, 'accesses');
         allow write: if false;
       }
 
       // Billing (plan, invoices, transfer receipts): owners and admin read. Backend writes (Stripe webhook).
       match /billing/{docId} {
-        allow read: if isAdmin() || isOwner(brandId);
+        allow read: if isAdmin() || can(brandId, 'billing');
+        allow write: if false;
+      }
+      // Contracts (rules of the game + schedule, signed in the app). Drafts are admin only. Once sent, the
+      // signer named by NickMark and the people who see billing read it. Nobody writes from the client:
+      // the backend fills, signs and seals it, and a signed contract never changes (amendments are new documents).
+      match /contracts/{contractId} {
+        allow read: if isAdmin()
+          || (isMember(brandId) && resource.data.status != 'draft'
+              && (can(brandId, 'billing') || request.auth.token.get('email', '') == resource.data.signer.email));
         allow write: if false;
       }
       match /invoices/{invoiceId} {
-        allow read: if isAdmin() || isOwner(brandId);
+        allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
       }
       match /transfers/{transferId} {
-        allow read: if isAdmin() || isOwner(brandId);
+        allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
       }
 
@@ -247,7 +284,7 @@ service cloud.firestore {
 
       // Append-only log of every add/change/reveal/copy (never holds values). Backend writes.
       match /accessLog/{eventId} {
-        allow read: if isAdmin() || isOwner(brandId);
+        allow read: if isAdmin() || can(brandId, 'accesses');
         allow write: if false;
       }
     }
@@ -295,6 +332,11 @@ service cloud.firestore {
     // ---------- pending invitations (backend only; claimed on first sign-in) ----------
     match /invites/{inviteId} {
       allow read, write: if false;
+    }
+
+    // ---------- contractor profile for contracts (NickMark's legal data): admin only ----------
+    match /config/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // ---------- audit (backend writes only) ----------

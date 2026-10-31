@@ -10,6 +10,10 @@
 .sd-hot { position: absolute; transform: translate(-50%, -50%); border-radius: 40%; background: transparent; border: 0; cursor: pointer; }
 .sd-hot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .sd-clock b { position: absolute; display: grid; place-items: center; background: #0B0D12; font-family: 'Red Hat Mono', ui-monospace, monospace; font-weight: 400; font-size: 1.85cqw; font-variant-numeric: tabular-nums; color: #F4F7FF; text-shadow: 0 0 .5cqw #FFFFFFAA; border-radius: .2cqw; overflow: hidden; white-space: nowrap; }
+.sd-clock b { grid-template-rows: 1fr auto; padding: .15cqw 0 .2cqw; }
+.sd-clock b span { align-self: end; font-size: 1.35cqw; line-height: 1; }
+.sd-clock b small { font-size: .68cqw; line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: #AEB6CC; text-shadow: none; }
+.sd-clock i { position: absolute; display: grid; place-items: center; background: #0B0D12; font: 700 .62cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; letter-spacing: .04em; text-transform: uppercase; color: #E9EDF7; white-space: nowrap; overflow: hidden; }
 .sd-bubbles { position: absolute; inset: 0; pointer-events: none; transition: opacity .4s; }
 .sd-bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 12px; padding: 6px 10px; font-size: clamp(9px, .8cqw, 12px); line-height: 1.3; backdrop-filter: blur(8px); box-shadow: 0 6px 24px #0006; }
 .sd-bubble .who { font-weight: 900; display: flex; align-items: center; gap: 6px; }
@@ -17,6 +21,7 @@
 .sd-bubble .st { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .85em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
 .sd-badge { position: absolute; right: 3%; top: 4%; font-size: clamp(10px, .95cqw, 14px); font-weight: 700; color: #fff; background: #2F4DE0; border-radius: 999px; padding: 6px 12px; pointer-events: none; }
 .sd-hint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9cqw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
+.sd-sim { position: absolute; left: 3%; top: 4%; font-size: clamp(10px, .9cqw, 12px); font-weight: 700; color: #1A1200; background: #F5B301; border-radius: 999px; padding: 6px 12px; border: 0; font-family: inherit; cursor: pointer; z-index: 2; }
 .sd-closeup { opacity: 0; transition: opacity .7s ease; pointer-events: none; }
 .sd-closeup.on { opacity: 1; }
 .sd-back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1cqw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
@@ -26,10 +31,12 @@
 .sd-scene.zoomed .sd-hot { pointer-events: none; }
 .sd-scene.zoomed .sd-focus { cursor: auto; }
 
-.sd-focus { position: absolute; top: 4%; width: min(34%, 360px); max-height: 92%; overflow: auto; background: #0B1022EE; border: 1px solid #2C3558; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1cqw, 14px); backdrop-filter: blur(10px); box-shadow: 0 12px 40px #0008; opacity: 0; transform: translateY(8px); transition: opacity .5s .4s, transform .5s .4s; pointer-events: none; }
-.sd-scene.zoomed .sd-focus { opacity: 1; transform: none; pointer-events: auto; }
-.sd-focus.left { left: 3%; } .sd-focus.right { right: 3%; }
-.sd-focus.bl { left: 3%; top: auto; bottom: 4%; } .sd-focus.br { right: 3%; top: auto; bottom: 4%; }
+/* Zoomed: the close-up fills the left part and the card is a full-height panel on the right, never over the image. */
+.sd-scene { --panel: 28%; }
+.sd-scene.zoomed .sd-closeup { width: calc(100% - var(--panel)); }
+.sd-scene.zoomed .sd-back { left: calc((100% - var(--panel)) / 2); }
+.sd-focus { position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel); overflow: auto; background: #0B1022; border-left: 1px solid #2C3558; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1cqw, 14px); box-shadow: -12px 0 40px #0008; transform: translateX(100%); transition: transform .6s cubic-bezier(.22,.7,.18,1); pointer-events: none; }
+.sd-scene.zoomed .sd-focus { transform: none; pointer-events: auto; }
 .sd-focus h3 { margin: 0; font-size: 1.25em; font-weight: 900; color: #fff; }
 .sd-focus .lbl { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .74em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
 .sd-focus .now { background: #151C36; border-radius: 10px; padding: 8px 10px; }
@@ -37,6 +44,7 @@
 .sd-focus .row:last-child { border-bottom: 0; }
 .sd-focus .row small { font-family: 'Red Hat Mono', ui-monospace, monospace; color: #8F98B2; }
 .sd-focus a { color: #9DB3FF; }
+.sd-focus .note { margin: 0; color: #AEB6CC; line-height: 1.4; }
 .sd-btn { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
 .sd-btn.ghost { background: transparent; border: 1px solid #3A4570; }
 .sd-btn.ok { background: #1F7A4D; }
@@ -47,3 +55,10 @@
 .sd-seg button { flex: 1; font: inherit; font-size: .85em; font-weight: 700; color: #8F98B2; background: none; border: 0; border-radius: 7px; padding: 6px; cursor: pointer; }
 .sd-seg button.on { background: #1B2342; color: #fff; }
 @media (prefers-reduced-motion: reduce) { .sd-cam, .sd-closeup, .sd-focus { transition: none; } }
+
+/* Compact: the sign-in stage shows the whole studio in a narrow column (no horizontal scroll, no hint). */
+.sd-compact .sd-scene { min-width: 0; }
+.sd-compact .sd-hint { display: none; }
+.sd-compact .sd-bubble { padding: 4px 7px; border-radius: 9px; max-width: 24%; }
+.sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
+.sd-live { transition: opacity .3s; }

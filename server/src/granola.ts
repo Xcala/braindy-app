@@ -9,13 +9,14 @@ import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { logError } from './guard.js';
 import type { AuthEnv } from './auth.js';
+import { syncFolders } from './granolaFolders.js';
 
-const API = 'https://public-api.granola.ai/v1';
-const KEY = process.env.GRANOLA_API_KEY?.trim();
+export const API = 'https://public-api.granola.ai/v1';
+export const KEY = process.env.GRANOLA_API_KEY?.trim();
 const SECRET = process.env.GRANOLA_WEBHOOK_SECRET?.trim();
 const PUBLIC_DOMAINS = new Set(['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'live.com', 'braindy.co', 'xent.co']);
 
-type Note = {
+export type Note = {
   id: string; title: string | null; summary_markdown: string | null; summary_text: string; web_url?: string;
   attendees?: Array<{ name?: string; email?: string }>; calendar_event?: { scheduled_start_time?: string | null } | null; created_at: string;
 };
@@ -34,7 +35,7 @@ export function verifyGranola(raw: string, id?: string, ts?: string, sig?: strin
   });
 }
 
-async function getNote(id: string): Promise<Note | null> {
+export async function getNote(id: string): Promise<Note | null> {
   if (!KEY) return null;
   const r = await fetch(`${API}/notes/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${KEY}` }, signal: AbortSignal.timeout(15_000) });
   return r.ok ? ((await r.json()) as Note) : null;
@@ -70,13 +71,13 @@ async function removeStrayCopies(noteId: string, keep: string | null) {
 }
 
 /** Files one Granola note: meeting under the brand (idempotent by note id) or into the inbox. */
-export async function fileNote(note: Note, forcedBrand?: string) {
+export async function fileNote(note: Note, forcedBrand?: string, viaFolder = false) {
   const title = note.title || 'Granola';
   const emails = (note.attendees ?? []).map((a) => String(a.email ?? '')).filter(Boolean);
   const map = db.doc(`granolaNotes/${note.id}`);
   const mapped = await map.get();
-  // A brand chosen by hand stays; otherwise match again (participants and title).
-  const brandId = forcedBrand ?? (mapped.get('manual') ? (mapped.get('brandId') as string) : await matchBrand(title, emails));
+  // A brand chosen by hand or by its Granola folder stays; otherwise match again (participants and title).
+  const brandId = forcedBrand ?? (mapped.get('manual') || mapped.get('folder') ? (mapped.get('brandId') as string) : await matchBrand(title, emails));
   const doc = {
     title: title.slice(0, 160), date: String(note.calendar_event?.scheduled_start_time ?? note.created_at).slice(0, 10),
     notes: String(note.summary_markdown || note.summary_text || '').slice(0, 20_000), source: 'granola', granolaId: note.id,
@@ -93,7 +94,7 @@ export async function fileNote(note: Note, forcedBrand?: string) {
     return { status: 'inbox' as const };
   }
   await db.doc(`brands/${brandId}/meetings/granola-${note.id}`).set(doc, { merge: true });
-  await map.set({ brandId, at: FieldValue.serverTimestamp() });
+  await map.set({ brandId, at: FieldValue.serverTimestamp(), ...(viaFolder ? { folder: true } : mapped.get('folder') ? { folder: true } : {}) });
   await db.doc(`granolaInbox/${note.id}`).delete().catch(() => undefined);
   return { status: 'filed' as const, brandId };
 }
@@ -126,6 +127,7 @@ adminGranola.post('/granola/sync', async (c) => {
   const days = Math.min(90, Math.max(1, Number(c.req.query('days') ?? 30)));
   const after = new Date(Date.now() - days * 864e5).toISOString();
   const counts = { filed: 0, inbox: 0, empty: 0 };
+  const folders = await syncFolders(true).catch((e) => { logError(e, { where: 'granola-folders' }); return null; });
   let cursor: string | null = null;
   for (let page = 0; page < 20; page++) {
     const q = new URLSearchParams({ created_after: after, page_size: '30', ...(cursor ? { cursor } : {}) });
@@ -139,7 +141,7 @@ adminGranola.post('/granola/sync', async (c) => {
     if (!j.hasMore || !j.cursor) break;
     cursor = j.cursor;
   }
-  return c.json(counts);
+  return c.json({ ...counts, folders });
 });
 
 adminGranola.post('/granola/inbox/:id/assign', async (c) => {
@@ -159,4 +161,10 @@ adminGranola.post('/granola/inbox/:id/assign', async (c) => {
 adminGranola.post('/granola/inbox/:id/ignore', async (c) => {
   await db.doc(`granolaInbox/${c.req.param('id')}`).set({ status: 'ignored' }, { merge: true });
   return c.json({ ok: true });
+});
+
+// Throttled folder sync, called when NickMark opens a brand's Home (at most every 10 minutes).
+adminGranola.post('/granola/folders', async (c) => {
+  if (!KEY) return c.json({ error: 'granola_not_configured' }, 503);
+  try { return c.json((await syncFolders(c.req.query('force') === '1')) ?? {}); } catch (e) { logError(e, { where: 'granola-folders' }); return c.json({ error: 'granola_failed' }, 502); }
 });

@@ -14,7 +14,7 @@ type Action = 'added' | 'updated' | 'deleted' | 'revealed' | 'copied';
 
 async function canHandle(uid: string, brandId: string) {
   const a = await brandAccess(uid, brandId);
-  return a.admin || a.role === 'client_owner';
+  return a.admin || a.sections.includes('accesses');
 }
 
 async function actorName(uid: string, email?: string) {

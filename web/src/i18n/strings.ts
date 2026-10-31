@@ -6,6 +6,7 @@ import { accessEn, accessEs } from './accessStrings';
 import { reviewEn, reviewEs } from './reviewStrings';
 import { onboardingEn, onboardingEs } from './onboardingStrings';
 import { billingEn, billingEs } from './billingStrings';
+import { planEn, planEs } from './planStrings';
 import { contractEn, contractEs } from './contractStrings';
 import { uxEn, uxEs } from './uxStrings';
 import { brainEn, brainEs } from './brainStrings';
@@ -47,6 +48,10 @@ const baseEn = {
   'brand.logos': 'Logos',
   'brand.colors': 'Colors',
   'brand.typography': 'Typography',
+  'brand.fontDownload': 'Download font', 'brand.fontAdobe': 'Activate on Adobe Fonts', 'brand.fontFind': 'Find where to download it',
+  'lb.image': 'Image', 'lb.download': 'Download', 'lb.close': 'Close', 'lb.prev': 'Previous', 'lb.next': 'Next',
+  'fa.clientSees': 'The client sees {n} of {m} folders', 'fa.showAll': 'Show all', 'fa.on': 'Visible', 'fa.off': 'Hidden', 'fa.toggleLabel': 'Visible to the client: {name}', 'fa.onHint': 'The client sees this folder. Tap to hide it.', 'fa.offHint': 'Hidden from the client. Tap to show it.', 'fa.root': 'Loose files', 'fa.error': 'Could not save. Try again.', 'fa.hiddenTag': 'hidden from the client',
+  'perm.profile': 'What they can see', 'perm.all': 'Sees everything', 'perm.team': 'Team', 'perm.view': 'View only', 'perm.custom': 'Custom', 'perm.allHint': 'Everything, including Accesses and Billing. Can invite their team.', 'perm.teamHint': 'Everything except Accesses and Billing.', 'perm.viewHint': 'Sees the brand, files, apps, research and results. Does not request or approve.', 'perm.sections': 'Sections', 'perm.billing': 'Billing', 'perm.hint': 'Pick a profile or tap each section to open or close it. Home is always open.', 'perm.groupHint': 'This is a group: what you give here applies to all its brands. For someone from one brand only, invite them from that brand.', 'perm.error': 'Could not save the change. Try again.',
   'brand.voice': 'Voice',
   'brand.essence': 'Essence',
   'brand.tone': 'Tone principles',
@@ -144,6 +149,7 @@ const baseEn = {
   'admin.brands.colKind': 'Kind',
   'admin.brands.colFrom': 'Migrated from',
   'admin.brands.colStatus': 'Status',
+  'admin.brands.colCity': 'City', 'admin.brands.noCity': 'Bogotá (default)',
   'admin.brands.brand': 'Brand',
   'admin.brands.newInApp': 'New in app',
   'admin.brands.expand': 'Expand',
@@ -164,6 +170,7 @@ const baseEn = {
   'login.hero2': 'remembered.',
   'login.heroBody': 'Every file, request and approval in one place, signed by NickMark. You will see the work happening.',
   'login.brainsAlt': 'Researcher, Marketer, Creator and Builder',
+  'login.studioAlt': 'NickMark and his four Brains working in the Braindy studio in San Francisco', 'login.studioLive': 'Live from San Francisco',
   'login.line1': 'Made by NickMark.',
   'login.line2': 'Powered by his Brains.',
   'login.title1': 'Sign in to Br',
@@ -177,13 +184,14 @@ const baseEn = {
   'login.forgot': 'Forgot password?',
   'login.forgotNeedsEmail': 'Write your email first.',
   'login.forgotSent': 'If that email has an account, a reset link is on its way.',
+  'login.sendLink': 'Email me a sign-in link', 'login.linkHint': 'Works with any email, no password.', 'login.usePassword': 'Use a password', 'login.useLink': 'Get a link by email instead', 'login.linkSentTitle': 'Check your inbox', 'login.linkSent': 'We sent a sign-in link to {email}. Open it on this device to come in. If you do not see it, check junk mail.', 'login.linkOther': 'Use another email', 'login.linkConfirm': 'Confirm the email you got the link at to come in.', 'login.linkFinish': 'Come in', 'login.linkError': 'That link expired or was already used. Ask for a new one.', 'team.linkSent': 'We emailed {email} a link to come in.', 'team.resend': 'Resend link',
   'login.submit': 'Sign in',
   'login.error': 'We could not sign you in. Check your details and try again.',
   'login.invite': 'Accounts are created by invitation. Need access?',
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...contractEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...planEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -219,6 +227,10 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'brand.logos': 'Logos',
   'brand.colors': 'Colores',
   'brand.typography': 'Tipografía',
+  'brand.fontDownload': 'Descargar fuente', 'brand.fontAdobe': 'Activar en Adobe Fonts', 'brand.fontFind': 'Buscar dónde descargarla',
+  'lb.image': 'Imagen', 'lb.download': 'Descargar', 'lb.close': 'Cerrar', 'lb.prev': 'Anterior', 'lb.next': 'Siguiente',
+  'fa.clientSees': 'El cliente ve {n} de {m} carpetas', 'fa.showAll': 'Mostrar todas', 'fa.on': 'Visible', 'fa.off': 'Oculta', 'fa.toggleLabel': 'Visible para el cliente: {name}', 'fa.onHint': 'El cliente ve esta carpeta. Toca para ocultarla.', 'fa.offHint': 'Oculta al cliente. Toca para mostrársela.', 'fa.root': 'Archivos sueltos', 'fa.error': 'No se pudo guardar. Intenta de nuevo.', 'fa.hiddenTag': 'oculta al cliente',
+  'perm.profile': 'Qué puede ver', 'perm.all': 'Ve todo', 'perm.team': 'Equipo', 'perm.view': 'Solo ver', 'perm.custom': 'Personalizado', 'perm.allHint': 'Todo, incluidos Accesos y Facturación. Puede invitar a su equipo.', 'perm.teamHint': 'Todo menos Accesos y Facturación.', 'perm.viewHint': 'Mira la marca, archivos, apps, investigación y resultados. No pide ni aprueba.', 'perm.sections': 'Secciones', 'perm.billing': 'Facturación', 'perm.hint': 'Elige un perfil o toca cada sección para abrirla o cerrarla. Inicio siempre está abierto.', 'perm.groupHint': 'Este es un grupo: lo que des aquí vale para todas sus marcas. Para alguien de una sola marca, invítalo desde esa marca.', 'perm.error': 'No se pudo guardar el cambio. Intenta de nuevo.',
   'brand.voice': 'Voz',
   'brand.essence': 'Esencia',
   'brand.tone': 'Principios de tono',
@@ -316,6 +328,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'admin.brands.colKind': 'Tipo',
   'admin.brands.colFrom': 'Migrada desde',
   'admin.brands.colStatus': 'Estado',
+  'admin.brands.colCity': 'Ciudad', 'admin.brands.noCity': 'Bogotá (por defecto)',
   'admin.brands.brand': 'Marca',
   'admin.brands.newInApp': 'Nueva en la app',
   'admin.brands.expand': 'Expandir',
@@ -336,6 +349,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.hero2': 'recordada.',
   'login.heroBody': 'Cada archivo, solicitud y aprobación en un solo lugar, firmado por NicoMarca. Vas a ver el trabajo avanzar.',
   'login.brainsAlt': 'Researcher, Marketer, Creator y Builder',
+  'login.studioAlt': 'NicoMarca y sus cuatro Brains trabajando en el estudio de Braindy en San Francisco', 'login.studioLive': 'En vivo desde San Francisco',
   'login.line1': 'Lo hace NicoMarca.',
   'login.line2': 'Sus Brains lo aceleran.',
   'login.title1': 'Entra a Br',
@@ -349,10 +363,11 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.forgot': '¿Olvidaste tu contraseña?',
   'login.forgotNeedsEmail': 'Escribe primero tu correo.',
   'login.forgotSent': 'Si ese correo tiene cuenta, te llegará un enlace para cambiar la contraseña.',
+  'login.sendLink': 'Enviarme un enlace para entrar', 'login.linkHint': 'Sirve con cualquier correo, sin contraseña.', 'login.usePassword': 'Usar contraseña', 'login.useLink': 'Mejor recibir un enlace por correo', 'login.linkSentTitle': 'Revisa tu correo', 'login.linkSent': 'Te enviamos un enlace para entrar a {email}. Ábrelo en este dispositivo. Si no lo ves, revisa el correo no deseado.', 'login.linkOther': 'Usar otro correo', 'login.linkConfirm': 'Confirma el correo en el que recibiste el enlace para entrar.', 'login.linkFinish': 'Entrar', 'login.linkError': 'Ese enlace venció o ya se usó. Pide uno nuevo.', 'team.linkSent': 'Le enviamos a {email} un enlace para entrar.', 'team.resend': 'Reenviar enlace',
   'login.submit': 'Entrar',
   'login.error': 'No pudimos iniciar tu sesión. Revisa tus datos e intenta de nuevo.',
   'login.invite': 'Las cuentas se crean por invitación. ¿Necesitas acceso?',
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...contractEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...planEs };

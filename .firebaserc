@@ -5,7 +5,12 @@
   "targets": {
     "braindy-brand-guideline": {
       "hosting": {
-        "staging": ["braindy-app-staging"]
+        "staging": [
+          "braindy-app-staging"
+        ],
+        "production": [
+          "braindy-app"
+        ]
       }
     }
   }

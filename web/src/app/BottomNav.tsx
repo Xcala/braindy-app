@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
+import { sectionOfPath, useMySections } from '../team/sections';
 
 const svg = (d: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
@@ -14,9 +15,10 @@ const ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: 
 /** Mobile bottom navigation (design 25): Home · Brand · Ask (central) · Requests · Assets. */
 export function BottomNav() {
   const { t } = useI18n();
+  const { can } = useMySections();
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 md:hidden"><nav className="bnav" aria-label={t('nav.sections')}>
-      {ITEMS.map((i) => (
+      {ITEMS.filter((i) => can(sectionOfPath(i.to))).map((i) => (
         <NavLink key={i.to} to={i.to} data-tour={i.fab ? 'ask-nav-m' : undefined} className={({ isActive }) => `${i.fab ? 'fab' : ''} ${isActive ? 'is-active' : ''}`} aria-label={i.fab ? t('nav.ask') : undefined}>
           {i.fab ? <span className="f">{i.icon}</span> : i.icon}
           {t(i.label)}

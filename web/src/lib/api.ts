@@ -18,8 +18,9 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     // The server's own message (e.g. a validation error) rides after the status, so callers can still match 'API 4xx'.
-    const detail = await res.json().then((b: { message?: string }) => b?.message, () => undefined).catch(() => undefined);
-    throw new Error(detail ? `API ${res.status} · ${detail}` : `API ${res.status}`);
+    const body = await res.json().catch(() => null) as Record<string, unknown> | null;
+    const detail = typeof body?.message === 'string' ? body.message : '';
+    throw Object.assign(new Error(detail ? `API ${res.status} · ${detail}` : `API ${res.status}`), { status: res.status, body });
   }
   return res.json() as Promise<T>;
 }

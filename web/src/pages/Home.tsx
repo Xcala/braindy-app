@@ -14,6 +14,7 @@ import { HomeStudio } from '../home/HomeStudio';
 import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner, ResultsCard, WhatsappCard } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
+import { HomeMeetings } from '../home/HomeMeetings';
 
 export function Home() {
   const { current, brands, select } = useBrands();
@@ -70,6 +71,7 @@ export function Home() {
               <div className="grid gap-4 sm:grid-cols-3">{delivered.map((r) => <DeliveredShot key={`${r.brandId}/${r.id}`} r={r} />)}</div>
             )}
           </section>
+          {profile?.role === 'admin' && <HomeMeetings brandId={current.id} />}
         </div>
         <aside className="col g16 min-w-0">
           <ResultsCard brandId={current.id} />
