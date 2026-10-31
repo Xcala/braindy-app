@@ -7,6 +7,7 @@ import type { ScopedRequest } from '../requests/useBrandsRequests';
 import { useBrands } from '../brands/BrandProvider';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { HomeStudio } from './HomeStudio';
+import { WhatsAppIcon } from '../components/Icon';
 
 /**
  * Home hero: the studio is the screen. Above it, one line (date + what needs you, or "anything is possible")
@@ -30,7 +31,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
               : <><span className="w9">{t('home.nothingNeeds')}</span> {t('home.possibleSub')}</>}
           </h1>
         </div>
-        <a className="btn btn-primary" href={wa()} target="_blank" rel="noreferrer">{t('home.talkNico')}</a>
+        <a className="btn btn-wa" href={wa()} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('home.talkNico')}</a>
       </div>
       {shown.length > 0 && (
         <div className="grid gap-3 md:grid-cols-3">
