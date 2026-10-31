@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { useI18n } from '../i18n/I18nProvider';
 import { noticesApi, type NoticeSettings } from '../review/api';
 
+type Card = 'wa' | 'notices';
 type Approver = { uid: string; email: string; role: string };
 const KEYS = ['delivery', 'approved', 'brandBrain', 'report'] as const;
 /** Same rule as the API: an invite link of WhatsApp itself. */
@@ -14,7 +15,7 @@ export function NoticesCard({ brandId }: { brandId: string }) {
   const { t } = useI18n();
   const [s, setS] = useState<NoticeSettings | null>(null);
   const [approvers, setApprovers] = useState<Approver[]>([]);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string; card: Card } | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -27,23 +28,37 @@ export function NoticesCard({ brandId }: { brandId: string }) {
 
   if (!s) return <div className="card t-mute">{t('common.loading')}…</div>;
   const on = (k: (typeof KEYS)[number]) => s.notices?.[k] !== false;
-  const set = (patch: Partial<NoticeSettings>) => setS({ ...s, ...patch });
+  const set = (patch: Partial<NoticeSettings>) => { setS({ ...s, ...patch }); setMsg(null); };
 
-  async function save() {
-    if ((s!.groups ?? []).some((g) => g.url && !GROUP.test(g.url))) { setMsg({ ok: false, text: t('set.badGroup') }); return; }
+  async function save(card: Card) {
+    if ((s!.groups ?? []).some((g) => g.url && !GROUP.test(g.url))) { setMsg({ ok: false, text: t('set.badGroup'), card }); return; }
     setBusy(true); setMsg(null);
-    try { await noticesApi.save(brandId, s!); setMsg({ ok: true, text: t('set.saved') }); }
-    catch (e) { setMsg({ ok: false, text: String(e).includes('403') ? t('set.ownersOnly') : String(e).includes('400') ? t('set.badPhone') : t('set.saveError') }); }
+    try { await noticesApi.save(brandId, s!); setMsg({ ok: true, text: t('set.saved'), card }); }
+    catch (e) { setMsg({ ok: false, text: String(e).includes('403') ? t('set.ownersOnly') : String(e).includes('400') ? t('set.badPhone') : t('set.saveError'), card }); }
     finally { setBusy(false); }
   }
+
+  // Save sits on top of each card, small, so it is always in view next to what was just changed.
+  const blocked = !!s.whatsapp && !s.approverUid;
+  const saveBtn = (card: Card) => (
+    <button type="button" className="btn btn-primary btn-sm" disabled={busy || blocked} onClick={() => save(card)}>
+      {msg?.ok && msg.card === card ? `✓ ${t('set.saved').replace(/\.$/, '')}` : t('set.save')}
+    </button>
+  );
+  const note = (card: Card) => (blocked && card === 'wa' ? <span className="t-sm t-mute">{t('set.needApprover')}</span>
+    : msg && !msg.ok && msg.card === card ? <span className="t-sm" role="status" style={{ color: 'var(--danger)' }}>{msg.text}</span> : null);
 
   return (
     <div className="col g24">
       <div className="card col g16">
-        <div className="row between g8 wrap">
-          <h2 className="h3">WhatsApp</h2>
-          <span className={`chip ${s.whatsapp ? 'c-active' : 'c-draft'}`}>{s.whatsapp ? t('set.connected') : t('set.notConnected')}</span>
+        <div className="row between g8">
+          <span className="row g8 wrap min-w-0">
+            <h2 className="h3">WhatsApp</h2>
+            <span className={`chip ${s.whatsapp ? 'c-active' : 'c-draft'}`}>{s.whatsapp ? t('set.connected') : t('set.notConnected')}</span>
+          </span>
+          {saveBtn('wa')}
         </div>
+        {note('wa')}
         <div className="grid gap-4 md:grid-cols-2">
           <div className="field">
             <label htmlFor="wa-num">{t('set.number')}</label>
@@ -79,7 +94,11 @@ export function NoticesCard({ brandId }: { brandId: string }) {
         {!s.whatsappApi && <p className="help">{t('set.apiPending')}</p>}
       </div>
       <div className="card col g12">
-        <h2 className="h3">{t('set.notices')}</h2>
+        <div className="row between g8">
+          <h2 className="h3">{t('set.notices')}</h2>
+          {saveBtn('notices')}
+        </div>
+        {note('notices')}
         {KEYS.map((k) => (
           <div key={k} className="row between g12" style={{ padding: '6px 0' }}>
             <span className="col"><span className="w7 t-sm">{t(`set.n.${k}`)}</span><span className="t-xs t-mute">{t(`set.n.${k}Sub`)}</span></span>
@@ -93,11 +112,6 @@ export function NoticesCard({ brandId }: { brandId: string }) {
             <option value="es">Español</option><option value="en">English</option>
           </select>
         </div>
-      </div>
-      <div className="row g12 wrap">
-        <button className="btn btn-primary" disabled={busy || (!!s.whatsapp && !s.approverUid)} onClick={save}>{t('set.save')}</button>
-        {!!s.whatsapp && !s.approverUid && <span className="t-sm t-mute">{t('set.needApprover')}</span>}
-        {msg && <span className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</span>}
       </div>
     </div>
   );
