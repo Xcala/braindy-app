@@ -616,3 +616,4 @@ html[data-theme="dark"] .tab{color:var(--graphite)} html[data-theme="dark"] .tab
 .acct-x svg{width:20px;height:20px}
 @keyframes acct-in{from{transform:translateY(-12px)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.acct-sheet{animation:none}}
+.talk-ico.is-cal{background:#EAF0FF;color:var(--azul)}

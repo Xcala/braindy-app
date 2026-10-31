@@ -76,3 +76,14 @@ describe('Home · calendar and meetings', () => {
     await assertFails(getDoc(doc(as(env, MEMBER), 'brands/brand-a/meetings/m1')));
   });
 });
+
+describe('Home · meeting bookings', () => {
+  it('bookings are server-only: nobody reads or writes them from the browser', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'bookings/b1'), { uid: OWNER, brandId: 'brand-a' });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'bookings/b1')));
+    await assertFails(getDoc(doc(as(env, ADMIN), 'bookings/b1')));
+    await assertFails(setDoc(doc(as(env, OWNER), 'bookings/b2'), { uid: OWNER }));
+  });
+});

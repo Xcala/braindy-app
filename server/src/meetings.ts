@@ -15,7 +15,8 @@ const CLIENT_SECRET = process.env.GOOGLE_CAL_CLIENT_SECRET ?? '';
 const API_URL = process.env.API_URL ?? 'https://braindy-api-283103160183.us-central1.run.app';
 const WEB_URL = process.env.WEB_URL ?? 'https://app.braindy.co';
 const REDIRECT = `${API_URL}/integrations/google-calendar/callback`;
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly openid email';
+// Read (next meeting, free/busy) and write events (clients book 30-minute meetings).
+const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events openid email';
 const AAD = 'google-calendar';
 const integration = () => db.doc('integrations/googleCalendar');
 
@@ -45,10 +46,10 @@ meetings.get('/brands/:brandId/meetings', async (c) => {
 
 // ---------- Google Calendar ----------
 let cachedToken: { value: string; until: number } | null = null;
-const eventsCache = new Map<string, { at: number; items: CalEvent[] }>();
+export const eventsCache = new Map<string, { at: number; items: CalEvent[] }>();
 type CalEvent = { id: string; summary?: string; start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string }; hangoutLink?: string; location?: string; attendees?: Array<{ email?: string }>; status?: string };
 
-async function accessToken(): Promise<string | null> {
+export async function accessToken(): Promise<string | null> {
   if (cachedToken && cachedToken.until > Date.now()) return cachedToken.value;
   const doc = await integration().get();
   if (!doc.exists || !CLIENT_ID) return null;

@@ -6,16 +6,20 @@ import { useBrands } from '../brands/BrandProvider';
 import { NICO_EMAIL, nicoPhone, nicoWhatsApp } from '../lib/nicoWhatsApp';
 import { noticesApi } from '../review/api';
 import { Icon, WhatsAppIcon } from '../components/Icon';
+import { BookMeeting } from './BookMeeting';
 
 const MailIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6" /></svg>
+);
+const CalIcon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 6h14v14H5zM5 10h14M9 3v4M15 3v4" /></svg>
 );
 const TextIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 5h14v10H10l-4 4v-4H5zM9 10h6" /></svg>
 );
 
 /**
- * "Talk to Nick": one button, every way to reach him. The brand's WhatsApp group first (or, without one,
+ * "Contact Nick": one button, every way to reach him, plus booking 30 minutes in his calendar. The brand's WhatsApp group first (or, without one,
  * add it as admin / ask for it as a client), then his WhatsApp, email and text message.
  */
 export function TalkToNico({ brandName }: { brandName: string }) {
@@ -23,6 +27,7 @@ export function TalkToNico({ brandName }: { brandName: string }) {
   const { current } = useBrands();
   const admin = useAuth().profile?.role === 'admin';
   const [open, setOpen] = useState(false);
+  const [booking, setBooking] = useState(false);
   const [group, setGroup] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -56,8 +61,14 @@ export function TalkToNico({ brandName }: { brandName: string }) {
           <a href={nicoWhatsApp(current)} {...ext}><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.waNico')}</a>
           <a href={`mailto:${NICO_EMAIL}?subject=${encodeURIComponent(`Braindy · ${brandName}`)}`} {...ext} target={undefined}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></a>
           <a href={`sms:+${phone}`} {...ext} target={undefined}><span className="talk-ico"><TextIcon /></span><span className="col"><span>{t('hg.textNico')}</span><span className="t-xs t-mute">+{phone}</span></span></a>
+          {current && (
+            <button type="button" role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: undefined, cursor: 'pointer', borderTop: '1px solid var(--line)', borderRadius: 0, marginTop: 4, paddingTop: 10 }} onClick={() => { close(); setBooking(true); }}>
+              <span className="talk-ico is-cal"><CalIcon /></span>{t('hg.book')}
+            </button>
+          )}
         </div>
       )}
+      {booking && current && <BookMeeting brandId={current.id} onClose={() => setBooking(false)} />}
     </div>
   );
 }
