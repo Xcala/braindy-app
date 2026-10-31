@@ -9,7 +9,7 @@ import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand,
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
 import { setIdentity } from './identity.js';
-import { PlanSchema, WeekSchedule, setPlan, setSchedule } from '../brandPlan.js';
+import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -69,6 +69,20 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
     const parts = [await setPlan(brandId, plan, ctx.uid)];
     if (schedule) parts.push(await setSchedule(brandId, schedule));
     return `${name}: Mi plan actualizado (${parts.join('; ')}).\nVer: ${APP}/plan`;
+  }));
+
+  server.registerTool('braindy_stack', {
+    title: 'Cargar el stack de apps de la marca en Mi plan',
+    description: 'Sets the third-party apps a brand runs on and pays for (Webflow, Mailchimp, Resend, Metricool, WordPress, AI tools, automations…), '
+      + 'shown in "Mi plan" in Braindy App: what each one does for the brand, plan, cost and period, who pays it (braindy = Braindy pays and bills it, '
+      + 'client = the client pays the provider directly) and next renewal. Replaces the previous list, so send all of it. '
+      + 'Never put credentials, API keys or internal notes here (credentials go in Accesos). '
+      + 'Use when Nicolas says "carga el stack de apps de X", "X paga Webflow y Resend", "las apps que tiene contratadas".',
+    inputSchema: { brandId: z.string(), items: StackSchema },
+  }, run(async ({ brandId, items }) => {
+    const name = await requireBrand(brandId);
+    return `${name}: ${await setStack(brandId, items, ctx.uid)} en Mi plan.
+Ver: ${APP}/plan`;
   }));
 
   server.registerTool('braindy_site_changes_sync', {

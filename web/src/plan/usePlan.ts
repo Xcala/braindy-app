@@ -20,5 +20,7 @@ const a = (id: string) => `/v1/admin/brands/${encodeURIComponent(id)}/plan`;
 export const planApi = {
   set: (brandId: string, p: unknown) => api<{ ok: true; summary: string }>(a(brandId), { method: 'PUT', body: JSON.stringify(p) }),
   remove: (brandId: string) => api(a(brandId), { method: 'DELETE' }),
+  setStack: (brandId: string, items: unknown) => api<{ ok: true; summary: string }>(`${a(brandId)}/stack`, { method: 'PUT', body: JSON.stringify(items) }),
+  removeStack: (brandId: string) => api(`${a(brandId)}/stack`, { method: 'DELETE' }),
   packStatus: (brandId: string, pack: number, status: PackStatus) => api(`${a(brandId)}/packs/${pack}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 };

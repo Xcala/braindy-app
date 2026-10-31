@@ -28,6 +28,12 @@ export const planEn = {
   'plan.c.waitingSigner': 'Waiting for {name} to sign.', 'plan.c.clientSigned': 'Signed by you',
   'plan.c.countersignAdmin': 'The client signed. Countersign it in the contract panel to seal it.', 'plan.c.signed': 'Contract signed',
   'plan.seeOnboarding': 'See My plan',
+  'plan.b4': '4 · Your apps', 'plan.stackTitle': 'The apps your brand runs on', 'plan.stackSub': 'The third-party services contracted for your brand: what each one does, its plan, what it costs and who pays it.',
+  'plan.stackMonthly': 'Per month, approx.', 'plan.per.month': 'per month', 'plan.per.year': 'per year', 'plan.per.once': 'one-time', 'plan.per.usage': 'pay per use',
+  'plan.payer.braindy': 'Through Braindy', 'plan.payer.client': 'You pay it directly', 'plan.tool.paused': 'Paused', 'plan.tool.cancelled': 'Cancelled', 'plan.renews': 'Renews {date}',
+  'plan.cat.web': 'Website', 'plan.cat.email': 'Email', 'plan.cat.ai': 'AI', 'plan.cat.automation': 'Automation', 'plan.cat.social': 'Social media',
+  'plan.cat.analytics': 'Analytics', 'plan.cat.hosting': 'Hosting', 'plan.cat.design': 'Design', 'plan.cat.other': 'Other',
+  'plan.a.stackTitle': 'Load or edit the apps stack', 'plan.a.stackHelp': 'The paid apps this brand runs on. From any Claude: «carga el stack de apps de esta marca en Braindy App» (tool braindy_stack). payer: braindy if we pay and bill it, client if they pay the provider directly. No credentials here: they go in Accesos.',
 } as const;
 
 export const planEs: Record<keyof typeof planEn, string> = {
@@ -59,4 +65,10 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.c.waitingSigner': 'Esperando la firma de {name}.', 'plan.c.clientSigned': 'Firmado por ti',
   'plan.c.countersignAdmin': 'El cliente firmó. Contrafírmalo en el panel del contrato para sellarlo.', 'plan.c.signed': 'Contrato firmado',
   'plan.seeOnboarding': 'Ver Mi plan',
+  'plan.b4': '4 · Tus apps', 'plan.stackTitle': 'Las apps con las que opera tu marca', 'plan.stackSub': 'Los servicios de terceros contratados para tu marca: para qué sirve cada uno, su plan, cuánto cuesta y quién lo paga.',
+  'plan.stackMonthly': 'Al mes, aprox.', 'plan.per.month': 'al mes', 'plan.per.year': 'al año', 'plan.per.once': 'pago único', 'plan.per.usage': 'pago por uso',
+  'plan.payer.braindy': 'A través de Braindy', 'plan.payer.client': 'Lo pagas directo', 'plan.tool.paused': 'En pausa', 'plan.tool.cancelled': 'Cancelada', 'plan.renews': 'Renueva el {date}',
+  'plan.cat.web': 'Sitio web', 'plan.cat.email': 'Correo', 'plan.cat.ai': 'IA', 'plan.cat.automation': 'Automatización', 'plan.cat.social': 'Redes sociales',
+  'plan.cat.analytics': 'Analítica', 'plan.cat.hosting': 'Hosting', 'plan.cat.design': 'Diseño', 'plan.cat.other': 'Otra',
+  'plan.a.stackTitle': 'Cargar o editar el stack de apps', 'plan.a.stackHelp': 'Las apps pagas con las que opera esta marca. Desde cualquier Claude: «carga el stack de apps de esta marca en Braindy App» (herramienta braindy_stack). payer: braindy si la pagamos y la facturamos, client si el cliente le paga directo al proveedor. Sin credenciales: esas van en Accesos.',
 };

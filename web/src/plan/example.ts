@@ -1,4 +1,4 @@
-import type { BrandPlan } from './types';
+import type { BrandPlan, StackItem } from './types';
 
 /** Starting point for the panel editor: the "Pack A + Pack C" route with maintenance after. The schedule is the contract's. */
 export const EXAMPLE: BrandPlan = {
@@ -28,3 +28,11 @@ export const EXAMPLE: BrandPlan = {
     hosting: 'pro', startsAfter: 'Arranca cuando termina el cronograma, el 30 de noviembre. Recomendamos al menos 3 meses.',
   },
 };
+
+/** A sample apps stack, generic: what the brand runs on and who pays it. */
+export const EXAMPLE_STACK: StackItem[] = [
+  { name: 'Webflow', category: 'web', purpose: 'Sitio web y CMS', plan: 'CMS anual', cost: 276, currency: 'usd', period: 'year', payer: 'braindy', renews: '2027-03-12', url: 'https://webflow.com', status: 'active' },
+  { name: 'Mailchimp', category: 'email', purpose: 'Boletín y correos a clientes', plan: 'Standard', cost: 20, currency: 'usd', period: 'month', payer: 'client', url: 'https://mailchimp.com', status: 'active' },
+  { name: 'Resend', category: 'email', purpose: 'Correos del sitio (formularios, avisos)', plan: 'Free', cost: 0, currency: 'usd', period: 'month', payer: 'braindy', url: 'https://resend.com', status: 'active' },
+  { name: 'Metricool', category: 'social', purpose: 'Programación y métricas de redes', plan: 'Starter', cost: 22, currency: 'usd', period: 'month', payer: 'braindy', url: 'https://metricool.com', status: 'active' },
+];

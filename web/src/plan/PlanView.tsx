@@ -5,7 +5,8 @@ import { Checklist } from '../contracts/Checklist';
 import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
-import type { BrandPlan, PackStatus } from './types';
+import { Stack } from './Stack';
+import type { BrandPlan, PackStatus, StackItem } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
@@ -13,6 +14,8 @@ const fmt = (iso: string | undefined, lang: string) =>
 export interface PlanViewProps {
   brandName: string;
   plan: BrandPlan | null;
+  /** Third-party apps the brand runs on. */
+  stack?: StackItem[];
   /** The contract block (status, signing, PDF), rendered right under the summary. */
   contract?: ReactNode;
   schedule: Schedule | null;
@@ -22,8 +25,8 @@ export interface PlanViewProps {
   onTick?: (id: string, done: boolean) => void;
 }
 
-/** Mi plan, top to bottom: summary, the contract, what was contracted, the schedule by week, the kickoff checklist, the website after. */
-export function PlanView({ brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+/** Mi plan, top to bottom: summary, the contract, what was contracted, the schedule by week, the kickoff checklist, the website after, the apps it runs on. */
+export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -76,6 +79,7 @@ export function PlanView({ brandName, plan, contract, schedule, kickoff, onPackS
         </section>
       )}
       {plan && <CareBlock c={plan} />}
+      {stack && <Stack items={stack} />}
     </div>
   );
 }

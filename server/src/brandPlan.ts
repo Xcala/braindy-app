@@ -3,6 +3,8 @@
 // brands/{brandId}/billing/contracted (owners and billing people read; only the backend writes). The schedule is the
 // contract's (Anexo 2, by week): before signing it lives in the draft contract, after signing in context/schedule.
 // Nicolas loads it from the panel (JSON) or from any Claude with the connector tool braindy_plan.
+// The third-party apps the brand runs on (Webflow, Mailchimp, Resend…) live apart at billing/stack, since they change
+// on their own schedule; tool braindy_stack.
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { z } from 'zod';
@@ -71,6 +73,34 @@ export const WeekSchedule = z.object({
   })).max(12),
 });
 
+export const TOOL_CATEGORIES = ['web', 'email', 'ai', 'automation', 'social', 'analytics', 'hosting', 'design', 'other'] as const;
+/** One paid third-party app the brand runs on. */
+const StackItem = z.object({
+  name: s(60).describe('e.g. "Webflow", "Mailchimp", "Resend", "Metricool"'),
+  category: z.enum(TOOL_CATEGORIES).default('other').describe('web, email, ai, automation, social, analytics, hosting, design, other'),
+  purpose: s(160).optional().describe('What it does for the brand, e.g. "Sitio web y CMS"'),
+  plan: s(80).optional().describe('Plan or tier, e.g. "CMS anual", "Standard 2.500 contactos"'),
+  cost: z.number().nonnegative().optional(), currency: z.enum(['usd', 'cop']).default('usd'),
+  period: z.enum(['month', 'year', 'once', 'usage']).default('month').describe('usage = pay per use'),
+  payer: z.enum(['braindy', 'client']).default('braindy').describe('braindy = Braindy pays and bills it; client = the client pays the provider directly'),
+  renews: day.optional().describe('Next renewal date'),
+  url: z.string().url().max(300).optional().describe('Product website, e.g. https://webflow.com'),
+  status: z.enum(['active', 'paused', 'cancelled']).default('active'),
+  note: s(240).optional(),
+});
+export const StackSchema = z.array(StackItem).max(30);
+export type StackItem = z.infer<typeof StackItem>;
+
+const stackRef = (brandId: string) => db.doc(`brands/${brandId}/billing/stack`);
+
+/** Replaces the brand's stack of third-party apps. */
+export async function setStack(brandId: string, input: unknown, by: string) {
+  const items = StackSchema.parse(input);
+  await stackRef(brandId).set({ items, updatedBy: by, updatedAt: FieldValue.serverTimestamp() });
+  await db.collection('audit').doc().set({ type: 'stack_set', brandId, by, at: FieldValue.serverTimestamp() });
+  return `${items.length} apps en el stack`;
+}
+
 const planRef = (brandId: string) => db.doc(`brands/${brandId}/billing/contracted`);
 export const zodMessage = (e: z.ZodError) => e.issues.slice(0, 5).map((i) => `${i.path.join('.') || 'plan'}: ${i.message}`).join('; ');
 
@@ -110,6 +140,16 @@ adminPlan.put('/brands/:brandId/plan', async (c) => {
 
 adminPlan.delete('/brands/:brandId/plan', async (c) => {
   await planRef(c.req.param('brandId')).delete();
+  return c.json({ ok: true });
+});
+
+adminPlan.put('/brands/:brandId/plan/stack', async (c) => {
+  try { return c.json({ ok: true, summary: await setStack(c.req.param('brandId'), await c.req.json(), c.get('user').uid) }); }
+  catch (e) { return e instanceof z.ZodError ? c.json({ error: 'invalid', message: zodMessage(e) }, 400) : Promise.reject(e); }
+});
+
+adminPlan.delete('/brands/:brandId/plan/stack', async (c) => {
+  await stackRef(c.req.param('brandId')).delete();
   return c.json({ ok: true });
 });
 

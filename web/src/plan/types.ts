@@ -15,3 +15,11 @@ export interface BrandPlan {
   title: string; summary?: string; currency: 'cop' | 'usd'; start?: string; end?: string; status: 'active' | 'done' | 'paused';
   packs: Pack[]; total?: { amount: number; label?: string }; payment: string[]; notIncluded: string[]; care?: Care;
 }
+
+// Mirror of StackSchema in server/src/brandPlan.ts. Stored at brands/{brandId}/billing/stack as { items }.
+export type ToolCategory = 'web' | 'email' | 'ai' | 'automation' | 'social' | 'analytics' | 'hosting' | 'design' | 'other';
+export interface StackItem {
+  name: string; category: ToolCategory; purpose?: string; plan?: string; cost?: number; currency: 'usd' | 'cop';
+  period: 'month' | 'year' | 'once' | 'usage'; payer: 'braindy' | 'client'; renews?: string; url?: string;
+  status: 'active' | 'paused' | 'cancelled'; note?: string;
+}

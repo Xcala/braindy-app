@@ -241,7 +241,7 @@ describe('accesses (credentials)', () => {
   });
 
   it('billing: owners and admin read, members and others do not, nobody writes; Stripe maps backend only', async () => {
-    for (const p of ['billing/plan', 'billing/contracted', 'invoices/i1', 'transfers/t1']) {
+    for (const p of ['billing/plan', 'billing/contracted', 'billing/stack', 'invoices/i1', 'transfers/t1']) {
       await assertSucceeds(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/${p}`)));
       await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/${p}`)));
       await assertFails(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/${p}`)));
