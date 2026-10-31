@@ -546,5 +546,8 @@ div.acct-row:hover{background:none}
 .notif-item:hover{background:var(--niebla)}
 .notif-item.is-new{background:var(--hielo)}
 .notif-dot{width:10px;height:10px;border-radius:50%;flex:none}
-.notif-dot.is-wait{background:#F5B301}
-.notif-dot.is-ok{background:var(--success)}
+.notif-dot.is-toApprove{background:#F5B301}
+.notif-dot.is-approved{background:var(--success)}
+.notif-dot.is-production{background:#8B5CF6}
+.notif-dot.is-comment{background:#2A7FFF}
+.notif-dot.is-app{background:#06B6D4}

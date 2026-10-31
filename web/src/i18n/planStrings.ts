@@ -17,7 +17,8 @@ export const planEn = {
   'plan.h.ultraSpec': 'Everything in Pro, plus edits by asking from your AI or WhatsApp',
   'plan.talk': 'Talk to NickMark',
   'notif.open': 'Notifications', 'notif.openN': 'Notifications, {n} new', 'notif.title': 'Notifications', 'notif.toApprove': 'To approve',
-  'notif.recent': 'Approved lately', 'notif.delivered': 'Delivered, waiting for your approval', 'notif.approved': 'Approved', 'notif.empty': 'Nothing new. When something is delivered or approved, it shows here.', 'notif.all': 'See all requests',
+  'notif.recent': 'Lately', 'notif.k.toApprove': 'Delivered, waiting for your approval', 'notif.k.approved': 'Approved', 'notif.k.production': 'In production',
+  'notif.k.comment': 'New comment', 'notif.k.app': 'Published in My apps', 'notif.empty': 'Nothing new. Deliveries, approvals, comments and new apps show here.', 'notif.all': 'See all requests',
   'acct.connected': '{n} connected', 'acct.more': 'More from your brand', 'acct.account': 'Account', 'acct.back': 'Back to account',
 };
 
@@ -39,6 +40,7 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.h.ultraSpec': 'Todo lo de Pro, más cambios pidiéndolos desde tu IA o tu WhatsApp',
   'plan.talk': 'Hablar con NicoMarca',
   'notif.open': 'Notificaciones', 'notif.openN': 'Notificaciones, {n} nuevas', 'notif.title': 'Notificaciones', 'notif.toApprove': 'Por aprobar',
-  'notif.recent': 'Aprobado hace poco', 'notif.delivered': 'Entregado, espera tu aprobación', 'notif.approved': 'Aprobado', 'notif.empty': 'Nada nuevo. Cuando algo se entregue o se apruebe, aparece aquí.', 'notif.all': 'Ver todas las solicitudes',
+  'notif.recent': 'Lo último', 'notif.k.toApprove': 'Entregado, espera tu aprobación', 'notif.k.approved': 'Aprobado', 'notif.k.production': 'En producción',
+  'notif.k.comment': 'Comentario nuevo', 'notif.k.app': 'Publicado en Mis apps', 'notif.empty': 'Nada nuevo. Aquí aparecen entregas, aprobaciones, comentarios y apps nuevas.', 'notif.all': 'Ver todas las solicitudes',
   'acct.connected': '{n} conectados', 'acct.more': 'Más de tu marca', 'acct.account': 'Cuenta', 'acct.back': 'Volver a la cuenta',
 };
