@@ -98,6 +98,10 @@ p{margin:0}
 .input::placeholder{color:#6B7285}
 .input.is-focus{border-color:var(--azul)}
 .input.is-error{border-color:var(--danger)}
+.suggest-input{position:relative}
+.suggest-input .input{padding-right:52px}
+.suggest-accept{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.suggest-accept:hover{border-color:var(--azul);color:var(--azul)}
 .help{font-size:13px;line-height:18px;color:var(--graphite)}
 .help.err{color:var(--danger)}
 .search{position:relative;display:flex;align-items:center}
