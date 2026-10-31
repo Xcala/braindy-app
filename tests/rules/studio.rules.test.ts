@@ -52,5 +52,7 @@ describe('The Studio · launches', () => {
     await assertFails(getDocs(collection(as(env, MEMBER), 'launches')));
     await assertFails(getDoc(doc(as(env, ADMIN), 'launches/l1')));
     await assertFails(setDoc(doc(as(env, ADMIN), 'launches/l2'), { title: 'x' }));
+    await assertFails(setDoc(doc(as(env, OWNER), 'launches/l1/reactions/' + OWNER), { reactions: ['fire'] }));
+    await assertFails(getDocs(collection(as(env, MEMBER), 'launches/l1/reactions')));
   });
 });

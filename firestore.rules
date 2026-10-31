@@ -397,8 +397,8 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ---------- launches (work NickMark shows to every client): served only by the API, which signs the images ----------
-    match /launches/{launchId} {
+    // ---------- launches (work NickMark shows to every client) and their reactions: served only by the API, which signs the images ----------
+    match /launches/{document=**} {
       allow read, write: if false;
     }
 

@@ -21,7 +21,7 @@ export function HomeStudio({ requests }: { requests: ScopedRequest[] }) {
       </div>
       <div className="sd-with-launches">
         <Scene seats={seats} items={items} toSignCount={0} brandView city={current?.city} brandName={current?.name} />
-        <Launches ask />
+        <Launches />
       </div>
     </section>
   );

@@ -11,17 +11,51 @@ const str = (v: unknown, max = 2000) => String(v ?? '').trim().slice(0, max);
 const isImage = (f: { contentType?: string }) => String(f.contentType ?? '').startsWith('image/');
 const isAdmin = async (uid: string) => (await db.doc(`users/${uid}`).get()).get('role') === 'admin';
 
-/** Every signed-in client and the admin: the latest launches, each with a short-lived image URL. */
+/** Reactions a client can leave on a launch, like on social media. Everyone sees the counts. */
+export const REACTIONS = ['fire', 'love', 'clap', 'idea'] as const;
+type Reaction = (typeof REACTIONS)[number];
+
+/** Every signed-in client and the admin: the latest launches, each with a short-lived image URL, the reaction counts and the viewer's own reactions. */
 export const launches = new Hono<AuthEnv>();
 launches.get('/launches', async (c) => {
-  if (!(await db.doc(`users/${c.get('user').uid}`).get()).exists) return c.json({ items: [] });
+  const uid = c.get('user').uid;
+  if (!(await db.doc(`users/${uid}`).get()).exists) return c.json({ items: [] });
   const snap = await db.collection('launches').orderBy('at', 'desc').limit(12).get();
   const items = await Promise.all(snap.docs.map(async (d) => {
     const x = d.data();
-    const [url] = await bucket().file(x.imagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
-    return { id: d.id, brandName: x.brandName, title: x.title, category: x.category ?? null, at: x.at?.toMillis?.() ?? null, url };
+    const [[url], mine] = await Promise.all([
+      bucket().file(x.imagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS }),
+      d.ref.collection('reactions').doc(uid).get(),
+    ]);
+    const counts = Object.fromEntries(REACTIONS.map((r) => [r, Math.max(0, (x.reactions?.[r] as number) ?? 0)]));
+    return {
+      id: d.id, brandName: x.brandName, title: x.title, category: x.category ?? null, at: x.at?.toMillis?.() ?? null, url,
+      counts, mine: ((mine.get('reactions') as Reaction[]) ?? []).filter((r) => REACTIONS.includes(r)),
+    };
   }));
   return c.json({ items });
+});
+
+/** A client turns one of their reactions on a launch on or off. The launch keeps a count per reaction. */
+launches.post('/launches/:id/reaction', async (c) => {
+  const uid = c.get('user').uid;
+  if (!(await db.doc(`users/${uid}`).get()).exists) return c.json({ error: 'forbidden' }, 403);
+  const b = await c.req.json<{ reaction?: string; on?: boolean }>();
+  const reaction = b.reaction as Reaction;
+  if (!REACTIONS.includes(reaction)) return c.json({ error: 'invalid' }, 400);
+  const ref = db.doc(`launches/${c.req.param('id')}`);
+  const mineRef = ref.collection('reactions').doc(uid);
+  const ok = await db.runTransaction(async (tx) => {
+    const [launch, mine] = await Promise.all([tx.get(ref), tx.get(mineRef)]);
+    if (!launch.exists) return false;
+    const list = (mine.get('reactions') as Reaction[]) ?? [];
+    const had = list.includes(reaction), on = b.on === true;
+    if (had === on) return true;
+    tx.update(ref, { [`reactions.${reaction}`]: FieldValue.increment(on ? 1 : -1) });
+    tx.set(mineRef, { reactions: on ? [...list, reaction] : list.filter((r) => r !== reaction), at: FieldValue.serverTimestamp() });
+    return true;
+  });
+  return ok ? c.json({ ok: true }) : c.json({ error: 'not_found' }, 404);
 });
 
 /** Admin: show (or stop showing) an approved version as a launch. */
@@ -36,7 +70,7 @@ adminLaunches.post('/brands/:brandId/requests/:requestId/versions/:versionId/lau
   if (b.on !== true) {
     const old = await db.doc(`launches/${id}`).get();
     if (old.exists) await bucket().file(old.get('imagePath')).delete({ ignoreNotFound: true });
-    await db.doc(`launches/${id}`).delete();
+    await db.recursiveDelete(db.doc(`launches/${id}`)); // with its reactions
     await reqRef.update({ launch: null });
     return c.json({ ok: true });
   }
