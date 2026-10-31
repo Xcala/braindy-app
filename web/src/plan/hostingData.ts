@@ -4,12 +4,13 @@ type Tx = readonly [es: string, en: string];
 export type Cur = 'usd' | 'cop';
 export type Bill = 'm' | 'y';
 export type WebPlan = 'esencial' | 'pro' | 'ultra';
+export type Term = 'mcp' | 'cms' | 'transfer' | 'https' | 'dns' | 'pwa' | 'sla' | 'dkim';
 
 export const CHECKOUT = 'https://braindy-api-283103160183.us-central1.run.app/public/hosting/checkout';
 
 export interface PlanCard {
   id: string; name: string; price: Record<Cur, number>; badge?: Tx; color: string; top?: boolean; ideal: Tx; lead?: Tx;
-  features: Array<{ b: Tx; rest?: Tx }>; specs: Array<[Tx, Tx]>;
+  features: Array<{ b: Tx; rest?: Tx; small?: Tx; term?: Term }>; specs: Array<[Tx, Tx]>;
 }
 
 export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
@@ -30,7 +31,7 @@ export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
     lead: ['Todo lo de Esencial, más:', 'Everything in Esencial, plus:'],
     features: [
       { b: ['Páginas y landings propias', 'Your own pages and landings'], rest: [' a partir de plantillas', ' from templates'] },
-      { b: ['CMS:', 'CMS:'], rest: [' blog, catálogo o colecciones, hasta 1.000 entradas', ' blog, catalog or collections, up to 1,000 entries'] },
+      { b: ['CMS:', 'CMS:'], rest: [' blog, catálogo o colecciones, hasta 1.000 entradas', ' blog, catalog or collections, up to 1,000 entries'], term: 'cms' },
       { b: ['Varias personas editando', 'Several people editing'], rest: [', cada una con su acceso', ', each with their own access'] },
       { b: ['Tienda en línea opcional', 'Optional online store'], rest: [' y tutoriales intermedios', ' and intermediate tutorials'] },
     ],
@@ -41,8 +42,8 @@ export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
     ideal: ['equipos que quieren cambiar el sitio pidiéndolo en sus palabras, desde su IA o su WhatsApp.', 'teams that change the site by asking in their own words, from their AI or WhatsApp.'],
     lead: ['Todo lo de Pro, más:', 'Everything in Pro, plus:'],
     features: [
-      { b: ['Edita desde tu Claude o ChatGPT', 'Edit from your Claude or ChatGPT'], rest: [' con una conexión MCP: pides “crea una landing para diciembre” y queda en borrador', ' over MCP: ask “make a December landing” and it lands as a draft'] },
-      { b: ['Edita desde WhatsApp:', 'Edit from WhatsApp:'], rest: [' mandas el texto o la foto y se aplica (solo números autorizados)', ' send the text or photo and it is applied (authorized numbers only)'] },
+      { b: ['Edita desde tu Claude o ChatGPT', 'Edit from your Claude or ChatGPT'], rest: [' con una conexión MCP', ' over an MCP connection'], term: 'mcp', small: ['Pides “crea una landing para diciembre con estas fotos” y queda en borrador.', 'You ask “make a December landing with these photos” and it lands as a draft.'] },
+      { b: ['Edita desde WhatsApp:', 'Edit from WhatsApp:'], rest: [' mandas el texto o la foto y se aplica', ' send the text or photo and it is applied'], small: ['Solo los números autorizados. Correo, Telegram o Slack a pedido.', 'Authorized numbers only. Email, Telegram or Slack on request.'] },
       { b: ['Monitoreo 24/7:', '24/7 monitoring:'], rest: [' si el sitio falla, nos llega una alerta antes de que nos escribas', ' if the site fails we get an alert before you write'] },
       { b: ['CMS hasta 3.000 entradas', 'CMS up to 3,000 entries'], rest: [' y tutoriales avanzados', ' and advanced tutorials'] },
     ],
@@ -76,10 +77,10 @@ export const COMPARE: Array<{ group: Tx; rows: Array<[Tx, Tx, Tx, Tx]> }> = [
   ] },
 ];
 
+/** Featured add-on: on-brand pieces (Braindy credits, 300 a month), and the Ultra + credits combo. */
+export const CREDITS = { usd: 49, cop: 194900 }, COMBO = { usd: 79, cop: 314900 };
+
 export const ADDONS: Array<{ name: Tx; for: string; price: Record<Cur, number>; body: Tx; note?: Tx }> = [
-  { name: ['Créditos Braindy', 'Braindy credits'], for: 'Esencial · Pro · Ultra', price: { usd: 49, cop: 194900 },
-    body: ['300 créditos al mes para pedirle a los Brains carruseles, imágenes, videos, investigaciones y planes de marketing con tu marca ya cargada.', '300 credits a month to ask the Brains for carousels, images, videos, research and marketing plans with your brand already loaded.'],
-    note: ['También hay planes de 1.000 y 3.000 créditos.', 'There are also 1,000 and 3,000 credit plans.'] },
   { name: ['Tienda en línea', 'Online store'], for: 'Pro · Ultra', price: { usd: 10, cop: 39900 },
     body: ['Hasta 100 productos con pago por Stripe, Mercado Pago o Wompi, o conexión con Shopify o Ecwid.', 'Up to 100 products paid with Stripe, Mercado Pago or Wompi, or a link to Shopify or Ecwid.'],
     note: ['La pasarela cobra su propia comisión por venta.', 'The payment gateway charges its own fee per sale.'] },
@@ -96,12 +97,12 @@ export const ENTERPRISE: PlanCard[] = [
   { id: 'app', name: 'App', price: { usd: 179, cop: 699900 }, color: '#06B6D4',
     ideal: ['convertir tu web en una app con usuarios registrados y herramientas para clientes o equipo.', 'turning your site into an app with signed-in users and tools for clients or team.'],
     lead: ['Todo lo de Plataforma, más:', 'Everything in Plataforma, plus:'],
-    features: [{ b: ['App instalable', 'Installable app'], rest: [' con notificaciones', ' with notifications'] }, { b: ['Área privada con login', 'Private area with login'] }, { b: ['Servicio propio en Cloud Run', 'Its own Cloud Run service'] }, { b: ['Módulos', 'Modules'], rest: [': emailing, onboarding, dashboards', ': emailing, onboarding, dashboards'] }],
+    features: [{ b: ['App instalable', 'Installable app'], rest: [' en el celular, con notificaciones', ' on the phone, with notifications'], term: 'pwa' }, { b: ['Área privada con login', 'Private area with login'] }, { b: ['Servicio propio en Cloud Run', 'Its own Cloud Run service'] }, { b: ['Módulos', 'Modules'], rest: [': emailing, onboarding, dashboards', ': emailing, onboarding, dashboards'] }],
     specs: [[['Usuarios', 'Users'], ['Hasta 5.000', 'Up to 5,000']], [['Visitas', 'Visits'], ['~250.000 / mes', '~250,000 / month']]] },
   { id: 'medida', name: 'A medida', price: { usd: 349, cop: 1389900 }, color: '#2A7FFF', top: true, badge: ['Hecho a tu escala', 'Built to your scale'],
     ideal: ['apps en tiendas, integraciones con tus sistemas y agentes de IA, con acuerdo de servicio.', 'store apps, integrations with your systems and AI agents, with a service agreement.'],
     lead: ['Todo lo de App, más:', 'Everything in App, plus:'],
-    features: [{ b: ['App Store y Google Play', 'App Store and Google Play'] }, { b: ['Integraciones', 'Integrations'], rest: [' con CRM, ERP o facturación', ' with CRM, ERP or invoicing'] }, { b: ['Agentes de IA', 'AI agents'], rest: [' y automatizaciones', ' and automations'] }, { b: ['SLA por contrato', 'SLA by contract'] }],
+    features: [{ b: ['App Store y Google Play', 'App Store and Google Play'] }, { b: ['Integraciones', 'Integrations'], rest: [' con CRM, ERP o facturación', ' with CRM, ERP or invoicing'] }, { b: ['Agentes de IA', 'AI agents'], rest: [' y automatizaciones', ' and automations'] }, { b: ['Acuerdo de servicio (SLA)', 'Service agreement (SLA)'], rest: [' por contrato, con atención de caídas fuera de horario', ' by contract, with outage response after hours'], term: 'sla' }],
     specs: [[['Módulos', 'Modules'], ['4 incluidos', '4 included']], [['Ambientes', 'Environments'], ['Desarrollo, pruebas, producción', 'Dev, staging, production']]] },
 ];
 

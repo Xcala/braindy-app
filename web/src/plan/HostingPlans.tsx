@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ADDONS, CHECKOUT, ENTERPRISE, MODULES, WEB_PLANS, type Bill, type Cur, type WebPlan } from './hostingData';
-import { Compare, Finder, Plan, PriceCards, useL, wa } from './HostingParts';
+import { Compare, Featured, Finder, Plan, PriceCards, useL, wa } from './HostingParts';
+import { Faq, Glossary, Sign, Tech } from './HostingInfo';
 import './hosting.css';
 
 const STEP = 72;
@@ -69,9 +70,11 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
               </Plan>
             ))}
           </div>
+          <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus two>
+            <Featured cur={cur} brandName={brandName} />
+          </PriceCards>
           <Finder brandName={brandName} />
           <Compare current={current} />
-          <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus />
           <aside className="hp-agency" aria-label="Fee">
             <h3>{L(['¿Ya tienes ', 'Already have a '])}<b>{L(['fee mensual de agencia', 'monthly agency fee'])}</b>{L([' con Braindy?', ' with Braindy?'])}</h3>
             <p>{L(['Entonces ', 'Then '])}<b>{L(['nosotros nos encargamos de todo', 'we take care of everything'])}</b>{L([': diseño, montaje, páginas nuevas y cambios de contenido, dentro de tu fee. El plan de hosting se paga aparte del fee: cubre que el sitio esté en línea, rápido y seguro, sin importar quién edite.', ': design, build, new pages and content changes, within your fee. Hosting is paid apart from the fee: it keeps the site online, fast and secure, no matter who edits.'])}</p>
@@ -94,6 +97,11 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
           <PriceCards title={[['Módulos ', 'Development '], ['de desarrollo', 'modules']]} lead={['Se suman a cualquier plan Enterprise. El valor mensual cubre operación, infraestructura y soporte del módulo. El desarrollo inicial se cotiza una vez, según lo que necesites.', 'They add to any Enterprise plan. The monthly fee covers the module’s operation, infrastructure and support. The initial build is quoted once, based on what you need.']} items={MODULES} cur={cur} />
         </div>
       )}
+
+      <Glossary />
+      <Faq />
+      <Tech />
+      <Sign />
     </div>
   );
 }
