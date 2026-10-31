@@ -6,6 +6,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { open, seal } from './vault.js';
+import { looksLikeSecret } from './lib/secrets.js';
 import type { AuthEnv } from './auth.js';
 
 const now = () => FieldValue.serverTimestamp();
@@ -39,6 +40,8 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   const b = await c.req.json<Record<string, unknown>>();
   const platform = clean(b.platform, 80);
   if (!platform) return c.json({ error: 'platform_required' }, 400);
+  // Notes are stored in plain text: keys and passwords go in the encrypted field only.
+  if (looksLikeSecret(clean(b.notes, 1000))) return c.json({ error: 'secret_in_notes' }, 400);
   const ref = db.collection(`brands/${brandId}/accesses`).doc();
   const password = String(b.password ?? '');
   const byName = await actorName(user.uid, user.email);
@@ -64,6 +67,7 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   const snap = await ref.get();
   if (!snap.exists) return c.json({ error: 'not_found' }, 404);
   const b = await c.req.json<Record<string, unknown>>();
+  if (b.notes !== undefined && looksLikeSecret(clean(b.notes, 1000))) return c.json({ error: 'secret_in_notes' }, 400);
   const byName = await actorName(user.uid, user.email);
   const patch: Record<string, unknown> = { updatedBy: user.uid, updatedByName: byName, updatedAt: now() };
   if (b.platform !== undefined) patch.platform = clean(b.platform, 80) || snap.get('platform');

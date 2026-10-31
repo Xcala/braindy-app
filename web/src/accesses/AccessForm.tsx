@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { accessesApi, type Access } from './useAccesses';
+import { looksLikeSecret, splitSecretLines } from './secretNotes';
 
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
 
@@ -18,6 +19,14 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   const [error, setError] = useState<false | 'save' | 'vault'>(false);
   const [deleting, setDeleting] = useState(false);
   const first = useRef<HTMLInputElement>(null);
+  const secretInNotes = looksLikeSecret(notes);
+  // Notes are not encrypted: a key pasted there moves to the password field (added to what is already typed).
+  const moveToPassword = () => {
+    const { secret, rest } = splitSecretLines(notes);
+    const oneLine = secret.replace(/\n+/g, ' ');
+    setPassword((p) => (p ? `${p} ${oneLine}` : oneLine));
+    setNotes(rest);
+  };
   useEffect(() => {
     first.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !deleting && onClose();
@@ -65,7 +74,12 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
         <div className="field">
           <label htmlFor="acc-notes">{t('acc.notes')}</label>
           <textarea id="acc-notes" className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} style={{ height: 'auto', paddingTop: 10 }} />
-          <span className="help">{t('acc.notesHelp')}</span>
+          {secretInNotes ? (
+            <div className="row between g8 wrap" role="alert">
+              <span className="help err">{t('acc.secretInNotes')}</span>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={moveToPassword}>{t('acc.moveToPassword')}</button>
+            </div>
+          ) : <span className="help">{t('acc.notesHelp')}</span>}
         </div>
         <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
           <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> {t('acc.sharedLabel')}
@@ -75,7 +89,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
           {editing ? <button type="button" className="btn btn-ghost" onClick={() => setDeleting(true)}>{t('acc.delete')}</button> : <span />}
           <span className="row g12">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
-            <button type="submit" className="btn btn-primary" disabled={busy || !platform.trim()}>{t('acc.save')}</button>
+            <button type="submit" className="btn btn-primary" disabled={busy || !platform.trim() || secretInNotes}>{t('acc.save')}</button>
           </span>
         </div>
       </form>
