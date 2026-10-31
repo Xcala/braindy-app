@@ -22,6 +22,10 @@ launches.get('/launches', async (c) => {
   const uid = c.get('user').uid;
   if (!(await db.doc(`users/${uid}`).get()).exists) return c.json({ items: [] });
   const snap = await db.collection('launches').orderBy('at', 'desc').limit(12).get();
+  // Each launch carries its brand's city, so the band can tag it (BOG, NYC).
+  const ids = [...new Set(snap.docs.map((d) => String(d.get('brandId'))))];
+  const brands = ids.length ? await db.getAll(...ids.map((id) => db.doc(`brands/${id}`))) : [];
+  const cityOf = new Map(brands.map((b) => [b.id, b.get('city') ?? null]));
   const items = await Promise.all(snap.docs.map(async (d) => {
     const x = d.data();
     const [[url], mine] = await Promise.all([
@@ -30,7 +34,7 @@ launches.get('/launches', async (c) => {
     ]);
     const counts = Object.fromEntries(REACTIONS.map((r) => [r, Math.max(0, (x.reactions?.[r] as number) ?? 0)]));
     return {
-      id: d.id, brandId: x.brandId, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', at: x.at?.toMillis?.() ?? null, url,
+      id: d.id, brandId: x.brandId, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', city: cityOf.get(x.brandId) ?? null, at: x.at?.toMillis?.() ?? null, url,
       counts, mine: ((mine.get('reactions') as Reaction[]) ?? []).filter((r) => REACTIONS.includes(r)),
     };
   }));

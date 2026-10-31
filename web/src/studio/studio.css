@@ -71,7 +71,11 @@
 .sd-ticker-item { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font: inherit; text-align: left; max-width: 320px; }
 .sd-ticker-item:hover { border-color: var(--azul); }
 .sd-ticker-item:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
-.sd-ticker-item img, .sd-ticker-item video { width: 72px; height: 48px; border-radius: 9px; object-fit: cover; background: #000; flex: none; }
+.sd-thumb { position: relative; flex: none; display: block; }
+.sd-thumb img, .sd-thumb video { width: 72px; height: 48px; border-radius: 9px; object-fit: cover; background: #000; display: block; }
+.sd-city { position: absolute; top: 4px; left: 4px; font: 700 9px/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; letter-spacing: .06em; padding: 3px 5px; border-radius: 6px; background: rgba(11,13,18,.72); color: #fff; }
+.sd-launches { display: flex; flex-direction: column; gap: 8px; }
+.sd-launches-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
 .sd-community { align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: .02em; line-height: 1; padding: 3px 7px; margin-bottom: 3px; border-radius: 999px; background: #EEF1FD; color: var(--azul); }
 @keyframes sd-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) {

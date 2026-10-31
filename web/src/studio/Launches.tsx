@@ -4,11 +4,12 @@ import type { StringKey } from '../i18n/strings';
 import { api } from '../lib/api';
 import { useBrandsMaybe } from '../brands/BrandProvider';
 import { LaunchModal, type Work } from './LaunchModal';
+import { cityCode, type CityPlace } from '../brands/cities';
 
 /** Reactions a client can leave on a launch, like on social media. Everyone sees the counts. Same list as the API. */
 const REACTIONS = [['fire', '🔥'], ['love', '😍'], ['clap', '👏'], ['idea', '💡']] as const;
 type Reaction = (typeof REACTIONS)[number][0];
-export interface Launch extends Work { brandId: string; brandName: string; counts: Record<Reaction, number>; mine: Reaction[] }
+export interface Launch extends Work { brandId: string; brandName: string; city?: string | CityPlace | null; counts: Record<Reaction, number>; mine: Reaction[] }
 type Item = Work & Partial<Launch> & { community: boolean };
 
 export const fetchLaunches = () => api<{ items: Launch[] }>('/v1/launches').then((r) => r.items);
@@ -25,7 +26,7 @@ const MIN_RUN = 8;
 /**
  * Under the studio: an endless marquee of what was just launched. The brand's own finished work and the
  * community's launches (other brands, chosen by NickMark) run together, newest first; the community ones carry
- * a "Brainders community" tag. Tapping an item opens it big (community ones with reactions). Hidden while empty.
+ * a "Brainders community" tag. Tapping an item opens it big (community ones with reactions). Titled "Latest launches"; each piece carries its brand's city (BOG, NYC). Hidden while empty.
  */
 export function Launches() {
   const { t, lang } = useI18n();
@@ -36,7 +37,7 @@ export function Launches() {
     let live = true;
     Promise.all([brand ? fetchOwn(brand.id).catch(() => []) : Promise.resolve([]), fetchLaunches().catch(() => [])]).then(([o, l]) => {
       if (!live) return;
-      const own: Item[] = o.map((w) => ({ ...w, community: false }));
+      const own: Item[] = o.map((w) => ({ ...w, city: brand?.city ?? null, community: false }));
       const others: Item[] = l.filter((x) => x.brandId !== brand?.id).map((x) => ({ ...x, community: true }));
       setItems([...own, ...others].sort((a, b) => (b.at ?? 0) - (a.at ?? 0)));
     });
@@ -61,7 +62,10 @@ export function Launches() {
   const item = (w: Item, i: number, copy: boolean) => (
     <li key={`${i}-${key(w)}`} aria-hidden={copy || undefined}>
       <button type="button" className="sd-ticker-item" tabIndex={copy ? -1 : undefined} onClick={() => setOpen(key(w))}>
-        {w.kind === 'video' ? <video src={w.url} muted playsInline preload="metadata" aria-hidden="true" /> : <img src={w.url} alt="" decoding="async" fetchPriority="low" />}
+        <span className="sd-thumb">
+          {w.kind === 'video' ? <video src={w.url} muted playsInline preload="metadata" aria-hidden="true" /> : <img src={w.url} alt="" decoding="async" fetchPriority="low" />}
+          {cityCode(w.city) && <i className="sd-city">{cityCode(w.city)}</i>}
+        </span>
         <span className="col min-w-0">
           {w.community && <span className="sd-community">{t('st.community')}</span>}
           <b className="t-sm truncate">{w.title}</b>
@@ -73,11 +77,14 @@ export function Launches() {
   const current = items.find((w) => key(w) === open);
 
   return (
-    <section className="sd-ticker" aria-label={t('st.launches')}>
-      <ul className="sd-ticker-run" style={{ ['--crawl' as string]: `${run.length * SECONDS_PER_ITEM}s` }}>
-        {run.map((w, i) => item(w, i, i >= items.length))}
-        {run.map((w, i) => item(w, run.length + i, true))}
-      </ul>
+    <section className="sd-launches" aria-labelledby="h-launches">
+      <h2 className="sd-launches-title" id="h-launches">{t('st.latest')}</h2>
+      <div className="sd-ticker">
+        <ul className="sd-ticker-run" style={{ ['--crawl' as string]: `${run.length * SECONDS_PER_ITEM}s` }}>
+          {run.map((w, i) => item(w, i, i >= items.length))}
+          {run.map((w, i) => item(w, run.length + i, true))}
+        </ul>
+      </div>
       {current && (
         <LaunchModal w={current} sub={subOf(current)} onClose={() => setOpen(null)}>
           {current.community && current.counts && (
