@@ -31,8 +31,13 @@ const I = {
 };
 type Row = { to?: string; onClick?: () => void; icon: React.ReactNode; label: StringKey; text?: string; value?: React.ReactNode; danger?: boolean };
 
-/** Account (tap on your photo): ChatGPT-style grouped list; each row opens its own content. */
+/** Account page (search and deep links); the photo opens the same list as a menu over everything. */
 export function Account() {
+  return <div className="mx-auto w-full max-w-[560px]"><AccountBody /></div>;
+}
+
+/** ChatGPT-style grouped list; each row opens its own content. onPick closes the menu when a row navigates. */
+export function AccountBody({ onPick }: { onPick?: () => void }) {
   const { profile, user, logout } = useAuth();
   const { current } = useBrands();
   const { t } = useI18n();
@@ -69,20 +74,20 @@ export function Account() {
   ];
 
   return (
-    <div className="acct mx-auto col w-full max-w-[560px]">
+    <div className="acct col w-full">
       <div className="col items-center g8" style={{ textAlign: 'center' }}>
         {user?.photoURL ? <img className="acct-photo" src={user.photoURL} alt="" /> : <span className="acct-photo acct-initials">{initials}</span>}
         <h1 className="h2">{profile?.name ?? name}</h1>
         <span className="t-sm t-mute">{user?.email} · {isAdmin ? t('role.admin') : t('role.client')}</span>
       </div>
-      {current && brand.length > 0 && <Group title={current.name} rows={brand} />}
-      {more.length > 0 && <Group title={t('acct.more')} rows={more} />}
-      <Group title={t('acct.account')} rows={account} />
+      {current && brand.length > 0 && <Group title={current.name} rows={brand} onPick={onPick} />}
+      {more.length > 0 && <Group title={t('acct.more')} rows={more} onPick={onPick} />}
+      <Group title={t('acct.account')} rows={account} onPick={onPick} />
     </div>
   );
 }
 
-function Group({ title, rows }: { title: string; rows: Row[] }) {
+function Group({ title, rows, onPick }: { title: string; rows: Row[]; onPick?: () => void }) {
   const { t } = useI18n();
   return (
     <section className="col g8">
@@ -98,8 +103,8 @@ function Group({ title, rows }: { title: string; rows: Row[] }) {
             </>
           );
           const cls = `acct-row ${r.danger ? 'is-danger' : ''}`;
-          return r.to ? <Link key={`${r.label}-${n}`} to={r.to} className={cls}>{inner}</Link>
-            : r.onClick ? <button key={`${r.label}-${n}`} type="button" onClick={r.onClick} className={cls}>{inner}</button>
+          return r.to ? <Link key={`${r.label}-${n}`} to={r.to} onClick={onPick} className={cls}>{inner}</Link>
+            : r.onClick ? <button key={`${r.label}-${n}`} type="button" onClick={() => { r.onClick!(); onPick?.(); }} className={cls}>{inner}</button>
             : <div key={`${r.label}-${n}`} className={cls}>{inner}</div>;
         })}
       </div>
@@ -107,8 +112,11 @@ function Group({ title, rows }: { title: string; rows: Row[] }) {
   );
 }
 
-/** Mobile only: back to the account list from a page opened there. */
+/** Mobile only: back to the account menu from a page opened there. */
 export function BackToAccount() {
   const { t } = useI18n();
-  return <Link to="/account" className="acct-back md:hidden" aria-label={t('acct.back')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></Link>;
+  return <button type="button" onClick={openAccountMenu} className="acct-back md:hidden" aria-label={t('acct.back')}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg></button>;
 }
+
+/** Opens the account menu from anywhere (the photo in the top bar listens). */
+export const openAccountMenu = () => window.dispatchEvent(new Event('bd:account'));
