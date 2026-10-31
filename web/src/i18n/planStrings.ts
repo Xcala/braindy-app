@@ -16,6 +16,8 @@ export const planEn = {
   'plan.h.proSpec': 'Up to 3 editors · ~10,000 visits / month · 5 GB · reply in 1 business day',
   'plan.h.ultraSpec': 'Everything in Pro, plus edits by asking from your AI or WhatsApp',
   'plan.talk': 'Talk to NickMark',
+  'notif.open': 'Notifications', 'notif.openN': 'Notifications, {n} new', 'notif.title': 'Notifications', 'notif.toApprove': 'To approve',
+  'notif.recent': 'Approved lately', 'notif.delivered': 'Delivered, waiting for your approval', 'notif.approved': 'Approved', 'notif.empty': 'Nothing new. When something is delivered or approved, it shows here.', 'notif.all': 'See all requests',
   'acct.connected': '{n} connected', 'acct.more': 'More from your brand', 'acct.account': 'Account', 'acct.back': 'Back to account',
 };
 
@@ -36,5 +38,7 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.h.proSpec': 'Hasta 3 editores · ~10.000 visitas / mes · 5 GB · respuesta en 1 día hábil',
   'plan.h.ultraSpec': 'Todo lo de Pro, más cambios pidiéndolos desde tu IA o tu WhatsApp',
   'plan.talk': 'Hablar con NicoMarca',
+  'notif.open': 'Notificaciones', 'notif.openN': 'Notificaciones, {n} nuevas', 'notif.title': 'Notificaciones', 'notif.toApprove': 'Por aprobar',
+  'notif.recent': 'Aprobado hace poco', 'notif.delivered': 'Entregado, espera tu aprobación', 'notif.approved': 'Aprobado', 'notif.empty': 'Nada nuevo. Cuando algo se entregue o se apruebe, aparece aquí.', 'notif.all': 'Ver todas las solicitudes',
   'acct.connected': '{n} conectados', 'acct.more': 'Más de tu marca', 'acct.account': 'Cuenta', 'acct.back': 'Volver a la cuenta',
 };

@@ -536,3 +536,15 @@ div.acct-row:hover{background:none}
 /* Pedir: same look as the other tabs, a round plus icon, no blue bubble */
 .bnav .fab{top:0}
 .bnav .fab.is-active{color:var(--azul)}
+
+/* Notifications bell: delivered (to approve) and approved requests */
+.notif-bell{position:relative}
+.notif-badge{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--danger);color:#fff;font:700 11px/18px var(--f-text);text-align:center;box-shadow:0 0 0 2px #fff}
+.notif-panel{position:absolute;right:0;top:52px;z-index:40;width:360px;max-height:70vh;overflow-y:auto;background:#fff!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+@media (max-width:639px){.notif-panel{position:fixed;left:12px;right:12px;top:68px;width:auto}}
+.notif-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--ink)}
+.notif-item:hover{background:var(--niebla)}
+.notif-item.is-new{background:var(--hielo)}
+.notif-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.notif-dot.is-wait{background:#F5B301}
+.notif-dot.is-ok{background:var(--success)}

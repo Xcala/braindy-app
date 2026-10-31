@@ -6,6 +6,7 @@ import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
 import { BrandMenu } from '../brands/BrandMenu';
 import { CommandK } from '../components/CommandK';
+import { Notifications } from '../components/Notifications';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
@@ -64,6 +65,7 @@ export function AppShell() {
           <div className="grow" />
           {isAdmin && import.meta.env.DEV && <span className="hidden md:inline-flex"><ApiStatus /></span>}
           <CommandK />
+          <Notifications />
           <AccountMenu />
         </header>
         <div className={adminSpace ? '' : 'hidden md:block'}>
