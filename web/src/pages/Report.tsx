@@ -4,10 +4,11 @@ import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
 import { ReportEditor } from '../report/ReportEditor';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 
 /** Monthly report (design 19): sales, not likes. Made by the four Brains, signed by Nicolas. */
 export function Report() {
+  const wa = useNicoWhatsApp();
   const { current } = useBrands();
   const { profile } = useAuth();
   const { t, lang } = useI18n();
@@ -72,7 +73,7 @@ export function Report() {
               <div className="card row g12">
                 <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
                 <div className="col grow"><span className="t-sm w7">{t('rep.reviewed')}</span><span className="t-xs t-mute">{t('rep.book20')}</span></div>
-                <a className="btn btn-secondary btn-sm print:hidden" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('rep.book')}</a>
+                <a className="btn btn-secondary btn-sm print:hidden" href={wa()} target="_blank" rel="noreferrer">{t('rep.book')}</a>
               </div>
             </aside>
           </div>

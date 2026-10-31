@@ -2,12 +2,12 @@ import { Link } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { HOSTING, HOSTING_USD, money, useBilling } from '../billing/useBilling';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 
-const wa = (text: string) => `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
 
 /** My plan: what the brand has with Braindy, the design plan and the site hosting plan, on one screen. */
 export function MyPlan() {
+  const wa = useNicoWhatsApp();
   const { current } = useBrands();
   const { t, lang } = useI18n();
   const { plan } = useBilling(current?.id);

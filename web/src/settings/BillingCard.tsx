@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { billingApi, money, useBilling } from '../billing/useBilling';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import type { StringKey } from '../i18n/strings';
 
 const SERVICES: Array<{ key: string; title: StringKey; body: StringKey }> = [
@@ -16,13 +16,14 @@ const SERVICES: Array<{ key: string; title: StringKey; body: StringKey }> = [
 
 /** Settings · Billing (design 20): plan, services, next charge, payment method, invoices, cancellation. */
 export function BillingCard({ brandId }: { brandId: string }) {
+  const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const { plan, invoices } = useBilling(brandId);
   const [cancel, setCancel] = useState(false);
   const [adding, setAdding] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   if (plan === undefined) return <div className="card t-mute">{t('common.loading')}…</div>;
-  if (plan === null) return <div className="card col g8"><p className="t-mute">{t('bill.noPlan')}</p><a className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a></div>;
+  if (plan === null) return <div className="card col g8"><p className="t-mute">{t('bill.noPlan')}</p><a className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} href={wa()} target="_blank" rel="noreferrer">{t('home.talk')}</a></div>;
   const included = new Set(plan.path === 'continuity' || plan.path === 'transform' ? ['social', 'web', 'report', ...(plan.addons ?? [])] : plan.addons ?? []);
   const next = plan.nextChargeAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const go = async (fn: () => Promise<{ url: string }>) => { try { window.location.href = (await fn()).url; } catch { setMsg(t('bill.portalError')); } };
@@ -42,7 +43,7 @@ export function BillingCard({ brandId }: { brandId: string }) {
               {included.has(s.key) ? <span className="chip c-approved">{t('bill.inPlan')}</span>
                 : s.key === 'agents'
                   ? (plan.addonRequests ?? []).includes('agents') ? <span className="chip c-draft">{t('bill.requested')}</span> : <button className="btn btn-secondary btn-sm" onClick={() => setAdding(true)}>{t('bill.add')}</button>
-                  : <a className="btn btn-secondary btn-sm" href={`https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(t(s.title))}`} target="_blank" rel="noreferrer">{t('bill.quote')}</a>}
+                  : <a className="btn btn-secondary btn-sm" href={wa(t(s.title))} target="_blank" rel="noreferrer">{t('bill.quote')}</a>}
             </div>
           ))}
         </div>

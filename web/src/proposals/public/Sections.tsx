@@ -1,4 +1,5 @@
 import { CONTACT, fill, type PublicCopy } from './copy';
+import { nicoWhatsApp } from '../../lib/nicoWhatsApp';
 import type { OptionKey } from '../types';
 
 export interface PublicProposal {
@@ -15,7 +16,7 @@ export interface PublicProposal {
 }
 
 const img = (name: string) => `/brand/proposal/${name}.jpg`;
-const wa = (c: PublicCopy) => `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(c.whatsapp)}`;
+const wa = (c: PublicCopy) => nicoWhatsApp(null, c.whatsapp);
 
 export function Hero({ c, p, dateLabel, validLabel, onLang, lang }: { c: PublicCopy; p: PublicProposal; dateLabel: string; validLabel?: string; onLang: (l: 'en' | 'es') => void; lang: 'en' | 'es' }) {
   const name = p.prospect.company || p.prospect.name || '';

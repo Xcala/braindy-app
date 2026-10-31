@@ -8,13 +8,14 @@ import type { BrainId } from '../requests/taxonomy';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { dayLabel, daysFrom } from '../lib/dates';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { TypedNext } from './TypedNext';
 
 const BRAINS: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 
 /** Home hero: what needs you (every item, up to three) and NickMark, who makes the work, with his Brains as a signature. */
 export function HomeHero({ brandName, needsYou, open }: { brandName: string; needsYou: ScopedRequest[]; open: ScopedRequest[] }) {
+  const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const today = new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const shown = needsYou.slice(0, 3);
@@ -47,7 +48,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
           <div className="row g12">
             <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-14 w-14 flex-none rounded-full object-cover" />
             <div className="col grow"><span className="w7">{t('sig.card')}</span><span className="t-xs muted">{t('home.orchestrator')}</span></div>
-            <a className="btn btn-white btn-sm" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('home.talk')}</a>
+            <a className="btn btn-white btn-sm" href={wa()} target="_blank" rel="noreferrer">{t('home.talk')}</a>
           </div>
           <p className="t-sm" style={{ color: '#E6EAF2' }}>
             {next ? t('home.nicoNowDue', { title: next.title, day: dayLabel(next.dueDate, lang) })
