@@ -66,7 +66,8 @@
 /* Launches beside the studio: never over the photo. On wide screens a column as tall as the scene (its list scrolls); below it on phones. */
 .sd-with-launches { display: grid; gap: 16px; }
 @media (min-width: 1100px) {
-  .sd-with-launches:has(.sd-launches) { grid-template-columns: minmax(0, 1fr) 280px; }
+  .sd-with-launches:has(.sd-launches) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .sd-with-launches:has(.sd-launches) > :first-child { grid-column: span 3; }
   .sd-launches { height: 0; min-height: 100%; overflow-y: auto; }
 }
 .sd-react { display: inline-flex; align-items: center; gap: 4px; font: inherit; font-size: 14px; line-height: 1; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }

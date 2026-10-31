@@ -598,3 +598,10 @@ html[data-theme="dark"] .acct-row.is-danger{color:var(--danger)}
 html[data-theme="dark"] .bnav a{color:var(--graphite)}
 html[data-theme="dark"] .bnav a.is-active{color:#8FA0FF}
 html[data-theme="dark"] .tab{color:var(--graphite)} html[data-theme="dark"] .tab.is-active,html[data-theme="dark"] .tab:hover{color:var(--ink)}
+/* Home grid · in production: the 48-business-hour clock per piece */
+.hg-record{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pill);background:#FFF6DB;color:#6B4A00;font:700 13px/18px var(--f-text)}
+.hg-bar{height:8px;border-radius:999px;background:var(--niebla);overflow:hidden}
+.hg-bar i{display:block;height:100%;border-radius:inherit;background:var(--azul);transition:width .6s var(--ease)}
+.hg-bar.is-near i{background:#F5B301}.hg-bar.is-late i{background:var(--danger)}
+.hg-left{flex:none;font:700 12px/16px var(--f-text);padding:4px 10px;border-radius:999px;background:#EAF0FF;color:var(--azul)}
+.hg-left.is-near{background:#FFF6DB;color:#6B4A00}.hg-left.is-late{background:#FDECEC;color:var(--danger)}
