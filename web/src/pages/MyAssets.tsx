@@ -6,6 +6,7 @@ import { BrandDocs } from '../assets/BrandDocs';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { UploadButton } from '../assets/UploadButton';
 import { useI18n } from '../i18n/I18nProvider';
+import { SignedContract } from '../contracts/SignedContract';
 
 export function MyAssets() {
   const { current } = useBrands();
@@ -30,6 +31,7 @@ export function MyAssets() {
         </div>
         <UploadButton brandId={current.id} />
       </div>
+      <SignedContract brandId={current.id} contractId={current.onboarding?.contractId} />
       {/* LogoDecks live in My brand and MarketMaps in My research; only other carried-over documents stay here. */}
       <BrandDocs assets={legacy.filter((a) => a.type !== 'logodeck' && a.type !== 'marketmap')} />
       <FileExplorer brandId={current.id} brandName={current.name} startPath={params.get('folder') ?? ''} openId={params.get('file') ?? undefined} />

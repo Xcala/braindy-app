@@ -5,10 +5,12 @@ import { db } from './firebase.js';
 import { normalizePhone, sendTemplate, waMeLink } from './whatsapp.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
-export type NoticeKind = 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live';
+export type NoticeKind = 'contract_ready' | 'contract_signed' | 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live';
 
 // Template name in Meta → body text (ES / EN) used for the wa.me fallback. {name} = brand, {when} = session.
 const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string; en: string }> = {
+  contract_ready: { template: 'contract_ready', path: '/onboarding', es: '{name}: su contrato con NicoMarca está listo para firmar. Lo firma el representante legal aquí:', en: '{name}: your contract with NickMark is ready to sign. The legal representative signs it here:' },
+  contract_signed: { template: 'contract_signed', path: '/onboarding', es: '{name}: el contrato quedó firmado por las dos partes. El PDF está en Mis archivos. Arrancamos:', en: '{name}: the contract is signed by both parties. The PDF is in My files. We start:' },
   welcome: { template: 'onboarding_welcome', path: '/onboarding', es: 'Bienvenidos a Braindy, {name}. Su app está lista. Empiecen el brief aquí (unos 12 minutos):', en: 'Welcome to Braindy, {name}. Your app is ready. Start the brief here (about 12 minutes):' },
   brain_ready: { template: 'brand_brain_ready', path: '/onboarding', es: '{name}: su Brand Brain está listo. NicoMarca lo armó con su brief, con el Researcher. Revísenlo antes de la sesión:', en: '{name}: your Brand Brain is ready. NickMark built it from your brief, with the Researcher. Review it before the session:' },
   session_confirmed: { template: 'session_confirmed', path: '/onboarding', es: '{name}: sesión con Nicolas confirmada para {when}. Traigan preguntas, no tareas.', en: '{name}: session with Nicolas confirmed for {when}. Bring questions, not homework.' },

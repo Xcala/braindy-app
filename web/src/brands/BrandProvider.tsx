@@ -21,8 +21,9 @@ export interface Brand {
   fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
 }
 
-export type OnboardingStep = 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
-export interface Onboarding { step: OnboardingStep; sessionAt?: Date | null; signedAt?: Date | null; liveAt?: Date | null }
+/** contract = step 1 (rules of the game), kickoff = step 2, brief → firstDelivery = step 3 (strategy and training). */
+export type OnboardingStep = 'contract' | 'kickoff' | 'brief' | 'brain' | 'session' | 'firstDelivery' | 'live';
+export interface Onboarding { step: OnboardingStep; contractId?: string | null; kickoffAt?: Date | null; sessionAt?: Date | null; signedAt?: Date | null; liveAt?: Date | null }
 
 interface BrandState {
   brands: Brand[];
@@ -49,6 +50,8 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
   step: o.step as OnboardingStep,
+  contractId: (o.contractId as string) ?? null,
+  kickoffAt: (o.kickoffAt as { toDate?: () => Date })?.toDate?.() ?? null,
   sessionAt: (o.sessionAt as { toDate?: () => Date })?.toDate?.() ?? null,
   signedAt: (o.signedAt as { toDate?: () => Date })?.toDate?.() ?? null,
   liveAt: (o.liveAt as { toDate?: () => Date })?.toDate?.() ?? null,

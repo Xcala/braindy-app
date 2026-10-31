@@ -6,6 +6,7 @@ import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { stripe, stripeConfigured, toMinor, verifyWebhook } from './stripe.js';
 import { notify } from './notify.js';
+import { recordHostingSignup } from './hosting.js';
 import type { AuthEnv } from './auth.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
@@ -214,6 +215,9 @@ stripeWebhook.post('/stripe', async (c) => {
   if ((await seen.get()).exists) return c.json({ ok: true, duplicate: true });
   const o = evt.data.object;
   const brandId = (o.metadata?.brandId as string) || (await brandOfCustomer(o.customer));
+  if (!brandId && o.metadata?.kind === 'hosting' && evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
+    await recordHostingSignup(o);
+  }
   if (brandId) {
     if (evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
       if (o.subscription) await planRef(brandId).set({ stripeSubscriptionId: o.subscription }, { merge: true });

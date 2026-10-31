@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { onboardingApi } from './api';
 
-/** Step 4 · Session with Nicolas (design 17): pick a slot, confirm, add to calendar. */
-export function SessionPicker({ brandId, brandName, bookedAt }: { brandId: string; brandName: string; bookedAt?: Date | null }) {
+/** Pick a slot with Nicolas, confirm, add to calendar: the kickoff meeting (step 2) or the strategy session (step 3). */
+export function SessionPicker({ brandId, brandName, bookedAt, kind = 'strategy' }: { brandId: string; brandName: string; bookedAt?: Date | null; kind?: 'kickoff' | 'strategy' }) {
   const { t, lang } = useI18n();
   const [slots, setSlots] = useState<string[]>([]);
   const [pick, setPick] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function SessionPicker({ brandId, brandName, bookedAt }: { brandId: strin
   async function confirm() {
     if (!pick) return;
     setBusy(true); setError(null);
-    try { await onboardingApi.book(brandId, pick); }
+    try { await onboardingApi.book(brandId, pick, kind); }
     catch (e) { setError(String(e).includes('409') ? t('ob.slotTaken') : t('ob.bookError')); onboardingApi.slots(brandId).then((r) => setSlots(r.slots)).catch(() => undefined); }
     finally { setBusy(false); }
   }
@@ -30,7 +30,7 @@ export function SessionPicker({ brandId, brandName, bookedAt }: { brandId: strin
 
   return (
     <div className="card col g12" style={{ padding: 22 }}>
-      <div className="row between g8 wrap"><h2 className="h3">{bookedAt ? t('ob.sessionBooked') : t('ob.pickSlot')}</h2><span className="t-xs t-mute">{t('ob.timezone')}</span></div>
+      <div className="row between g8 wrap"><h2 className="h3">{kind === 'kickoff' ? (bookedAt ? t('ctr.kickoffBooked') : t('ctr.kickoffPick')) : bookedAt ? t('ob.sessionBooked') : t('ob.pickSlot')}</h2><span className="t-xs t-mute">{t('ob.timezone')}</span></div>
       {bookedAt ? (
         <div className="row g12 wrap">
           <span className="w7">{fmt(bookedAt)}</span>

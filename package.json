@@ -8,6 +8,7 @@
     "build": "npm run build -w web && npm run build -w server",
     "typecheck": "npm run typecheck -w web && npm run typecheck -w server && tsc -p tests/rules --noEmit",
     "test:rules": "firebase emulators:exec --only firestore --project demo-braindy \"vitest run --config tests/rules/vitest.config.ts\"",
+    "test:contracts": "firebase emulators:exec --config firebase.e2e.json --only auth,firestore,storage --project demo-braindy \"npm run e2e:contracts -w server\"",
     "emulators": "firebase emulators:start --project demo-braindy"
   },
   "devDependencies": {

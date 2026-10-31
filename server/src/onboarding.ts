@@ -1,5 +1,6 @@
-// Onboarding, first 11 days (design 17-18): brief with the Researcher → Brand Brain draft → session with
-// Nicolas → Nicolas signs → first delivery → live. State lives on brands/{id}.onboarding (backend writes only).
+// Onboarding in 3 steps (2026-10-30): 1) rules of the game = contract (server/src/contracts), 2) kickoff
+// (schedule, kickoff meeting, checklist), 3) strategy and training: brief with the Researcher → Brand Brain
+// draft → session with Nicolas → Nicolas signs → first delivery → live. State lives on brands/{id}.onboarding (backend writes only).
 import { Hono } from 'hono';
 import { FieldValue, type DocumentData } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
@@ -91,18 +92,20 @@ onboarding.post('/brands/:brandId/session', async (c) => {
   const { brandId } = c.req.param();
   const uid = c.get('user').uid;
   if (!(await member(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
-  const { at } = await c.req.json<{ at?: string }>();
+  const { at, kind } = await c.req.json<{ at?: string; kind?: string }>();
+  const kickoff = kind === 'kickoff';
   const when = new Date(String(at));
   if (Number.isNaN(when.getTime()) || when.getTime() < Date.now()) return c.json({ error: 'invalid' }, 400);
   const id = when.toISOString();
   const ok = await db.runTransaction(async (tx) => {
     const slot = await tx.get(db.doc(`sessions/${id}`));
     if (slot.exists && slot.get('brandId') !== brandId) return false;
-    tx.set(db.doc(`sessions/${id}`), { brandId, at: when, bookedBy: uid, createdAt: now() });
+    tx.set(db.doc(`sessions/${id}`), { brandId, at: when, kind: kickoff ? 'kickoff' : 'strategy', bookedBy: uid, createdAt: now() });
     return true;
   });
   if (!ok) return c.json({ error: 'taken' }, 409);
-  await brandRef(brandId).set({ onboarding: { step: 'session', sessionAt: when } }, { merge: true });
+  // Step 2 books the kickoff meeting without moving the step; step 3 books the strategy session.
+  await brandRef(brandId).set({ onboarding: kickoff ? { kickoffAt: when } : { step: 'session', sessionAt: when } }, { merge: true });
   await notify(brandId, 'session_confirmed', { when: when.toLocaleString('es-CO', { weekday: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Bogota' }) });
   return c.json({ ok: true });
 });

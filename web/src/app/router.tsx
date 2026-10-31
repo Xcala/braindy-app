@@ -7,6 +7,7 @@ import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
+import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
@@ -31,7 +32,6 @@ import { Learn, LearnLesson } from '../pages/Learn';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
-import { MyPlan } from '../pages/MyPlan';
 import { Account } from '../pages/Account';
 
 export const router = createBrowserRouter([

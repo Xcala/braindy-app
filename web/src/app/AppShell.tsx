@@ -111,7 +111,7 @@ function AccountMenu() {
   const { profile, user } = useAuth();
   const { t } = useI18n();
   const name = profile?.name ?? user?.email ?? '';
-  const initials = name.split(/[s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
+  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
   return (
     <Link to="/account" aria-label={t('acct.account')} className="row g12" style={{ textDecoration: 'none', padding: 2, borderRadius: 999 }}>
       {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
