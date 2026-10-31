@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Gantt, deliveries } from '../contracts/Gantt';
+import { ScheduleTrack } from '../contracts/ScheduleTrack';
 import { Checklist } from '../contracts/Checklist';
 import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
@@ -65,6 +66,7 @@ export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, 
             <h2 id="plan-gantt" className="h2">{t('plan.ganttTitle')}</h2>
             <p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.weeksNote', { weeks: schedule.weeks, start: fmt(schedule.start, lang) })}</p>
           </div>
+          <ScheduleTrack schedule={schedule} />
           <Gantt schedule={schedule} onStatus={onRowStatus} />
         </section>
       )}

@@ -671,3 +671,43 @@ select.sx-status option{color:var(--ink);background:var(--white)}
 @media (max-width:480px){.sx-head{padding:20px}.sx-items{padding:0 8px 8px}.sx-item{padding:16px 14px 16px 20px}}
 .sx-status.is-client{color:var(--warning);background:var(--warning-bg)}
 @media (max-width:767px){.sx-legend{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px;padding:0 20px 2px;scrollbar-width:none}.sx-legend::-webkit-scrollbar{display:none}.sx-legend button{flex:none}}
+/* Schedule at a glance (Mi plan): what is delivered and what is left, on one line */
+.trk{display:flex;flex-direction:column;gap:18px;padding:24px;border-radius:var(--r-frame);border:1px solid var(--line);background:radial-gradient(120% 140% at 0% 0%,var(--hielo),transparent 55%),var(--white)}
+.trk-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.trk-pct{display:flex;flex-direction:column}
+.trk-pct b{font:900 clamp(48px,12vw,72px)/.9 var(--f-display);letter-spacing:-.04em;color:var(--ink)}
+.trk-pct small{font-size:.45em;font-weight:300;margin-left:2px}
+.trk-pct span{font:600 13px/1.4 var(--f-text);color:var(--graphite);margin-top:6px}
+.trk-where{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:var(--niebla);font:700 12px/1 var(--f-text);color:var(--ink)}
+.trk-line{position:relative;height:44px;margin:0 12px}
+.trk-rail,.trk-fill{position:absolute;left:0;top:50%;height:6px;margin-top:-3px;border-radius:999px}
+.trk-rail{right:0;background:var(--niebla);box-shadow:inset 0 0 0 1px var(--line)}
+.trk-fill{background:linear-gradient(90deg,#10B981,#06B6D4,var(--builder))}
+.trk-node{position:absolute;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--white);border:2.5px solid var(--line-strong);color:#fff;z-index:1}
+.trk-node svg{width:13px;height:13px}
+.trk-node.is-done{background:var(--success);border-color:var(--success)}
+.trk-node.is-doing{border-color:var(--builder);box-shadow:0 0 0 5px color-mix(in srgb,var(--builder) 22%,transparent)}
+.trk-node.is-next{border-color:var(--azul);border-width:3px}
+.trk-node.is-due{border-color:#F5B301;background:#FFF3D1}
+.trk-today{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:#E0428A;border-radius:2px}
+.trk-today em{position:absolute;bottom:100%;left:50%;transform:translate(-50%,-2px);font:800 10px/1 var(--f-text);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:#E0428A;white-space:nowrap}
+.trk-ends{display:flex;justify-content:space-between;margin-top:-12px;font:600 12px/1 var(--f-text);color:var(--graphite)}
+.trk-next{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border-radius:16px;background:var(--ink);color:#fff}
+.trk-next b{font:800 18px/1.25 var(--f-display)}
+.trk-next .t-mute{color:#C9D0DE}
+.trk-next .trk-lbl{color:#8FA0FF}
+.trk-next.is-all{background:var(--success)}
+.trk-cols{display:grid;gap:12px}
+@media (min-width:640px){.trk-cols{grid-template-columns:1fr 1fr}}
+.trk-col{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:16px;background:var(--niebla)}
+.trk-col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.trk-col li{display:flex;align-items:flex-start;gap:10px;font:500 14px/1.35 var(--f-text);color:var(--ink)}
+.trk-col li i{flex:none;width:10px;height:10px;margin-top:4px;border-radius:50%;border:2px solid var(--line-strong)}
+.trk-col li.is-done i{background:var(--success);border-color:var(--success)}
+.trk-col li.is-doing i{border-color:var(--builder);background:var(--builder)}
+.trk-col li.is-next i{border-color:var(--azul)}
+.trk-col li.is-due i{border-color:#F5B301;background:#F5B301}
+.trk-col li.trk-more{color:var(--graphite);font-weight:600;padding-left:20px}
+.trk-lbl{font:700 11px/1 var(--f-text);letter-spacing:.06em;text-transform:uppercase;color:var(--graphite)}
+html[data-theme="dark"] .trk-next{background:#22305A}
+@media (max-width:480px){.trk{padding:20px}}
