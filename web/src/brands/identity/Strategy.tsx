@@ -18,7 +18,7 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
       {brain.position && (
         <div className="stage col g12 rounded-[24px] p-6 sm:p-10">
           <p className="label">{t('brand.position')}</p>
-          <p className="d-lg" style={{ color: '#fff', fontSize: 34, lineHeight: '40px' }}>{brain.position}</p>
+          <p className="d-lg d-fit d-fit-lg" style={{ color: '#fff' }}>{brain.position}</p>
           <span className="row g8">
             <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-7 w-7 rounded-full object-cover" />
             <span className="t-xs muted">{brain.status === 'signed' ? t('brand.signedBy') : t('brand.draftBy')}</span>
@@ -27,9 +27,9 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
       )}
       <div className="grid gap-5 md:grid-cols-3">
         {items.filter(([, v]) => v).map(([k, v]) => (
-          <div key={k} className="card col g8">
+          <div key={k} className={`card col g12 sfield sf-${k.split('.')[1]}`}>
             <p className="label">{t(k)}</p>
-            <p style={{ whiteSpace: 'pre-line' }}>{v}</p>
+            <Field text={v!} />
           </div>
         ))}
       </div>
@@ -49,3 +49,28 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
 }
 
 export const hasStrategy = (b?: BrainDoc | null) => !!b && !!(b.position || b.audiences || b.goals || b.avoid);
+
+/** A strategy text as written in the Brand Brain: an intro paragraph, then "· Title — detail" lines shown as a list. */
+function Field({ text }: { text: string }) {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const isItem = (l: string) => /^([·•*–-]|\d+[.)])\s+/.test(l);
+  const intro = lines.filter((l) => !isItem(l));
+  const list = lines.filter(isItem).map((l) => l.replace(/^([·•*–-]|\d+[.)])\s+/, ''));
+  return (
+    <>
+      {intro.map((p, i) => <p key={p} className={i === 0 ? 'sf-intro' : 'sf-v'}>{p}</p>)}
+      {list.length > 0 && (
+        <ul className="sf-list">
+          {list.map((l) => {
+            const m = /^(.{2,60}?)\s+[—–-]\s+(.+)$/.exec(l) ?? /^([^:]{2,40}):\s+(.+)$/.exec(l);
+            return (
+              <li key={l}>
+                {m ? <><span className="sf-k">{m[1]}</span><span className="sf-v">{m[2]}</span></> : <span className="sf-solo">{l}</span>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
+  );
+}

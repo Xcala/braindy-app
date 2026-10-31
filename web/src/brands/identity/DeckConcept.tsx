@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
+import { Lightbox } from '../../components/Lightbox';
 import type { LegacyAsset } from '../../assets/BrandDocs';
 
 type Shot = { url: string; kind: 'hero' | 'design-concept'; caption?: string };
@@ -18,20 +20,33 @@ export function deckShots(assets: LegacyAsset[]): Shot[] {
   return out.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'design-concept' ? -1 : 1));
 }
 
-/** "Design concept" in My brand: the LogoDeck content that the identity sections did not show yet. */
+/** "Design concept" in My brand: the LogoDeck content that the identity sections did not show yet.
+ *  On phones each slide is shown tall enough to read and swipes sideways; a tap opens it full screen. */
 export function DeckConcept({ shots }: { shots: Shot[] }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState<number | null>(null);
+  const name = (s: Shot) => t(s.kind === 'hero' ? 'brand.cover' : 'brand.concept');
   return (
-    <div className="grid gap-5 md:grid-cols-2">
-      {shots.map((s) => (
-        <figure key={s.url} className="card col g8" style={{ padding: 0, overflow: 'hidden', margin: 0 }}>
-          <img src={s.url} alt={t(s.kind === 'hero' ? 'brand.cover' : 'brand.concept')} loading="lazy" style={{ width: '100%', aspectRatio: '16 / 9', objectFit: s.kind === 'hero' ? 'cover' : 'contain', background: '#fff', display: 'block' }} />
-          <figcaption className="col g4" style={{ padding: '10px 16px 14px' }}>
-            <span className="label">{t(s.kind === 'hero' ? 'brand.cover' : 'brand.concept')}</span>
-            {s.caption && <span className="t-sm t-mute">{s.caption}</span>}
-          </figcaption>
-        </figure>
-      ))}
-    </div>
+    <>
+      <div className="dc-grid grid gap-5 md:grid-cols-2">
+        {shots.map((s, i) => (
+          <figure key={s.url} className="card col" style={{ padding: 0, overflow: 'hidden', margin: 0 }}>
+            <div className="dc-pan">
+              <button type="button" className="dc-shot" onClick={() => setOpen(i)} aria-label={`${name(s)} · ${t('brand.tapToZoom')}`}>
+                <img src={s.url} alt={name(s)} loading="lazy" className={s.kind === 'hero' ? 'dc-img dc-cover' : 'dc-img'} />
+              </button>
+            </div>
+            <figcaption className="dc-cap row between g8" style={{ padding: '10px 16px 14px' }}>
+              <span className="col g4" style={{ minWidth: 0 }}>
+                <span className="label">{name(s)}</span>
+                {s.caption && <span className="t-sm t-mute">{s.caption}</span>}
+              </span>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(i)}>⤢ {t('brand.tapToZoom')}</button>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      {open !== null && <Lightbox items={shots.map((s) => ({ url: s.url, name: name(s) }))} index={open} onIndex={setOpen} onClose={() => setOpen(null)} />}
+    </>
   );
 }

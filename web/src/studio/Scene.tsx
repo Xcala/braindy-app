@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTilt } from './useTilt';
 import { useBrandsMaybe } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -58,6 +59,9 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
   const shown = (id: SeatId) => (id === 'nico' && away ? 'away' : seats[id].state === 'free' ? 'working' : seats[id].state);
   const idle = (id: SeatId) => (brandView && brandName ? brandWork(id, lang, brandName, studioNow()) : internalWork(id, lang, studioNow()));
   const loopRef = useRef<HTMLVideoElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // On phones, tilting pans the studio sideways too; paused while zoomed into a seat.
+  useTilt(scrollRef, !focused);
   const [seen, setSeen] = useState(false);
 
   // The 3 MB loop loads only once the scene scrolls into view, and pauses whenever it leaves it.
@@ -80,7 +84,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
     setCloseOn(false);
     const v = closeRef.current;
     let timer = 0;
-    if (v && !reduce) { v.src = `/studio/${litCloseup(CLOSEUP[focused] + (focused === 'nico' ? (officeState().open ? look : '-away') : ''), light())}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
+    if (v && !reduce) { v.src = `/studio/${litCloseup(CLOSEUP[focused] + (focused === 'nico' ? (officeState().open ? look : '-away') : ''), lit(officeState().open ? look : '-away', light()))}.mp4`; v.play?.().catch(() => {}); timer = window.setTimeout(() => setCloseOn(true), 800); }
     addEventListener('resize', place);
     return () => { clearTimeout(timer); removeEventListener('resize', place); };
   }, [focused]);
@@ -97,7 +101,7 @@ export function Scene({ seats, items, toSignCount, brandView = false, city, bran
   }
 
   return (
-    <div className={`sd-scroll ${compact ? 'sd-compact' : ''}`}>
+    <div ref={scrollRef} className={`sd-scroll ${compact ? 'sd-compact' : ''}`}>
       <div ref={sceneRef} className={`sd-scene ${focused ? 'zoomed' : ''}`} onClick={(e) => { if (focused && !(e.target as HTMLElement).closest('.sd-focus')) zoomOut(); }}>
         <div className="sd-cam" style={{ transform }}>
           <img src={`/studio/studio${media}.jpg`} alt={t('st.title')} loading="lazy" />

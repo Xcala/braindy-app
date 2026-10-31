@@ -24,12 +24,15 @@ import { Onboarding } from '../pages/Onboarding';
 import { Report } from '../pages/Report';
 import { AdminOnboarding } from '../pages/admin/Onboarding';
 import { AdminBilling } from '../pages/admin/Billing';
+import { AdminCosts } from '../pages/admin/Costs';
 import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
+import { MyPlan } from '../pages/MyPlan';
+import { Account } from '../pages/Account';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
@@ -60,6 +63,8 @@ export const router = createBrowserRouter([
           { path: 'report', element: <Report /> },
           { path: 'learn', element: <Learn /> },
           { path: 'learn/:id', element: <LearnLesson /> },
+          { path: 'plan', element: <MyPlan /> },
+          { path: 'account', element: <Account /> },
           { path: 'pay', element: <Pay /> },
           { path: 'pay/success', element: <PaySuccess /> },
           {
@@ -74,6 +79,7 @@ export const router = createBrowserRouter([
               { path: 'team', element: <AdminTeam /> },
               { path: 'admin/onboarding', element: <AdminOnboarding /> },
               { path: 'admin/billing', element: <AdminBilling /> },
+              { path: 'admin/costs', element: <AdminCosts /> },
             ],
           },
         ],

@@ -39,7 +39,7 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
 
   if (!current) return null;
   if (brands.length < 2) {
-    return <div className="sel" style={{ cursor: 'default' }}><BrandMark brand={current} /><span>{current.name}</span></div>;
+    return <div className="sel" style={{ cursor: 'default' }}><BrandMark brand={current} /><BrandName name={current.name} /></div>;
   }
 
   const item = (b: Brand, depth = 0) => (
@@ -60,7 +60,7 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
         <BrandMark brand={current} />
         <span className="flex flex-col items-start" style={{ lineHeight: '16px' }}>
           <span className="t-xs t-mute" style={{ fontWeight: 600 }}>{t('brand.switch')}</span>
-          <span className="max-w-[12rem] truncate">{current.name}</span>
+          <BrandName name={current.name} />
         </span>
         <Icon name="chevronDown" size={16} />
       </button>
@@ -95,5 +95,20 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
         </div>
       )}
     </div>
+  );
+}
+
+const SMALL = new Set(['de', 'del', 'la', 'las', 'los', 'el', 'y', 'e', 'of', 'the', 'and', '&']);
+/** "Grupo Alternativas" → "GA": what a long brand name shows in the phone header. */
+export const initials = (name: string) => name.split(/[\s_/-]+/).filter((w) => w && !SMALL.has(w.toLowerCase())).slice(0, 3).map((w) => w[0]).join('').toUpperCase();
+
+/** The brand name in the selector; on phones a long name becomes its initials (full name stays in the tooltip and for screen readers). */
+function BrandName({ name }: { name: string }) {
+  const long = name.length > 12 && initials(name).length > 1;
+  return (
+    <span className={`bname max-w-[12rem] truncate${long ? ' is-long' : ''}`} title={name}>
+      <span className="bname-full">{name}</span>
+      {long && <span className="bname-short" aria-hidden="true">{initials(name)}</span>}
+    </span>
   );
 }

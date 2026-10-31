@@ -7,6 +7,8 @@ import { reviewEn, reviewEs } from './reviewStrings';
 import { onboardingEn, onboardingEs } from './onboardingStrings';
 import { contractEn, contractEs } from './contractStrings';
 import { billingEn, billingEs } from './billingStrings';
+import { costEn, costEs } from './costStrings';
+import { planEn, planEs } from './planStrings';
 import { uxEn, uxEs } from './uxStrings';
 import { brainEn, brainEs } from './brainStrings';
 import { polishEn, polishEs } from './polishStrings';
@@ -20,16 +22,19 @@ const baseEn = {
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
   'nav.requests': 'My requests',
-  'nav.accesses': 'Accesses',
+  'nav.accesses': 'Connectors',
   'nav.brands': 'Brands',
   'nav.team': 'Team',
   'common.signOut': 'Sign out',
+  'common.useSuggestion': 'Use the suggestion',
   'common.loading': 'Loading',
   'common.comingPhase': 'Coming in phase {n}.',
   'common.copy': 'Copy',
+  'brand.pantoneApprox': 'Nearest Pantone (approximate): confirm with a printed swatch book',
   'common.copied': 'Copied',
   'common.download': 'Download',
   'common.open': 'Open',
+  'brand.tapToZoom': 'Enlarge',
   'common.cancel': 'Cancel',
   'common.search': 'Search',
   'brand.switch': 'Brand',
@@ -190,7 +195,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -199,16 +204,19 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
   'nav.requests': 'Mis solicitudes',
-  'nav.accesses': 'Accesos',
+  'nav.accesses': 'Conectores',
   'nav.brands': 'Marcas',
   'nav.team': 'Equipo',
   'common.signOut': 'Cerrar sesión',
+  'common.useSuggestion': 'Usar la sugerencia',
   'common.loading': 'Cargando',
   'common.comingPhase': 'Llega en la fase {n}.',
   'common.copy': 'Copiar',
+  'brand.pantoneApprox': 'Pantone más cercano (aproximado): confírmalo con la guía impresa',
   'common.copied': 'Copiado',
   'common.download': 'Descargar',
   'common.open': 'Abrir',
+  'brand.tapToZoom': 'Ampliar',
   'common.cancel': 'Cancelar',
   'common.search': 'Buscar',
   'brand.switch': 'Marca',
@@ -369,4 +377,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs };

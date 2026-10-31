@@ -28,7 +28,7 @@ export function AskBox({ brandId }: { brandId: string }) {
   const [more, setMore] = useState(false);
   const [open, setOpen] = useState(false);
   const [example, setExample] = useState<AskExample | null>(null);
-  const [detail, setDetail] = useState<AskDetailValue>({ sub: '', type: '', application: {}, scene: {}, format: '', language: lang === 'es' ? 'Español' : 'English' });
+  const [detail, setDetail] = useState<AskDetailValue>({ sub: '', type: '', application: {}, scene: {}, format: '', language: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
 

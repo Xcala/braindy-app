@@ -20,7 +20,7 @@ export function Voice({ voice }: { voice: VoiceDoc | null }) {
       <div className={`grid gap-5 ${toneBalance || keyLanguage.length ? 'lg:grid-cols-[1.2fr_1fr]' : ''}`}>
         <div className="card col g20">
           <p className="label">{t('brand.essence')}</p>
-          {essence?.title && <p className="d-lg" style={{ fontSize: 30, lineHeight: '36px' }}><span className="w9">{essence.title}</span></p>}
+          {essence?.title && <p className="d-lg d-fit"><span className="w9">{essence.title}</span></p>}
           {essence?.description && <p className="t-mute">{essence.description}</p>}
           {example && <p className="t-lg w7">{example}</p>}
           {(howItSounds?.is?.length || howItSounds?.isNot?.length) ? (

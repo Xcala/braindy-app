@@ -33,7 +33,7 @@ export function BrandEditor({ brandId, identity, voice, brain, onClose }: {
           <div className="col g4"><h2 className="h3" id="h-be">{t('be.title')}</h2><span className="t-xs t-mute">{t('be.hint')}</span></div>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>{t('be.close')}</button>
         </div>
-        <div className="seg" role="tablist" style={{ flexWrap: 'wrap' }}>
+        <div className="seg seg-scroll" role="tablist">
           {TABS.map((k) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'is-on' : ''} onClick={() => setTab(k)}>{t(`be.tab.${k}` as StringKey)}</button>)}
         </div>
         {tab === 'logos' && <LogosEdit brandId={brandId} logos={identity.logos} />}

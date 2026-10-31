@@ -37,7 +37,7 @@ export function AskDetails({ cat, value, onChange }: { cat: string; value: AskDe
       </div>
       <div className="card grid gap-4 md:grid-cols-2">
         <div className="field"><label htmlFor="d2">{t('ask.format')}</label><input className="input" id="d2" value={value.format} placeholder={t('ask.formatPh')} onChange={(e) => set({ format: e.target.value })} /></div>
-        <div className="field"><label htmlFor="d3">{t('ask.language')}</label><input className="input" id="d3" value={value.language} onChange={(e) => set({ language: e.target.value })} /></div>
+        <div className="field"><label htmlFor="d3">{t('ask.language')}</label><input className="input" id="d3" value={value.language} placeholder={t('ask.languageAuto')} onChange={(e) => set({ language: e.target.value })} /></div>
       </div>
     </div>
   );

@@ -287,6 +287,18 @@ service cloud.firestore {
         allow read: if isAdmin() || can(brandId, 'accesses');
         allow write: if false;
       }
+
+      // AI spend (tokens, credits, USD) per brand: only the admin reads it, never the client. Backend writes.
+      match /usage/{usageId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ---------- AI spend that no brand claims yet (sessions outside a client folder): admin reads ----------
+    match /usageUnassigned/{usageId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // ---------- encrypted credential values (backend only, never readable by clients) ----------
@@ -321,6 +333,9 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
     match /{path=**}/transfers/{transferId} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/usage/{usageId} {
       allow read: if isAdmin();
     }
 
@@ -409,6 +424,11 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
       allow update: if isAdmin() && onlyChanges(['status', 'doneAt']) && request.resource.data.status in ['open', 'done'];
       allow delete: if isAdmin();
+    }
+
+    // ---------- launches (work NickMark shows to every client) and their reactions: served only by the API, which signs the images ----------
+    match /launches/{document=**} {
+      allow read, write: if false;
     }
 
     // ---------- Brain task log (what each Brain did, for which brand): admin only ----------

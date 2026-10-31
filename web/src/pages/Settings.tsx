@@ -6,6 +6,7 @@ import { NoticesCard } from '../settings/NoticesCard';
 import { MembersCard } from '../team/MembersCard';
 import { BillingCard } from '../settings/BillingCard';
 import type { StringKey } from '../i18n/strings';
+import { BackToAccount } from './Account';
 
 const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team', 'set.tab.team'], ['language', 'set.tab.language'], ['billing', 'set.tab.billing']];
 
@@ -19,8 +20,8 @@ export function Settings() {
 
   return (
     <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <nav className="col g4" aria-label={t('nav.settings')}>
-        <p className="label" style={{ padding: '0 12px 8px' }}>{current.name}</p>
+      <nav className="col g4 setnav" aria-label={t('nav.settings')}>
+        <p className="label setnav-brand" style={{ padding: '0 12px 8px' }}>{current.name}</p>
         {TABS.map(([k, label]) => (
           <button key={k} onClick={() => setParams({ tab: k })} aria-current={tab === k ? 'page' : undefined}
             className={`menu-item text-left ${tab === k ? 'is-on' : ''}`} style={{ border: 0, cursor: 'pointer', background: tab === k ? 'var(--niebla)' : 'none' }}>
@@ -30,7 +31,8 @@ export function Settings() {
       </nav>
       <div className="col g24">
         <div className="col g8">
-          <h1 className="h1">{t('nav.settings')}</h1>
+          <BackToAccount />
+          <h1 className="h1"><span className="md:hidden">{t(TABS.find(([k]) => k === tab)![1])}</span><span className="hidden md:inline">{t('nav.settings')}</span></h1>
           {tab === 'notices' && <p className="t-mute">{t('set.noticesTagline')}</p>}
         </div>
         {tab === 'notices' && <NoticesCard brandId={current.id} />}

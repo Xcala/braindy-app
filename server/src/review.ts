@@ -15,7 +15,7 @@ const LINK_DAYS = 7;
 const now = () => FieldValue.serverTimestamp();
 const NOTICES = ['delivery', 'approved', 'brandBrain', 'report'] as const;
 
-type Notices = { whatsapp?: string; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
+type Notices = { whatsapp?: string; groupLink?: string; groups?: Array<{ name?: string; url?: string }>; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
 const settingsRef = (brandId: string) => db.doc(`brands/${brandId}/settings/notices`);
 
 /** Creates a review link and sends it (WhatsApp API) or returns a wa.me link to send by hand. */
@@ -49,7 +49,10 @@ export const review = new Hono<AuthEnv>();
 review.get('/brands/:brandId/settings/notices', async (c) => {
   const { brandId } = c.req.param();
   if (!(await brandAccess(c.get('user').uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
-  return c.json({ ...(((await settingsRef(brandId).get()).data() ?? {}) as Notices), whatsappApi: whatsappConfigured() });
+  const s = ((await settingsRef(brandId).get()).data() ?? {}) as Notices;
+  // Brands saved with the first single-group field read as a list of one.
+  const groups = s.groups ?? (s.groupLink ? [{ name: '', url: s.groupLink }] : []);
+  return c.json({ ...s, groupLink: undefined, groups, whatsappApi: whatsappConfigured() });
 });
 
 review.put('/brands/:brandId/settings/notices', async (c) => {
@@ -60,10 +63,14 @@ review.put('/brands/:brandId/settings/notices', async (c) => {
   const b = await c.req.json<Notices>();
   const whatsapp = b.whatsapp ? normalizePhone(b.whatsapp) : '';
   if (b.whatsapp && !whatsapp) return c.json({ error: 'invalid_phone' }, 400);
+  // The WhatsApp groups NickMark keeps with the client (e.g. Marketing, Web): only invite links of WhatsApp itself.
+  const groups = (Array.isArray(b.groups) ? b.groups : []).slice(0, 10)
+    .map((g) => ({ name: String(g?.name ?? '').trim().slice(0, 60), url: String(g?.url ?? '').trim() })).filter((g) => g.url);
+  if (groups.some((g) => !/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{10,40}$/.test(g.url))) return c.json({ error: 'invalid_group' }, 400);
   if (b.approverUid && !(await canApprove(String(b.approverUid), brandId))) return c.json({ error: 'not_an_approver' }, 400);
   const notices = Object.fromEntries(NOTICES.map((k) => [k, b.notices?.[k] !== false]));
   await settingsRef(brandId).set({
-    whatsapp: whatsapp ?? '', approverUid: String(b.approverUid ?? '').slice(0, 128), lang: b.lang === 'en' ? 'en' : 'es',
+    whatsapp: whatsapp ?? '', groups, groupLink: FieldValue.delete(), approverUid: String(b.approverUid ?? '').slice(0, 128), lang: b.lang === 'en' ? 'en' : 'es',
     notices, updatedBy: uid, updatedAt: now(),
   }, { merge: true });
   return c.json({ ok: true });

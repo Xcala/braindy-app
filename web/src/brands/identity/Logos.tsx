@@ -25,7 +25,17 @@ export function Logos({ logos }: { logos: LogoSet }) {
 
   return (
     <div className="col g24">
-    {rows.length > 0 && <div className="overflow-x-auto">
+    {rows.length > 0 && <div className="logos-m col g20">
+      {rows.map(([label, url]) => (
+        <div key={url} className="col g8">
+          <span className="w7">{label}</span>
+          <div className="grid grid-cols-2 gap-2">
+            {GROUNDS.map((g) => <Cell key={g.key} g={g} url={url} label={label} ground={t(`brand.ground.${g.key}`)} downloadLabel={t('common.download')} />)}
+          </div>
+        </div>
+      ))}
+    </div>}
+    {rows.length > 0 && <div className="logos-d overflow-x-auto">
       <div className="vgrid min-w-[720px]">
         <span />
         {GROUNDS.map((g) => <span key={g.key} className="label" style={{ textAlign: 'center' }}>{t(`brand.ground.${g.key}`)}</span>)}
@@ -50,15 +60,21 @@ function Row({ label, url, downloadLabel }: { label: string; url: string; downlo
   return (
     <>
       <div className="col g4" style={{ justifyContent: 'center' }}><span className="w7">{label}</span></div>
-      {GROUNDS.map((g) => (
-        <div key={g.key} className="vcell" style={g.style}>
-          <img src={url} alt="" loading="lazy" style={{ filter: g.filter }} />
-          <a className="btn btn-ghost btn-icon btn-sm dl" href={url} target="_blank" rel="noreferrer"
-            aria-label={`${downloadLabel} ${label}`} style={{ width: 36, background: g.key === 'dark' ? 'rgba(255,255,255,.14)' : undefined, color: g.key === 'dark' ? '#fff' : undefined }}>
-            <Icon name="download" size={16} />
-          </a>
-        </div>
-      ))}
+      {GROUNDS.map((g) => <Cell key={g.key} g={g} url={url} label={label} downloadLabel={downloadLabel} />)}
     </>
+  );
+}
+
+function Cell({ g, url, label, ground, downloadLabel }: { g: (typeof GROUNDS)[number]; url: string; label: string; ground?: string; downloadLabel: string }) {
+  const dark = g.key === 'dark';
+  return (
+    <div className="vcell" style={g.style}>
+      {ground && <span className="vground" style={{ color: dark ? '#C9D0DE' : undefined }}>{ground}</span>}
+      <img src={url} alt="" loading="lazy" style={{ filter: g.filter }} />
+      <a className="btn btn-ghost btn-icon btn-sm dl" href={url} target="_blank" rel="noreferrer"
+        aria-label={`${downloadLabel} ${label}${ground ? ` · ${ground}` : ''}`} style={{ width: 36, background: dark ? 'rgba(255,255,255,.14)' : undefined, color: dark ? '#fff' : undefined }}>
+        <Icon name="download" size={16} />
+      </a>
+    </div>
   );
 }

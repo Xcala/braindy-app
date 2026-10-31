@@ -62,3 +62,14 @@
 .sd-compact .sd-bubble { padding: 4px 7px; border-radius: 9px; max-width: 24%; }
 .sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
 .sd-live { transition: opacity .3s; }
+
+/* Launches beside the studio: never over the photo. On wide screens a column as tall as the scene (its list scrolls); below it on phones. */
+.sd-with-launches { display: grid; gap: 16px; }
+@media (min-width: 1100px) {
+  .sd-with-launches:has(.sd-launches) { grid-template-columns: minmax(0, 1fr) 280px; }
+  .sd-launches { height: 0; min-height: 100%; overflow-y: auto; }
+}
+.sd-react { display: inline-flex; align-items: center; gap: 4px; font: inherit; font-size: 14px; line-height: 1; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
+.sd-react:hover { border-color: var(--azul); }
+.sd-react.on { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 14%, transparent); }
+.sd-react:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }

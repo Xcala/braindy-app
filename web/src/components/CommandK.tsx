@@ -12,8 +12,10 @@ import { useCopy } from '../brands/identity/useCopy';
 import { Icon } from './Icon';
 import type { StringKey } from '../i18n/strings';
 import { folderVisible } from '../assets/folderRules';
+import { useFileSearch, useSearchSources } from './useSearchSources';
+import { useMySections } from '../team/sections';
 
-type Item = { id: string; group: StringKey; label: string; hint?: string; run: () => void; brand?: { name: string; logoUrl: string | null }; swatch?: string; path?: string };
+type Item = { id: string; group: StringKey; icon?: React.ReactNode; label: string; hint?: string; run: () => void; brand?: { name: string; logoUrl: string | null }; swatch?: string; path?: string };
 
 const RECENT_KEY = 'braindy.cmdk.recent';
 const readRecent = (): Array<{ id: string; label: string; path: string }> => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]'); } catch { return []; } };
@@ -56,30 +58,44 @@ function Palette({ onClose }: { onClose: () => void }) {
   const index = useBrandDoc(current?.id, 'context/fileIndex');
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
+  const { can } = useMySections();
+  const sources = useSearchSources(current?.id);
+  const fileHits = useFileSearch(current?.id, q, can('files'));
+  const { lang } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => { input.current?.focus(); }, []);
 
   const items = useMemo<Item[]>(() => {
     const go = (path: string, id?: string, label?: string) => () => { if (id && label) pushRecent({ id, label, path }); navigate(path); onClose(); };
-    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
-      .concat(isAdmin ? [['/admin/today', 'today.title'], ['/admin/studio', 'st.nav'], ['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team'], ['/admin/onboarding', 'nav.onboarding'], ['/admin/billing', 'nav.billing'], ['/admin/criterio', 'cra.nav']] : [['/learn', 'cr.nav']])
+    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/plan', 'nav.plan'], ['/account', 'acct.account'], ['/settings?tab=billing', 'set.tab.billing'], ['/settings?tab=team', 'set.tab.team'], ['/settings?tab=notices', 'set.tab.notices'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
+      .concat(isAdmin ? [['/admin/today', 'today.title'], ['/admin/studio', 'st.nav'], ['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team'], ['/admin/onboarding', 'nav.onboarding'], ['/admin/billing', 'nav.billing'], ['/admin/costs', 'cost.nav'], ['/admin/criterio', 'cra.nav']] : [['/learn', 'cr.nav']])
       .map(([p, k]) => ({ id: p, group: 'search.pages' as StringKey, label: t(k), run: go(p) }));
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));
     const reqItems: Item[] = requests.map((r) => ({ id: `r-${r.id}`, group: 'search.requests' as StringKey, label: r.title, hint: `${r.brandId !== current?.id ? `${brands.find((b) => b.id === r.brandId)?.name ?? ''} · ` : ''}${t(`req.status.${r.status}`)}`, run: () => { if (r.brandId !== current?.id) select(r.brandId); go(`/requests/${r.id}`)(); } }));
     const propItems: Item[] = proposals.map((p) => ({ id: `p-${p.id}`, group: 'search.proposals' as StringKey, label: `${p.prospect?.company ?? ''} ${p.title}`.trim(), hint: t(`proposals.status.${p.status}`), run: go(`/admin/proposals/${p.id}`, `p-${p.id}`, p.title) }));
     const folderItems: Item[] = ((index.data?.folders as Array<{ path: string }>) ?? []).filter((f) => f.path && (isAdmin || !current || folderVisible(current, false)(f.path)))
-      .map((f) => ({ id: `f-${f.path}`, group: 'search.folders' as StringKey, label: f.path.split('/').pop()!, hint: f.path, run: go('/assets') }));
+      .map((f) => ({ id: `f-${f.path}`, group: 'search.folders' as StringKey, label: f.path.split('/').pop()!, hint: f.path, run: go(`/assets?folder=${encodeURIComponent(f.path)}`) }));
     const idn = (identity.data ?? {}) as { colors?: Array<{ hex?: string; name?: string }>; typography?: Array<{ fontFamily?: string; name?: string }> };
     const valueItems: Item[] = [
       ...(idn.colors ?? []).filter((c) => c.hex).map((c) => ({ id: `v-${c.hex}`, group: 'search.values' as StringKey, label: c.hex!.toUpperCase(), hint: c.name, swatch: c.hex, run: () => { copy(c.hex!.toUpperCase()); onClose(); } })),
       ...(idn.typography ?? []).map((f) => f.fontFamily ?? f.name).filter(Boolean).map((f) => ({ id: `v-${f}`, group: 'search.values' as StringKey, label: f!, hint: t('brand.typography'), run: () => { copy(f!); onClose(); } })),
     ];
+    const linkItems: Item[] = sources.links.map((l) => ({ id: `l-${l.id}`, group: (l.section === 'apps' ? 'nav.apps' : 'nav.research') as StringKey, label: l.title, hint: l.description ?? l.url.replace(/^https?:\/\//, ''), run: () => { window.open(l.url, '_blank', 'noopener'); onClose(); } }));
+    const connItems: Item[] = sources.connectors.map((a) => ({ id: `c-${a.id}`, group: 'nav.accesses' as StringKey, label: a.platform, hint: a.username, run: go('/accesses') }));
+    const lessonItems: Item[] = sources.lessons.map((l) => ({ id: `le-${l.id}`, group: 'cr.nav' as StringKey, label: l.title[lang], hint: l.summary[lang], run: go(`/learn/${l.id}`, `le-${l.id}`, l.title[lang]) }));
     const recent: Item[] = readRecent().map((r) => ({ id: `rec-${r.id}`, group: 'search.recent' as StringKey, label: r.label, run: go(r.path, r.id, r.label) }));
-    return [...recent, ...pages, ...valueItems, ...brandItems, ...reqItems, ...propItems, ...folderItems];
-  }, [brands, current?.id, requests, proposals, index.data, identity.data, isAdmin, navigate, onClose, select, t, copy]);
+    return [...recent, ...pages, ...valueItems, ...brandItems, ...reqItems, ...linkItems, ...lessonItems, ...connItems, ...propItems, ...folderItems];
+  }, [brands, current?.id, requests, proposals, index.data, identity.data, isAdmin, navigate, onClose, select, t, copy, sources, lang]);
 
   const needle = normalizeSearch(q);
-  const shown = (needle ? items.filter((i) => i.group !== 'search.recent' && normalizeSearch(`${i.label} ${i.hint ?? ''}`).includes(needle)) : items.filter((i) => i.group === 'search.recent' || i.group === 'search.pages')).slice(0, 40);
+  const words = needle.split(/\s+/).filter(Boolean);
+  const shown = (needle ? items.filter((i) => { const k = normalizeSearch(`${i.label} ${i.hint ?? ''}`); return i.group !== 'search.recent' && words.every((w) => k.includes(w)); }) : items.filter((i) => i.group === 'search.recent' || i.group === 'search.pages')).slice(0, 40);
+  if (needle) {
+    const files: Item[] = fileHits.files.map((f) => ({ id: `file-${f.id}`, group: 'search.files' as StringKey, label: f.title, hint: f.folder || current?.name,
+      run: () => { pushRecent({ id: `file-${f.id}`, label: f.title, path: `/assets?folder=${encodeURIComponent(f.folder)}&file=${f.id}` }); navigate(`/assets?folder=${encodeURIComponent(f.folder)}&file=${f.id}`); onClose(); } }));
+    shown.splice(24);
+    shown.push(...files);
+  }
   useEffect(() => setActive(0), [q]);
 
   const onKey = (e: React.KeyboardEvent) => {
@@ -99,7 +115,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             aria-label={t('search.title')} role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-activedescendant={shown[active]?.id} />
         </div>
         <div id="cmdk-list" role="listbox" className="col overflow-y-auto" style={{ maxHeight: '60vh', marginTop: 6 }}>
-          {shown.length === 0 && <p className="t-sm t-mute" style={{ padding: '12px' }}>{t('search.noResults')}</p>}
+          {shown.length === 0 && !fileHits.loading && <p className="t-sm t-mute" style={{ padding: '12px' }}>{t('search.noResults')}</p>}
           {shown.map((i, n) => {
             const header = i.group !== lastGroup ? <p className="label" style={{ padding: '8px 12px 4px' }}>{t(i.group)}</p> : null;
             lastGroup = i.group;
@@ -118,7 +134,7 @@ function Palette({ onClose }: { onClose: () => void }) {
           })}
         </div>
         <div className="row between g8 wrap" style={{ padding: '8px 12px 4px' }}>
-          <p className="t-xs t-mute">{t('search.keys')}</p>
+          <p className="t-xs t-mute">{fileHits.loading ? `${t('search.searchingFiles')}…` : needle && fileHits.total > fileHits.files.length ? t('search.moreFiles', { n: String(fileHits.total - fileHits.files.length) }) : <span className="hidden md:inline">{t('search.keys')}</span>}</p>
           {isAdmin && <button type="button" className={`chip ${allBrands ? 'c-active' : 'chip-plain'}`} style={{ cursor: 'pointer', border: 0 }} aria-pressed={allBrands} onClick={() => setAllBrands((a) => !a)}>{t('search.allBrands')}</button>}
         </div>
       </div>

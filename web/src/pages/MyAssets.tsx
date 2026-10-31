@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { FileExplorer } from '../assets/FileExplorer';
@@ -10,6 +11,7 @@ import { SignedContract } from '../contracts/SignedContract';
 export function MyAssets() {
   const { current } = useBrands();
   const { t, lang } = useI18n();
+  const [params] = useSearchParams();
   const legacy = useLegacyAssets(current?.id);
   const index = useBrandDoc(current?.id, 'context/fileIndex');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -23,7 +25,7 @@ export function MyAssets() {
           <h1 className="h1"><span className="w9">{t('nav.assets')}.</span> {t('assets.tagline')}</h1>
           {updated && (
             <p className="t-mute">
-              {t('assets.synced', { date: updated.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }) })}
+              {t('assets.synced', { date: updated.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) })}
             </p>
           )}
         </div>
@@ -32,7 +34,7 @@ export function MyAssets() {
       <SignedContract brandId={current.id} contractId={current.onboarding?.contractId} />
       {/* LogoDecks live in My brand and MarketMaps in My research; only other carried-over documents stay here. */}
       <BrandDocs assets={legacy.filter((a) => a.type !== 'logodeck' && a.type !== 'marketmap')} />
-      <FileExplorer brandId={current.id} brandName={current.name} />
+      <FileExplorer brandId={current.id} brandName={current.name} startPath={params.get('folder') ?? ''} openId={params.get('file') ?? undefined} />
     </div>
   );
 }

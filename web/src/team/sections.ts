@@ -35,7 +35,7 @@ export function profileOf(m: MemberLike): Profile {
 /** Which section each client route belongs to. */
 export const ROUTE_SECTION: Record<string, Section> = {
   '/brand': 'brand', '/requests': 'requests', '/assets': 'files', '/apps': 'apps', '/research': 'research',
-  '/report': 'results', '/learn': 'learn', '/accesses': 'accesses', '/pay': 'billing',
+  '/report': 'results', '/learn': 'learn', '/accesses': 'accesses', '/pay': 'billing', '/plan': 'billing',
 };
 export const sectionOfPath = (path: string) => ROUTE_SECTION[`/${path.split('/')[1] ?? ''}`];
 
