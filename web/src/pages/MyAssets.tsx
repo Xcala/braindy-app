@@ -22,7 +22,7 @@ export function MyAssets() {
           <h1 className="h1"><span className="w9">{t('nav.assets')}.</span> {t('assets.tagline')}</h1>
           {updated && (
             <p className="t-mute">
-              {t('assets.synced', { date: updated.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }) })}
+              {t('assets.synced', { date: updated.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) })}
             </p>
           )}
         </div>

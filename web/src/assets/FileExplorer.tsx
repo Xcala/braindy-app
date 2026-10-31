@@ -86,7 +86,7 @@ export function FileExplorer({ brandId, brandName }: { brandId: string; brandNam
           <input className="input" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('files.search')}
             placeholder={t('files.searchIn', { name: crumbs[crumbs.length - 1] ?? brandName })} />
         </div>
-        <div className="seg overflow-x-auto" role="group" aria-label={t('files.filter')}>
+        <div className="seg seg-scroll fseg" role="group" aria-label={t('files.filter')}>
           {(['all', 'image', 'video', 'pdf', 'design'] as Filter[]).map((k) => (
             <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{t(`files.kind.${k}`)}</button>
           ))}
