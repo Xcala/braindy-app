@@ -63,34 +63,20 @@
 .sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
 .sd-live { transition: opacity .3s; }
 
-/* Launches under the studio (the studio keeps the full width): a news-crawl band, always shown, with two tabs. */
+/* Launches under the studio (the studio keeps the full width): an endless marquee, the brand's own and the community's together. */
 .sd-with-launches { display: flex; flex-direction: column; gap: 12px; }
-.sd-ticker, .card.sd-ticker { display: flex; align-items: stretch; gap: 0; padding: 0; overflow: hidden; }
-.sd-ticker-head { flex: none; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 12px 16px; background: #EEF1FD; color: var(--ink); border-right: 1px solid #DCE2FA; }
-.sd-ticker-head .label { color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
-.sd-ticker-head .label i { width: 8px; height: 8px; border-radius: 50%; background: var(--azul); animation: sd-blink 1.6s infinite; }
-.sd-ticker-head .seg { background: #fff; border-color: #DCE2FA; }
-.sd-ticker-head .seg button { color: #4A5578; height: 30px; font-size: 12px; }
-.sd-ticker-head .seg button.is-on { background: var(--azul); color: #fff; }
-.sd-ticker-track { flex: 1; min-width: 0; overflow: hidden; display: flex; align-items: center; mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 48px), transparent); }
-.sd-ticker-run { display: flex; gap: 12px; padding: 12px; margin: 0; list-style: none; width: max-content; }
-.sd-ticker-run.is-moving { animation: sd-crawl var(--crawl, 40s) linear infinite; }
-.sd-ticker-track:hover .sd-ticker-run, .sd-ticker-track:focus-within .sd-ticker-run { animation-play-state: paused; }
+.sd-ticker { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
+.sd-ticker-run { display: flex; gap: 12px; padding: 4px 0; margin: 0; list-style: none; width: max-content; animation: sd-crawl var(--crawl, 48s) linear infinite; }
+.sd-ticker:hover .sd-ticker-run, .sd-ticker:focus-within .sd-ticker-run { animation-play-state: paused; }
 .sd-ticker-item { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font: inherit; text-align: left; max-width: 320px; }
 .sd-ticker-item:hover { border-color: var(--azul); }
 .sd-ticker-item:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 .sd-ticker-item img, .sd-ticker-item video { width: 72px; height: 48px; border-radius: 9px; object-fit: cover; background: #000; flex: none; }
-.sd-ticker-empty { padding: 16px; }
+.sd-community { align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: .02em; line-height: 1; padding: 3px 7px; margin-bottom: 3px; border-radius: 999px; background: #EEF1FD; color: var(--azul); }
 @keyframes sd-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes sd-blink { 50% { opacity: .35; } }
-@media (max-width: 700px) {
-  .sd-ticker { flex-direction: column; }
-  .sd-ticker-head { border-right: 0; border-bottom: 1px solid #DCE2FA; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .sd-ticker-run.is-moving { animation: none; }
-  .sd-ticker-track { overflow-x: auto; mask-image: none; }
-  .sd-ticker-head .label i { animation: none; }
+  .sd-ticker-run { animation: none; }
+  .sd-ticker { overflow-x: auto; mask-image: none; }
 }
 .sd-launch-media { width: 100%; max-height: 62vh; object-fit: contain; border-radius: 14px; background: #000; display: block; }
 .sd-react { display: inline-flex; align-items: center; gap: 4px; font: inherit; font-size: 14px; line-height: 1; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
