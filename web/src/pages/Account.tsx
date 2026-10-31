@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { LangToggle } from '../i18n/LangToggle';
+import { ThemeToggle } from '../theme/ThemeToggle';
 import type { StringKey } from '../i18n/strings';
 import { useBilling } from '../billing/useBilling';
 import { useAccesses } from '../accesses/useAccesses';
@@ -23,6 +24,7 @@ const I = {
   report: svg(<><path d="M4 20V10M10 20V4M16 20v-7M20 20H3" /></>),
   learn: svg(<><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" /><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z" /></>),
   language: svg(<><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.7 3.5 5.7 3.5 9s-1 6.3-3.5 9c-2.5-2.7-3.5-5.7-3.5-9s1-6.3 3.5-9" /></>),
+  theme: svg(<><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" /></>),
   tour: svg(<><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></>),
   admin: svg(<><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z" /></>),
   out: svg(<><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" /></>),
@@ -60,6 +62,7 @@ export function Account() {
   ] as Row[]).filter(ok);
   const account: Row[] = [
     { icon: I.language, label: 'set.tab.language', value: <LangToggle /> },
+    { icon: I.theme, label: 'theme.title', value: <ThemeToggle /> },
     { onClick: () => { if (!requestTour()) navigate('/home?tour=1'); }, icon: I.tour, label: 'tour.see' },
     ...(isAdmin ? [{ to: '/admin/today', icon: I.admin, label: 'nav.backToAdmin' as StringKey }] : []),
     { onClick: logout, icon: I.out, label: 'common.signOut', danger: true },

@@ -553,3 +553,42 @@ div.acct-row:hover{background:none}
 .notif-dot.is-app{background:#06B6D4}
 /* Search box: solid sheet so the page behind does not show through the results */
 .cmdk{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+
+/* ---------- Dark mode (Account › Appearance). Tokens first; then the surfaces that were painted white. ---------- */
+html[data-theme="dark"]{color-scheme:dark;
+  --ink:#E8ECF5; --graphite:#A3ABBE; --graphite-2:#8B93A7;
+  --white:#141A2B; --niebla:#0B1020; --hielo:#1B2547; --line:#252D42; --line-strong:#38415A;
+  --success:#3CCB8B; --success-bg:#0F2A1F; --warning:#F5C04A; --warning-bg:#2B2210; --danger:#FF6B70; --danger-bg:#2E1416;
+  --researcher-bg:#2A2310; --marketer-bg:#211A38; --creator-bg:#0E2A30; --builder-bg:#13213D;
+  --researcher-ink:#F5C04A; --marketer-ink:#B89CFF; --creator-ink:#5FD6EA; --builder-ink:#7FB2FF;
+  --azul-press:#8FA0FF;
+  --focus:0 0 0 2px #0B1020,0 0 0 4px #8FA0FF;
+  --g-light:rgba(20,26,43,.72); --g-spec:radial-gradient(120% 90% at 18% 0%,rgba(255,255,255,.06),rgba(255,255,255,0) 52%);
+  --g-sh:0 10px 34px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3);
+  --sh-2:0 8px 24px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.3); --sh-3:0 24px 64px rgba(0,0,0,.55),0 8px 20px rgba(0,0,0,.35)}
+html[data-theme="dark"] body{background:#0B1020}
+html[data-theme="dark"] a{color:#8FA0FF}
+html[data-theme="dark"] .app:not(.night){background:radial-gradient(38% 520px at 8% 0,rgba(244,200,202,.10),transparent 70%),radial-gradient(34% 480px at 92% 0,rgba(42,127,255,.16),transparent 70%),radial-gradient(40% 460px at 55% 0,rgba(167,139,250,.12),transparent 70%),var(--niebla)}
+html[data-theme="dark"] :is(.card,.btn-secondary,.btn-google,.input,.sel,.tile,.folder,.list,.linkbox,.upl,.modal,.table,.copybtn,.kbd,.anchors a,.deck,.partner,.qcopy,.check,.dc-shot,.dc-img,.acct-list,.acct-back,.notif-panel,.cmdk,.menu,.seg button.is-on,.lang button.is-on,.acc-table .acc-row,.acc-table > p,.setnav .menu-item){background:var(--white)!important;color:var(--ink)}
+html[data-theme="dark"] :is(.topbar,.mhead,.stickybar){background:var(--g-spec),rgba(11,16,32,.72)}
+html[data-theme="dark"] .tabs{background:rgba(11,16,32,.5);border-bottom-color:rgba(255,255,255,.06)}
+html[data-theme="dark"] .bnav{background:var(--g-spec),rgba(14,19,34,.86);box-shadow:0 -8px 30px rgba(0,0,0,.4)}
+html[data-theme="dark"] .lang{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+html[data-theme="dark"] .lang button{color:var(--graphite)}
+html[data-theme="dark"] .lang button.is-on{background:#E8ECF5!important;color:#0B1220}
+html[data-theme="dark"] .scrim{background:rgba(0,0,0,.6)}
+html[data-theme="dark"] .switch::after,html[data-theme="dark"] .track .knob,html[data-theme="dark"] .cmp .knob{background:#E8ECF5}
+html[data-theme="dark"] .brain-approval::before{background:var(--white)}
+html[data-theme="dark"] .input::placeholder{color:#6B7285}
+html[data-theme="dark"] .btn-white{background:#E8ECF5;color:#0B1220}
+html[data-theme="dark"] .menu-item:hover,html[data-theme="dark"] .menu-item.is-on,html[data-theme="dark"] .acct-row:hover,html[data-theme="dark"] .notif-item:hover{background:rgba(255,255,255,.06)!important}
+html[data-theme="dark"] .notif-item.is-new{background:rgba(143,160,255,.12)}
+html[data-theme="dark"] .notif-badge{box-shadow:0 0 0 2px #0B1020}
+html[data-theme="dark"] .logo{filter:brightness(0) invert(1)}
+html[data-theme="dark"] .bnav a.is-active,html[data-theme="dark"] .tabs a.is-active{color:#8FA0FF}
+html[data-theme="dark"] a.acct-row,html[data-theme="dark"] a.notif-item,html[data-theme="dark"] .menu-item{color:var(--ink)}
+html[data-theme="dark"] div.acct-row:hover{background:none!important}
+html[data-theme="dark"] .acct-row.is-danger{color:var(--danger)}
+html[data-theme="dark"] .bnav a{color:var(--graphite)}
+html[data-theme="dark"] .bnav a.is-active{color:#8FA0FF}
+html[data-theme="dark"] .tab{color:var(--graphite)} html[data-theme="dark"] .tab.is-active,html[data-theme="dark"] .tab:hover{color:var(--ink)}
