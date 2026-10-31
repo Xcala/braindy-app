@@ -5,7 +5,6 @@ import { useAuth } from '../auth/AuthProvider';
 import { ApiStatus } from '../components/ApiStatus';
 import { BrandProvider } from '../brands/BrandProvider';
 import { BrandMenu } from '../brands/BrandMenu';
-import { LangToggle } from '../i18n/LangToggle';
 import { CommandK } from '../components/CommandK';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -65,7 +64,6 @@ export function AppShell() {
           <div className="grow" />
           {isAdmin && import.meta.env.DEV && <span className="hidden md:inline-flex"><ApiStatus /></span>}
           <CommandK />
-          <LangToggle />
           <AccountMenu />
         </header>
         <div className={adminSpace ? '' : 'hidden md:block'}>
