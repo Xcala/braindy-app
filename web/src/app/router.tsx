@@ -7,6 +7,7 @@ import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
+import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
           { path: 'brand', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },
+          { path: 'plan', element: <MyPlan /> },
           { path: 'research', element: <MyResearch /> },
           { path: 'ask', element: <Navigate to="/requests#ask" replace /> },
           { path: 'requests', element: <Requests /> },

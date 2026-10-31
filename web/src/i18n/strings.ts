@@ -6,6 +6,7 @@ import { accessEn, accessEs } from './accessStrings';
 import { reviewEn, reviewEs } from './reviewStrings';
 import { onboardingEn, onboardingEs } from './onboardingStrings';
 import { billingEn, billingEs } from './billingStrings';
+import { contractEn, contractEs } from './contractStrings';
 import { uxEn, uxEs } from './uxStrings';
 import { brainEn, brainEs } from './brainStrings';
 import { polishEn, polishEs } from './polishStrings';
@@ -182,7 +183,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...contractEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -354,4 +355,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...contractEs };
