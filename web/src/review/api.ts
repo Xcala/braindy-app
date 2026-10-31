@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? '';
 /** Result of creating a review link: sent by the WhatsApp API, or a wa.me link to send by hand. */
 export type Notice = { status: 'sent' | 'manual' | 'no_number' | 'off' | 'error'; url?: string; waUrl?: string | null };
 export type NoticeSettings = {
-  whatsapp?: string; groupLink?: string; approverUid?: string; lang?: 'es' | 'en'; whatsappApi?: boolean;
+  whatsapp?: string; groups?: Array<{ name?: string; url?: string }>; approverUid?: string; lang?: 'es' | 'en'; whatsappApi?: boolean;
   notices?: { delivery?: boolean; approved?: boolean; brandBrain?: boolean; report?: boolean };
 };
 

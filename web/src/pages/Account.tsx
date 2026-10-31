@@ -27,7 +27,7 @@ const I = {
   admin: svg(<><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z" /></>),
   out: svg(<><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" /></>),
 };
-type Row = { to?: string; onClick?: () => void; icon: React.ReactNode; label: StringKey; value?: React.ReactNode; danger?: boolean };
+type Row = { to?: string; onClick?: () => void; icon: React.ReactNode; label: StringKey; text?: string; value?: React.ReactNode; danger?: boolean };
 
 /** Account (tap on your photo): ChatGPT-style grouped list; each row opens its own content. */
 export function Account() {
@@ -39,8 +39,8 @@ export function Account() {
   const { plan } = useBilling(can('billing') ? current?.id : undefined);
   const acc = useAccesses(can('accesses') ? current?.id : undefined);
   const isAdmin = profile?.role === 'admin';
-  const [group, setGroup] = useState<string | null>(null);
-  useEffect(() => { setGroup(null); if (current) noticesApi.get(current.id).then((s) => setGroup(s.groupLink || null)).catch(() => setGroup(null)); }, [current?.id]);
+  const [groups, setGroups] = useState<Array<{ name?: string; url?: string }>>([]);
+  useEffect(() => { setGroups([]); if (current) noticesApi.get(current.id).then((s) => setGroups((s.groups ?? []).filter((g) => g.url))).catch(() => setGroups([])); }, [current?.id]);
   const name = profile?.name ?? user?.email ?? '';
   const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
   const ok = (r: Row) => !r.to || can(sectionOfPath(r.to.split('?')[0]!));
@@ -51,7 +51,7 @@ export function Account() {
     { to: '/accesses', icon: I.connectors, label: 'nav.accesses', value: acc.loading || acc.denied ? undefined : t('acct.connected', { n: String(acc.list.length) }) },
     { to: '/settings?tab=team', icon: I.team, label: 'set.tab.team' },
     { to: '/settings?tab=notices', icon: I.notices, label: 'set.tab.notices' },
-    ...(group ? [{ onClick: () => window.open(group, '_blank', 'noopener'), icon: I.group, label: 'set.group' as StringKey, value: t('set.groupOpen') }] : []),
+    ...groups.map((g) => ({ onClick: () => window.open(g.url, '_blank', 'noopener'), icon: I.group, label: 'set.group' as StringKey, text: g.name || undefined, value: t('set.groupOpen') })),
   ] as Row[]).filter((r) => ok(r) && (!r.to?.includes('billing') || can('billing')));
   const more = ([
     { to: '/research', icon: I.research, label: 'nav.research' },
@@ -85,19 +85,19 @@ function Group({ title, rows }: { title: string; rows: Row[] }) {
     <section className="col g8">
       <h2 className="acct-label">{title}</h2>
       <div className="acct-list">
-        {rows.map((r) => {
+        {rows.map((r, n) => {
           const inner = (
             <>
               <span className="acct-ico">{r.icon}</span>
-              <span className="grow">{t(r.label)}</span>
+              <span className="grow">{r.text ? `WhatsApp · ${r.text}` : t(r.label)}</span>
               {r.value && <span className="acct-val">{r.value}</span>}
               {(r.to || r.onClick) && !r.danger && <svg className="acct-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>}
             </>
           );
           const cls = `acct-row ${r.danger ? 'is-danger' : ''}`;
-          return r.to ? <Link key={r.label} to={r.to} className={cls}>{inner}</Link>
-            : r.onClick ? <button key={r.label} type="button" onClick={r.onClick} className={cls}>{inner}</button>
-            : <div key={r.label} className={cls}>{inner}</div>;
+          return r.to ? <Link key={`${r.label}-${n}`} to={r.to} className={cls}>{inner}</Link>
+            : r.onClick ? <button key={`${r.label}-${n}`} type="button" onClick={r.onClick} className={cls}>{inner}</button>
+            : <div key={`${r.label}-${n}`} className={cls}>{inner}</div>;
         })}
       </div>
     </section>

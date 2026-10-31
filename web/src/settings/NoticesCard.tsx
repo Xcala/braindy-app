@@ -30,7 +30,7 @@ export function NoticesCard({ brandId }: { brandId: string }) {
   const set = (patch: Partial<NoticeSettings>) => setS({ ...s, ...patch });
 
   async function save() {
-    if (s!.groupLink && !GROUP.test(s!.groupLink)) { setMsg({ ok: false, text: t('set.badGroup') }); return; }
+    if ((s!.groups ?? []).some((g) => g.url && !GROUP.test(g.url))) { setMsg({ ok: false, text: t('set.badGroup') }); return; }
     setBusy(true); setMsg(null);
     try { await noticesApi.save(brandId, s!); setMsg({ ok: true, text: t('set.saved') }); }
     catch (e) { setMsg({ ok: false, text: String(e).includes('403') ? t('set.ownersOnly') : String(e).includes('400') ? t('set.badPhone') : t('set.saveError') }); }
@@ -57,12 +57,22 @@ export function NoticesCard({ brandId }: { brandId: string }) {
             </select>
           </div>
         </div>
-        <div className="field">
-          <label htmlFor="wa-group">{t('set.group')}</label>
-          <div className="row g8">
-            <input id="wa-group" className="input grow" inputMode="url" placeholder="https://chat.whatsapp.com/…" value={s.groupLink ?? ''} onChange={(e) => set({ groupLink: e.target.value.trim() })} />
-            {s.groupLink && GROUP.test(s.groupLink) && <a className="btn btn-secondary" href={s.groupLink} target="_blank" rel="noreferrer">{t('set.groupOpen')}</a>}
-          </div>
+        <div className="col g8">
+          <span className="w7 t-sm">{t('set.groups')}</span>
+          {(s.groups ?? []).map((g, i) => {
+            const put = (patch: Partial<typeof g>) => set({ groups: (s.groups ?? []).map((x, j) => (j === i ? { ...x, ...patch } : x)) });
+            return (
+              <div key={i} className="grid gap-2 sm:grid-cols-[180px_minmax(0,1fr)_auto]">
+                <input className="input" aria-label={t('set.groupName')} placeholder={t('set.groupNamePh')} value={g.name ?? ''} onChange={(e) => put({ name: e.target.value })} />
+                <input className="input" inputMode="url" aria-label={t('set.group')} placeholder="https://chat.whatsapp.com/…" value={g.url ?? ''} onChange={(e) => put({ url: e.target.value.trim() })} />
+                <span className="row g8">
+                  {g.url && GROUP.test(g.url) && <a className="btn btn-secondary btn-sm" href={g.url} target="_blank" rel="noreferrer">{t('set.groupOpen')}</a>}
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => set({ groups: (s.groups ?? []).filter((_, j) => j !== i) })}>{t('set.groupRemove')}</button>
+                </span>
+              </div>
+            );
+          })}
+          {(s.groups ?? []).length < 10 && <button type="button" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} onClick={() => set({ groups: [...(s.groups ?? []), { name: '', url: '' }] })}>+ {t('set.groupAdd')}</button>}
           <p className="help">{t('set.groupHelp')}</p>
         </div>
         <p className="help">{t('set.waHelp')}</p>
