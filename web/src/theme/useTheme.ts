@@ -5,7 +5,8 @@ const KEY = 'braindy.theme';
 const media = () => window.matchMedia('(prefers-color-scheme: dark)');
 
 export const readTheme = (): ThemePref => {
-  try { const v = localStorage.getItem(KEY); return v === 'light' || v === 'dark' ? v : 'system'; } catch { return 'system'; }
+  // Light until the person picks: dark (or Auto) is a choice, not a surprise.
+  try { const v = localStorage.getItem(KEY); return v === 'dark' || v === 'system' ? v : 'light'; } catch { return 'light'; }
 };
 
 /** Puts data-theme on <html>; "system" follows the phone or computer. index.html runs the same rule before paint. */

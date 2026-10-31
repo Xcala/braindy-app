@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#F4F6FB" />
     <script>
       // Appearance before the first paint (same rule as src/theme/useTheme.ts), so dark mode never flashes white.
-      try { var p = localStorage.getItem('braindy.theme'); document.documentElement.dataset.theme = p === 'dark' || (p !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; } catch (e) {}
+      try { var p = localStorage.getItem('braindy.theme'); document.documentElement.dataset.theme = p === 'dark' || (p === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; } catch (e) {}
     </script>
   </head>
   <body>
