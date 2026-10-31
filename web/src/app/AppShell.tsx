@@ -23,6 +23,7 @@ const TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/report', label: 'nav.report' },
   { to: '/learn', label: 'cr.nav' },
   { to: '/accesses', label: 'nav.accesses' },
+  { to: '/plan', label: 'nav.plan' },
 ];
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/today', label: 'today.title' },

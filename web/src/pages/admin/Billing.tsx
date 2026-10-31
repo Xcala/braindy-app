@@ -3,7 +3,7 @@ import { collectionGroup, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
-import { billingApi, money, type Plan } from '../../billing/useBilling';
+import { billingApi, HOSTING, money, type Plan } from '../../billing/useBilling';
 
 type Row = Plan & { brandId: string };
 type Transfer = { id: string; brandId: string; reference: string; amount: number | null };
@@ -58,7 +58,7 @@ export function AdminBilling() {
               <span className="t-sm">{r?.path ? t(`bill.path.${r.path}`) : '—'}</span>
               <span className="t-sm">{r?.monthly ? `${money(r.monthly, r.currency, lang)} / ${t('pay.month')}` : r?.project ? money(r.project, r.currency, lang) : '—'}</span>
               <span className="t-sm">{r ? t(`bill.status.${r.status ?? 'pending'}`) : '—'}</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(b.id); setForm({ path: r?.path ?? 'continuity', monthly: r?.monthly ?? null, project: r?.project ?? null, currency: r?.currency ?? 'usd', agentsMonthly: r?.agentsMonthly ?? null }); }}>{r ? t('bill.edit') : t('bill.a.setPlan')}</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setEditing(b.id); setForm({ path: r?.path ?? 'continuity', monthly: r?.monthly ?? null, project: r?.project ?? null, currency: r?.currency ?? 'usd', agentsMonthly: r?.agentsMonthly ?? null, hosting: r?.hosting ?? null }); }}>{r ? t('bill.edit') : t('bill.a.setPlan')}</button>
             </div>
           );
         })}
@@ -70,6 +70,10 @@ export function AdminBilling() {
             <div className="field"><label htmlFor="pl-path">{t('bill.a.path')}</label>
               <select id="pl-path" className="input" value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value as Plan['path'] })}>
                 {(['transform', 'continuity', 'launch'] as const).map((p) => <option key={p} value={p}>{t(`bill.path.${p}`)}</option>)}
+              </select></div>
+            <div className="field"><label htmlFor="pl-h">{t('plan.hosting')}</label>
+              <select id="pl-h" className="input" value={form.hosting ?? ''} onChange={(e) => setForm({ ...form, hosting: (e.target.value || null) as Plan['hosting'] })}>
+                <option value="">—</option>{HOSTING.map((h) => <option key={h} value={h}>{t(`plan.h.${h}`)}</option>)}
               </select></div>
             <div className="field"><label htmlFor="pl-ag">{t('bill.a.agents')}</label><input id="pl-ag" className="input" inputMode="decimal" value={form.agentsMonthly ?? ''} onChange={(e) => setForm({ ...form, agentsMonthly: Number(e.target.value) || null })} /></div>
             <div className="grid grid-cols-3 gap-3">

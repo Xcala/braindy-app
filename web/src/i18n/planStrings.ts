@@ -1,0 +1,38 @@
+/** Strings for "My plan": what the brand has with Braindy (design plan and site hosting plan). */
+export const planEn = {
+  'nav.plan': 'My plan', 'nav.planShort': 'My plan',
+  'plan.title': 'My plan', 'plan.sub': 'What you have with Braindy: the design of your brand and the hosting of your site.',
+  'plan.design': 'Design plan', 'plan.hosting': 'Site hosting',
+  'plan.included': 'Included', 'plan.monthly': '{amount} / month', 'plan.project': 'Project {amount}', 'plan.next': 'Next charge: {date}',
+  'plan.payments': 'Invoices and payments',
+  'plan.noDesign': 'You do not have a design plan yet. Tell NickMark what you need and he prepares one.',
+  'plan.noHosting': 'Your site does not have a hosting plan yet. Pick the one that fits how often you change it.',
+  'plan.current': 'Your plan', 'plan.activate': 'I want this one', 'plan.change': 'Change plan',
+  'plan.h.esencial': 'Esencial', 'plan.h.pro': 'Pro', 'plan.h.ultra': 'Ultra',
+  'plan.h.esencialFor': 'A site of a few pages that changes texts and photos now and then.',
+  'plan.h.proFor': 'Brands that publish often: blog, catalog, campaign landings or a small store.',
+  'plan.h.ultraFor': 'Teams that change the site by asking in their own words, from their AI or WhatsApp.',
+  'plan.h.esencialSpec': '1 editor · ~5,000 visits / month · 1 GB · reply in 2 business days',
+  'plan.h.proSpec': 'Up to 3 editors · ~10,000 visits / month · 5 GB · reply in 1 business day',
+  'plan.h.ultraSpec': 'Everything in Pro, plus edits by asking from your AI or WhatsApp',
+  'plan.talk': 'Talk to NickMark',
+};
+
+export const planEs: Record<keyof typeof planEn, string> = {
+  'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan',
+  'plan.title': 'Mi plan', 'plan.sub': 'Lo que tienes con Braindy: el diseño de tu marca y el hosting de tu sitio.',
+  'plan.design': 'Plan de diseño', 'plan.hosting': 'Hosting del sitio',
+  'plan.included': 'Incluido', 'plan.monthly': '{amount} / mes', 'plan.project': 'Proyecto {amount}', 'plan.next': 'Próximo cobro: {date}',
+  'plan.payments': 'Facturas y pagos',
+  'plan.noDesign': 'Todavía no tienes plan de diseño. Cuéntale a NicoMarca qué necesitas y él te arma uno.',
+  'plan.noHosting': 'Tu sitio todavía no tiene plan de hosting. Elige el que va con qué tan seguido lo cambias.',
+  'plan.current': 'Tu plan', 'plan.activate': 'Quiero este', 'plan.change': 'Cambiar de plan',
+  'plan.h.esencial': 'Esencial', 'plan.h.pro': 'Pro', 'plan.h.ultra': 'Ultra',
+  'plan.h.esencialFor': 'Un sitio de pocas páginas que cambia textos y fotos de vez en cuando.',
+  'plan.h.proFor': 'Marcas que publican seguido: blog, catálogo, landings de campaña o una tienda pequeña.',
+  'plan.h.ultraFor': 'Equipos que cambian el sitio pidiéndolo en sus palabras, desde su IA o su WhatsApp.',
+  'plan.h.esencialSpec': '1 editor · ~5.000 visitas / mes · 1 GB · respuesta en 2 días hábiles',
+  'plan.h.proSpec': 'Hasta 3 editores · ~10.000 visitas / mes · 5 GB · respuesta en 1 día hábil',
+  'plan.h.ultraSpec': 'Todo lo de Pro, más cambios pidiéndolos desde tu IA o tu WhatsApp',
+  'plan.talk': 'Hablar con NicoMarca',
+};
