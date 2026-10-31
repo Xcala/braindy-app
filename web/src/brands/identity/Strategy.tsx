@@ -18,7 +18,7 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
       {brain.position && (
         <div className="stage col g12 rounded-[24px] p-6 sm:p-10">
           <p className="label">{t('brand.position')}</p>
-          <p className="d-lg" style={{ color: '#fff', fontSize: 34, lineHeight: '40px' }}>{brain.position}</p>
+          <p className="d-lg d-fit d-fit-lg" style={{ color: '#fff' }}>{brain.position}</p>
           <span className="row g8">
             <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-7 w-7 rounded-full object-cover" />
             <span className="t-xs muted">{brain.status === 'signed' ? t('brand.signedBy') : t('brand.draftBy')}</span>
