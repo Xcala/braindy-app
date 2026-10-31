@@ -1,6 +1,9 @@
 /** Strings for the home grid: delivered, in production (48 business hours), meetings and WhatsApp. */
 export const homeGridEn = {
   'hg.group': 'WhatsApp group',
+  'hg.groupAdd': 'Add the WhatsApp group',
+  'hg.groupAsk': 'Ask for a WhatsApp group',
+  'hg.groupAskText': 'Hi Nick, can you set up the WhatsApp group for {brand}?',
   'hg.delivered': 'Delivered · waiting for your approval',
   'hg.deliveredSub': 'Review it and approve, or ask for changes with a comment on the piece.',
   'hg.prod': 'In production',
@@ -26,6 +29,9 @@ export const homeGridEn = {
 
 export const homeGridEs: Record<keyof typeof homeGridEn, string> = {
   'hg.group': 'Grupo de WhatsApp',
+  'hg.groupAdd': 'Agregar grupo de WhatsApp',
+  'hg.groupAsk': 'Pedir grupo de WhatsApp',
+  'hg.groupAskText': 'Hola Nico, ¿nos creas el grupo de WhatsApp de {brand}?',
   'hg.delivered': 'Entregado · espera tu aprobación',
   'hg.deliveredSub': 'Revísalo y apruébalo, o pide cambios con un comentario sobre la pieza.',
   'hg.prod': 'En producción',

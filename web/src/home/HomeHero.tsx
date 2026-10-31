@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
 import { useBrands } from '../brands/BrandProvider';
@@ -16,6 +18,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
   const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const { current } = useBrands();
+  const admin = useAuth().profile?.role === 'admin';
   const [group, setGroup] = useState<{ name?: string; url: string } | null>(null);
   useEffect(() => {
     setGroup(null);
@@ -35,8 +38,12 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
           </h1>
         </div>
         <div className="row g8 wrap">
-          {group && <a className="btn btn-wa" href={group.url} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('hg.group')}</a>}
-          <a className={`btn ${group ? 'btn-secondary' : 'btn-wa'}`} href={wa()} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('home.talkNico')}</a>
+          {group
+            ? <a className="btn btn-wa" href={group.url} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('hg.group')}</a>
+            : admin
+              ? <Link className="btn btn-wa" to="/settings?tab=notices"><WhatsAppIcon />{t('hg.groupAdd')}</Link>
+              : <a className="btn btn-wa" href={wa(t('hg.groupAskText', { brand: brandName }))} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('hg.groupAsk')}</a>}
+          <a className="btn btn-secondary" href={wa()} target="_blank" rel="noreferrer"><WhatsAppIcon />{t('home.talkNico')}</a>
         </div>
       </div>
       <div data-tour="home-brains"><HomeStudio requests={open} /></div>
