@@ -104,6 +104,17 @@ gcloud run services update braindy-api --region us-central1 --project $p --updat
 ```
 Notes are filed by participant email domain or brand name in the title; the rest wait in Team → Granola meetings. Assigning one teaches its domains for next time.
 
-## 7 · Before app.braindy.co
+## 7 · Google Calendar → next meeting on each client's home
+1. Google Cloud console, project `braindy-brand-guideline` → **APIs & Services → Library** → enable **Google Calendar API**.
+2. **OAuth consent screen** → User type **Internal** (only braindy.co accounts; no Google review needed) → app name Braindy → save.
+3. **Credentials → Create credentials → OAuth client ID** → type **Web application** → Authorized redirect URI `https://braindy-api-283103160183.us-central1.run.app/integrations/google-calendar/callback` → Create. Keep the window with the Client ID and Client secret open.
+4. Save both as secrets and mount them (paste each value when asked; nothing is shown or logged):
+```powershell
+foreach ($s in "google-cal-client-id","google-cal-client-secret") { $v = Read-Host -AsSecureString "Value for $s"; $f = "$env:TEMPsecret.txt"; [IO.File]::WriteAllText($f, [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($v))); gcloud secrets create $s --data-file=$f --project $p; Remove-Item $f; gcloud secrets add-iam-policy-binding $s --member $sa --role roles/secretmanager.secretAccessor --project $p }
+gcloud run services update braindy-api --region us-central1 --project $p --update-secrets "GOOGLE_CAL_CLIENT_ID=google-cal-client-id:latest,GOOGLE_CAL_CLIENT_SECRET=google-cal-client-secret:latest"
+```
+5. Open any brand's home as admin → **Siguiente reunión** → **Conectar mi Google Calendar** → allow. Each client then sees their next event that has one of their members as a guest.
+
+## 8 · Before app.braindy.co
 See `docs/production.md`.
 DNS and the production deploy are only done after asking you (CLAUDE.md).
