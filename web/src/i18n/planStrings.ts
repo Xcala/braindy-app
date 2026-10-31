@@ -1,6 +1,6 @@
 /** Strings for "My plan": what the brand has with Braindy (design plan and site hosting plan). */
 export const planEn = {
-  'nav.plan': 'My plan', 'nav.planShort': 'My plan',
+  'nav.plan': 'My plan', 'nav.planShort': 'My plan', 'nav.appsShort': 'Apps',
   'plan.title': 'My plan', 'plan.sub': 'What you have with Braindy: the design of your brand and the hosting of your site.',
   'plan.design': 'Design plan', 'plan.hosting': 'Site hosting',
   'plan.included': 'Included', 'plan.monthly': '{amount} / month', 'plan.project': 'Project {amount}', 'plan.next': 'Next charge: {date}',
@@ -20,7 +20,7 @@ export const planEn = {
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
-  'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan',
+  'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan', 'nav.appsShort': 'Mis apps',
   'plan.title': 'Mi plan', 'plan.sub': 'Lo que tienes con Braindy: el diseño de tu marca y el hosting de tu sitio.',
   'plan.design': 'Plan de diseño', 'plan.hosting': 'Hosting del sitio',
   'plan.included': 'Incluido', 'plan.monthly': '{amount} / mes', 'plan.project': 'Proyecto {amount}', 'plan.next': 'Próximo cobro: {date}',

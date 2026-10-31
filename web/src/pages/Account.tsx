@@ -16,7 +16,6 @@ const I = {
   connectors: svg(<><rect x="3" y="12" width="9" height="9" rx="2" /><rect x="12" y="12" width="9" height="9" rx="2" /><rect x="12" y="3" width="9" height="9" rx="2" /></>),
   team: svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.2 2.5 3.5 5.5" /></>),
   notices: svg(<><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9" /><path d="M10 20a2 2 0 0 0 4 0" /></>),
-  apps: svg(<><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></>),
   research: svg(<><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></>),
   report: svg(<><path d="M4 20V10M10 20V4M16 20v-7M20 20H3" /></>),
   learn: svg(<><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" /><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z" /></>),
@@ -49,7 +48,6 @@ export function Account() {
     { to: '/settings?tab=notices', icon: I.notices, label: 'set.tab.notices' },
   ] as Row[]).filter((r) => ok(r) && (!r.to?.includes('billing') || can('billing')));
   const more = ([
-    { to: '/apps', icon: I.apps, label: 'nav.apps' },
     { to: '/research', icon: I.research, label: 'nav.research' },
     { to: '/report', icon: I.report, label: 'nav.report' },
     { to: '/learn', icon: I.learn, label: 'cr.nav' },
