@@ -7,6 +7,7 @@ import { BrandProvider } from '../brands/BrandProvider';
 import { BrandMenu } from '../brands/BrandMenu';
 import { CommandK } from '../components/CommandK';
 import { Notifications } from '../components/Notifications';
+import { AccountMenu } from './AccountSheet';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
@@ -103,22 +104,5 @@ function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean 
     <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
       {label}
     </NavLink>
-  );
-}
-
-/** Your photo: opens the account page (ChatGPT-style list), where every setting has its own row. */
-function AccountMenu() {
-  const { profile, user } = useAuth();
-  const { t } = useI18n();
-  const name = profile?.name ?? user?.email ?? '';
-  const initials = name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
-  return (
-    <Link to="/account" aria-label={t('acct.account')} className="row g12" style={{ textDecoration: 'none', padding: 2, borderRadius: 999 }}>
-      {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
-      <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
-        <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
-        <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
-      </span>
-    </Link>
   );
 }
