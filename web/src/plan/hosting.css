@@ -1,10 +1,15 @@
 /* Website hosting offer inside Mi plan: the design of the public pricing page (hosting-braindy), scoped under .hp.
-   The app is light-only, so these are the page's light tokens; the top plan card is dark in both, as on the page. */
+   Light and dark tokens follow the app's theme; the top plan card is dark in both, as on the page. */
 .hp {
   --bg: #F6F7FB; --surface: #FFFFFF; --ink: #0B1220; --mute: #5A6378; --line: #E3E7F0;
   --azul: #2F4DE0; --chip: #EEF1FD; --save: #0E8A5F; --builder: #2A7FFF;
   --mono: "Red Hat Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   color: var(--ink); font-size: 16px; line-height: 1.55; display: flex; flex-direction: column; gap: 56px;
+}
+/* The app's dark mode (Account › Appearance puts data-theme="dark" on <html>): the page's dark tokens. */
+:root[data-theme="dark"] .hp {
+  --bg: #05070D; --surface: #0E1422; --ink: #EEF1F8; --mute: #9AA3B8; --line: #1E2638;
+  --azul: #8FA0FF; --chip: #161E33; --save: #4ED3A0;
 }
 .hp h1, .hp h2, .hp h3 { text-wrap: balance; margin: 0; }
 .hp p { margin: 0; }
