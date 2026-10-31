@@ -46,10 +46,13 @@ launches.get('/brands/:brandId/launches/own', async (c) => {
   const done = snap.docs.filter((d) => d.get('latestVersion')).sort((a, b) => ms(b.get('updatedAt')) - ms(a.get('updatedAt'))).slice(0, 8);
   const items = await Promise.all(done.map(async (d) => {
     const ver = await d.ref.collection('versions').doc(d.get('latestVersion')).get();
-    const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string }>) ?? [];
-    const file = files.find((f) => isShowable(f) && f.storagePath?.startsWith(`brands/${brandId}/`));
+    const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string; url?: string }>) ?? [];
+    // Files uploaded here live in the brand's folder; work migrated from the old apps keeps its own https link.
+    const file = files.find((f) => isShowable(f) && (f.storagePath?.startsWith(`brands/${brandId}/`) || /^https:\/\//.test(f.url ?? '')));
     if (!file) return null;
-    const [url] = await bucket().file(file.storagePath!).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
+    const url = file.storagePath?.startsWith(`brands/${brandId}/`)
+      ? (await bucket().file(file.storagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS }))[0]
+      : file.url!;
     return { id: d.id, title: str(d.get('title'), 120), category: d.get('category') ?? null, kind: String(file.contentType).startsWith('video/') ? 'video' : 'image', at: ms(d.get('updatedAt')) || null, url };
   }));
   return c.json({ items: items.filter(Boolean) });
