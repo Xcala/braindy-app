@@ -11,6 +11,7 @@ import { search } from './search.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { adminLaunches, launches } from './launches.js';
+import { adminCalendar, calendarCallback, meetings } from './meetings.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
@@ -57,6 +58,9 @@ app.route('/public', publicReview);
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
 app.route('/webhooks', granolaWebhook);
+// Google Calendar OAuth return (public, checked by a one-time state).
+app.use('/integrations/*', rateLimit('integrations', 30, 60_000));
+app.route('/', calendarCallback);
 // Scheduled Brain work (Cloud Scheduler, OIDC-verified inside).
 app.use('/cron/*', rateLimit('cron', 30, 60_000));
 app.route('/cron', cron);
@@ -87,6 +91,8 @@ app.route('/v1', search);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
 app.route('/v1', launches);
+app.route('/v1', meetings);
+app.route('/v1/admin', adminCalendar);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
 app.route('/v1', accesses);
