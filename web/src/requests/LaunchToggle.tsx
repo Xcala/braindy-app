@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useBrandsMaybe } from '../brands/BrandProvider';
 import { setLaunch } from '../studio/Launches';
+import { SuggestInput } from '../components/SuggestInput';
 import type { BrandRequest } from './types';
 
 /** NickMark's switch: show this approved work to every client as a launch beside the studio. Off until he turns it on. */
@@ -23,7 +24,7 @@ export function LaunchToggle({ brandId, r }: { brandId: string; r: BrandRequest 
   return (
     <div className="col g8">
       <div className="field"><label htmlFor="lt">{t('st.launchTitle')}</label>
-        <input id="lt" className="input" value={title} disabled={on} onChange={(e) => setTitle(e.target.value)} placeholder={t('st.launchTitlePh', { brand })} maxLength={120} /></div>
+        <SuggestInput id="lt" value={title} disabled={on} onChange={setTitle} suggestion={t('st.launchTitlePh', { brand })} maxLength={120} /></div>
       <div className="row g12 wrap">
         <button className="btn btn-secondary" disabled={busy || !r.latestVersion} onClick={toggle}>{on ? t('st.launchUnmark') : t('st.launchMark')}</button>
         {on && <span className="t-sm t-mute">{t('st.launchOn')}</span>}

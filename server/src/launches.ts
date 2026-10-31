@@ -1,4 +1,4 @@
-// Launches: work NickMark chooses to show to every client beside the studio ("Nuevo logo de Caoz").
+// Launches: work (an image or a video) NickMark chooses to show to every client beside the studio ("Nuevo logo de Caoz").
 // Nothing is shown unless he marks it. The image is copied out of the brand's private folder into launches/,
 // so other clients never get a path or URL into that brand's files. Firestore `launches` is server-only.
 import { Hono } from 'hono';
@@ -8,7 +8,7 @@ import { bucket, URL_TTL_MS } from './requests.js';
 import type { AuthEnv } from './auth.js';
 
 const str = (v: unknown, max = 2000) => String(v ?? '').trim().slice(0, max);
-const isImage = (f: { contentType?: string }) => String(f.contentType ?? '').startsWith('image/');
+const isShowable = (f: { contentType?: string }) => /^(image|video)\//.test(String(f.contentType ?? ''));
 const isAdmin = async (uid: string) => (await db.doc(`users/${uid}`).get()).get('role') === 'admin';
 
 /** Reactions a client can leave on a launch, like on social media. Everyone sees the counts. */
@@ -29,7 +29,7 @@ launches.get('/launches', async (c) => {
     ]);
     const counts = Object.fromEntries(REACTIONS.map((r) => [r, Math.max(0, (x.reactions?.[r] as number) ?? 0)]));
     return {
-      id: d.id, brandName: x.brandName, title: x.title, category: x.category ?? null, at: x.at?.toMillis?.() ?? null, url,
+      id: d.id, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', at: x.at?.toMillis?.() ?? null, url,
       counts, mine: ((mine.get('reactions') as Reaction[]) ?? []).filter((r) => REACTIONS.includes(r)),
     };
   }));
@@ -79,7 +79,7 @@ adminLaunches.post('/brands/:brandId/requests/:requestId/versions/:versionId/lau
   if (!req.exists || !ver.exists) return c.json({ error: 'not_found' }, 404);
   if (!['approved', 'published'].includes(req.get('status'))) return c.json({ error: 'not_approved' }, 400);
   const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string; name?: string }>) ?? [];
-  const file = files.find((f) => isImage(f) && f.storagePath?.startsWith(`brands/${brandId}/`));
+  const file = files.find((f) => isShowable(f) && f.storagePath?.startsWith(`brands/${brandId}/`));
   if (!file) return c.json({ error: 'no_image' }, 400);
 
   const ext = (file.name ?? file.storagePath!).split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
@@ -88,7 +88,7 @@ adminLaunches.post('/brands/:brandId/requests/:requestId/versions/:versionId/lau
   const title = str(b.title, 120) || str(req.get('title'), 120);
   await db.doc(`launches/${id}`).set({
     brandId, requestId, versionId, brandName: str(brand.get('name'), 80) || brandId, title,
-    category: req.get('category') ?? null, imagePath, at: FieldValue.serverTimestamp(), by: c.get('user').uid,
+    category: req.get('category') ?? null, imagePath, kind: String(file.contentType).startsWith('video/') ? 'video' : 'image', at: FieldValue.serverTimestamp(), by: c.get('user').uid,
   });
   await reqRef.update({ launch: { versionId, title } });
   return c.json({ ok: true });

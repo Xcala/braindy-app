@@ -7,7 +7,9 @@ import { api } from '../lib/api';
 const REACTIONS = [['fire', '🔥'], ['love', '😍'], ['clap', '👏'], ['idea', '💡']] as const;
 type Reaction = (typeof REACTIONS)[number][0];
 
-export interface Launch { id: string; brandName: string; title: string; category: string | null; at: number | null; url: string; counts: Record<Reaction, number>; mine: Reaction[] }
+const media = { width: '100%', aspectRatio: '16 / 10', objectFit: 'cover', borderRadius: 10, border: '1px solid var(--line)', background: '#000' } as const;
+
+export interface Launch { id: string; brandName: string; title: string; category: string | null; kind: 'image' | 'video'; at: number | null; url: string; counts: Record<Reaction, number>; mine: Reaction[] }
 
 export const fetchLaunches = () => api<{ items: Launch[] }>('/v1/launches').then((r) => r.items);
 export const setLaunch = (brandId: string, requestId: string, versionId: string, on: boolean, title = '') =>
@@ -42,7 +44,9 @@ export function Launches() {
       <ul className="col g16" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {items.map((l) => (
           <li key={l.id} className="col g6">
-            <img src={l.url} alt={l.title} loading="lazy" style={{ width: '100%', aspectRatio: '16 / 10', objectFit: 'cover', borderRadius: 10, border: '1px solid var(--line)' }} />
+            {l.kind === 'video'
+              ? <video src={l.url} aria-label={l.title} muted loop playsInline autoPlay controls preload="metadata" style={media} />
+              : <img src={l.url} alt={l.title} loading="lazy" style={media} />}
             <div className="col">
               <b className="t-sm">{l.title}</b>
               <span className="t-xs t-mute">{l.brandName}{l.at ? ` · ${date(l.at)}` : ''}</span>
