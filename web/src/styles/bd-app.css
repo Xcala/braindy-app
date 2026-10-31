@@ -77,6 +77,8 @@ p{margin:0}
 .btn svg{width:18px;height:18px;flex:none}
 .btn-primary{background:var(--azul);color:#fff}
 .btn-primary:hover,.btn-primary.is-hover{background:var(--azul-hover);color:#fff}
+.btn-wa{background:#25D366;color:#073B1C}
+.btn-wa:hover{background:#1EBE5A;color:#073B1C}
 .btn-secondary{background:var(--white);color:var(--ink);border-color:var(--line-strong)}
 .btn-secondary:hover,.btn-secondary.is-hover{border-color:var(--ink);color:var(--ink)}
 .btn-ghost{background:transparent;color:var(--azul)}

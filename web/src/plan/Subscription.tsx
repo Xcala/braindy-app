@@ -3,12 +3,12 @@ import type { Brand } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { money, useBilling } from '../billing/useBilling';
 import { HostingPlans } from './HostingPlans';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 
-const wa = (text: string) => `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
 
 /** In Mi plan · The design plan being billed (subscription or project, with its status and next charge) and the full website hosting offer with the current plan outlined. */
 export function Subscription({ current }: { current: Brand }) {
+  const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const { plan } = useBilling(current?.id);
   if (plan === undefined) return <p className="t-mute">{t('common.loading')}…</p>;

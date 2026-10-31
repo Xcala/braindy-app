@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ADDONS, CHECKOUT, ENTERPRISE, MODULES, WEB_PLANS, type Bill, type Cur, type WebPlan } from './hostingData';
-import { Compare, Featured, Finder, Plan, PriceCards, useL, wa } from './HostingParts';
+import { Compare, Featured, Finder, Plan, PriceCards, useL } from './HostingParts';
 import { Faq, Glossary, Sign, Tech } from './HostingInfo';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import './hosting.css';
 
 const STEP = 72;
@@ -30,6 +31,7 @@ function useLadder(dep: unknown) {
 export function HostingPlans({ current, brandName }: { current?: WebPlan | null; brandName: string }) {
   const { lang } = useI18n();
   const L = useL();
+  const wa = useNicoWhatsApp();
   const [tab, setTab] = useState<'web' | 'ent'>('web');
   const [cur, setCur] = useState<Cur>(lang === 'es' ? 'cop' : 'usd');
   const [bill, setBill] = useState<Bill>('m');

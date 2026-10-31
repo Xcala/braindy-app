@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { COMBO, COMPARE, CREDITS, FINDER, PICKS, WEB_PLANS, type Bill, type Cur, type PlanCard, type Term } from './hostingData';
 
 export type Tx = readonly [string, string];
 export const useL = () => { const { lang } = useI18n(); return (x: Tx) => x[lang === 'es' ? 0 : 1]; };
-export const wa = (text: string) => `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(text)}`;
 export const fmt = (n: number, cur: Cur) => `$${(cur === 'usd' ? Math.round(n * 100) / 100 : Math.round(n / 100) * 100).toLocaleString('es-CO')}`;
 
 const T = {
@@ -47,6 +46,7 @@ export function Plan({ p, cur, bill, mine, children }: { p: PlanCard; cur: Cur; 
 /** "Which one fits me?": four yes/no questions and the plan they point to. */
 export function Finder({ brandName }: { brandName: string }) {
   const L = useL();
+  const wa = useNicoWhatsApp();
   const [a, setA] = useState({ pages: false, team: false, chat: false, app: false });
   const key = a.app ? 'ent' : a.chat ? 'ultra' : a.pages || a.team ? 'pro' : 'esencial';
   return (
@@ -141,6 +141,7 @@ export function TermLink({ t }: { t: Term }) {
 /** Featured add-on: on-brand pieces made by the Brains with the brand loaded, reviewed by NicoMarca. */
 export function Featured({ cur, brandName }: { cur: Cur; brandName: string }) {
   const L = useL();
+  const wa = useNicoWhatsApp();
   return (
     <article className="hp-feature">
       <div className="hp-feature-main">

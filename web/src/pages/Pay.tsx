@@ -3,10 +3,11 @@ import { Link, useSearchParams } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { billingApi, money, useBilling } from '../billing/useBilling';
-import { CONTACT } from '../proposals/public/copy';
+import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 
 /** Step 1 · Payment and access (design 17/20): choose how to pay, invoice details, secure page or transfer. */
 export function Pay() {
+  const wa = useNicoWhatsApp();
   const { current } = useBrands();
   const { t, lang } = useI18n();
   const [params] = useSearchParams();
@@ -42,7 +43,7 @@ export function Pay() {
       {params.get('state') === 'canceled' && (
         <div className="card col g8" role="alert" style={{ borderColor: '#F5D98A', background: '#FFFBF0' }}>
           <span className="w7">{t('pay.failedTitle')}</span><span className="t-sm">{t('pay.failedBody')}</span>
-          <a className="t-sm w7" href={`https://wa.me/${CONTACT.whatsapp}`} target="_blank" rel="noreferrer">{t('pay.whatsappNicolas')}</a>
+          <a className="t-sm w7" href={wa()} target="_blank" rel="noreferrer">{t('pay.whatsappNicolas')}</a>
         </div>
       )}
       {params.get('state') === 'expired' && (
