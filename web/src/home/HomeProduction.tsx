@@ -25,12 +25,9 @@ export function HomeProduction({ items }: { items: ScopedRequest[] }) {
 
   return (
     <section className="col g16" aria-labelledby="h-prod" data-tour="home-prod">
-      <div className="row between g12 wrap">
-        <div className="col g4">
-          <h2 className="h3" id="h-prod">{t('hg.prod')}</h2>
-          <p className="t-sm t-mute">{t('hg.prodSub')}</p>
-        </div>
-        <span className="hg-record"><span aria-hidden="true">⚡</span>{t('hg.record')}</span>
+      <div className="col g4">
+        <h2 className="h3" id="h-prod">{t('hg.prod')}</h2>
+        <p className="t-sm t-mute">{t('hg.prodSub')}</p>
       </div>
       {items.length === 0 && <div className="card t-mute">{t('hg.nothingProd')}</div>}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

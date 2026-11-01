@@ -22,8 +22,8 @@ export function homeSteps(lang: Lang): Paso[] {
       texto: es ? '<p>Las piezas que ya te entregamos y esperan tu aprobación. Toca <b>Revisar</b> para aprobar o pedir cambios.</p><p>Lo aprobado pasa a <b>Recién lanzado</b>, al lado del estudio.</p>'
         : '<p>Pieces we delivered that are waiting for your approval. Tap <b>Review</b> to approve or ask for changes.</p><p>What you approve moves to <b>Just launched</b>, beside the studio.</p>' },
     { el: '[data-tour="home-prod"]', titulo: es ? '4 · En producción' : '4 · In production',
-      texto: es ? '<p>Lo que se está haciendo ahora. Cada entrega llega en <b>48 horas hábiles</b> desde la hora en que la pediste; la barra muestra cuánto falta.</p><p>La mayoría llega mucho antes: entre 1 y 3 horas hábiles.</p>'
-        : '<p>What is being made right now. Every delivery arrives within <b>48 business hours</b> of when you asked; the bar shows how much time is left.</p><p>Most arrive much sooner: 1 to 3 business hours.</p>' },
+      texto: es ? '<p>Lo que se está haciendo ahora. Cada entrega llega en <b>48 horas hábiles</b> desde la hora en que la pediste; la barra muestra cuánto falta.</p>'
+        : '<p>What is being made right now. Every delivery arrives within <b>48 business hours</b> of when you asked; the bar shows how much time is left.</p>' },
     { el: ask(), titulo: es ? '5 · Pedir algo' : '5 · Ask for something',
       texto: es ? '<p>Aquí empieza todo trabajo nuevo: lo cuentas como por WhatsApp y NicoMarca te devuelve un plan.</p><p class="tg-ej"><span>Mejor</span> una pieza por solicitud («3 posts del open house»)<br><span>Que</span> «todo lo de noviembre» en una sola</p>'
         : '<p>Every new piece of work starts here: tell it like you would on WhatsApp and NickMark sends back a plan.</p><p class="tg-ej"><span>Better</span> one piece per request ("3 posts for the open house")<br><span>Than</span> "everything for November" in one</p>' },
