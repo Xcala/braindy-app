@@ -53,10 +53,25 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   } : undefined;
   const [deleteError, setDeleteError] = useState(false);
   const del = isAdmin ? (f: FileItem) => { setDeleteError(false); removeFile(brandId, f.id).catch(() => setDeleteError(true)); } : undefined;
+  // Bulk delete: tick files, then one click (and one confirm) deletes them all.
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
+  const sel = isAdmin ? { on: (id: string) => picked.has(id), toggle: (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; }) } : undefined;
+  const delPicked = async () => {
+    if (!window.confirm(t('files.deleteSelConfirm', { n: String(picked.size) }))) return;
+    setBusy(true); setDeleteError(false);
+    const ids = [...picked];
+    // A few at a time: each delete also updates the folder counts, which must not race too hard.
+    for (let i = 0; i < ids.length; i += 4) {
+      const r = await Promise.allSettled(ids.slice(i, i + 4).map((id) => removeFile(brandId, id)));
+      if (r.some((x) => x.status === 'rejected')) setDeleteError(true);
+    }
+    setPicked(new Set()); setBusy(false);
+  };
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
-  useEffect(() => { setLimit(PAGE); setQ(''); setAllFolders(false); }, [brandId, path]);
+  useEffect(() => { setLimit(PAGE); setQ(''); setAllFolders(false); setPicked(new Set()); }, [brandId, path]);
   const pathShared = visible(path);
   useEffect(() => {
     if (!pathShared) { setFiles([]); return; }
@@ -138,6 +153,15 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
         <div className="col g12">
           <div className="row between g8 wrap">
             <p className="label">{t('files.files')} · {shown.length}{deleteError && <span className="t-xs" role="alert" style={{ color: 'var(--danger)', marginLeft: 8, textTransform: 'none' }}>{t('files.deleteError')}</span>}</p>
+            {sel && page.length > 0 && (
+              <span className="row g8 t-xs" role="status">
+                {picked.size > 0 ? <>
+                  <span className="w7">{t('files.selected', { n: String(picked.size) })}</span>
+                  <button type="button" className="btn btn-sm" disabled={busy} onClick={delPicked} style={{ background: 'var(--danger)', color: '#fff' }}><Icon name="trash" size={14} /> {t('files.deleteSel', { n: String(picked.size) })}</button>
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setPicked(new Set())}>{t('files.clearSel')}</button>
+                </> : <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setPicked(new Set(page.map((f) => f.id)))}>{t('files.selectAll')}</button>}
+              </span>
+            )}
             {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
           </div>
           {index.loading ? (
@@ -145,9 +169,9 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' ? (
-            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} onDelete={del} />
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} onDelete={del} sel={sel} />
           ) : (
-            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} onDelete={del} />
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} onDelete={del} sel={sel} />
           )}
           {shown.length > limit && (
             <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>

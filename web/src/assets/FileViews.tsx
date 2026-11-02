@@ -9,6 +9,14 @@ const date = (ms?: number, lang = 'en') =>
 
 /** NickMark only: pin a file to the brand documents in My brand. */
 export type Pin = { on: (id: string) => boolean; toggle: (f: FileItem) => void };
+/** NickMark only: files ticked for a bulk delete. */
+export type Sel = { on: (id: string) => boolean; toggle: (id: string) => void };
+
+function Check({ sel, f, style }: { sel: Sel; f: FileItem; style?: CSSProperties }) {
+  const { t } = useI18n();
+  return <input type="checkbox" checked={sel.on(f.id)} onChange={() => sel.toggle(f.id)} onClick={(e) => e.stopPropagation()} aria-label={`${t('files.select')} ${f.title}`}
+    style={{ width: 18, height: 18, accentColor: 'var(--azul)', cursor: 'pointer', flex: 'none', ...style }} />;
+}
 
 function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProperties }) {
   const { t } = useI18n();
@@ -32,7 +40,7 @@ function DeleteButton({ f, onDelete, style }: { f: FileItem; onDelete: (f: FileI
   );
 }
 
-export function FileGrid({ files, thumbs, onOpen, pin, onDelete }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void }) {
+export function FileGrid({ files, thumbs, onOpen, pin, onDelete, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void; sel?: Sel }) {
   const { lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -40,7 +48,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, onDelete }: { files: File
         const kind = kindOf(f);
         const thumb = thumbs[f.id];
         return (
-          <div key={f.id} className="tile" style={{ padding: 0, position: 'relative' }}>
+          <div key={f.id} className="tile" style={{ padding: 0, position: 'relative', ...(sel?.on(f.id) ? { outline: '2px solid var(--azul)' } : {}) }}>
           <button type="button" className="text-left" style={{ cursor: 'pointer', padding: 0, border: 0, background: 'none', width: '100%' }} onClick={() => onOpen(f)}>
             <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: 180, overflow: 'hidden', width: '100%' }}>
               {thumb ? (
@@ -57,6 +65,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, onDelete }: { files: File
           </button>
           {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
           {onDelete && <DeleteButton f={f} onDelete={onDelete} style={{ position: 'absolute', top: 140, right: 10, zIndex: 2, background: '#fff' }} />}
+          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 146, left: 12, zIndex: 2 }} />}
           </div>
         );
       })}
@@ -64,14 +73,14 @@ export function FileGrid({ files, thumbs, onOpen, pin, onDelete }: { files: File
   );
 }
 
-export function FileList({ files, onOpen, onDownload, pin, onDelete }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void }) {
+export function FileList({ files, onOpen, onDownload, pin, onDelete, sel }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void; sel?: Sel }) {
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
       <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
         <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}`}>
-          <button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+          <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
           <span className="t-sm t-mute">{date(f.mtimeMs, lang)}</span>
