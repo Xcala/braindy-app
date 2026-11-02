@@ -10,6 +10,9 @@ export const signedUrls = (brandId: string, ids: string[]) =>
   api<{ urls: Record<string, string> }>(`/v1/brands/${brandId}/assets/urls`, { method: 'POST', body: JSON.stringify({ ids }) })
     .then((r) => r.urls);
 
+/** NickMark only: deletes the file for good (the server keeps a note so the Drive import does not restore it). */
+export const removeFile = (brandId: string, assetId: string) => api(`/v1/brands/${brandId}/assets/${assetId}`, { method: 'DELETE' });
+
 export async function download(brandId: string, assetId: string) {
   window.location.assign(await signedUrl(brandId, assetId));
 }

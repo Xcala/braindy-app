@@ -21,7 +21,18 @@ function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProper
   );
 }
 
-export function FileGrid({ files, thumbs, onOpen, pin }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin }) {
+/** NickMark only: a small trash button that deletes the file after a confirm. */
+function DeleteButton({ f, onDelete, style }: { f: FileItem; onDelete: (f: FileItem) => void; style?: CSSProperties }) {
+  const { t } = useI18n();
+  return (
+    <button type="button" className="btn btn-ghost btn-sm" title={t('files.delete')} aria-label={`${t('files.delete')} ${f.title}`}
+      onClick={(e) => { e.stopPropagation(); if (window.confirm(t('files.deleteConfirm', { name: f.title }))) onDelete(f); }} style={{ color: 'var(--danger)', ...style }}>
+      <Icon name="trash" size={16} />
+    </button>
+  );
+}
+
+export function FileGrid({ files, thumbs, onOpen, pin, onDelete }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void }) {
   const { lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -45,6 +56,7 @@ export function FileGrid({ files, thumbs, onOpen, pin }: { files: FileItem[]; th
             </div>
           </button>
           {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
+          {onDelete && <DeleteButton f={f} onDelete={onDelete} style={{ position: 'absolute', top: 140, right: 10, zIndex: 2, background: '#fff' }} />}
           </div>
         );
       })}
@@ -52,7 +64,7 @@ export function FileGrid({ files, thumbs, onOpen, pin }: { files: FileItem[]; th
   );
 }
 
-export function FileList({ files, onOpen, onDownload, pin }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin }) {
+export function FileList({ files, onOpen, onDownload, pin, onDelete }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void }) {
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
@@ -68,6 +80,7 @@ export function FileList({ files, onOpen, onDownload, pin }: { files: FileItem[]
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
             <Icon name="download" size={16} />
           </button>
+          {onDelete && <DeleteButton f={f} onDelete={onDelete} />}
           </span>
         </div>
       ))}

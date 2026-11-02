@@ -5,7 +5,7 @@ import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { normalizeSearch } from '../lib/text';
 import { Icon } from '../components/Icon';
-import { download, previewKind } from './fileApi';
+import { download, previewKind, removeFile } from './fileApi';
 import { kindOf, type FileItem, type FileKind } from './fileKinds';
 import { FileGrid, FileList, FolderGrid, ShareSwitch } from './FileViews';
 import { Preview } from './Preview';
@@ -51,6 +51,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     on: (id: string) => pinned.some((d) => d.id === id),
     toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
   } : undefined;
+  const [deleteError, setDeleteError] = useState(false);
+  const del = isAdmin ? (f: FileItem) => { setDeleteError(false); removeFile(brandId, f.id).catch(() => setDeleteError(true)); } : undefined;
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
@@ -135,7 +137,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
         )}
         <div className="col g12">
           <div className="row between g8 wrap">
-            <p className="label">{t('files.files')} · {shown.length}</p>
+            <p className="label">{t('files.files')} · {shown.length}{deleteError && <span className="t-xs" role="alert" style={{ color: 'var(--danger)', marginLeft: 8, textTransform: 'none' }}>{t('files.deleteError')}</span>}</p>
             {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
           </div>
           {index.loading ? (
@@ -143,9 +145,9 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' ? (
-            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} />
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} onDelete={del} />
           ) : (
-            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} />
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} onDelete={del} />
           )}
           {shown.length > limit && (
             <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>
