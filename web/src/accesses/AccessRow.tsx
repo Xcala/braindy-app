@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { StringKey } from '../i18n/strings';
 import { useI18n } from '../i18n/I18nProvider';
 import { accessesApi, type Access } from './useAccesses';
+import { AppLogo } from './AppLogo';
 
 export type AccessCol = 'user' | 'password' | 'link' | 'plan' | 'notes';
 export const ALL_COLS: AccessCol[] = ['user', 'password', 'link', 'plan', 'notes'];
@@ -34,7 +35,7 @@ function CopyBtn({ value, onCopied, label }: { value: string; onCopied?: () => v
 /** Credential row: each visible column copies on its own; the password reveals in place for 30 s (logged). */
 const COL_LABEL: Record<AccessCol, StringKey> = { user: 'acc.user', password: 'acc.password', link: 'acc.link', plan: 'acc.subscription', notes: 'acc.notes' };
 
-export function AccessRow({ brandId, a, cols, onEdit }: { brandId: string; a: Access; cols: AccessCol[]; onEdit: () => void }) {
+export function AccessRow({ brandId, a, cols, logo, onEdit }: { brandId: string; a: Access; cols: AccessCol[]; logo: string; onEdit: () => void }) {
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState(false);
   const [value, setValue] = useState<string | null>(null);
@@ -96,7 +97,8 @@ export function AccessRow({ brandId, a, cols, onEdit }: { brandId: string; a: Ac
 
   return (
     <div className="trow acc-row" style={{ gridTemplateColumns: gridFor(cols), minHeight: 64, minWidth: 260 + cols.length * 170 }}>
-      <span className="col min-w-0"><span className="w7 truncate">{a.platform}</span><span className="t-xs t-mute truncate">{sub}</span></span>
+      <span className="row g12 min-w-0"><AppLogo name={a.platform} domain={logo} />
+        <span className="col min-w-0"><span className="w7 truncate">{a.platform}</span><span className="t-xs t-mute truncate">{sub}</span></span></span>
       {cols.map((c) => <div key={c} className="acc-cell min-w-0" data-label={t(COL_LABEL[c])}>{cell[c]}</div>)}
       <button type="button" className="btn btn-ghost btn-sm justify-self-end" onClick={onEdit} aria-label={`${t('acc.edit')} · ${a.platform}`}>{t('acc.edit')}</button>
     </div>

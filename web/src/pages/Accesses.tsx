@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
+import { logoDomain } from '../accesses/AppLogo';
 import { ALL_COLS, AccessRow, gridFor, priceLabel, type AccessCol } from '../accesses/AccessRow';
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
@@ -59,7 +60,7 @@ export function Accesses() {
             </div>
             {loading && <p className="t-sm t-mute" style={{ padding: 16 }}>{t('common.loading')}…</p>}
             {!loading && list.length === 0 && <p className="t-sm t-mute" style={{ padding: 16 }}>{t('acc.empty')}</p>}
-            {list.map((a) => <AccessRow key={a.id} brandId={current.id} a={a} cols={cols} onEdit={() => setEditing(a)} />)}
+            {list.map((a) => <AccessRow key={a.id} brandId={current.id} a={a} cols={cols} logo={logoDomain(a, list)} onEdit={() => setEditing(a)} />)}
           </div>
           {subs > 0 && (
             <p className="t-sm" style={{ margin: 0 }}>
