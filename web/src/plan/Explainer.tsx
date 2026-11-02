@@ -24,14 +24,14 @@ export const fontOf = (k: Kit) => (k.font ? `'${k.font}', var(--f-text)` : undef
  * next to the five steps it tells, each lit in turn.
  */
 export function Explainer({ label, title, strong, lead, stage, steps }: {
-  label: string; title: string; strong: string; lead: string; stage: ReactNode; steps: Array<[string, string]>;
+  label: string; title: string; strong: string; lead?: string; stage: ReactNode; steps: Array<[string, string]>;
 }) {
   return (
     <section className="bp-how card" aria-label={`${title}${strong}`}>
       <div className="col g8">
         <span className="label">{label}</span>
         <h2 className="h2">{title}<span className="w9">{strong}</span></h2>
-        <p className="t-mute" style={{ margin: 0, maxWidth: 560 }}>{lead}</p>
+        {lead && <p className="t-mute" style={{ margin: 0, maxWidth: 560 }}>{lead}</p>}
       </div>
       <div className="bp-stage">
         <div className="bp-anim" aria-hidden="true">{stage}</div>

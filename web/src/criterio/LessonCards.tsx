@@ -1,22 +1,23 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
+import { LessonCover } from './LessonArt';
 import { lessonOfWeek, logObjection, matchObjection, pick, useLessons, useObjections, type Lesson, type Objection } from './useCriterio';
 
-/** A lesson as a compact card: area, title, summary, minutes. */
+/** A lesson as a card: an illustrated cover (area color, its Brain), then title, summary and minutes. */
 export function LessonTile({ l, kicker }: { l: Lesson; kicker?: string }) {
   const { t, lang } = useI18n();
   return (
-    <Link to={`/learn/${l.id}`} className="card col g8" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
-      <div className="row between g8">
-        <span className="label">{kicker ?? t(`cr.area.${l.area}`)}</span>
-        <span className="row g8">
-          {l.status === 'draft' && <span className="chip c-draft">{t('cr.draft')}</span>}
+    <Link to={`/learn/${l.id}`} className="card lesson-card">
+      <LessonCover l={l} label={kicker ?? t(`cr.area.${l.area}`)} />
+      <div className="lc-body">
+        <span className="h3">{l.title[lang]}</span>
+        <span className="t-sm t-mute line-clamp-3">{l.summary[lang]}</span>
+        <span className="row g8" style={{ marginTop: 'auto' }}>
           <span className="chip chip-plain">{l.videoUrl ? '▶ ' : ''}{t('cr.minutes', { n: l.minutes })}</span>
+          {l.status === 'draft' && <span className="chip c-draft">{t('cr.draft')}</span>}
         </span>
       </div>
-      <span className="h3">{l.title[lang]}</span>
-      <span className="t-sm t-mute">{l.summary[lang]}</span>
     </Link>
   );
 }

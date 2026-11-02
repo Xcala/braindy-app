@@ -1,6 +1,12 @@
 /** "El Criterio de NicoMarca" / "NickMark Taste": lessons and objection answers. */
 export const criterioEn = {
   'cr.name': 'NickMark Taste',
+  'cr.howLabel': 'How it works', 'cr.howTitle': 'Understand the why. ', 'cr.howStrong': 'Ask and approve better.',
+  'cr.howLead': 'Short lessons by NickMark on how each piece is made. With them you ask clearer, approve faster and save rounds.',
+  'cr.s1': 'Pick a topic', 'cr.s1b': 'Logos, strategy, web and more.', 'cr.s2': 'Watch or read it', 'cr.s2b': 'Four to six minutes.',
+  'cr.s3': 'Get the key idea', 'cr.s3b': 'What makes a piece work.', 'cr.s4': 'Use it in your requests', 'cr.s4b': 'And when you give feedback.',
+  'cr.s5': 'Fewer rounds', 'cr.s5b': 'Pieces get approved sooner.', 'cr.anTopic': 'The key idea', 'cr.anTip': 'Clear feedback', 'cr.anOk': 'Approved first time',
+  'cr.inThis': 'In this lesson', 'cr.keyIdeas': '{n} key ideas', 'cr.part': 'Part {n}',
   'cr.nav': 'Learn',
   'cr.sub': 'How and why each piece is done well. Understanding the taste helps you ask and approve better.',
   'cr.area.process': 'How we work', 'cr.area.logos': 'Logos', 'cr.area.strategy': 'Brand strategy', 'cr.area.web': 'Website',
@@ -26,6 +32,12 @@ export const criterioEn = {
 };
 
 export const criterioEs: Record<keyof typeof criterioEn, string> = {
+  'cr.howLabel': 'Cómo funciona', 'cr.howTitle': 'Entiende el porqué. ', 'cr.howStrong': 'Pide y aprueba mejor.',
+  'cr.howLead': 'Lecciones cortas de NicoMarca sobre cómo se hace cada pieza. Con ellas pides más claro, apruebas más rápido y ahorras rondas.',
+  'cr.s1': 'Eliges un tema', 'cr.s1b': 'Logos, estrategia, web y más.', 'cr.s2': 'Lo ves o lo lees', 'cr.s2b': 'De cuatro a seis minutos.',
+  'cr.s3': 'Te quedas con la idea clave', 'cr.s3b': 'Lo que hace que una pieza funcione.', 'cr.s4': 'La usas al pedir', 'cr.s4b': 'Y al dar comentarios.',
+  'cr.s5': 'Menos rondas', 'cr.s5b': 'Las piezas se aprueban antes.', 'cr.anTopic': 'La idea clave', 'cr.anTip': 'Comentario claro', 'cr.anOk': 'Aprobado a la primera',
+  'cr.inThis': 'En esta lección', 'cr.keyIdeas': '{n} ideas clave', 'cr.part': 'Parte {n}',
   'cr.name': 'El Criterio de NicoMarca',
   'cr.nav': 'Aprende',
   'cr.sub': 'Cómo y por qué se hace bien cada pieza. Entender el criterio te ayuda a pedir y aprobar mejor.',
