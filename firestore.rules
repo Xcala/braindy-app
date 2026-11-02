@@ -397,6 +397,28 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow write: if false;
     }
+
+    // ---------- WhatsApp channel (phase 5): the backend writes everything ----------
+    // Messages from numbers no brand knows: admin only, never inside a brand.
+    match /waInbox/{messageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // Channel health (last webhook, last error, counters): admin only.
+    match /waChannel/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // Phone → person index, processed message ids and sent notices: backend only (they hold phone numbers).
+    match /waContacts/{phone} {
+      allow read, write: if false;
+    }
+    match /waEvents/{messageId} {
+      allow read, write: if false;
+    }
+    match /waOutbound/{messageId} {
+      allow read, write: if false;
+    }
     match /granolaNotes/{noteId} {
       allow read, write: if false;
     }
