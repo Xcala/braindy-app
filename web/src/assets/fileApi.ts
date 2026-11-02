@@ -1,4 +1,4 @@
-import { api } from '../lib/api';
+import { api, apiResponse } from '../lib/api';
 import { auth } from '../lib/firebase';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
@@ -10,18 +10,38 @@ export const signedUrls = (brandId: string, ids: string[]) =>
   api<{ urls: Record<string, string> }>(`/v1/brands/${brandId}/assets/urls`, { method: 'POST', body: JSON.stringify({ ids }) })
     .then((r) => r.urls);
 
-/** NickMark only: deletes the file for good (the server keeps a note so the Drive import does not restore it). */
-export const removeFile = (brandId: string, assetId: string) => api(`/v1/brands/${brandId}/assets/${assetId}`, { method: 'DELETE' });
+const asset = (brandId: string, id: string) => `/v1/brands/${brandId}/assets/${id}`;
+/** NickMark only: to the trash (30 days to restore it). */
+export const removeFile = (brandId: string, id: string) => api(asset(brandId, id), { method: 'DELETE' });
+export const renameFile = (brandId: string, id: string, title: string) => api(asset(brandId, id), { method: 'PATCH', body: JSON.stringify({ title }) });
+export const moveFile = (brandId: string, id: string, folder: string) => api(asset(brandId, id), { method: 'PATCH', body: JSON.stringify({ folder }) });
+/** A link anyone can open for 7 days. */
+export const shareLink = (brandId: string, id: string) => api<{ url: string; expires: number }>(`${asset(brandId, id)}/share`, { method: 'POST' });
+
+export type TrashItem = { id: string; title: string; folder: string; size: number; contentType: string; trashedAt: number | null };
+export const listTrash = (brandId: string) => api<{ days: number; files: TrashItem[] }>(`/v1/brands/${brandId}/trash`);
+export const restoreFile = (brandId: string, id: string) => api(`/v1/brands/${brandId}/trash/${id}/restore`, { method: 'POST' });
+export const purgeFile = (brandId: string, id: string) => api(`/v1/brands/${brandId}/trash/${id}`, { method: 'DELETE' });
+
+/** Several files in one .zip, built on the server and saved by the browser. */
+export async function downloadZip(brandId: string, ids: string[], name: string) {
+  const res = await apiResponse(`/v1/brands/${brandId}/assets/zip`, { method: 'POST', body: JSON.stringify({ ids }) });
+  if (!res.ok) throw Object.assign(new Error(`API ${res.status}`), { status: res.status });
+  const href = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement('a'), { href, download: `${name}.zip` });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 60_000);
+}
 
 export async function download(brandId: string, assetId: string) {
   window.location.assign(await signedUrl(brandId, assetId));
 }
 
 /** Uploads a file to the brand's Uploads folder through a signed URL, reporting progress 0–1. Returns the asset id. */
-export async function upload(brandId: string, file: File, onProgress: (p: number) => void): Promise<string> {
+export async function upload(brandId: string, file: File, onProgress: (p: number) => void, folder?: string): Promise<string> {
   const start = await api<{ assetId: string; url: string; contentType: string }>(`/v1/brands/${brandId}/uploads`, {
     method: 'POST',
-    body: JSON.stringify({ fileName: file.name, contentType: file.type || 'application/octet-stream', size: file.size }),
+    body: JSON.stringify({ fileName: file.name, contentType: file.type || 'application/octet-stream', size: file.size, folder }),
   });
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();

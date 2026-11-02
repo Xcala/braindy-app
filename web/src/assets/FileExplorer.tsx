@@ -1,12 +1,12 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type DragEvent } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { normalizeSearch } from '../lib/text';
 import { Icon } from '../components/Icon';
-import { download, previewKind, removeFile } from './fileApi';
-import { kindOf, type FileItem, type FileKind } from './fileKinds';
+import { download, previewKind } from './fileApi';
+import { kindOf, type FileItem } from './fileKinds';
 import { FileGrid, FileList, FolderGrid, ShareSwitch } from './FileViews';
 import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
@@ -15,11 +15,16 @@ import { useBrands } from '../brands/BrandProvider';
 import { folderVisible, UPLOADS } from './folderRules';
 import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
+import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
+import { useFileActions } from './useFileActions';
+import { FileMenu } from './FileMenu';
+import { SelectionBar } from './SelectionBar';
+import { TrashView } from './TrashView';
+import { UploadButton, UploadStatus } from './UploadButton';
+import { useUploader } from './useUploader';
+import { useSearchAll } from './useSearchAll';
 
 type Folder = { path: string; files: number; bytes: number };
-type Filter = 'all' | FileKind;
-type Sort = 'name' | 'new' | 'old' | 'big';
-const SORTS: Sort[] = ['name', 'new', 'old', 'big'];
 const SORT_KEY = 'braindy.files.sort';
 const savedSort = (): Sort => { try { const s = localStorage.getItem(SORT_KEY) as Sort; return SORTS.includes(s) ? s : 'name'; } catch { return 'name'; } };
 // Drive files keep their own date; files uploaded in Braindy use the upload (or import) time.
@@ -29,12 +34,21 @@ const PAGE = 48;
 const FOLDERS_FIRST = 12;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
 
+/** Copies after the first (oldest) of each name + size pair: what "Select the copies" ticks. */
+function repeatedCopies(files: FileItem[]) {
+  const groups = new Map<string, FileItem[]>();
+  for (const f of files) { const k = `${f.title}|${f.size}`; groups.set(k, [...(groups.get(k) ?? []), f]); }
+  return [...groups.values()].filter((g) => g.length > 1)
+    .flatMap((g) => g.sort((a, b) => (a.mtimeMs ?? Infinity) - (b.mtimeMs ?? Infinity)).slice(1).map((f) => f.id));
+}
+
 /** startPath/openId come from a search result: open that folder and show that file. */
 export function FileExplorer({ brandId, brandName, startPath = '', openId }: { brandId: string; brandName: string; startPath?: string; openId?: string }) {
   const { t } = useI18n();
   const [path, setPath] = useState(startPath);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [q, setQ] = useState('');
+  const [everywhere, setEverywhere] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSortState] = useState<Sort>(savedSort);
@@ -42,6 +56,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [limit, setLimit] = useState(PAGE);
   const [preview, setPreview] = useState<FileItem | null>(null);
   const [allFolders, setAllFolders] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -59,27 +75,13 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     on: (id: string) => pinned.some((d) => d.id === id),
     toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
   } : undefined;
-  const [deleteError, setDeleteError] = useState(false);
-  const del = isAdmin ? (f: FileItem) => { setDeleteError(false); removeFile(brandId, f.id).catch(() => setDeleteError(true)); } : undefined;
-  // Bulk delete: tick files, then one click (and one confirm) deletes them all.
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [busy, setBusy] = useState(false);
-  const sel = isAdmin ? { on: (id: string) => picked.has(id), toggle: (id: string) => setPicked((p) => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; }) } : undefined;
-  const delPicked = async () => {
-    if (!window.confirm(t('files.deleteSelConfirm', { n: String(picked.size) }))) return;
-    setBusy(true); setDeleteError(false);
-    const ids = [...picked];
-    // A few at a time: each delete also updates the folder counts, which must not race too hard.
-    for (let i = 0; i < ids.length; i += 4) {
-      const r = await Promise.allSettled(ids.slice(i, i + 4).map((id) => removeFile(brandId, id)));
-      if (r.some((x) => x.status === 'rejected')) setDeleteError(true);
-    }
-    setPicked(new Set()); setBusy(false);
-  };
+  const actions = useFileActions(brandId, brandName);
+  const menu = isAdmin ? (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} /> : undefined;
+  const dropUp = useUploader(brandId);
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
-  useEffect(() => { setLimit(PAGE); setQ(''); setAllFolders(false); setPicked(new Set()); }, [brandId, path]);
+  useEffect(() => { setLimit(PAGE); setAllFolders(false); actions.clear(); setTrashOpen(false); if (!everywhere) setQ(''); }, [brandId, path]); // eslint-disable-line react-hooks/exhaustive-deps
   const pathShared = visible(path);
   useEffect(() => {
     if (!pathShared) { setFiles([]); return; }
@@ -97,63 +99,52 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folders, path, isAdmin, brand?.fileAccess, tops]);
+  const moveTargets = useMemo(() => ['', UPLOADS, ...folders.map((f) => f.path).filter((p) => p && p !== path)].filter((p, i, a) => a.indexOf(p) === i), [folders, path]);
 
   const needle = normalizeSearch(q);
-  const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)))
+  const hits = useSearchAll(brandId, q.trim(), everywhere || !path, Number(actions.busy));
+  const searchingAll = hits !== null;
+  const source = searchingAll ? hits : files;
+  const shown = source.filter((f) => (filter === 'all' || kindOf(f) === filter) && (searchingAll || !needle || normalizeSearch(f.title).includes(needle)))
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
   const page = shown.slice(0, limit);
+  const copies = isAdmin && !searchingAll ? repeatedCopies(files) : [];
   const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
   useEffect(() => {
     const f = openId ? files.find((x) => x.id === openId) : undefined;
     if (f && previewKind(f.contentType)) setPreview(f);
   }, [openId, files]);
   const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
-  const crumbs = path ? path.split('/') : [];
+  const goFolder = (p: string) => { setEverywhere(false); setQ(''); setPath(p); };
+  // NickMark drops files from the desktop straight into the open folder.
+  const canDrop = isAdmin && !!path && path !== UPLOADS && !trashOpen;
+  const dragProps = canDrop ? {
+    onDragOver: (e: DragEvent) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setDragging(true); } },
+    onDragLeave: (e: DragEvent) => { if (e.currentTarget === e.target) setDragging(false); },
+    onDrop: (e: DragEvent) => { e.preventDefault(); setDragging(false); void dropUp.run(e.dataTransfer.files, path); },
+  } : {};
+
   return (
-    <section className="card" style={{ padding: 0, overflow: 'hidden' }} aria-labelledby="files-crumbs">
-      <div className="flex flex-wrap items-center gap-4 border-b px-4 py-4 sm:px-6" style={{ borderColor: 'var(--line)' }}>
-        <nav className="crumbs grow" aria-label="Breadcrumb" id="files-crumbs">
-          <a href="#" onClick={(e) => { e.preventDefault(); setPath(''); }} className={crumbs.length ? '' : 'cur'}>{brandName}</a>
-          {crumbs.map((c, i) => (
-            <Fragment key={i}>
-              <Icon name="chevronRight" size={14} />
-              {i === crumbs.length - 1 ? <span className="cur">{c}</span>
-                : <a href="#" onClick={(e) => { e.preventDefault(); setPath(crumbs.slice(0, i + 1).join('/')); }}>{c}</a>}
-            </Fragment>
-          ))}
-        </nav>
-        <div className="search w-full sm:w-[260px]">
-          <Icon name="search" />
-          <input className="input" value={q} onChange={(e) => setQ(e.target.value)} aria-label={t('files.search')}
-            placeholder={t('files.searchIn', { name: crumbs[crumbs.length - 1] ?? brandName })} />
-        </div>
-        <div className="seg seg-scroll fseg" role="group" aria-label={t('files.filter')}>
-          {(['all', 'image', 'video', 'pdf', 'design'] as Filter[]).map((k) => (
-            <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{t(`files.kind.${k}`)}</button>
-          ))}
-        </div>
-        <label className="row g6 t-sm"><span className="t-mute">{t('files.sort')}</span>
-          <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} style={{ width: 'auto', paddingRight: 28 }}>
-            {SORTS.map((s) => <option key={s} value={s}>{t(`files.sort.${s}`)}</option>)}
-          </select>
-        </label>
-        <div className="seg" role="group" aria-label={t('files.view')}>
-          <button className={view === 'grid' ? 'is-on' : ''} aria-pressed={view === 'grid'} aria-label={t('files.grid')} onClick={() => setView('grid')}><Icon name="grid" /></button>
-          <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} aria-label={t('files.listView')} onClick={() => setView('list')}><Icon name="list" /></button>
-        </div>
-      </div>
+    <section className={`card${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'hidden', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
+      <ExplorerToolbar brandName={brandName} path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
+        filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView} />
+      {dragging && <div className="fdrop" aria-hidden="true"><Icon name="upload" size={28} />{t('files.dropHere', { name: path.split('/').pop() ?? '' })}</div>}
       <div className="col g24 p-4 sm:p-6">
+        {trashOpen ? <TrashView brandId={brandId} onBack={() => setTrashOpen(false)} /> : <>
         {subfolders.length > 0 && !needle && (
           <div className="col g12">
             <div className="row between g8 wrap">
               <p className="label">{t('files.folders')} · {subfolders.length}</p>
-              {isAdmin && !path && tops.length > 0 && (
+              {isAdmin && !path && (
                 <span className="t-xs t-mute row g8" role="status">
-                  {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
-                  {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
-                  {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => window.confirm(t('fa.hideAllConfirm')) && share.hideAll().catch(() => setShareError(true))}>{t('fa.hideAll')}</button>}
+                  {tops.length > 0 && <>
+                    {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
+                    {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
+                    {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => window.confirm(t('fa.hideAllConfirm')) && share.hideAll().catch(() => setShareError(true))}>{t('fa.hideAll')}</button>}
+                  </>}
+                  <button type="button" className="t-xs w7 row g4" style={{ color: 'var(--ink)' }} onClick={() => setTrashOpen(true)}><Icon name="trash" size={14} />{t('files.trash')}</button>
                 </span>
               )}
             </div>
@@ -167,26 +158,29 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
         )}
         <div className="col g12">
           <div className="row between g8 wrap">
-            <p className="label">{t('files.files')} · {shown.length}{deleteError && <span className="t-xs" role="alert" style={{ color: 'var(--danger)', marginLeft: 8, textTransform: 'none' }}>{t('files.deleteError')}</span>}</p>
-            {sel && page.length > 0 && (
-              <span className="row g8 t-xs" role="status">
-                {picked.size > 0 ? <>
-                  <span className="w7">{t('files.selected', { n: String(picked.size) })}</span>
-                  <button type="button" className="btn btn-sm" disabled={busy} onClick={delPicked} style={{ background: 'var(--danger)', color: '#fff' }}><Icon name="trash" size={14} /> {t('files.deleteSel', { n: String(picked.size) })}</button>
-                  <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setPicked(new Set())}>{t('files.clearSel')}</button>
-                </> : <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setPicked(new Set(page.map((f) => f.id)))}>{t('files.selectAll')}</button>}
-              </span>
-            )}
-            {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
+            <p className="label">{t('files.files')} · {shown.length}{searchingAll ? ` · ${t('files.everywhere')}` : ''}</p>
+            <span className="row g12 wrap">
+              <UploadStatus up={dropUp} />
+              {canDrop && <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary />}
+              {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
+            </span>
           </div>
+          {copies.length > 0 && (
+            <div className="fnote row between g8 wrap" role="status">
+              <span className="t-sm">{t('files.dups', { n: String(copies.length) })}</span>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => actions.setPicked(new Set(copies))}>{t('files.dupsPick')}</button>
+            </div>
+          )}
+          {(page.length > 0 || actions.picked.size > 0) && <SelectionBar actions={actions} pageIds={page.map((f) => f.id)} folders={moveTargets} admin={isAdmin} />}
+          {actions.note && <p role={actions.note.ok ? 'status' : 'alert'} className="t-sm" style={{ color: actions.note.ok ? 'var(--success)' : 'var(--danger)', margin: 0 }}>{actions.note.text}</p>}
           {index.loading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
-          ) : view === 'grid' ? (
-            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} onDelete={del} sel={sel} />
+          ) : view === 'grid' && !searchingAll ? (
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} menu={menu} sel={actions.sel} />
           ) : (
-            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} onDelete={del} sel={sel} />
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} menu={menu} sel={actions.sel} onFolder={searchingAll ? goFolder : undefined} />
           )}
           {shown.length > limit && (
             <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>
@@ -194,6 +188,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
             </button>
           )}
         </div>
+        </>}
       </div>
       {preview && <Preview brandId={brandId} file={preview} onClose={() => setPreview(null)} />}
     </section>

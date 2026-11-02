@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes } from './fileApi';
@@ -9,7 +9,7 @@ const date = (ms?: number, lang = 'en') =>
 
 /** NickMark only: pin a file to the brand documents in My brand. */
 export type Pin = { on: (id: string) => boolean; toggle: (f: FileItem) => void };
-/** NickMark only: files ticked for a bulk delete. */
+/** Files ticked for a bulk action (.zip for everyone; move and trash for NickMark). */
 export type Sel = { on: (id: string) => boolean; toggle: (id: string) => void };
 
 function Check({ sel, f, style }: { sel: Sel; f: FileItem; style?: CSSProperties }) {
@@ -29,18 +29,9 @@ function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProper
   );
 }
 
-/** NickMark only: a small trash button that deletes the file after a confirm. */
-function DeleteButton({ f, onDelete, style }: { f: FileItem; onDelete: (f: FileItem) => void; style?: CSSProperties }) {
-  const { t } = useI18n();
-  return (
-    <button type="button" className="btn btn-ghost btn-sm" title={t('files.delete')} aria-label={`${t('files.delete')} ${f.title}`}
-      onClick={(e) => { e.stopPropagation(); if (window.confirm(t('files.deleteConfirm', { name: f.title }))) onDelete(f); }} style={{ color: 'var(--danger)', ...style }}>
-      <Icon name="trash" size={16} />
-    </button>
-  );
-}
+type Menu = (f: FileItem, style?: CSSProperties) => ReactNode;
 
-export function FileGrid({ files, thumbs, onOpen, pin, onDelete, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void; sel?: Sel }) {
+export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel }) {
   const { lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -64,7 +55,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, onDelete, sel }: { files:
             </div>
           </button>
           {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
-          {onDelete && <DeleteButton f={f} onDelete={onDelete} style={{ position: 'absolute', top: 140, right: 10, zIndex: 2, background: '#fff' }} />}
+          {menu?.(f, { position: 'absolute', top: 138, right: 10, zIndex: 3 })}
           {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 146, left: 12, zIndex: 2 }} />}
           </div>
         );
@@ -73,14 +64,16 @@ export function FileGrid({ files, thumbs, onOpen, pin, onDelete, sel }: { files:
   );
 }
 
-export function FileList({ files, onOpen, onDownload, pin, onDelete, sel }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; onDelete?: (f: FileItem) => void; sel?: Sel }) {
+/** `onFolder` (search across all folders) shows each file's folder under its name, as a link to open it. */
+export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel; onFolder?: (folder: string) => void }) {
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
       <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
         <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}`}>
-          <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button></span>
+          <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<span className="col" style={{ minWidth: 0 }}><button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+            {onFolder && <button type="button" className="t-xs t-mute truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }} onClick={() => onFolder(f.folder ?? '')}><Icon name="folder" size={12} /> {f.folder || t('files.rootFolder')}</button>}</span></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
           <span className="t-sm t-mute">{date(f.mtimeMs, lang)}</span>
@@ -89,7 +82,7 @@ export function FileList({ files, onOpen, onDownload, pin, onDelete, sel }: { fi
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
             <Icon name="download" size={16} />
           </button>
-          {onDelete && <DeleteButton f={f} onDelete={onDelete} />}
+          {menu?.(f)}
           </span>
         </div>
       ))}

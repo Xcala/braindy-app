@@ -7,6 +7,7 @@ export interface FileItem {
   size: number;
   ext?: string;
   mtimeMs?: number;
+  folder?: string;
 }
 
 const DESIGN = /^(ai|psd|indd|eps|fig|sketch|xd|afdesign|aep|prproj)$/i;

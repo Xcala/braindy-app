@@ -7,6 +7,8 @@ import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
 import { brandAccess, fileFilter } from './access.js';
 import type { AuthEnv } from './auth.js';
+import { bumpIndex } from './fileOps.js';
+import { forgetSearch } from './search.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 const URL_TTL_MS = 15 * 60 * 1000;
@@ -79,10 +81,12 @@ files.post('/brands/:brandId/uploads', async (c) => {
   if (!fileName || !Number.isFinite(size) || size <= 0) return c.json({ error: 'invalid' }, 400);
   if (size > MAX_UPLOAD_BYTES) return c.json({ error: 'too_large', maxBytes: MAX_UPLOAD_BYTES }, 413);
 
+  // NickMark can upload straight into any folder; everyone else uploads to Uploads.
+  const folder = access.admin && body.folder ? String(body.folder).split('/').map((p) => p.trim()).filter(Boolean).join('/').slice(0, 500) : 'Uploads';
   const id = `upl-${randomUUID()}`;
   const storagePath = `brands/${brandId}/uploads/${id}/${fileName}`;
   await db.doc(`brands/${brandId}/assets/${id}`).set({
-    type: 'file', source: 'upload', title: fileName, folder: 'Uploads', storagePath, size, contentType,
+    type: 'file', source: 'upload', title: fileName, folder, storagePath, size, contentType,
     status: 'uploading', uploadedBy: uid, createdAt: FieldValue.serverTimestamp(),
   });
   const [url] = await bucket().file(storagePath).getSignedUrl({
@@ -104,48 +108,11 @@ files.post('/brands/:brandId/uploads/:assetId/complete', async (c) => {
   const [exists] = await bucket().file(asset.get('storagePath')).exists();
   if (!exists) return c.json({ error: 'upload_missing' }, 409);
   const [meta] = await bucket().file(asset.get('storagePath')).getMetadata();
-  await ref.update({ status: 'published', size: Number(meta.size), uploadedAt: FieldValue.serverTimestamp() });
-  return c.json({ ok: true });
-});
-
-/**
- * NickMark only: delete one file. Removes the asset, its object in the bucket (unless another asset points at the same
- * object), its pin in My brand and its count in the folder index; leaves a tombstone so the Drive import does not bring
- * it back.
- */
-files.delete('/brands/:brandId/assets/:assetId', async (c) => {
-  const { brandId, assetId } = c.req.param();
-  const uid = c.get('user').uid;
-  if (!(await brandAccess(uid, brandId)).admin) return c.json({ error: 'forbidden' }, 403);
-  const ref = db.doc(`brands/${brandId}/assets/${assetId}`);
-  const asset = await ref.get();
-  if (!asset.exists) return c.json({ error: 'not_found' }, 404);
-  const storagePath = asset.get('storagePath') as string | undefined;
-  const folder = String(asset.get('folder') ?? '');
-  const size = Number(asset.get('size') ?? 0);
-
-  await db.doc(`brands/${brandId}/deletedAssets/${assetId}`).set({
-    title: asset.get('title') ?? null, relPath: asset.get('relPath') ?? null, source: asset.get('source') ?? null,
-    storagePath: storagePath ?? null, deletedBy: uid, deletedAt: FieldValue.serverTimestamp(),
-  });
-  await ref.delete();
-  if (storagePath?.startsWith(`brands/${brandId}/`)) {
-    const others = await db.collection(`brands/${brandId}/assets`).where('storagePath', '==', storagePath).limit(1).get();
-    if (others.empty) await bucket().file(storagePath).delete({ ignoreNotFound: true });
-  }
   await db.runTransaction(async (tx) => {
-    const idRef = db.doc(`brands/${brandId}/context/identity`);
-    const idxRef = db.doc(`brands/${brandId}/context/fileIndex`);
-    const [identity, index] = await Promise.all([tx.get(idRef), tx.get(idxRef)]);
-    const docs = (identity.get('documents') as Array<{ id?: string }> | undefined) ?? [];
-    if (docs.some((d) => d.id === assetId)) tx.update(idRef, { documents: docs.filter((d) => d.id !== assetId) });
-    // Folder sizes count every file below them, so the file leaves its folder and each parent.
-    const list = index.get('folders') as Array<{ path: string; files: number; bytes: number }> | undefined;
-    if (list && asset.get('source') === 'drive') {
-      const parts = folder ? folder.split('/') : [];
-      const chain = new Set(parts.map((_, i) => parts.slice(0, i + 1).join('/')).concat(''));
-      tx.update(idxRef, { folders: list.map((f) => (chain.has(f.path) ? { ...f, files: Math.max(0, f.files - 1), bytes: Math.max(0, f.bytes - size) } : f)) });
-    }
+    await bumpIndex(tx, brandId, [String(asset.get('folder') ?? 'Uploads'), 1, Number(meta.size)]);
+    tx.update(ref, { status: 'published', size: Number(meta.size), uploadedAt: FieldValue.serverTimestamp() });
   });
+  forgetSearch(brandId);
   return c.json({ ok: true });
 });
+
