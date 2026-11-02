@@ -59,6 +59,8 @@ export function useMySections() {
   const ids = key ? key.split('/') : [];
   const ready = ids.every((id) => id in docs);
   const nearest = ids.map((id) => docs[id]).find(Boolean);
-  const mine = new Set(nearest ? sectionsOf(nearest) : []);
+  // The brand's own switches win over each person's sections.
+  const off = current?.sectionsOff ?? [];
+  const mine = new Set((nearest ? sectionsOf(nearest) : []).filter((s) => !off.includes(s)));
   return { ready, can: (s?: Section) => !s || mine.has(s) };
 }

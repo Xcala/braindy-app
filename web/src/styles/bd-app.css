@@ -67,7 +67,7 @@ p{margin:0}
 .vsep{width:1px;background:var(--line);margin:14px 8px}
 
 /* bottom nav (mobile) */
-.bnav{height:76px;background:rgba(255,255,255,.94);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:6px 4px 18px}
+.bnav{height:76px;background:rgba(255,255,255,.94);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid var(--line);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);padding:6px 4px 18px}
 .bnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px/14px var(--f-text);color:var(--graphite);text-decoration:none;min-height:48px;border-radius:12px}
 .bnav a.is-active{color:var(--azul)}
 .bnav svg{width:22px;height:22px}

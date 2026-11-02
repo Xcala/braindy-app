@@ -60,6 +60,21 @@ describe('Sections per person', () => {
     await assertFails(getDoc(doc(as(env, SUB_ONLY), 'brands/brand-a/assets/f1')));
   });
 
+  it('a section switched off for the brand is closed even to its owner', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore() as unknown as Firestore, 'brands/brand-a'), { sectionsOff: ['accesses', 'files'] });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'brands/brand-a/accesses/x')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'brands/brand-a/assets/f1')));
+    await assertSucceeds(getDoc(doc(as(env, OWNER), 'brands/brand-a/billing/plan')));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'brands/brand-a/accesses/x')));
+  });
+
+  it('only the admin switches sections for the whole brand', async () => {
+    await assertFails(updateDoc(doc(as(env, OWNER), 'brands/brand-a'), { sectionsOff: [] }));
+    await assertSucceeds(updateDoc(doc(as(env, ADMIN), 'brands/brand-a'), { sectionsOff: ['requests'] }));
+  });
+
   it('nobody but the admin changes a member’s sections from the browser', async () => {
     await assertFails(updateDoc(doc(as(env, OWNER), `brands/brand-a/members/${MEMBER}`), { sections: ['accesses'] }));
     await assertFails(updateDoc(doc(as(env, PICKED), `brands/brand-a/members/${PICKED}`), { sections: ['billing'] }));

@@ -82,9 +82,14 @@ service cloud.firestore {
         : s in m.sections;
     }
 
+    // NickMark can switch a section off for the whole brand (brands/{id}.sectionsOff); that wins over each person.
+    function brandOn(brandId, s) {
+      return !(s in get(/databases/$(database)/documents/brands/$(brandId)).data.get('sectionsOff', []));
+    }
+
     function can(brandId, s) {
       let a = ancestors(brandId);
-      return signedIn() && (memberAt(brandId) ? allowsAt(brandId, s)
+      return signedIn() && brandOn(brandId, s) && (memberAt(brandId) ? allowsAt(brandId, s)
         : a.size() > 0 && memberAt(a[0]) ? allowsAt(a[0], s)
         : a.size() > 1 && memberAt(a[1]) ? allowsAt(a[1], s)
         : a.size() > 2 && memberAt(a[2]) && allowsAt(a[2], s));
