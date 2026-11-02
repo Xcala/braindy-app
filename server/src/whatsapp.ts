@@ -3,7 +3,8 @@
 // Without configuration nothing is sent and callers fall back to a wa.me link Nicolas sends himself.
 const TOKEN = process.env.WHATSAPP_TOKEN?.trim();
 const PHONE_ID = process.env.WHATSAPP_PHONE_ID?.trim();
-const API = 'https://graph.facebook.com/v21.0';
+// Dualhook's Runtime API is Graph-compatible: WHATSAPP_API_BASE=https://api.dualhook.com/v25.0 and a dh_live_ key as token.
+const API = process.env.WHATSAPP_API_BASE?.trim() || 'https://graph.facebook.com/v21.0';
 
 export const whatsappConfigured = () => !!(TOKEN && PHONE_ID);
 

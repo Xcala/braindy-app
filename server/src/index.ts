@@ -28,6 +28,7 @@ import { adminPlan } from './brandPlan.js';
 import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
+import { whatsappWebhook } from './wa/webhook.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
@@ -66,6 +67,7 @@ app.route('/public', hostingCheckout);
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
 app.route('/webhooks', granolaWebhook);
+app.route('/webhooks', whatsappWebhook);
 // Google Calendar OAuth return (public, checked by a one-time state).
 app.use('/integrations/*', rateLimit('integrations', 30, 60_000));
 app.route('/', calendarCallback);
