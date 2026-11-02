@@ -10,6 +10,7 @@ import { useComments, useRequest, useVersions } from '../requests/useRequests';
 import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { Progress } from '../requests/Progress';
+import { TeamAtWork } from '../requests/TeamAtWork';
 import { PlanCard } from '../requests/PlanCard';
 import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
@@ -55,6 +56,8 @@ export function RequestDetail() {
         </div>
         <Progress r={r} />
       </div>
+
+      {r.status === 'in_production' && <TeamAtWork r={r} />}
 
       {versions.length > 0 && (
         <SafeBoundary>

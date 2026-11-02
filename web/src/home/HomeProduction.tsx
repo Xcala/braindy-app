@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { useBrands } from '../brands/BrandProvider';
-import { brainName } from '../components/BrainStack';
+import { TeamAtWork } from '../requests/TeamAtWork';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
 import { SLA_HOURS, addBusinessHours, businessMsBetween } from '../lib/businessHours';
 
@@ -37,10 +37,9 @@ export function HomeProduction({ items }: { items: ScopedRequest[] }) {
           return (
             <Link key={`${r.brandId}/${r.id}`} to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)} className="card col g12 hg-prod min-w-0" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
               <div className="row g12">
-                {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-10 w-10 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
                 <div className="col grow" style={{ minWidth: 0 }}>
                   <span className="w7 truncate">{r.title}</span>
-                  <span className="t-xs t-mute truncate">{t('req.onIt', { brain: brainName(r.leadBrain) })}</span>
+                  <TeamAtWork r={r} compact />
                 </div>
                 <span className={`hg-left is-${tone}`}>{c.late ? '!' : t('hg.left', { h: c.leftH })}</span>
               </div>
