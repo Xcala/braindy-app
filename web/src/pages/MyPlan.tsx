@@ -55,7 +55,7 @@ export function MyPlan() {
 
   return (
     <div className="col g32">
-      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brandName={current.name} />}
+      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
         payments={<div className="col g16"><Subscription current={current} part="design" /><p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p></div>}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
         contract={<ContractCard brandId={id} contract={contract} />}
