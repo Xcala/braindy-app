@@ -5,8 +5,10 @@ import { api } from '../lib/api';
 
 export type Access = {
   id: string; platform: string; username?: string; link?: string; notes?: string; hasSecret?: boolean;
-  sharedWithBraindy?: boolean; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
+  sharedWithBraindy?: boolean; subscription?: Subscription | null; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
 };
+/** A paid plan on the platform: shown in its own column and added up below the table. */
+export type Subscription = { plan?: string; price?: number | null; currency?: 'USD' | 'COP' | 'EUR'; period?: 'month' | 'year' };
 export type AccessEvent = { id: string; platform: string; action: 'added' | 'updated' | 'deleted' | 'revealed' | 'copied'; byName: string; at?: Timestamp };
 
 /** Credential metadata of a brand. `denied` = the user is not an owner (rules refuse the read). */
@@ -33,7 +35,7 @@ export function useAccessLog(brandId?: string, max = 8) {
 }
 
 const base = (brandId: string) => `/v1/brands/${encodeURIComponent(brandId)}/accesses`;
-export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean };
+export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null };
 
 export const accessesApi = {
   add: (brandId: string, a: AccessInput) => api<{ id: string }>(base(brandId), { method: 'POST', body: JSON.stringify(a) }),

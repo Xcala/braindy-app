@@ -3,9 +3,16 @@ import type { StringKey } from '../i18n/strings';
 import { useI18n } from '../i18n/I18nProvider';
 import { accessesApi, type Access } from './useAccesses';
 
-export type AccessCol = 'user' | 'password' | 'link' | 'notes';
-export const ALL_COLS: AccessCol[] = ['user', 'password', 'link', 'notes'];
-const WIDTH: Record<AccessCol, string> = { user: 'minmax(0,1fr)', password: 'minmax(0,1.3fr)', link: 'minmax(0,0.9fr)', notes: 'minmax(0,1fr)' };
+export type AccessCol = 'user' | 'password' | 'link' | 'plan' | 'notes';
+export const ALL_COLS: AccessCol[] = ['user', 'password', 'link', 'plan', 'notes'];
+const WIDTH: Record<AccessCol, string> = { user: 'minmax(0,1fr)', password: 'minmax(0,1.3fr)', link: 'minmax(0,0.9fr)', plan: 'minmax(0,0.9fr)', notes: 'minmax(0,1fr)' };
+
+/** "US$ 15 / mes": a subscription price as people read it. */
+export function priceLabel(price: number, currency: string, period: 'month' | 'year' | undefined, t: (k: StringKey) => string, lang: string) {
+  const n = price.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { maximumFractionDigits: currency === 'COP' ? 0 : 2 });
+  const sym = currency === 'COP' ? '$' : currency === 'EUR' ? '€' : 'US$';
+  return `${sym} ${n}${currency === 'COP' ? ' COP' : ''} / ${t(period === 'year' ? 'acc.perYear' : 'acc.perMonth')}`;
+}
 /** Grid template for the visible columns: platform first, the edit action last. */
 export const gridFor = (cols: AccessCol[]) => ['minmax(0,1fr)', ...cols.map((c) => WIDTH[c]), '84px'].join(' ');
 
@@ -25,7 +32,7 @@ function CopyBtn({ value, onCopied, label }: { value: string; onCopied?: () => v
 }
 
 /** Credential row: each visible column copies on its own; the password reveals in place for 30 s (logged). */
-const COL_LABEL: Record<AccessCol, StringKey> = { user: 'acc.user', password: 'acc.password', link: 'acc.link', notes: 'acc.notes' };
+const COL_LABEL: Record<AccessCol, StringKey> = { user: 'acc.user', password: 'acc.password', link: 'acc.link', plan: 'acc.subscription', notes: 'acc.notes' };
 
 export function AccessRow({ brandId, a, cols, onEdit }: { brandId: string; a: Access; cols: AccessCol[]; onEdit: () => void }) {
   const { t, lang } = useI18n();
@@ -79,6 +86,10 @@ export function AccessRow({ brandId, a, cols, onEdit }: { brandId: string; a: Ac
       ),
     link: a.link
       ? <span className="row g4 min-w-0"><a href={a.link} target="_blank" rel="noreferrer" className="t-sm truncate" style={{ color: 'var(--azul)' }}>{host(a.link)} ↗</a><CopyBtn value={a.link} label={`${t('acc.copy')} · ${t('acc.link')}`} /></span>
+      : <span className="t-sm t-mute">—</span>,
+    plan: a.subscription
+      ? <span className="col min-w-0"><span className="t-sm w7 truncate">{a.subscription.plan || t('acc.subscription')}</span>
+        {a.subscription.price != null && <span className="t-xs t-mute truncate">{priceLabel(a.subscription.price, a.subscription.currency ?? 'USD', a.subscription.period, t, lang)}</span>}</span>
       : <span className="t-sm t-mute">—</span>,
     notes: <span className="t-sm t-mute truncate" title={a.notes}>{a.notes || '—'}</span>,
   };
