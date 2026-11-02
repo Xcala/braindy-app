@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { ALL_COLS, AccessRow, gridFor, type AccessCol } from '../accesses/AccessRow';
+import { ALL_COLS, AccessRow, gridFor, priceLabel, type AccessCol } from '../accesses/AccessRow';
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
 import { BackToAccount } from './Account';
@@ -15,7 +15,14 @@ export function Accesses() {
   const [editing, setEditing] = useState<Access | null | 'new'>(null);
   const [cols, setCols] = useState<AccessCol[]>(loadCols);
   const toggle = (c: AccessCol) => setCols((now) => { const next = now.includes(c) ? now.filter((x) => x !== c) : ALL_COLS.filter((x) => x === c || now.includes(x)); saveCols(next); return next; });
-  const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('acc.password'), link: t('acc.link'), notes: t('acc.notes') };
+  const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('acc.password'), link: t('acc.link'), plan: t('acc.subscription'), notes: t('acc.notes') };
+  // What the subscriptions cost, per month and per currency (yearly plans count a twelfth).
+  const monthly = new Map<string, number>();
+  for (const a of list) {
+    const s = a.subscription;
+    if (s?.price != null) monthly.set(s.currency ?? 'USD', (monthly.get(s.currency ?? 'USD') ?? 0) + (s.period === 'year' ? s.price / 12 : s.price));
+  }
+  const subs = list.filter((a) => a.subscription).length;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const when = (d?: Date) => {
@@ -54,6 +61,12 @@ export function Accesses() {
             {!loading && list.length === 0 && <p className="t-sm t-mute" style={{ padding: 16 }}>{t('acc.empty')}</p>}
             {list.map((a) => <AccessRow key={a.id} brandId={current.id} a={a} cols={cols} onEdit={() => setEditing(a)} />)}
           </div>
+          {subs > 0 && (
+            <p className="t-sm" style={{ margin: 0 }}>
+              <span className="w7">{t('acc.subsTotal', { n: String(subs) })}</span>
+              {monthly.size > 0 && <span className="t-mute"> · {[...monthly].map(([cur, v]) => priceLabel(Math.round(v * 100) / 100, cur, 'month', t, lang)).join(' + ')}</span>}
+            </p>
+          )}
           <p className="t-xs t-mute">{t('acc.revealNote')}</p>
           </div>
           <aside className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
@@ -80,10 +93,11 @@ export function Accesses() {
   );
 }
 
-const COLS_KEY = 'acc-cols';
-/** Visible columns, remembered in this browser. Default: user, password and link. */
+// v2: the subscription column joined the defaults (2026-11-02).
+const COLS_KEY = 'acc-cols-2';
+/** Visible columns, remembered in this browser. Default: user, password, link and subscription. */
 function loadCols(): AccessCol[] {
   try { const v = JSON.parse(localStorage.getItem(COLS_KEY) ?? 'null'); if (Array.isArray(v)) return ALL_COLS.filter((c) => v.includes(c)); } catch { /* storage blocked */ }
-  return ['user', 'password', 'link'];
+  return ['user', 'password', 'link', 'plan'];
 }
 function saveCols(cols: AccessCol[]) { try { localStorage.setItem(COLS_KEY, JSON.stringify(cols)); } catch { /* storage blocked */ } }

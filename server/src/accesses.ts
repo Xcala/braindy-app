@@ -28,6 +28,18 @@ function log(brandId: string, accessId: string, platform: string, action: Action
 }
 
 const clean = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
+/** A paid plan on the platform (not secret): name, price, currency and how often it is charged. null = not a subscription. */
+function subscription(v: unknown) {
+  if (!v || typeof v !== 'object') return null;
+  const s = v as Record<string, unknown>;
+  const price = Number(s.price);
+  return {
+    plan: clean(s.plan, 80),
+    price: Number.isFinite(price) && price >= 0 ? Math.round(price * 100) / 100 : null,
+    currency: s.currency === 'COP' || s.currency === 'EUR' ? s.currency : 'USD',
+    period: s.period === 'year' ? 'year' : 'month',
+  };
+}
 const secretRef = (brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
 const aad = (brandId: string, id: string) => `brands/${brandId}/accesses/${id}`;
 
@@ -52,7 +64,7 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   }
   await ref.set({
     platform, username: clean(b.username), link: clean(b.link, 500), notes: clean(b.notes, 1000),
-    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true,
+    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription),
     createdBy: user.uid, updatedBy: user.uid, updatedByName: byName, createdAt: now(), updatedAt: now(),
   });
   await log(brandId, ref.id, platform, 'added', user.uid, byName);
@@ -75,6 +87,7 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   if (b.link !== undefined) patch.link = clean(b.link, 500);
   if (b.notes !== undefined) patch.notes = clean(b.notes, 1000);
   if (b.sharedWithBraindy !== undefined) patch.sharedWithBraindy = b.sharedWithBraindy === true;
+  if (b.subscription !== undefined) patch.subscription = subscription(b.subscription);
   if (typeof b.password === 'string' && b.password) {
     const s = await seal(b.password, aad(brandId, id)).catch(() => null);
     if (!s) return c.json({ error: 'vault_unavailable' }, 503);

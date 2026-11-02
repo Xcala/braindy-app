@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { accessesApi, type Access } from './useAccesses';
+import { accessesApi, type Access, type Subscription } from './useAccesses';
 import { looksLikeSecret, splitSecretLines } from './secretNotes';
 
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
@@ -15,6 +15,8 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   const [link, setLink] = useState(editing?.link ?? '');
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [shared, setShared] = useState(!!editing?.sharedWithBraindy);
+  const [isSub, setIsSub] = useState(!!editing?.subscription);
+  const [sub, setSub] = useState<Subscription>(editing?.subscription ?? { plan: '', price: null, currency: 'USD', period: 'month' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<false | 'save' | 'vault'>(false);
   const [deleting, setDeleting] = useState(false);
@@ -37,7 +39,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setError(false);
-    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, ...(password ? { password } : {}) };
+    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, subscription: isSub ? sub : null, ...(password ? { password } : {}) };
     try {
       if (editing) await accessesApi.update(brandId, editing.id, body);
       else await accessesApi.add(brandId, body);
@@ -81,6 +83,24 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
             </div>
           ) : <span className="help">{t('acc.notesHelp')}</span>}
         </div>
+        <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
+          <input type="checkbox" checked={isSub} onChange={(e) => setIsSub(e.target.checked)} /> {t('acc.isSub')}
+        </label>
+        {isSub && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="field"><label htmlFor="acc-plan">{t('acc.plan')}</label>
+              <input id="acc-plan" className="input" value={sub.plan ?? ''} onChange={(e) => setSub((s) => ({ ...s, plan: e.target.value }))} maxLength={80} placeholder="Pro" /></div>
+            <div className="field"><label htmlFor="acc-price">{t('acc.price')}</label>
+              <input id="acc-price" className="input" type="number" min={0} step="0.01" inputMode="decimal" value={sub.price ?? ''}
+                onChange={(e) => setSub((s) => ({ ...s, price: e.target.value === '' ? null : Number(e.target.value) }))} /></div>
+            <div className="field"><label htmlFor="acc-cur">{t('acc.currency')}</label>
+              <select id="acc-cur" className="input" value={sub.currency ?? 'USD'} onChange={(e) => setSub((s) => ({ ...s, currency: e.target.value as Subscription['currency'] }))}>
+                <option>USD</option><option>COP</option><option>EUR</option></select></div>
+            <div className="field"><label htmlFor="acc-per">{t('acc.period')}</label>
+              <select id="acc-per" className="input" value={sub.period ?? 'month'} onChange={(e) => setSub((s) => ({ ...s, period: e.target.value as Subscription['period'] }))}>
+                <option value="month">{t('acc.monthly')}</option><option value="year">{t('acc.yearly')}</option></select></div>
+          </div>
+        )}
         <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
           <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> {t('acc.sharedLabel')}
         </label>
