@@ -11,8 +11,8 @@ import { AccountMenu } from './AccountSheet';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
-import { NAV } from './navGroups';
 import { SubNav } from './SubNav';
+import { Sidebar } from './Sidebar';
 
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/today', label: 'today.title' },
@@ -38,10 +38,12 @@ export function AppShell() {
   return (
     <BrandProvider>
       <Toaster>
-      <div className="flex min-h-full flex-col">
+      <div className="flex min-h-full">
+      <Sidebar admin={adminSpace} items={ADMIN_TABS} />
+      <div className="flex min-h-full min-w-0 flex-1 flex-col">
         <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', gap: 8 }}>
-          <span className="hidden sm:inline-flex"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
-          <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
+          <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
+          <div className="vsep hidden sm:block md:hidden" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
             <>
               <Link to="/admin/today" className="ws" aria-label="Braindy admin" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span><span className="hidden sm:inline">Braindy admin</span></Link>
@@ -59,32 +61,21 @@ export function AppShell() {
           <Notifications />
           <AccountMenu />
         </header>
-        <div className={adminSpace ? '' : 'hidden md:block'}>
-        <nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
-          {adminSpace ? ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />) : <ClientTabs />}
-        </nav>
-        </div>
+        {/* Admin on a phone: its pages as tabs (the client has the bottom bar; desktop has the sidebar). */}
+        {adminSpace && (
+          <div className="md:hidden"><nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
+            {ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />)}
+          </nav></div>
+        )}
         <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
           <SectionGate>{!adminSpace && <SubNav />}<Outlet /></SectionGate>
         </main>
         {!adminSpace && <BottomNav />}
       </div>
+      </div>
       </Toaster>
     </BrandProvider>
   );
-}
-
-/** Client tabs (five, see navGroups), only the ones with a page this person may use; each opens its first allowed page. */
-function ClientTabs() {
-  const { t } = useI18n();
-  const { can } = useMySections();
-  const { pathname } = useLocation();
-  return <>{NAV.map((g) => {
-    const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
-    if (!pages.length) return null;
-    const on = g.pages.some((p) => pathname === p.to || pathname.startsWith(`${p.to}/`));
-    return <Tab key={g.label} to={pages[0]!.to} label={t(g.label)} on={on} />;
-  })}</>;
 }
 
 /** A closed section sends the person back home (the rules and the API block its data anyway). */

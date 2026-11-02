@@ -8,7 +8,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { groupOfPath } from './navGroups';
 
-/** Inside My brand and Deliveries: a small switch between its pages. A page with nothing in it stays out for the client. */
+/** Phones only (the desktop sidebar lists them). Inside My brand and Deliveries: a small switch between its pages. A page with nothing in it stays out for the client. */
 export function SubNav() {
   const { pathname } = useLocation();
   const { t } = useI18n();
@@ -19,7 +19,7 @@ export function SubNav() {
   const pages = (group?.pages ?? []).filter((p) => can(sectionOfPath(p.to)) && (isAdmin || pathname === p.to || filled(p.to)));
   if (pages.length < 2) return null;
   return (
-    <div style={{ marginBottom: 24, display: 'flex' }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
+    <div className="flex md:hidden" style={{ marginBottom: 24 }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
       {pages.map((p) => <NavLink key={p.to} to={p.to} end className={({ isActive }) => (isActive ? 'is-on' : '')}>{t(p.label)}</NavLink>)}
     </nav></div>
   );
@@ -27,7 +27,7 @@ export function SubNav() {
 
 /** Whether a page has content: research needs studies or market maps, apps an app, the visual identity logos, colors, type
  *  or concept images, documents a pinned file. The rest always count. */
-function useFilled() {
+export function useFilled() {
   const brandId = useBrands().current?.id;
   const apps = useBrandLinks(brandId, 'apps');
   const research = useBrandLinks(brandId, 'research');

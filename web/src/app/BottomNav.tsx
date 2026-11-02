@@ -3,14 +3,14 @@ import { groupOfPath, NAV, SHOW_RESULTS } from './navGroups';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
+import { NAV_ICON } from './navIcons';
 
-const svg = (d: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const ALL_ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
-  { to: '/home', label: 'nav.homeShort', icon: svg(<><path d="M3 11 12 4l9 7" /><path d="M5 10v10h14V10" /></>) },
-  { to: '/brand', label: 'nav.brandShort', icon: svg(<><circle cx="12" cy="12" r="9" /><circle cx="8.5" cy="10" r="1.3" /><circle cx="12" cy="7.5" r="1.3" /><circle cx="15.5" cy="10" r="1.3" /><path d="M12 21c-1.5 0-2-1-2-2s1-2 2-2" /></>) },
-  { to: '/requests', label: 'nav.askShort', fab: true, icon: svg(<><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></>) },
-  { to: '/assets', label: 'nav.deliveriesShort', icon: svg(<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />) },
-  { to: '/report', label: 'nav.reportShort', icon: svg(<path d="M4 20V10M10 20V4M16 20v-7M20 20H3" />) },
+  { to: '/home', label: 'nav.homeShort', icon: NAV_ICON['/home'] },
+  { to: '/brand', label: 'nav.brandShort', icon: NAV_ICON['/brand'] },
+  { to: '/requests', label: 'nav.askShort', fab: true, icon: NAV_ICON['/requests'] },
+  { to: '/assets', label: 'nav.deliveriesShort', icon: NAV_ICON['/assets'] },
+  { to: '/report', label: 'nav.reportShort', icon: NAV_ICON['/report'] },
 ];
 const ITEMS = ALL_ITEMS.filter((i) => SHOW_RESULTS || i.to !== '/report');
 
