@@ -3,6 +3,7 @@ import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { LangToggle } from '../i18n/LangToggle';
 import { NoticesCard } from '../settings/NoticesCard';
+import { MyWhatsappCard } from '../settings/MyWhatsappCard';
 import { MembersCard } from '../team/MembersCard';
 import { BillingCard } from '../settings/BillingCard';
 import type { StringKey } from '../i18n/strings';
@@ -32,6 +33,7 @@ export function Settings() {
         ))}
       </nav>
       {tab === 'notices' && <p className="t-mute" style={{ margin: 0 }}>{t('set.noticesTagline')}</p>}
+      {tab === 'notices' && <MyWhatsappCard />}
       {tab === 'notices' && <NoticesCard brandId={current.id} />}
       {tab === 'team' && <MembersCard brandId={current.id} brandName={current.name} />}
       {tab === 'language' && (

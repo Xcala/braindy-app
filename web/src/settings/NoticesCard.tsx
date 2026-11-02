@@ -6,7 +6,7 @@ import { noticesApi, type NoticeSettings } from '../review/api';
 
 type Card = 'wa' | 'notices';
 type Approver = { uid: string; email: string; role: string };
-const KEYS = ['delivery', 'approved', 'brandBrain', 'report'] as const;
+const KEYS = ['delivery', 'approved', 'published', 'brandBrain', 'report'] as const;
 /** Same rule as the API: an invite link of WhatsApp itself. */
 const GROUP = /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]{10,40}$/;
 
