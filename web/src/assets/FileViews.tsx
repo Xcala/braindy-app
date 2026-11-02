@@ -14,16 +14,18 @@ export type Sel = { on: (id: string) => boolean; toggle: (id: string) => void };
 
 function Check({ sel, f, style }: { sel: Sel; f: FileItem; style?: CSSProperties }) {
   const { t } = useI18n();
-  return <input type="checkbox" checked={sel.on(f.id)} onChange={() => sel.toggle(f.id)} onClick={(e) => e.stopPropagation()} aria-label={`${t('files.select')} ${f.title}`}
-    style={{ width: 18, height: 18, accentColor: 'var(--azul)', cursor: 'pointer', flex: 'none', ...style }} />;
+  return (
+    <label className="fx-check" style={style} onClick={(e) => e.stopPropagation()}>
+      <input type="checkbox" checked={sel.on(f.id)} onChange={() => sel.toggle(f.id)} aria-label={`${t('files.select')} ${f.title}`} />
+    </label>
+  );
 }
 
 function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProperties }) {
   const { t } = useI18n();
   const on = pin.on(f.id);
   return (
-    <button type="button" aria-pressed={on} title={t(on ? 'bf.unpin' : 'bf.pin')} onClick={(e) => { e.stopPropagation(); pin.toggle(f); }} className="t-xs w7"
-      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--ink)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer', whiteSpace: 'nowrap', ...style }}>
+    <button type="button" aria-pressed={on} title={t(on ? 'bf.unpin' : 'bf.pin')} onClick={(e) => { e.stopPropagation(); pin.toggle(f); }} className={`fx-pin${on ? ' is-on' : ''}`} style={style}>
       {on ? `✓ ${t('bf.pinned')}` : `+ ${t('bf.pin')}`}
     </button>
   );
@@ -39,7 +41,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: Fil
         const kind = kindOf(f);
         const thumb = thumbs[f.id];
         return (
-          <div key={f.id} className="tile" style={{ padding: 0, position: 'relative', ...(sel?.on(f.id) ? { outline: '2px solid var(--azul)' } : {}) }}>
+          <div key={f.id} className={`tile${sel?.on(f.id) ? ' is-picked' : ''}`} style={{ padding: 0, position: 'relative' }}>
           <button type="button" className="text-left" style={{ cursor: 'pointer', padding: 0, border: 0, background: 'none', width: '100%' }} onClick={() => onOpen(f)}>
             <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: 180, overflow: 'hidden', width: '100%' }}>
               {thumb ? (
@@ -55,8 +57,8 @@ export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: Fil
             </div>
           </button>
           {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
-          {menu?.(f, { position: 'absolute', top: 138, right: 10, zIndex: 3 })}
-          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 146, left: 12, zIndex: 2 }} />}
+          {menu?.(f, { position: 'absolute', top: 136, right: 12, zIndex: 3 })}
+          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 136, left: 12, zIndex: 2 }} />}
           </div>
         );
       })}
@@ -71,7 +73,7 @@ export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }
     <div className="list overflow-x-auto">
       <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
-        <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}`}>
+        <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}${sel?.on(f.id) ? ' is-picked' : ''}`}>
           <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<span className="col" style={{ minWidth: 0 }}><button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
             {onFolder && <button type="button" className="t-xs t-mute truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }} onClick={() => onFolder(f.folder ?? '')}><Icon name="folder" size={12} /> {f.folder || t('files.rootFolder')}</button>}</span></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
@@ -79,7 +81,7 @@ export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }
           <span className="t-sm t-mute">{date(f.mtimeMs, lang)}</span>
           <span className="row g4" style={{ justifyContent: 'flex-end' }}>
           {pin && <PinButton pin={pin} f={f} />}
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
+          <button type="button" className="fx-ibtn" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
             <Icon name="download" size={16} />
           </button>
           {menu?.(f)}

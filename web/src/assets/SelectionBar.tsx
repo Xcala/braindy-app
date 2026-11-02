@@ -18,24 +18,24 @@ export function SelectionBar({ actions, pageIds, folders, admin }: { actions: Fi
   }
   return (
     <div className="selbar" role="toolbar" aria-label={t('files.selected', { n: String(ids.length) })}>
-      <span className="w7 t-sm">{t('files.selected', { n: String(ids.length) })}</span>
+      <span className="fx-count">{t('files.selected', { n: String(ids.length) })}</span>
       <button type="button" className="btn btn-secondary btn-sm" disabled={actions.busy} onClick={() => actions.zip(ids)}><Icon name="download" size={14} /> {t('files.zip')}</button>
       {admin && (
-        <span className="row g6">
-          <select className="input" value={to} onChange={(e) => setTo(e.target.value)} aria-label={t('files.moveTo')} style={{ width: 'auto', maxWidth: 220, height: 34, padding: '0 28px 0 10px' }}>
+        <span className="fx-move">
+          <label className="fx-select is-sm"><select value={to} onChange={(e) => setTo(e.target.value)} aria-label={t('files.moveTo')}>
             <option value="">{t('files.moveTo')}…</option>
             {folders.map((p) => <option key={p || '·'} value={p || '/'}>{p || t('files.rootFolder')}</option>)}
-          </select>
+          </select><Icon name="chevronDown" size={14} /></label>
           <button type="button" className="btn btn-secondary btn-sm" disabled={!to || actions.busy} onClick={() => { actions.move(ids, to === '/' ? '' : to); setTo(''); }}>{t('files.moveBtn')}</button>
         </span>
       )}
       {admin && (
-        <button type="button" className="btn btn-sm" disabled={actions.busy} style={{ background: 'var(--danger)', color: '#fff' }}
+        <button type="button" className="btn btn-danger btn-sm" disabled={actions.busy}
           onClick={() => window.confirm(t('files.deleteSelConfirm', { n: String(ids.length) })) && actions.trash(ids)}>
           <Icon name="trash" size={14} /> {t('files.toTrash')}
         </button>
       )}
-      <button type="button" className="btn btn-ghost btn-sm" disabled={actions.busy} onClick={actions.clear}>{t('files.clearSel')}</button>
+      <button type="button" className="btn btn-ghost btn-sm fx-end" disabled={actions.busy} onClick={actions.clear}>{t('files.clearSel')}</button>
     </div>
   );
 }

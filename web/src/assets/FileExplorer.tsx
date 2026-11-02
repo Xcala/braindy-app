@@ -23,6 +23,7 @@ import { TrashView } from './TrashView';
 import { UploadButton, UploadStatus } from './UploadButton';
 import { useUploader } from './useUploader';
 import { useSearchAll } from './useSearchAll';
+import './files.css';
 
 type Folder = { path: string; files: number; bytes: number };
 const SORT_KEY = 'braindy.files.sort';
@@ -127,9 +128,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   } : {};
 
   return (
-    <section className={`card${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'hidden', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
+    <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'hidden', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
       <ExplorerToolbar brandName={brandName} path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
-        filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView} />
+        filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView}
+        actions={canDrop ? <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary /> : undefined} />
       {dragging && <div className="fdrop" aria-hidden="true"><Icon name="upload" size={28} />{t('files.dropHere', { name: path.split('/').pop() ?? '' })}</div>}
       <div className="col g24 p-4 sm:p-6">
         {trashOpen ? <TrashView brandId={brandId} onBack={() => setTrashOpen(false)} /> : <>
@@ -161,13 +163,12 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
             <p className="label">{t('files.files')} · {shown.length}{searchingAll ? ` · ${t('files.everywhere')}` : ''}</p>
             <span className="row g12 wrap">
               <UploadStatus up={dropUp} />
-              {canDrop && <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary />}
               {isAdmin && !path && tops.includes('') && <ShareSwitch on={share.isShared('')} label={t('fa.root')} onToggle={() => toggle('')} />}
             </span>
           </div>
           {copies.length > 0 && (
-            <div className="fnote row between g8 wrap" role="status">
-              <span className="t-sm">{t('files.dups', { n: String(copies.length) })}</span>
+            <div className="fnote" role="status">
+              <span className="t-sm row g8"><Icon name="copy" size={16} />{t('files.dups', { n: String(copies.length) })}</span>
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => actions.setPicked(new Set(copies))}>{t('files.dupsPick')}</button>
             </div>
           )}

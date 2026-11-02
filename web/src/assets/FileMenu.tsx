@@ -30,10 +30,10 @@ export function FileMenu({ f, actions, style }: { f: FileItem; actions: FileActi
   ];
   return (
     <span ref={box} style={{ position: 'relative', ...style }} onClick={(e) => e.stopPropagation()}>
-      <button type="button" className="btn btn-ghost btn-sm" aria-haspopup="menu" aria-expanded={!!open} aria-label={`${t('files.more')} · ${f.title}`}
+      <button type="button" className="fx-ibtn" aria-haspopup="menu" aria-expanded={!!open} aria-label={`${t('files.more')} · ${f.title}`}
         onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); const right = document.documentElement.clientWidth - r.right;
           // Opens upward near the bottom of the window.
-          setOpen((o) => (o ? null : r.bottom + 200 > window.innerHeight ? { bottom: window.innerHeight - r.top + 4, right } : { top: r.bottom + 4, right })); }} style={{ background: '#fff' }}>
+          setOpen((o) => (o ? null : r.bottom + 200 > window.innerHeight ? { bottom: window.innerHeight - r.top + 4, right } : { top: r.bottom + 4, right })); }}>
         <Icon name="more" size={18} />
       </button>
       {open && createPortal(
