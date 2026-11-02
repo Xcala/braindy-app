@@ -23,6 +23,8 @@ export interface PlanViewProps {
   site?: ReactNode;
   /** The Brand tab: on-brand piece design with the Brains. */
   brand?: ReactNode;
+  /** The explainer at the top of the summary, site and payments tabs. */
+  intros?: Partial<Record<PlanTab, ReactNode>>;
   payments?: ReactNode;
   brandName: string;
   plan: BrandPlan | null;
@@ -39,7 +41,7 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, brand, payments, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -70,6 +72,7 @@ export function PlanView({ tab, tabs, site, brand, payments, brandName, plan, st
         </p>
       </header>
       {tabs}
+      {intros?.[tab]}
       {tab === 'summary' && contract}
       {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
       {tab === 'schedule' && schedule && (
