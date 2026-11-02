@@ -14,7 +14,6 @@ import { GroupWork } from '../brands/GroupWork';
 import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
 import { useAuth } from '../auth/AuthProvider';
 import { useCanApprove } from '../requests/useCanApprove';
-import { ApprovedWork } from '../brands/identity/ApprovedWork';
 import { BrandFiles, type BrandFile } from '../brands/identity/BrandFiles';
 import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
@@ -70,7 +69,6 @@ export function MyBrand() {
     { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
     { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0 },
     { id: 'voice', label: 'brand.voice', show: !!voice },
-    { id: 'work', label: 'brand.work', show: (id.galleryAssets ?? []).length > 0 },
   ];
   const visible = sections.filter((s) => s.show);
   const num = (key: string) => visible.findIndex((s) => s.id === key) + 1;
@@ -162,12 +160,6 @@ export function MyBrand() {
         <section className="col g24" id="voice" aria-labelledby="h-voice">
           <SectionHead id="voice" num={num('voice')} title={t('brand.voice')} />
           <Voice voice={voice} />
-        </section>
-      )}
-      {(id.galleryAssets ?? []).length > 0 && (
-        <section className="col g24" id="work" aria-labelledby="h-work">
-          <SectionHead id="work" num={num('work')} title={t('brand.work')} subtitle={t('brand.workSub')} />
-          <ApprovedWork items={id.galleryAssets ?? []} />
         </section>
       )}
       <LearningsSection brandId={current.id} />
