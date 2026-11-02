@@ -78,3 +78,28 @@ export async function downloadMedia(mediaId: string): Promise<{ bytes: Buffer; c
   if (!file?.ok) return null;
   return { bytes: Buffer.from(await file.arrayBuffer()), contentType: m.mime_type || 'application/octet-stream' };
 }
+
+/** The public WhatsApp Business profile (what clients see when they open Braindy's chat). */
+export type WaProfile = { about: string; description: string; address: string; email: string; websites: string[]; vertical: string; photo: string | null };
+const PROFILE_FIELDS = 'about,description,address,email,websites,vertical,profile_picture_url';
+
+export async function getProfile(): Promise<WaProfile | null> {
+  if (!whatsappConfigured()) return null;
+  const r = await fetch(`${API}/${PHONE_ID}/whatsapp_business_profile?fields=${PROFILE_FIELDS}`, { headers: { Authorization: `Bearer ${TOKEN}` } }).catch(() => null);
+  if (!r?.ok) { console.warn('whatsapp profile read failed', r?.status ?? 'network'); return null; }
+  const d = ((await r.json()) as { data?: Array<Record<string, unknown>> }).data?.[0] ?? {};
+  const s = (k: string) => (typeof d[k] === 'string' ? (d[k] as string) : '');
+  return { about: s('about'), description: s('description'), address: s('address'), email: s('email'), websites: Array.isArray(d.websites) ? (d.websites as string[]) : [], vertical: s('vertical'), photo: s('profile_picture_url') || null };
+}
+
+/** Saves the text fields (the photo needs Meta's upload flow and is changed from the phone). */
+export async function saveProfile(p: Omit<WaProfile, 'photo'>): Promise<{ ok: true } | { ok: false; status: number }> {
+  if (!whatsappConfigured()) return { ok: false, status: 0 };
+  const r = await fetch(`${API}/${PHONE_ID}/whatsapp_business_profile`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messaging_product: 'whatsapp', ...p }),
+  }).catch(() => null);
+  if (!r?.ok) { console.warn('whatsapp profile save failed', r?.status ?? 'network'); return { ok: false, status: r?.status ?? 0 }; }
+  return { ok: true };
+}

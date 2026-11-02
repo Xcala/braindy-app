@@ -5,7 +5,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { brandAccess } from '../access.js';
 import { createRequest } from '../requests.js';
-import { whatsappConfigured } from '../whatsapp.js';
+import { getProfile, saveProfile, whatsappConfigured } from '../whatsapp.js';
 import { linkPhone, contactRef } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
 import type { AuthEnv } from '../auth.js';
@@ -62,5 +62,28 @@ adminWhatsapp.post('/whatsapp/inbox/:id/dismiss', async (c) => {
   const ref = db.doc(`waInbox/${c.req.param('id')}`);
   if (!(await ref.get()).exists) return c.json({ error: 'not_found' }, 404);
   await ref.update({ status: 'dismissed', dismissedBy: c.get('user').uid, dismissedAt: FieldValue.serverTimestamp() });
+  return c.json({ ok: true });
+});
+
+// Public business profile. Meta's limits: about 1-139, description 512, address 256, email 128, 2 websites.
+export const VERTICALS = ['OTHER', 'PROF_SERVICES', 'EDU', 'ENTERTAIN', 'EVENT_PLAN', 'RETAIL', 'APPAREL', 'BEAUTY', 'HEALTH', 'FINANCE', 'TRAVEL', 'RESTAURANT', 'HOTEL', 'NONPROFIT', 'AUTO', 'GROCERY', 'UNDEFINED'];
+
+adminWhatsapp.get('/whatsapp/profile', async (c) => {
+  const p = await getProfile();
+  return p ? c.json(p) : c.json({ error: 'unavailable' }, 503);
+});
+
+adminWhatsapp.put('/whatsapp/profile', async (c) => {
+  const b = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
+  const t = (k: string, max: number) => String(b[k] ?? '').trim().slice(0, max);
+  const websites = (Array.isArray(b.websites) ? b.websites : []).map((w) => String(w).trim()).filter(Boolean).slice(0, 2);
+  const about = t('about', 139); const email = t('email', 128); const vertical = t('vertical', 30);
+  if (!about) return c.json({ error: 'about_required' }, 400);
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ error: 'invalid_email' }, 400);
+  if (websites.some((w) => !/^https?:\/\/\S+$/.test(w) || w.length > 256)) return c.json({ error: 'invalid_website' }, 400);
+  if (vertical && !VERTICALS.includes(vertical)) return c.json({ error: 'invalid_vertical' }, 400);
+  const r = await saveProfile({ about, description: t('description', 512), address: t('address', 256), email, websites, vertical: vertical || 'OTHER' });
+  if (!r.ok) return c.json({ error: 'meta_rejected', status: r.status }, 502);
+  await db.collection('audit').doc().set({ type: 'whatsapp_profile_saved', by: c.get('user').uid, at: FieldValue.serverTimestamp() });
   return c.json({ ok: true });
 });
