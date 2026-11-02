@@ -38,7 +38,7 @@ export function Prose({ text, accent }: { text: string; accent?: string }) {
         if (b.kind === 'h') {
           if (!accent) return <h2 key={i} className="h3" style={{ marginTop: 12 }}>{inline(b.lines[0])}</h2>;
           n += 1;
-          return <h2 key={i} id={`sec-${n}`} className="h3 lx-h"><span className="lx-n" style={{ background: accent }}>{n}</span>{inline(b.lines[0].replace(/^d+.s*/, ''))}</h2>;
+          return <h2 key={i} id={`sec-${n}`} className="h3 lx-h"><span className="lx-n" style={{ background: accent }}>{n}</span>{inline(b.lines[0].replace(/^\d+\.\s*/, ''))}</h2>;
         }
         if (b.kind === 'ul') {
           if (!accent) return <ul key={i} className="col g8" style={{ ...body, paddingLeft: 22, listStyle: 'disc' }}>{b.lines.map((l, j) => <li key={j}>{inline(l)}</li>)}</ul>;
