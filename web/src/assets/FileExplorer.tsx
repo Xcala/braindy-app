@@ -18,6 +18,12 @@ import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity
 
 type Folder = { path: string; files: number; bytes: number };
 type Filter = 'all' | FileKind;
+type Sort = 'name' | 'new' | 'old' | 'big';
+const SORTS: Sort[] = ['name', 'new', 'old', 'big'];
+const SORT_KEY = 'braindy.files.sort';
+const savedSort = (): Sort => { try { const s = localStorage.getItem(SORT_KEY) as Sort; return SORTS.includes(s) ? s : 'name'; } catch { return 'name'; } };
+// Drive files keep their own date; files uploaded in Braindy use the upload (or import) time.
+const ms = (v: unknown) => (v && typeof (v as { toMillis?: () => number }).toMillis === 'function' ? (v as { toMillis: () => number }).toMillis() : undefined);
 const PAGE = 48;
 // Many folders (Quimiolab has 39) start as three rows; the rest opens on request.
 const FOLDERS_FIRST = 12;
@@ -31,6 +37,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [sort, setSortState] = useState<Sort>(savedSort);
+  const setSort = (s: Sort) => { setSortState(s); try { localStorage.setItem(SORT_KEY, s); } catch { /* private mode */ } };
   const [limit, setLimit] = useState(PAGE);
   const [preview, setPreview] = useState<FileItem | null>(null);
   const [allFolders, setAllFolders] = useState(false);
@@ -78,8 +86,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
     return onSnapshot(qy, (s) => setFiles(
       s.docs.filter((d) => d.get('status') !== 'uploading')
-        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>) }))
-        .sort((a, b) => a.title.localeCompare(b.title)),
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) })),
     ), () => setFiles([]));
   }, [brandId, path, pathShared]);
 
@@ -92,7 +99,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   }, [folders, path, isAdmin, brand?.fileAccess, tops]);
 
   const needle = normalizeSearch(q);
-  const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)));
+  const shown = files.filter((f) => (filter === 'all' || kindOf(f) === filter) && (!needle || normalizeSearch(f.title).includes(needle)))
+    .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
+      : sort === 'big' ? (a, b) => b.size - a.size
+      : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
   const page = shown.slice(0, limit);
   const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
   useEffect(() => {
@@ -124,6 +134,11 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
             <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{t(`files.kind.${k}`)}</button>
           ))}
         </div>
+        <label className="row g6 t-sm"><span className="t-mute">{t('files.sort')}</span>
+          <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} style={{ width: 'auto', paddingRight: 28 }}>
+            {SORTS.map((s) => <option key={s} value={s}>{t(`files.sort.${s}`)}</option>)}
+          </select>
+        </label>
         <div className="seg" role="group" aria-label={t('files.view')}>
           <button className={view === 'grid' ? 'is-on' : ''} aria-pressed={view === 'grid'} aria-label={t('files.grid')} onClick={() => setView('grid')}><Icon name="grid" /></button>
           <button className={view === 'list' ? 'is-on' : ''} aria-pressed={view === 'list'} aria-label={t('files.listView')} onClick={() => setView('list')}><Icon name="list" /></button>
