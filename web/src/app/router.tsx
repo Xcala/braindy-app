@@ -52,6 +52,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Landing /> },
           { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
+          { path: 'brand/docs', element: <Navigate to="/brand/visual" replace /> },
           { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },

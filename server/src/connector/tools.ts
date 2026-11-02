@@ -191,7 +191,7 @@ Ver: ${APP}/plan`;
   server.registerTool('braindy_brand_identity', {
     title: 'Actualizar Mi marca en Braindy App',
     description: 'Updates the brand\'s "Mi marca" page in Braindy App with everything it shows: logos (primary, secondary, icon and other versions), colors, typography, '
-      + 'design concept images, mockups (shown as approved work), tone and voice (essence, archetypes, principles, how it sounds, key language) and strategy. '
+      + 'design concept images, mockups (shown as approved work), tone and voice (essence, archetypes, principles, how it sounds, key language), strategy and Primal Branding. '
       + 'After creating a brand, send all of it in one call. '
       + 'Send only what you have: what is sent replaces what was there, the rest stays. Use right after creating or updating a brand, when Nicolas says '
       + '"actualiza Mi marca", "sube la marca a Braindy App", "pon los logos y colores en Braindy". Prefer SVG or PNG with transparent background for logos.',
@@ -226,6 +226,15 @@ Ver: ${APP}/plan`;
         position: z.string().optional().describe('Positioning in one or two sentences'), audiences: z.string().optional(), goals: z.string().optional(), avoid: z.string().optional(),
         competitors: z.array(z.object({ name: z.string(), promise: z.string().optional(), price: z.string().optional(), url: z.string().optional() })).max(12).optional(),
       }).optional().describe('Brand strategy: only the fields sent change'),
+      primal: z.object({
+        creationStory: z.string().optional().describe('Creation story: where the brand comes from and why'),
+        creed: z.string().optional().describe('Creed: what the brand believes'),
+        icons: z.string().optional().describe('Icons: the symbols people recognise it by'),
+        rituals: z.string().optional().describe('Rituals: repeated moments of contact with the brand'),
+        sacredWords: z.string().optional().describe('Sacred words: its own vocabulary'),
+        nonBelievers: z.string().optional().describe('Non-believers: who and what the brand stands against'),
+        leader: z.string().optional().describe('Leader: the person or idea that leads it'),
+      }).optional().describe('Primal Branding, always first in Essence; one text per piece, lines become separate paragraphs; only the pieces sent change'),
     },
   }, run(async ({ brandId, ...input }) => {
     const name = await requireBrand(brandId);

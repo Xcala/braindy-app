@@ -33,6 +33,8 @@ const savedSort = (): Sort => { try { const s = localStorage.getItem(SORT_KEY) a
 // Drive files keep their own date; files uploaded in Braindy use the upload (or import) time.
 const ms = (v: unknown) => (v && typeof (v as { toMillis?: () => number }).toMillis === 'function' ? (v as { toMillis: () => number }).toMillis() : undefined);
 const PAGE = 48;
+// Off since brand documents left My brand (2026-11-02); set true to bring the pin buttons back.
+const PIN_TO_BRAND = false as boolean;
 // Many folders (Quimiolab has 39) start as three rows; the rest opens on request.
 const FOLDERS_FIRST = 12;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
@@ -75,7 +77,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   // NickMark pins brand documents (brand book, .md, HTML) to My brand from here.
   const identity = useBrandDoc(isAdmin ? brandId : undefined, 'context/identity');
   const pinned = ((identity.data?.documents as BrandFile[] | undefined) ?? []);
-  const pin = isAdmin ? {
+  const pin = PIN_TO_BRAND && isAdmin ? {
     on: (id: string) => pinned.some((d) => d.id === id),
     toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
   } : undefined;

@@ -7,7 +7,7 @@ import { NAV_ICON } from './navIcons';
 
 const ALL_ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
   { to: '/home', label: 'nav.homeShort', icon: NAV_ICON['/home'] },
-  { to: '/brand', label: 'nav.brandShort', icon: NAV_ICON['/brand'] },
+  { to: '/brand/visual', label: 'nav.brandShort', icon: NAV_ICON['/brand'] },
   { to: '/requests', label: 'nav.askShort', fab: true, icon: NAV_ICON['/requests'] },
   { to: '/assets', label: 'nav.deliveriesShort', icon: NAV_ICON['/assets'] },
   { to: '/report', label: 'nav.reportShort', icon: NAV_ICON['/report'] },

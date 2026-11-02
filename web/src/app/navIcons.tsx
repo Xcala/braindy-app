@@ -26,3 +26,5 @@ export const NAV_ICON: Record<string, ReactNode> = {
   collapse: svg(<><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 10l-2 2 2 2" /></>),
   expand: svg(<><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M13 10l2 2-2 2" /></>),
 };
+// My brand opens on Visual.
+NAV_ICON['/brand/visual'] = NAV_ICON['/brand'];

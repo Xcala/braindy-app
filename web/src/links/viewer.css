@@ -1,0 +1,14 @@
+/* Site viewer: a bar on top (title, widths, new tab, close) and the site below, centred, at the chosen width. */
+.lview { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: var(--niebla); }
+.lview-bar { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 16px; background: #fff; border-bottom: 1px solid var(--line); }
+.lview-bar > .col { flex: 1; }
+.lview-bar .btn-sm { height: 36px; }
+.lview-sizes button { height: 30px; }
+@media (max-width: 767px) { .lview-sizes { display: none; } }
+.lview-stage { position: relative; flex: 1; min-height: 0; display: flex; justify-content: center; padding: 16px; overflow: auto; }
+.lview-frame { height: 100%; max-width: 100%; border: 0; border-radius: 16px; background: #fff; box-shadow: 0 18px 50px rgba(11, 18, 32, .14); transition: width .2s ease; }
+@media (max-width: 767px) { .lview-stage { padding: 0; } .lview-frame { border-radius: 0; width: 100% !important; } }
+@media (prefers-reduced-motion: reduce) { .lview-frame { transition: none; } }
+.lview-hint { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; margin: 0; }
+.lview-blocked { align-self: center; max-width: 460px; }
+html[data-theme="dark"] .lview-bar { background: var(--white); }
