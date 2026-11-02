@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName, type BrainState } from '../components/BrainStack';
-import { dayLabel, isOverdue } from '../lib/dates';
+import { dateLabel, dayLabel, isOverdue } from '../lib/dates';
 import { useRequests } from '../requests/useRequests';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { STATUS_CHIP, type BrandRequest, type RequestStatus } from '../requests/types';
@@ -21,6 +21,9 @@ const COL_FIRST = 6;
 const LIST_FIRST = 20;
 type Filter = 'all' | 'to_approve' | 'in_production' | 'done';
 const inFilter = (f: Filter, r: BrandRequest) => f === 'all' || (f === 'done' ? r.status === 'approved' || r.status === 'published' : r.status === f);
+
+/** When the brand asked for it: always shown on every request. */
+const asked = (r: BrandRequest, lang: 'es' | 'en') => dateLabel(r.createdAt?.toDate(), lang);
 
 export function brainState(r: BrandRequest): BrainState {
   return r.status === 'to_approve' ? 'approval' : r.status === 'in_production' ? 'working' : 'idle';
@@ -92,7 +95,8 @@ export function Requests() {
                       onDragStart={isAdmin ? (e) => { setDragId(r.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.id); } : undefined}
                       onDragEnd={() => { setDragId(null); setOverCol(null); }}
                       style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
-                      <span className="w7">{r.title}</span>
+                      <span className="w7" style={{ overflowWrap: 'anywhere' }}>{r.title}</span>
+                      {r.createdAt && <span className="t-xs t-mute">{t('req.requestedOn', { day: asked(r, lang) })}</span>}
                       {r.formatType && r.formatType !== r.title && <span className="t-xs t-mute">{r.formatType}</span>}
                       {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>{t("home.version", { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
                       <div className="row between g8">
@@ -125,12 +129,13 @@ export function Requests() {
             ))}
           </div>
           <div className="table overflow-x-auto">
-            <div className="trow head label min-w-[760px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 200px 110px 200px 140px' }}>
-              <span>{t('req.col.request')}</span><span>{t('req.col.type')}</span><span>{t('req.col.due')}</span><span>{t('req.col.brains')}</span><span>{t('req.col.status')}</span>
+            <div className="trow head label min-w-[880px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 180px 110px 180px 140px' }}>
+              <span>{t('req.col.request')}</span><span>{t('req.col.requested')}</span><span>{t('req.col.type')}</span><span>{t('req.col.due')}</span><span>{t('req.col.brains')}</span><span>{t('req.col.status')}</span>
             </div>
             {list.filter((r) => inFilter(filter, r)).slice(0, listMax).map((r) => (
-              <div key={r.id} className="trow min-w-[760px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 200px 110px 200px 140px', background: r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
+              <div key={r.id} className="trow min-w-[880px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 180px 110px 180px 140px', background: r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
                 <Link to={`/requests/${r.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{r.title}</Link>
+                <span className="t-sm">{asked(r, lang) || '—'}</span>
                 <span className="t-sm truncate">{typeLabel(r)}</span>
                 <span className="t-sm">{r.dueDate ? dayLabel(r.dueDate, lang) : '—'}</span>
                 <span className="t-sm truncate">{t('req.onIt', { brain: brainName(r.leadBrain) })}</span>
@@ -163,7 +168,7 @@ function InMotion({ list, loading }: { list: BrandRequest[]; loading: boolean })
           {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-8 w-8 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
           <span className="col grow min-w-0">
             <span className="w7 truncate">{r.title}</span>
-            <span className="t-xs t-mute truncate">{r.status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : t('req.madeByReviewed')}{r.dueDate ? ` · ${dayLabel(r.dueDate, lang)}` : ''}</span>
+            <span className="t-xs t-mute truncate">{r.createdAt ? `${t('req.requestedOn', { day: asked(r, lang) })} · ` : ''}{r.status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : t('req.madeByReviewed')}{r.dueDate ? ` · ${dayLabel(r.dueDate, lang)}` : ''}</span>
           </span>
           <span className={`chip flex-none ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>
         </Link>
