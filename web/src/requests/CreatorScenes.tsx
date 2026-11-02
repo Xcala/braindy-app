@@ -35,10 +35,10 @@ function Logo({ brand }: { brand: string }) {
       <svg className="sc-logo" viewBox="0 0 200 140">
         <g className="grid">{[40, 70, 100, 130, 160].map((x, k) => <line key={x} x1={x} y1="10" x2={x} y2="130" style={at(k * 0.12)} />)}
           {[30, 70, 110].map((y, k) => <line key={y} x1="20" y1={y} x2="180" y2={y} style={at(0.5 + k * 0.12)} />)}</g>
-        <circle className="guide" cx="86" cy="70" r="40" style={at(0.9)} />
-        <circle className="guide" cx="114" cy="70" r="40" style={at(1.4)} />
-        <path className="mark" pathLength={1} style={at(2.2)} d="M100 37 C 82 50 82 90 100 103 C 118 90 118 50 100 37 Z" />
-        <path className="mark two" pathLength={1} style={at(2.9)} d="M60 70 C 70 46 92 38 100 37 M140 70 C 130 94 108 102 100 103" />
+        <circle className="guide" cx="100" cy="70" r="32" style={at(0.9)} />
+        <circle className="guide" cx="100" cy="70" r="50" style={at(1.4)} />
+        <path className="mark" pathLength={1} style={at(2.2)} d="M124 46 A 32 32 0 1 0 124 94" />
+        <circle className="dot" cx="118" cy="70" r="9" style={at(4)} />
       </svg>
       <span className="sc-word" style={at(5.4)}>{brand.slice(0, 18)}</span>
       <Palette /><Cursor />

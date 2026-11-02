@@ -14,7 +14,7 @@
 .sc-thumb { position: relative; display: flex; flex-direction: column; gap: .8cqw; }
 .sc-thumb > i { display: block; aspect-ratio: 4 / 3; border-radius: 1cqw; background: linear-gradient(135deg, hsl(var(--h) 70% 82%), hsl(calc(var(--h) + 40) 60% 66%)); }
 .sc-thumb > b { display: block; height: 1cqw; border-radius: .5cqw; background: #E3E7EF; width: 90%; } .sc-thumb > b + b { width: 60%; }
-.sc-tag { position: absolute; top: -1cqw; left: -1cqw; font: 700 1.9cqw/1 inherit; font-style: normal; padding: .7cqw 1.2cqw; border-radius: 99px; background: var(--c); color: #1A1200; box-shadow: 0 .6cqw 1.4cqw #0003; animation-name: sc-pop; }
+.sc-tag { white-space: nowrap; position: absolute; top: -1cqw; left: -1cqw; font: 700 1.9cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; padding: .7cqw 1.2cqw; border-radius: 99px; background: var(--c); color: #1A1200; box-shadow: 0 .6cqw 1.4cqw #0003; animation-name: sc-pop; }
 .sc-tag.is-rival { background: #EF4444; color: #fff; } .sc-tag.is-good { background: #10B981; color: #fff; }
 .sc-lens { position: absolute; left: 6%; top: 24%; width: 13cqw; height: 13cqw; border-radius: 50%; border: 1.3cqw solid var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); backdrop-filter: saturate(1.6) contrast(1.1); animation: sc-scan 4s ease-in-out 2.2s both; z-index: 2; }
 .sc-lens::after { content: ""; position: absolute; right: -4cqw; bottom: -2.4cqw; width: 5cqw; height: 1.6cqw; border-radius: 1cqw; background: var(--c); transform: rotate(45deg); }
@@ -31,7 +31,7 @@
 .sc-map .l { left: 2%; top: 50%; transform: translateY(-130%); } .sc-map .r { right: 2%; top: 50%; transform: translateY(-130%); }
 .sc-dot { position: absolute; width: 3cqw; height: 3cqw; margin: -1.5cqw; border-radius: 50%; background: #AAB2C2; animation-name: sc-drop !important; }
 .sc-you { position: absolute; left: 50%; top: 50%; width: 4.4cqw; height: 4.4cqw; margin: -2.2cqw; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1.2cqw color-mix(in srgb, var(--c) 25%, transparent); animation: sc-move 1.4s cubic-bezier(.5,0,.2,1) var(--d) both !important; z-index: 1; }
-.sc-you em { position: absolute; left: 120%; top: 50%; transform: translateY(-50%); white-space: nowrap; font: 800 2.1cqw/1 inherit; font-style: normal; color: var(--c); }
+.sc-you em { position: absolute; left: 50%; bottom: 150%; transform: translateX(-50%); white-space: nowrap; font: 800 2.1cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; color: var(--c); }
 .sc-zone { position: absolute; left: 58%; top: 56%; width: 34%; height: 34%; border-radius: 2cqw; border: .4cqw dashed var(--c); background: color-mix(in srgb, var(--c) 8%, transparent); }
 .sc-goal { position: absolute; right: 4%; top: 14%; width: 34%; display: flex; flex-direction: column; align-items: center; gap: 1.4cqw; font-size: 2.3cqw; animation-name: sc-slide !important; }
 .sc-goal > b { align-self: flex-start; font-size: 2.6cqw; }
@@ -43,7 +43,7 @@
 .sc-w { position: relative; border-radius: 1cqw; border: .35cqw dashed #B7C0D0; animation: sc-draw .6s ease var(--d) both, sc-paint .7s ease var(--f) both !important; display: flex; align-items: center; gap: 1.2cqw; padding: 0 1.4cqw; overflow: hidden; }
 .sc-w.nav { grid-column: 1 / 4; --paint: #fff; } .sc-w.hero-t { grid-column: 1 / 3; flex-direction: column; align-items: flex-start; justify-content: center; --paint: #F3FCFE; }
 .sc-w.hero-i { --paint: linear-gradient(140deg, var(--creator), var(--marketer)); } .sc-w.card { --paint: #EEF8FB; } .sc-w.foot { grid-column: 1 / 4; --paint: #0B0D12; }
-.sc-w .logo { font: 900 1.9cqw/1 inherit; white-space: nowrap; margin-right: auto; }
+.sc-w .logo { font: 900 1.9cqw/1 'Red Hat Display', system-ui, sans-serif; white-space: nowrap; margin-right: auto; }
 .sc-w.nav s { width: 5cqw; height: .9cqw; border-radius: .5cqw; background: #CBD2DE; }
 .sc-w.hero-t b { height: 2.6cqw; width: 80%; border-radius: .6cqw; background: #CBD2DE; animation: sc-ink .5s ease var(--f) both; } .sc-w.hero-t b + b { width: 55%; }
 .sc-w.hero-t s { height: 1.1cqw; width: 70%; border-radius: .5cqw; background: #E3E7EF; margin-top: .6cqw; }
@@ -51,16 +51,16 @@
 .sc-palette { position: absolute; right: 4%; top: 7%; display: flex; flex-direction: column; gap: 1.2cqw; padding: 1.4cqw; border-radius: 1.4cqw; background: #fff; box-shadow: 0 1cqw 3cqw #0B10221A; }
 .sc-palette i { width: 6cqw; height: 6cqw; border-radius: 1cqw; background: var(--creator); animation: sc-pop .35s ease var(--d) both; }
 .sc-palette i:nth-child(2) { background: var(--marketer); } .sc-palette i:nth-child(3) { background: #0B0D12; } .sc-palette i:nth-child(4) { background: #F3FCFE; border: .3cqw solid #E3E7EF; }
-.sc-stage { position: absolute; right: 4%; bottom: 7%; font: 800 2.2cqw/1 inherit; }
+.sc-stage { position: absolute; right: 4%; bottom: 7%; font: 800 2.2cqw/1 'Red Hat Display', system-ui, sans-serif; }
 .sc-stage em { font-style: normal; padding: 1cqw 1.8cqw; border-radius: 99px; background: #E3E7EF; color: #4A5468; display: inline-block; }
 .sc-stage .m { position: absolute; right: 0; top: 0; background: var(--creator); color: #04262E; animation-name: sc-pop !important; }
 .sc-cursor { position: absolute; width: 3.4cqw; fill: #0B0D12; stroke: #fff; stroke-width: 1.2; z-index: 3; animation: sc-cursor 8.6s ease-in-out both; }
 .sc-logo { position: absolute; left: 6%; top: 8%; width: 62%; height: 70%; }
 .sc-logo .grid line { stroke: #D5DAE4; stroke-width: .6; animation: sc-in .4s ease var(--d) both; }
 .sc-logo .guide { fill: none; stroke: color-mix(in srgb, var(--creator) 60%, #fff); stroke-width: .8; stroke-dasharray: 4 3; animation: sc-in .5s ease var(--d) both; }
-.sc-logo .mark { fill: transparent; stroke: #0B0D12; stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 1; animation: sc-trace 1.6s ease var(--d) both, sc-fill .8s ease 4.6s both; }
-.sc-logo .mark.two { animation: sc-trace 1.6s ease var(--d) both; stroke: var(--creator); stroke-width: 3; }
-.sc-word { position: absolute; left: 6%; bottom: 9%; width: 62%; text-align: center; font: 900 4.4cqw/1 inherit; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; }
+.sc-logo .mark { fill: none; stroke: var(--creator); stroke-width: 14; stroke-linecap: round; stroke-dasharray: 1; animation: sc-trace 1.8s ease var(--d) both; }
+.sc-logo .dot { fill: #0B0D12; transform-box: fill-box; transform-origin: center; animation: sc-pop .5s cubic-bezier(.3,1.6,.5,1) var(--d) both; }
+.sc-word { position: absolute; left: 6%; bottom: 9%; width: 62%; text-align: center; font: 900 4.4cqw/1 'Red Hat Display', system-ui, sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; }
 .sc-story { position: absolute; left: 4%; top: 7%; width: 72%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6cqw; }
 .sc-frame { position: relative; aspect-ratio: 9 / 13; border-radius: 1cqw; border: .35cqw solid #0B0D12; background: #fff; overflow: hidden; }
 .sc-frame i { position: absolute; left: 20%; top: 18%; width: 40%; height: 30%; border-radius: 50%; border: .35cqw solid #8A93A6; }
@@ -91,11 +91,11 @@
 .sc-site { position: absolute; right: 4%; top: 18%; width: 31%; height: 56%; border-radius: 1.4cqw; background: #fff; color: var(--ink); overflow: hidden; box-shadow: 0 1.4cqw 4cqw #000A; animation-name: sc-pop !important; }
 .sc-site::after { content: ""; position: absolute; left: 8%; right: 8%; top: 30%; bottom: 28%; border-radius: 1cqw; background: linear-gradient(140deg, var(--creator), var(--marketer)); }
 .sc-site .sc-search { font-size: 1.6cqw; margin-left: .6cqw; }
-.sc-live { position: absolute; right: 6%; bottom: 7%; font: 800 2.3cqw/1 inherit; color: #fff; background: #1F7A4D; padding: 1.2cqw 2cqw; border-radius: 99px; animation: sc-pop .4s cubic-bezier(.3,1.6,.5,1) var(--d, 7.6s) both; z-index: 2; }
+.sc-live { position: absolute; right: 6%; bottom: 7%; font: 800 2.3cqw/1 'Red Hat Display', system-ui, sans-serif; color: #fff; background: #1F7A4D; padding: 1.2cqw 2cqw; border-radius: 99px; animation: sc-pop .4s cubic-bezier(.3,1.6,.5,1) var(--d, 7.6s) both; z-index: 2; }
 .sc-site .sc-live { right: 8%; bottom: 8%; font-size: 1.8cqw; padding: .9cqw 1.4cqw; }
 .sc-files { position: absolute; left: 6%; top: 10%; width: 64%; display: flex; flex-direction: column; gap: 2cqw; }
 .sc-file { display: grid; grid-template-columns: 7cqw 1fr 22% 3cqw; align-items: center; gap: 1.6cqw; padding: 1.4cqw; border-radius: 1.2cqw; background: #141826; font-size: 2.2cqw; }
-.sc-file i { font: 800 1.6cqw/1 inherit; font-style: normal; text-transform: uppercase; text-align: center; padding: 1.2cqw 0; border-radius: .8cqw; background: var(--builder); }
+.sc-file i { font: 800 1.6cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; text-transform: uppercase; text-align: center; padding: 1.2cqw 0; border-radius: .8cqw; background: var(--builder); }
 .sc-file b { font-weight: 600; white-space: nowrap; overflow: hidden; }
 .sc-file s { display: block; height: 1cqw; border-radius: .5cqw; background: var(--builder); transform-origin: left; animation: sc-grow-x .8s ease var(--d) both; }
 .sc-file em { font-style: normal; color: #34D399; font-weight: 900; animation-name: sc-pop !important; }
@@ -113,7 +113,6 @@
 @keyframes sc-ink { to { background: #0B0D12; } }
 @keyframes sc-cta { to { background: var(--creator); } }
 @keyframes sc-trace { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes sc-fill { to { fill: #0B0D12; } }
 @keyframes sc-play { from { left: 2%; } to { left: 96%; } }
 @keyframes sc-cursor { 0% { left: 10%; top: 12%; } 15% { left: 60%; top: 20%; } 30% { left: 40%; top: 55%; } 42% { left: 88%; top: 18%; } 50% { left: 88%; top: 30%; } 65% { left: 30%; top: 40%; } 80% { left: 55%; top: 78%; } 100% { left: 80%; top: 88%; } }
 @media (prefers-reduced-motion: reduce) { .sc *, .sc *::before, .sc *::after { animation-duration: 0s !important; animation-delay: 0s !important; } }
