@@ -7,6 +7,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { notifyDelivery } from './review.js';
+import { noticeToBrand } from './wa/notices.js';
 import { proposePlan } from './brains/plan.js';
 import { recordLearning } from './brains/learn.js';
 import type { AuthEnv } from './auth.js';
@@ -105,7 +106,7 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
     dueDate: str(b.dueDate, 20) || null, format: str(b.format, 160), language: str(b.language, 60) || guessLanguage(str(cards.product?.text, 4000)),
     status: 'in_production', stage: 'plan',
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',
-    plan: null, versionCount: 0, createdBy: uid, createdAt: now(), updatedAt: now(),
+    plan: null, versionCount: 0, source: str(b.source, 20) || 'app', createdBy: uid, createdAt: now(), updatedAt: now(),
   });
   // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
   await proposePlan(brandId, ref.id).catch(() => null);
@@ -128,6 +129,7 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   batch.set(db.collection('audit').doc(), { type: 'approval', brandId, requestId, versionId, state, by: uid, at: now() });
   await batch.commit();
   await recordLearning(brandId, requestId, versionId, state, note);
+  if (state === 'approved') await noticeToBrand(brandId, 'approved', requestId);
   return 'ok';
 }
 
@@ -250,5 +252,6 @@ export async function publishVersion(brandId: string, requestId: string, version
 adminRequests.post('/brands/:brandId/requests/:requestId/published', async (c) => {
   const { brandId, requestId } = c.req.param();
   await db.doc(`brands/${brandId}/requests/${requestId}`).update({ status: 'published', stage: 'published', publishedAt: now(), updatedAt: now() });
+  await noticeToBrand(brandId, 'published', requestId);
   return c.json({ ok: true });
 });

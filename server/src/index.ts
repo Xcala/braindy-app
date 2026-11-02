@@ -29,6 +29,8 @@ import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
 import { whatsappWebhook } from './wa/webhook.js';
+import { meWhatsapp } from './wa/contacts.js';
+import { adminWhatsapp } from './wa/admin.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
@@ -98,6 +100,8 @@ app.get('/v1/me', async (c) => {
 });
 
 app.route('/v1', files);
+app.route('/v1', meWhatsapp);
+app.route('/v1/admin', adminWhatsapp);
 app.route('/v1', fileOps);
 app.route('/v1', search);
 app.route('/v1/admin', adminProposals);
