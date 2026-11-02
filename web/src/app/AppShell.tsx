@@ -11,19 +11,9 @@ import { AccountMenu } from './AccountSheet';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
+import { NAV } from './navGroups';
+import { SubNav } from './SubNav';
 
-const TABS: Array<{ to: string; label: StringKey }> = [
-  { to: '/home', label: 'nav.home' },
-  { to: '/brand', label: 'nav.brand' },
-  { to: '/requests', label: 'nav.requests' },
-  { to: '/assets', label: 'nav.assets' },
-  { to: '/apps', label: 'nav.apps' },
-  { to: '/research', label: 'nav.research' },
-  { to: '/report', label: 'nav.report' },
-  { to: '/learn', label: 'cr.nav' },
-  { to: '/accesses', label: 'nav.accesses' },
-  { to: '/plan', label: 'nav.plan' },
-];
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/today', label: 'today.title' },
   { to: '/admin/studio', label: 'st.nav' },
@@ -75,7 +65,7 @@ export function AppShell() {
         </nav>
         </div>
         <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
-          <SectionGate><Outlet /></SectionGate>
+          <SectionGate>{!adminSpace && <SubNav />}<Outlet /></SectionGate>
         </main>
         {!adminSpace && <BottomNav />}
       </div>
@@ -84,11 +74,17 @@ export function AppShell() {
   );
 }
 
-/** Client tabs, only the sections this person may use on the current brand. */
+/** Client tabs (five, see navGroups), only the ones with a page this person may use; each opens its first allowed page. */
 function ClientTabs() {
   const { t } = useI18n();
   const { can } = useMySections();
-  return <>{TABS.filter((tab) => can(sectionOfPath(tab.to))).map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} />)}</>;
+  const { pathname } = useLocation();
+  return <>{NAV.map((g) => {
+    const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
+    if (!pages.length) return null;
+    const on = g.pages.some((p) => pathname === p.to || pathname.startsWith(`${p.to}/`));
+    return <Tab key={g.label} to={pages[0]!.to} label={t(g.label)} on={on} />;
+  })}</>;
 }
 
 /** A closed section sends the person back home (the rules and the API block its data anyway). */
@@ -99,9 +95,9 @@ function SectionGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
+function Tab({ to, label, admin, on }: { to: string; label: string; admin?: boolean; on?: boolean }) {
   return (
-    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
+    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${on ?? isActive ? 'is-active' : ''}`}>
       {label}
     </NavLink>
   );

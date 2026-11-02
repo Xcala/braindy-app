@@ -61,8 +61,6 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
     ...groups.map((g) => ({ onClick: () => window.open(g.url, '_blank', 'noopener'), icon: I.group, label: 'set.group' as StringKey, text: g.name || undefined, value: t('set.groupOpen') })),
   ] as Row[]).filter((r) => ok(r) && (!r.to?.includes('billing') || can('billing')));
   const more = ([
-    { to: '/research', icon: I.research, label: 'nav.research' },
-    { to: '/report', icon: I.report, label: 'nav.report' },
     { to: '/learn', icon: I.learn, label: 'cr.nav' },
   ] as Row[]).filter(ok);
   const account: Row[] = [

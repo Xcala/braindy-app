@@ -482,6 +482,8 @@ p{margin:0}
 .seg.seg-scroll{display:flex;max-width:100%;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap;align-self:flex-start}
 .seg.seg-scroll::-webkit-scrollbar{display:none}
 .seg.seg-scroll button{flex:none;white-space:nowrap}
+.seg a{height:36px;padding:0 16px;border-radius:999px;font:700 13px/16px var(--f-text);color:var(--graphite);display:inline-flex;align-items:center;text-decoration:none;flex:none;white-space:nowrap}
+.seg a.is-on{background:#fff;color:var(--ink);box-shadow:var(--sh-1)}
 /* Design concept slides: tap opens them full screen */
 .dc-shot{position:relative;display:block;width:100%;padding:0;border:0;background:#fff;cursor:zoom-in}
 .dc-img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#fff}
@@ -576,7 +578,7 @@ html[data-theme="dark"]{color-scheme:dark;
 html[data-theme="dark"] body{background:#0B1020}
 html[data-theme="dark"] a{color:#8FA0FF}
 html[data-theme="dark"] .app:not(.night){background:radial-gradient(38% 520px at 8% 0,rgba(244,200,202,.10),transparent 70%),radial-gradient(34% 480px at 92% 0,rgba(42,127,255,.16),transparent 70%),radial-gradient(40% 460px at 55% 0,rgba(167,139,250,.12),transparent 70%),var(--niebla)}
-html[data-theme="dark"] :is(.card,.btn-secondary,.btn-google,.input,.sel,.tile,.folder,.list,.linkbox,.upl,.modal,.table,.copybtn,.kbd,.anchors a,.deck,.partner,.qcopy,.check,.dc-shot,.dc-img,.acct-list,.acct-back,.notif-panel,.cmdk,.menu,.seg button.is-on,.lang button.is-on,.acc-table .acc-row,.acc-table > p,.setnav .menu-item){background:var(--white)!important;color:var(--ink)}
+html[data-theme="dark"] :is(.card,.btn-secondary,.btn-google,.input,.sel,.tile,.folder,.list,.linkbox,.upl,.modal,.table,.copybtn,.kbd,.anchors a,.deck,.partner,.qcopy,.check,.dc-shot,.dc-img,.acct-list,.acct-back,.notif-panel,.cmdk,.menu,.seg button.is-on,.seg a.is-on,.lang button.is-on,.acc-table .acc-row,.acc-table > p,.setnav .menu-item){background:var(--white)!important;color:var(--ink)}
 html[data-theme="dark"] :is(.topbar,.mhead,.stickybar){background:var(--g-spec),rgba(11,16,32,.72)}
 html[data-theme="dark"] .tabs{background:rgba(11,16,32,.5);border-bottom-color:rgba(255,255,255,.06)}
 html[data-theme="dark"] .bnav{background:var(--g-spec),rgba(14,19,34,.86);box-shadow:0 -8px 30px rgba(0,0,0,.4)}

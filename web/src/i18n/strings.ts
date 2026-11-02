@@ -21,9 +21,10 @@ import { brandEditEn, brandEditEs } from './brandEditStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
+  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps',
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
-  'nav.requests': 'My requests',
+  'nav.requests': 'Requests',
   'nav.accesses': 'Connectors',
   'nav.brands': 'Brands',
   'nav.team': 'Team',
@@ -204,9 +205,10 @@ export type StringKey = keyof typeof en;
 
 const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.brand': 'Mi marca',
+  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps',
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
-  'nav.requests': 'Mis solicitudes',
+  'nav.requests': 'Pedidos',
   'nav.accesses': 'Conectores',
   'nav.brands': 'Marcas',
   'nav.team': 'Equipo',
