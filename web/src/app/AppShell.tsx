@@ -41,7 +41,7 @@ export function AppShell() {
       <div className="flex min-h-full">
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="flex min-h-full min-w-0 flex-1 flex-col">
-        <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', gap: 8 }}>
+        <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', paddingTop: 'max(8px, env(safe-area-inset-top))', gap: 8 }}>
           <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
           <div className="vsep hidden sm:block md:hidden" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
