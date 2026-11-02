@@ -7,7 +7,7 @@ export type LinkSection = 'apps' | 'research';
 export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';
 export interface BrandLink {
   id: string; section: LinkSection; kind: LinkKind; title: string; url: string;
-  description?: string; status?: 'live' | 'building'; ogImage?: string | null; createdAt?: Timestamp; updatedAt?: Timestamp;
+  description?: string; status?: 'live' | 'building'; ogImage?: string | null; /** Whether the site lets the app show it inside (null or missing: not checked yet). */ embeddable?: boolean | null; createdAt?: Timestamp; updatedAt?: Timestamp;
 }
 export type LinkInput = Pick<BrandLink, 'kind' | 'title' | 'url' | 'description' | 'status'>;
 
