@@ -13,7 +13,7 @@ export function SelectionBar({ actions, pageIds, folders, admin }: { actions: Fi
   const ids = [...actions.picked];
   if (!ids.length) {
     return pageIds.length > 0
-      ? <button type="button" className="t-xs w7 self-start" style={{ color: 'var(--azul)' }} onClick={() => actions.setPicked(new Set(pageIds))}>{t('files.selectAll')}</button>
+      ? <p className="t-xs t-mute row g8 wrap" style={{ margin: 0 }}><button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => actions.setPicked(new Set(pageIds))}>{t('files.selectAll')}</button><span className="fx-hint">{t('files.rangeHint')}</span></p>
       : null;
   }
   return (
@@ -31,7 +31,7 @@ export function SelectionBar({ actions, pageIds, folders, admin }: { actions: Fi
       )}
       {admin && (
         <button type="button" className="btn btn-danger btn-sm" disabled={actions.busy}
-          onClick={() => window.confirm(t('files.deleteSelConfirm', { n: String(ids.length) })) && actions.trash(ids)}>
+          onClick={() => actions.setAsk({ kind: 'trash', ids })}>
           <Icon name="trash" size={14} /> {t('files.toTrash')}
         </button>
       )}

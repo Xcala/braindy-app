@@ -10,13 +10,13 @@ const date = (ms?: number, lang = 'en') =>
 /** NickMark only: pin a file to the brand documents in My brand. */
 export type Pin = { on: (id: string) => boolean; toggle: (f: FileItem) => void };
 /** Files ticked for a bulk action (.zip for everyone; move and trash for NickMark). */
-export type Sel = { on: (id: string) => boolean; toggle: (id: string) => void };
+export type Sel = { on: (id: string) => boolean; toggle: (id: string, range?: boolean) => void };
 
 function Check({ sel, f, style }: { sel: Sel; f: FileItem; style?: CSSProperties }) {
   const { t } = useI18n();
   return (
     <label className="fx-check" style={style} onClick={(e) => e.stopPropagation()}>
-      <input type="checkbox" checked={sel.on(f.id)} onChange={() => sel.toggle(f.id)} aria-label={`${t('files.select')} ${f.title}`} />
+      <input type="checkbox" checked={sel.on(f.id)} onChange={(e) => sel.toggle(f.id, (e.nativeEvent as MouseEvent).shiftKey)} aria-label={`${t('files.select')} ${f.title}`} />
     </label>
   );
 }

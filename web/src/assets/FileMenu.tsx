@@ -23,10 +23,10 @@ export function FileMenu({ f, actions, style }: { f: FileItem; actions: FileActi
     return () => { document.removeEventListener('mousedown', off); document.removeEventListener('keydown', off); window.removeEventListener('scroll', close, true); };
   }, [open]);
   const items: Array<[IconName, string, () => void, boolean?]> = [
-    ['pencil', t('files.rename'), () => actions.rename(f)],
+    ['pencil', t('files.rename'), () => actions.setAsk({ kind: 'rename', f })],
     ['link', t('files.share'), () => actions.share(f)],
     ['folder', t('files.move'), () => actions.setPicked(new Set([f.id]))],
-    ['trash', t('files.toTrash'), () => window.confirm(t('files.deleteConfirm', { name: f.title })) && actions.trash([f.id]), true],
+    ['trash', t('files.toTrash'), () => actions.setAsk({ kind: 'trash', ids: [f.id], name: f.title }), true],
   ];
   return (
     <span ref={box} style={{ position: 'relative', ...style }} onClick={(e) => e.stopPropagation()}>

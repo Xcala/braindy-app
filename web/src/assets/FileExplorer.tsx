@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type DragEvent } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -19,6 +19,8 @@ import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolba
 import { useFileActions } from './useFileActions';
 import { FileMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
+import { FileDialogs } from './FileDialogs';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { TrashView } from './TrashView';
 import { UploadButton, UploadStatus } from './UploadButton';
 import { useUploader } from './useUploader';
@@ -59,6 +61,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [allFolders, setAllFolders] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [hideAsk, setHideAsk] = useState(false);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -79,6 +82,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const actions = useFileActions(brandId, brandName);
   const menu = isAdmin ? (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} /> : undefined;
   const dropUp = useUploader(brandId);
+  const closeHide = useCallback(() => setHideAsk(false), []);
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
@@ -111,6 +115,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
   const page = shown.slice(0, limit);
+  const sel = actions.selIn(page.map((f) => f.id));
   const copies = isAdmin && !searchingAll ? repeatedCopies(files) : [];
   const thumbs = useThumbs(brandId, view === 'grid' ? page.filter((f) => kindOf(f) === 'image' && previewKind(f.contentType)).map((f) => f.id) : []);
   useEffect(() => {
@@ -128,7 +133,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   } : {};
 
   return (
-    <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'hidden', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
+    <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'clip', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
       <ExplorerToolbar brandName={brandName} path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
         filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView}
         actions={canDrop ? <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary /> : undefined} />
@@ -144,7 +149,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
                   {tops.length > 0 && <>
                     {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
                     {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
-                    {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => window.confirm(t('fa.hideAllConfirm')) && share.hideAll().catch(() => setShareError(true))}>{t('fa.hideAll')}</button>}
+                    {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setHideAsk(true)}>{t('fa.hideAll')}</button>}
                   </>}
                   <button type="button" className="t-xs w7 row g4" style={{ color: 'var(--ink)' }} onClick={() => setTrashOpen(true)}><Icon name="trash" size={14} />{t('files.trash')}</button>
                 </span>
@@ -173,15 +178,14 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
             </div>
           )}
           {(page.length > 0 || actions.picked.size > 0) && <SelectionBar actions={actions} pageIds={page.map((f) => f.id)} folders={moveTargets} admin={isAdmin} />}
-          {actions.note && <p role={actions.note.ok ? 'status' : 'alert'} className="t-sm" style={{ color: actions.note.ok ? 'var(--success)' : 'var(--danger)', margin: 0 }}>{actions.note.text}</p>}
           {index.loading ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' && !searchingAll ? (
-            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} menu={menu} sel={actions.sel} />
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} menu={menu} sel={sel} />
           ) : (
-            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} menu={menu} sel={actions.sel} onFolder={searchingAll ? goFolder : undefined} />
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} menu={menu} sel={sel} onFolder={searchingAll ? goFolder : undefined} />
           )}
           {shown.length > limit && (
             <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>
@@ -192,6 +196,11 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
         </>}
       </div>
       {preview && <Preview brandId={brandId} file={preview} onClose={() => setPreview(null)} />}
+      <FileDialogs actions={actions} />
+      {hideAsk && (
+        <ConfirmDialog title={t('fa.hideAll')} confirmLabel={t('fa.hideAll')} onCancel={closeHide}
+          onConfirm={() => { setHideAsk(false); share.hideAll().catch(() => setShareError(true)); }}>{t('fa.hideAllConfirm')}</ConfirmDialog>
+      )}
     </section>
   );
 }
