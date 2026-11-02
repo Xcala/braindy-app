@@ -7,7 +7,7 @@ import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 
 
 /** In Mi plan · The design plan being billed (subscription or project, with its status and next charge) and the full website hosting offer with the current plan outlined. */
-export function Subscription({ current }: { current: Brand }) {
+export function Subscription({ current, part }: { current: Brand; part: 'design' | 'hosting' }) {
   const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
   const { plan } = useBilling(current?.id);
@@ -16,6 +16,7 @@ export function Subscription({ current }: { current: Brand }) {
   const next = plan?.nextChargeAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', day: 'numeric' });
   const services = design ? [...(design.path === 'launch' ? [] : ['bill.s.social', 'bill.s.web', 'bill.s.report'] as const), ...((design.addons ?? []).includes('agents') ? ['bill.s.agents'] as const : [])] : [];
 
+  if (part === 'hosting') return <HostingPlans current={plan?.hosting} brandName={current.name} />;
   return (
     <div className="col g24">
 
@@ -42,8 +43,6 @@ export function Subscription({ current }: { current: Brand }) {
             <a className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }} href={wa(t('plan.design'))} target="_blank" rel="noreferrer">{t('plan.talk')}</a></div>
         )}
       </section>
-
-      <HostingPlans current={plan?.hosting} brandName={current.name} />
     </div>
   );
 }

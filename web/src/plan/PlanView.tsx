@@ -12,7 +12,16 @@ import type { BrandPlan, PackStatus, StackItem } from './types';
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
+export type PlanTab = 'summary' | 'schedule' | 'site' | 'payments';
+
 export interface PlanViewProps {
+  /** Which tab is open; the summary header stays on top of every tab. */
+  tab: PlanTab;
+  /** The tab switch, rendered right under the header. */
+  tabs: ReactNode;
+  /** Extra content for the site tab (hosting plans) and the payments tab (design plan). */
+  site?: ReactNode;
+  payments?: ReactNode;
   brandName: string;
   plan: BrandPlan | null;
   /** Third-party apps the brand runs on. */
@@ -26,8 +35,9 @@ export interface PlanViewProps {
   onTick?: (id: string, done: boolean) => void;
 }
 
-/** Mi plan, top to bottom: summary, the contract, what was contracted, the schedule by week, the kickoff checklist, the website after, the apps it runs on. */
-export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+/** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
+ *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
+export function PlanView({ tab, tabs, site, payments, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -57,9 +67,10 @@ export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, 
           {t('plan.signature').split('Brains').flatMap((part, i) => (i ? [<span key={i}>Br<b className="w9">ai</b>ns</span>, part] : [part]))}
         </p>
       </header>
-      {contract}
-      {plan && <Packs c={plan} onStatus={onPackStatus} />}
-      {schedule && (
+      {tabs}
+      {tab === 'summary' && contract}
+      {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
+      {tab === 'schedule' && schedule && (
         <section className="col g16" aria-labelledby="plan-gantt">
           <div className="col g4">
             <p className="label">{t('plan.b2')}</p>
@@ -70,7 +81,7 @@ export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, 
           <Gantt schedule={schedule} onStatus={onRowStatus} />
         </section>
       )}
-      {kickoff && kickoff.items.length > 0 && (
+      {tab === 'schedule' && kickoff && kickoff.items.length > 0 && (
         <section className="card card-tight col g12" aria-labelledby="plan-kickoff">
           <div className="row g8" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <div className="col g4"><p className="label">{t('plan.bKickoff')}</p><h2 id="plan-kickoff" className="h2">{t('ctr.checklist')}</h2></div>
@@ -80,8 +91,10 @@ export function PlanView({ brandName, plan, stack, contract, schedule, kickoff, 
           <Checklist items={kickoff.items} start={kickoff.start} onToggle={onTick} />
         </section>
       )}
-      {plan && <CareBlock c={plan} />}
-      {stack && <Stack items={stack} />}
+      {tab === 'site' && plan && <CareBlock c={plan} />}
+      {tab === 'site' && stack && <Stack items={stack} />}
+      {tab === 'site' && site}
+      {tab === 'payments' && payments}
     </div>
   );
 }

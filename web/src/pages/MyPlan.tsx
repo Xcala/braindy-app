@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { contractsApi } from '../contracts/api';
 import type { StackItem } from '../plan/types';
 import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/types';
-import { PlanView } from '../plan/PlanView';
+import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
 import { AdminPlan } from '../plan/AdminPlan';
 import { Subscription } from '../plan/Subscription';
@@ -26,6 +26,7 @@ export function MyPlan() {
   const kickoff = useBrandDoc(current?.id, 'context/kickoff').data as { start: string; items: ChecklistItem[] } | null;
   const stack = (useBrandDoc(current?.id, 'billing/stack').data as { items?: StackItem[] } | null)?.items ?? null;
   const admin = profile?.role === 'admin';
+  const [params, setParams] = useSearchParams();
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (plan === undefined || (contractId && contractDoc.loading)) return <p className="t-mute">{t('common.loading')}…</p>;
 
@@ -41,17 +42,27 @@ export function MyPlan() {
     void (editable === 'live' ? contractsApi.saveSchedule(id, next) : contractsApi.save(id, contract!.id, { schedule: next }));
   }
 
+  // Tabs instead of one long page; the schedule tab only when there is a schedule or a kickoff checklist.
+  const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'site', 'payments'];
+  const asked = params.get('tab') as PlanTab | null;
+  const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
+  const switcher = (
+    <nav className="seg seg-scroll" aria-label={t('plan.title')}>
+      {tabs.map((k) => <button key={k} type="button" className={tab === k ? 'is-on' : ''} aria-pressed={tab === k} onClick={() => setParams(k === 'summary' ? {} : { tab: k }, { replace: true })}>{t(`plan.tab.${k}`)}</button>)}
+    </nav>
+  );
+
   return (
     <div className="col g32">
-      <PlanView brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
+      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />}
+        payments={<div className="col g16"><Subscription current={current} part="design" /><p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p></div>}
+        brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
         contract={<ContractCard brandId={id} contract={contract} />}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
       {!plan && !schedule && !stack?.length && <div className="card t-mute">{t('plan.empty')}</div>}
-      <Subscription current={current} />
-      <p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p>
-      {admin && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
+      {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
     </div>
   );
 }

@@ -35,6 +35,13 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
   const [tab, setTab] = useState<'web' | 'ent'>('web');
   const [cur, setCur] = useState<Cur>(lang === 'es' ? 'cop' : 'usd');
   const [bill, setBill] = useState<Bill>('m');
+  // The plans stay in view; add-ons, the comparison and the questions open on request so Mi plan stays short.
+  const [more, setMore] = useState(false);
+  const moreBtn = (
+    <button type="button" className="btn btn-secondary btn-sm" style={{ alignSelf: 'center' }} aria-expanded={more} onClick={() => setMore((m) => !m)}>
+      {more ? L(['Ver menos', 'See less']) : L(['Ver complementos, comparación y preguntas', 'See add-ons, comparison and questions'])}
+    </button>
+  );
   const ref = useLadder(`${tab}${cur}${bill}${lang}`);
 
   return (
@@ -72,6 +79,8 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
               </Plan>
             ))}
           </div>
+          {moreBtn}
+          {more && <>
           <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus two>
             <Featured cur={cur} brandName={brandName} />
           </PriceCards>
@@ -81,6 +90,7 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
             <h3>{L(['¿Ya tienes ', 'Already have a '])}<b>{L(['fee mensual de agencia', 'monthly agency fee'])}</b>{L([' con Braindy?', ' with Braindy?'])}</h3>
             <p>{L(['Entonces ', 'Then '])}<b>{L(['nosotros nos encargamos de todo', 'we take care of everything'])}</b>{L([': diseño, montaje, páginas nuevas y cambios de contenido, dentro de tu fee. El plan de hosting se paga aparte del fee: cubre que el sitio esté en línea, rápido y seguro, sin importar quién edite.', ': design, build, new pages and content changes, within your fee. Hosting is paid apart from the fee: it keeps the site online, fast and secure, no matter who edits.'])}</p>
           </aside>
+          </>}
         </div>
       ) : (
         <div className="hp-panel" role="tabpanel">
@@ -96,13 +106,12 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
               </Plan>
             ))}
           </div>
-          <PriceCards title={[['Módulos ', 'Development '], ['de desarrollo', 'modules']]} lead={['Se suman a cualquier plan Enterprise. El valor mensual cubre operación, infraestructura y soporte del módulo. El desarrollo inicial se cotiza una vez, según lo que necesites.', 'They add to any Enterprise plan. The monthly fee covers the module’s operation, infrastructure and support. The initial build is quoted once, based on what you need.']} items={MODULES} cur={cur} />
+          {moreBtn}
+          {more && <PriceCards title={[['Módulos ', 'Development '], ['de desarrollo', 'modules']]} lead={['Se suman a cualquier plan Enterprise. El valor mensual cubre operación, infraestructura y soporte del módulo. El desarrollo inicial se cotiza una vez, según lo que necesites.', 'They add to any Enterprise plan. The monthly fee covers the module’s operation, infrastructure and support. The initial build is quoted once, based on what you need.']} items={MODULES} cur={cur} />}
         </div>
       )}
 
-      <Glossary />
-      <Faq />
-      <Tech />
+      {more && <><Glossary /><Faq /><Tech /></>}
       <Sign />
     </div>
   );
