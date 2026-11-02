@@ -40,13 +40,14 @@ export function SummaryIntro({ brand }: { brand: Brand }) {
             <div style={{ padding: 10 }}><span className="ex-pill ex-ok"><span className="ex-dot" /> {L(['En vivo', 'Live'])}</span></div></div></div>
           <div className="ex-layer ex-b5"><div className="col g8" style={{ alignItems: 'center' }}><div className="sm-shield" style={{ background: kit.c1 }}>✓</div><span className="ex-pill">{L(['Cuidado mensual', 'Monthly care'])}</span></div></div>
           <div className="sm-track"><b style={{ background: kit.c1 }} />{[0, 25, 50, 75, 100].map((x, i) => <i key={x} className={i ? `ex-f${i + 1}` : ''} style={{ left: `${x}%`, borderColor: kit.c1 }} />)}</div>
-        </>} />
-      <ExampleRow title={L(['Todo tu proyecto en un lugar', 'Your whole project in one place'])} items={[
+        </>}>
+        <ExampleRow title={L(['Todo tu proyecto en un lugar', 'Your whole project in one place'])} items={[
         { key: 'c', label: L(['Contrato', 'Contract']), note: L(['Lo firmas y lo descargas', 'Sign it and download it']), art: <div className="ex-card ex-art-doc"><Logo kit={kit} /><Lines w={[90, 60, 75]} /><span className="ex-pill ex-ok" style={{ justifySelf: 'start', padding: '4px 7px' }}>✓ PDF</span></div> },
         { key: 'g', label: L(['Cronograma', 'Schedule']), note: L(['Semana a semana', 'Week by week']), art: <div className="ex-card sm-gantt" style={{ width: 140 }}>{[[0, 50, kit.c1], [30, 50, kit.c3], [60, 40, kit.c2]].map(([l, w, c], i) => <div key={i}><span>S{i + 1}</span><span><i style={{ marginLeft: `${l}%`, width: `${w}%`, background: c as string, animation: 'none' }} /></span></div>)}</div> },
         { key: 'd', label: L(['Entregas', 'Deliveries']), note: L(['Con versiones y ajustes', 'With versions and changes']), art: <div className="sm-thumbs">{[kit.c2, kit.c1].map((c, i) => <div key={i} style={{ background: c, width: 56, height: 70 }}><span className="ex-pill" style={{ padding: '3px 6px' }}>v{i + 1}</span></div>)}</div> },
         { key: 'k', label: L(['Lista de arranque', 'Kickoff checklist']), note: L(['Lo que necesitamos de ti', 'What we need from you']), art: <div className="ex-card ex-art-check">{[L(['Accesos', 'Access']), L(['Logo', 'Logo']), L(['Fotos', 'Photos'])].map((x, i) => <span key={x}><i className={i < 2 ? 'on' : ''}>{i < 2 ? '✓' : ''}</i>{x}</span>)}</div> },
       ]} />
+      </Explainer>
     </div>
   );
 }
@@ -80,13 +81,14 @@ export function SiteIntro({ brand }: { brand: Brand }) {
           <span className="st-cursor">👆</span>
           <span className="st-btn st-publish ex-b4">{L(['Publicar', 'Publish'])} ✓</span>
           <div className="st-status"><div className="ex-f5 row g8"><span className="ex-pill ex-ok"><span className="ex-dot" /> {L(['En línea', 'Online'])}</span><span className="ex-pill">⚡ {L(['Rápido', 'Fast'])}</span><span className="ex-pill">🔒 {L(['Seguro', 'Secure'])}</span></div></div>
-        </>} />
-      <ExampleRow title={L(['Lo que tu equipo puede hacer', 'What your team can do'])} items={[
+        </>}>
+        <ExampleRow title={L(['Lo que tu equipo puede hacer', 'What your team can do'])} items={[
         { key: 't', label: L(['Cambiar textos', 'Change text']), note: L(['Clic y escribe', 'Click and type']), art: <div className="ex-card ex-art-doc" style={{ fontFamily: ff }}><b style={{ fontSize: 13, outline: `2px dashed ${kit.c1}`, outlineOffset: 3, borderRadius: 4 }}>{L(['Tu titular', 'Your headline'])}</b><Lines w={[90, 70]} /></div> },
         { key: 'p', label: L(['Cambiar fotos', 'Change photos']), note: L(['Sube y encuadra', 'Upload and crop']), art: <div className="ex-card" style={{ width: 120, height: 90, display: 'grid', placeItems: 'center', background: `linear-gradient(135deg, ${kit.c1}, ${kit.c3})`, color: '#fff', fontSize: 26 }}>⤒</div> },
         { key: 'w', label: L(['Botones a WhatsApp', 'WhatsApp buttons']), note: L(['O a donde quieras', 'Or anywhere you want']), art: <span className="st-btn" style={{ background: '#25D366', color: '#fff', fontSize: 13, padding: '10px 16px' }}>WhatsApp →</span> },
         { key: 's', label: L(['Ver el estado', 'See its status']), note: L(['Siempre a la vista', 'Always in view']), art: <span className="ex-pill ex-ok" style={{ fontSize: 13, padding: '9px 14px' }}><span className="ex-dot" /> {L(['En línea', 'Online'])}</span> },
       ]} />
+      </Explainer>
     </div>
   );
 }
@@ -116,13 +118,14 @@ export function PaymentsIntro({ brand }: { brand: Brand }) {
           </div></div>
           <div className="py-mail ex-b4"><span className="ex-pill">✉️ {L(['Comprobante en tu correo', 'Receipt in your email'])}</span></div>
           <div className="ex-card py-cal ex-f5"><b style={{ background: kit.c1 }}>{L(['Próximo cobro', 'Next charge'])}</b><strong>1</strong><small>{L(['del próximo mes', 'of next month'])}</small></div>
-        </>} />
-      <ExampleRow title={L(['Así puedes pagar', 'How you can pay'])} items={[
+        </>}>
+        <ExampleRow title={L(['Así puedes pagar', 'How you can pay'])} items={[
         { key: 'c', label: L(['Tarjeta', 'Card']), note: L(['En la página segura del proveedor', 'On the provider’s secure page']), art: <div className="ex-art-cc" style={{ background: `linear-gradient(135deg, ${kit.c2}, ${kit.c1})` }}><i /><span>•••• 4242</span></div> },
         { key: 't', label: L(['Transferencia', 'Bank transfer']), note: L(['Pegas la referencia y la confirmamos', 'Paste the reference and we confirm it']), art: <div className="ex-card ex-art-doc"><span className="t-xs w7">🏦 {L(['Referencia', 'Reference'])}</span><Lines w={[90]} /><span className="ex-pill ex-ok" style={{ justifySelf: 'start', padding: '4px 7px' }}>✓ &lt; 24 h</span></div> },
         { key: 'r', label: L(['Comprobante', 'Receipt']), note: L(['Llega a tu correo', 'Arrives in your email']), art: <div className="ex-card ex-art-doc"><Logo kit={kit} /><Lines w={[80, 60, 70]} /><span className="t-xs w7" style={{ color: '#1F9D5C' }}>✓ {L(['Pagado', 'Paid'])}</span></div> },
         { key: 'n', label: L(['Próximo cobro', 'Next charge']), note: L(['Siempre a la vista', 'Always in view']), art: <div className="ex-card py-cal" style={{ position: 'static' }}><b style={{ background: kit.c1 }}>{L(['Próximo', 'Next'])}</b><strong>1</strong><small>{L(['del mes', 'of the month'])}</small></div> },
       ]} />
+      </Explainer>
     </div>
   );
 }

@@ -23,8 +23,8 @@ export const fontOf = (k: Kit) => (k.font ? `'${k.font}', var(--f-text)` : undef
  * The top of a Mi plan tab: a label, a two-part title, one line, then an animated stage (10 s loop, five 2 s beats)
  * next to the five steps it tells, each lit in turn.
  */
-export function Explainer({ label, title, strong, lead, stage, steps }: {
-  label: string; title: string; strong: string; lead?: string; stage: ReactNode; steps: Array<[string, string]>;
+export function Explainer({ label, title, strong, lead, stage, steps, children }: {
+  label: string; title: string; strong: string; lead?: string; stage: ReactNode; steps: Array<[string, string]>; children?: ReactNode;
 }) {
   return (
     <section className="bp-how card" aria-label={`${title}${strong}`}>
@@ -39,26 +39,24 @@ export function Explainer({ label, title, strong, lead, stage, steps }: {
           {steps.map(([t, body], i) => <li key={t} style={{ animationDelay: `${i * 2}s` }}><b><span>{i + 1}</span>{t}</b><small>{body}</small></li>)}
         </ol>
       </div>
+      {children}
     </section>
   );
 }
 
-/** A row of small illustrated cards under an explainer. */
-export function ExampleRow({ title, sub, items }: { title: string; sub?: string; items: Array<{ key: string; label: string; note: string; art: ReactNode }> }) {
+/** Small illustrated examples as a compact strip at the bottom of an explainer card, so the tab stays one card. */
+export function ExampleRow({ title, items }: { title: string; items: Array<{ key: string; label: string; note: string; art: ReactNode }> }) {
   return (
-    <section className="col g16" aria-label={title}>
-      <div className="col g4">
-        <h2 className="h3">{title}</h2>
-        {sub && <p className="t-sm t-mute" style={{ margin: 0 }}>{sub}</p>}
-      </div>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="ex-strip" aria-label={title}>
+      <span className="label">{title}</span>
+      <div className="ex-strip-grid">
         {items.map((p) => (
-          <figure key={p.key} className="bp-ex card">
-            <div className="bp-ex-art">{p.art}</div>
-            <figcaption className="col"><span className="w7">{p.label}</span><span className="t-xs t-mute">{p.note}</span></figcaption>
+          <figure key={p.key} className="ex-mini">
+            <div className="ex-mini-art" aria-hidden="true">{p.art}</div>
+            <figcaption className="col"><span className="w7 t-sm">{p.label}</span><span className="t-xs t-mute">{p.note}</span></figcaption>
           </figure>
         ))}
       </div>
-    </section>
+    </div>
   );
 }

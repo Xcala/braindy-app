@@ -89,3 +89,12 @@
   .ex-b1, .ex-b2, .ex-b3, .ex-b4, .st-cursor, .ex-gone3 { opacity: 0; }
   .sm-sign path { stroke-dashoffset: 0; }
 }
+
+/* Examples as a compact strip inside the explainer card. */
+.ex-strip { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.ex-strip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 1000px) { .ex-strip-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ex-mini { margin: 0; display: flex; gap: 12px; align-items: center; min-width: 0; }
+.ex-mini-art { width: 96px; height: 76px; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 14px; background: radial-gradient(120% 100% at 50% 0%, #EEF2FF, var(--niebla, #F4F6FB)); }
+.ex-mini-art > * { transform: scale(.6); flex: none; }
+html[data-theme="dark"] .ex-mini-art { background: radial-gradient(120% 100% at 50% 0%, #1A2240, #0E1528); }
