@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Icon } from '../../components/Icon';
 import { LogoTile } from './LogoTile';
+
+const FIRST = 5;
 
 type LogoSet = { primary?: string; secondary?: string; icon?: string; variations?: string[] } | null;
 
@@ -21,6 +24,7 @@ export function Logos({ logos }: { logos: LogoSet }) {
   ].filter((r): r is [string, string] => typeof r[1] === 'string' && r[1].startsWith('http'));
   // Variations are often full artworks with their own background: never recolored; the viewer switches the ground behind them.
   const variations = (logos?.variations ?? []).filter((v) => typeof v === 'string' && v.startsWith('http'));
+  const [all, setAll] = useState(false);
   if (!rows.length && !variations.length) return null;
 
   return (
@@ -48,8 +52,9 @@ export function Logos({ logos }: { logos: LogoSet }) {
       <div className="col g12">
         <p className="label">{t('brand.logoVariations')}</p>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-          {variations.map((url, i) => <LogoTile key={url} url={url} label={`${t('brand.logoVariation')} ${i + 1}`} />)}
+          {(all ? variations : variations.slice(0, FIRST)).map((url, i) => <LogoTile key={url} url={url} label={`${t('brand.logoVariation')} ${i + 1}`} />)}
         </div>
+        {variations.length > FIRST && <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAll((a) => !a)}>{all ? t('common.showLess') : t('common.showAll', { n: String(variations.length) })}</button>}
       </div>
     )}
     </div>

@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Icon } from '../../components/Icon';
 import { inkOn, isHex, rgb, useCopy } from './useCopy';
 import { cmyk, nearestPantone } from './pantone';
+
+const FIRST = 5;
 
 export type Color = { id?: string; hex?: string; name?: string; pantone?: string; chosen?: boolean };
 
@@ -13,13 +16,16 @@ export const brandColors = (colors: Color[]) => {
 export function Colors({ colors }: { colors: Color[] }) {
   const { t } = useI18n();
   const { copied, copy } = useCopy();
+  const [all, setAll] = useState(false);
   const list = brandColors(colors);
   if (!list.length) return null;
+  // One row first (the main colors); the rest on request, so the page stays short.
+  const shown = all ? list : list.slice(0, FIRST);
 
   return (
     <div className="col g24">
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-        {list.map((c) => {
+        {shown.map((c) => {
           const hex = c.hex!.toUpperCase();
           return (
             <div key={c.id ?? hex} className="card flex sm:block" style={{ padding: 0, overflow: 'hidden' }}>
@@ -44,6 +50,7 @@ export function Colors({ colors }: { colors: Color[] }) {
           );
         })}
       </div>
+      {list.length > FIRST && <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAll((a) => !a)}>{all ? t('common.showLess') : t('common.showAll', { n: String(list.length) })}</button>}
     </div>
   );
 }

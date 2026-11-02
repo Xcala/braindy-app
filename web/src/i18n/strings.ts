@@ -21,7 +21,7 @@ import { brandEditEn, brandEditEs } from './brandEditStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
-  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps',
+  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps',
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
   'nav.requests': 'Requests',
@@ -34,7 +34,7 @@ const baseEn = {
   'common.comingPhase': 'Coming in phase {n}.',
   'common.copy': 'Copy',
   'brand.pantoneApprox': 'Nearest Pantone (approximate): confirm with a printed swatch book',
-  'common.copied': 'Copied',
+  'common.copied': 'Copied', 'common.showAll': 'See all ({n})', 'common.showLess': 'See less',
   'common.download': 'Download',
   'common.open': 'Open',
   'brand.tapToZoom': 'Enlarge',
@@ -205,7 +205,7 @@ export type StringKey = keyof typeof en;
 
 const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.brand': 'Mi marca',
-  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps',
+  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps',
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
   'nav.requests': 'Pedidos',
@@ -218,7 +218,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'common.comingPhase': 'Llega en la fase {n}.',
   'common.copy': 'Copiar',
   'brand.pantoneApprox': 'Pantone más cercano (aproximado): confírmalo con la guía impresa',
-  'common.copied': 'Copiado',
+  'common.copied': 'Copiado', 'common.showAll': 'Ver todos ({n})', 'common.showLess': 'Ver menos',
   'common.download': 'Descargar',
   'common.open': 'Abrir',
   'brand.tapToZoom': 'Ampliar',

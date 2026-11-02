@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandLinks } from '../links/useBrandLinks';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
+import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { groupOfPath } from './navGroups';
@@ -19,16 +20,22 @@ export function SubNav() {
   if (pages.length < 2) return null;
   return (
     <div style={{ marginBottom: 24, display: 'flex' }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
-      {pages.map((p) => <NavLink key={p.to} to={p.to} className={({ isActive }) => (isActive ? 'is-on' : '')}>{t(p.label)}</NavLink>)}
+      {pages.map((p) => <NavLink key={p.to} to={p.to} end className={({ isActive }) => (isActive ? 'is-on' : '')}>{t(p.label)}</NavLink>)}
     </nav></div>
   );
 }
 
-/** Whether a page has content: research needs studies or market maps, apps need at least one app. The rest always count. */
+/** Whether a page has content: research needs studies or market maps, apps an app, the visual identity logos, colors, type
+ *  or concept images, documents a pinned file. The rest always count. */
 function useFilled() {
   const brandId = useBrands().current?.id;
   const apps = useBrandLinks(brandId, 'apps');
   const research = useBrandLinks(brandId, 'research');
-  const maps = useLegacyAssets(brandId).some((a) => a.type === 'marketmap');
-  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/research' ? research.links.length > 0 || maps : true);
+  const legacy = useLegacyAssets(brandId);
+  const maps = legacy.some((a) => a.type === 'marketmap');
+  const id = (useBrandDoc(brandId, 'context/identity').data ?? {}) as Record<string, unknown[] | object | undefined>;
+  const has = (k: string) => Array.isArray(id[k]) ? (id[k] as unknown[]).length > 0 : !!id[k];
+  const visual = has('logos') || has('colors') || has('typography') || has('concept') || legacy.some((a) => a.type === 'logodeck');
+  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/research' ? research.links.length > 0 || maps
+    : to === '/brand/visual' ? visual : to === '/brand/docs' ? has('documents') : true);
 }

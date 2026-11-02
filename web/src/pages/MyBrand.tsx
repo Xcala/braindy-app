@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router';
 import { useBrands, type Brand } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { BrandHero } from '../brands/BrandHero';
@@ -41,7 +42,9 @@ export function MyBrand() {
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
   const [editing, setEditing] = useState(false);
-  const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id]);
+  // My brand is split in views (see SubNav): essence (the default), visual and documents. Research is its own page.
+  const { view = 'essence' } = useParams<{ view?: string }>();
+  const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id, view]);
   const bar = useRef<HTMLDivElement>(null);
   // On mobile the bar is one scrolling line: keep the current section chip in view.
   useEffect(() => {
@@ -59,33 +62,34 @@ export function MyBrand() {
   const loading = identity.loading || voiceDoc.loading;
   const brain = brainDoc.data as BrainDoc | null;
 
-  const sections: Array<{ id: string; label: StringKey; show: boolean }> = [
-    { id: 'family', label: 'brand.children', show: children.length > 0 },
-    { id: 'overview', label: 'group.overview', show: children.length > 0 },
-    { id: 'logos', label: 'brand.logos', show: !!id.logos },
-    { id: 'docs', label: 'bf.title', show: (id.documents ?? []).length > 0 },
-    { id: 'concept', label: 'brand.concept', show: shots.length > 0 },
-    { id: 'strategy', label: 'brand.strategy', show: hasStrategy(brain) },
-    { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
-    { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0 },
-    { id: 'voice', label: 'brand.voice', show: !!voice },
+  const sections: Array<{ id: string; label: StringKey; show: boolean; view: 'essence' | 'visual' | 'docs' }> = [
+    { id: 'family', label: 'brand.children', show: children.length > 0, view: 'essence' },
+    { id: 'overview', label: 'group.overview', show: children.length > 0, view: 'essence' },
+    { id: 'logos', label: 'brand.logos', show: !!id.logos, view: 'visual' },
+    { id: 'docs', label: 'bf.title', show: (id.documents ?? []).length > 0, view: 'docs' },
+    { id: 'concept', label: 'brand.concept', show: shots.length > 0, view: 'visual' },
+    { id: 'strategy', label: 'brand.strategy', show: hasStrategy(brain), view: 'essence' },
+    { id: 'colors', label: 'brand.colors', show: colors.length > 0, view: 'visual' },
+    { id: 'type', label: 'brand.typography', show: (id.typography ?? []).length > 0, view: 'visual' },
+    { id: 'voice', label: 'brand.voice', show: !!voice, view: 'essence' },
   ];
-  const visible = sections.filter((s) => s.show);
+  const visible = sections.filter((s) => s.show && s.view === view);
+  const on = (key: string) => visible.some((s) => s.id === key);
   const num = (key: string) => visible.findIndex((s) => s.id === key) + 1;
   const font = ((id.typography ?? [])[0] as { fontFamily?: string; name?: string } | undefined)?.fontFamily ?? ((id.typography ?? [])[0] as { name?: string } | undefined)?.name;
 
   return (
     <div className="col g48 brandpage">
-      <BrandHero brand={current} logo={id.logos?.primary ?? current.logoUrl ?? undefined}
-        essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />
+      {view === 'essence' && <BrandHero brand={current} logo={id.logos?.primary ?? current.logoUrl ?? undefined}
+        essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />}
       {isAdmin && (
-        <div className="row" style={{ justifyContent: 'flex-end', marginTop: -32 }}>
+        <div className="row" style={{ justifyContent: 'flex-end', marginTop: view === 'essence' ? -32 : 0 }}>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('be.open')}</button>
         </div>
       )}
       {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} onClose={() => setEditing(false)} />}
 
-      {visible.length > 1 && (
+      {view === 'visual' && visible.length > 1 && (
         <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
           <nav className="anchors" aria-label={t('brand.onThisPage')}>
             {visible.map((s) => <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-on' : ''} aria-current={active === s.id ? 'location' : undefined}>{t(s.label)}</a>)}
@@ -107,62 +111,62 @@ export function MyBrand() {
       {loading && <p className="t-mute">{t('common.loading')}…</p>}
       {!loading && visible.length === 0 && <div className="card t-mute">{t('brand.empty')}</div>}
 
-      {children.length > 0 && (
+      {on('family') && (
         <section className="col g24" id="family" aria-labelledby="h-family">
           <SectionHead id="family" num={num('family')} title={t('brand.children')} subtitle={t('brand.childrenSub', { n: children.length })} />
           <GroupBrands brands={children} all={brands} />
         </section>
       )}
-      {children.length > 0 && (
+      {on('overview') && (
         <section className="col g24" id="overview" aria-labelledby="h-overview">
           <SectionHead id="overview" num={num('overview')} title={t('group.overview')} subtitle={t('group.overviewHint', { name: current.name })} />
           <GroupWork group={current} all={brands} />
           <GroupAnalysis groupId={current.id} canAsk={canAsk} />
         </section>
       )}
-      {id.logos && (
+      {on('logos') && id.logos && (
         <section className="col g24" id="logos" aria-labelledby="h-logos">
           <SectionHead id="logos" num={num('logos')} title={t('brand.logos')} subtitle={t('brand.logosSub')} />
           <Logos logos={id.logos} />
         </section>
       )}
-      {(id.documents ?? []).length > 0 && (
+      {on('docs') && (
         <section className="col g24" id="docs" aria-labelledby="h-docs">
           <SectionHead id="docs" num={num('docs')} title={t('bf.title')} subtitle={t('bf.sub')} />
           <BrandFiles brandId={current.id} files={id.documents ?? []} isAdmin={isAdmin} />
         </section>
       )}
-      {shots.length > 0 && (
+      {on('concept') && (
         <section className="col g24" id="concept" aria-labelledby="h-concept">
           <SectionHead id="concept" num={num('concept')} title={t('brand.concept')} subtitle={t('brand.conceptSub')} />
           <DeckConcept shots={shots} />
         </section>
       )}
-      {hasStrategy(brain) && (
+      {on('strategy') && (
         <section className="col g24" id="strategy" aria-labelledby="h-strategy">
           <SectionHead id="strategy" num={num('strategy')} title={t('brand.strategy')} subtitle={t('brand.strategySub')} />
           <Strategy brain={brain!} />
         </section>
       )}
-      {colors.length > 0 && (
+      {on('colors') && (
         <section className="col g24" id="colors" aria-labelledby="h-colors">
           <SectionHead id="colors" num={num('colors')} title={t('brand.colors')} subtitle={t('brand.colorsSub', { n: colors.length })} />
           <Colors colors={id.colors ?? []} />
         </section>
       )}
-      {(id.typography ?? []).length > 0 && (
+      {on('type') && (
         <section className="col g24" id="type" aria-labelledby="h-type">
           <SectionHead id="type" num={num('type')} title={t('brand.typography')} />
           <Typography fonts={id.typography ?? []} />
         </section>
       )}
-      {voice && (
+      {on('voice') && voice && (
         <section className="col g24" id="voice" aria-labelledby="h-voice">
           <SectionHead id="voice" num={num('voice')} title={t('brand.voice')} />
           <Voice voice={voice} />
         </section>
       )}
-      <LearningsSection brandId={current.id} />
+      {view === 'essence' && <LearningsSection brandId={current.id} />}
     </div>
   );
 }
