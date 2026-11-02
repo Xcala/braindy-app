@@ -14,6 +14,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { folderVisible, UPLOADS } from './folderRules';
 import { useFolderShare } from './useFolderShare';
+import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 
 type Folder = { path: string; files: number; bytes: number };
 type Filter = 'all' | FileKind;
@@ -40,6 +41,13 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const tops = useMemo(() => [...folders.filter((f) => f.path && !f.path.includes('/')).map((f) => f.path), ...(folders.some((f) => f.path === '' && f.files > 0) ? [''] : [])], [folders]);
   const share = useFolderShare(brand, tops);
   const [shareError, setShareError] = useState(false);
+  // NickMark pins brand documents (brand book, .md, HTML) to My brand from here.
+  const identity = useBrandDoc(isAdmin ? brandId : undefined, 'context/identity');
+  const pinned = ((identity.data?.documents as BrandFile[] | undefined) ?? []);
+  const pin = isAdmin ? {
+    on: (id: string) => pinned.some((d) => d.id === id),
+    toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
+  } : undefined;
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
@@ -127,9 +135,9 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' ? (
-            <FileGrid files={page} thumbs={thumbs} onOpen={open} />
+            <FileGrid files={page} thumbs={thumbs} onOpen={open} pin={pin} />
           ) : (
-            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} />
+            <FileList files={page} onOpen={open} onDownload={(f) => download(brandId, f.id)} pin={pin} />
           )}
           {shown.length > limit && (
             <button className="btn btn-secondary self-start" onClick={() => setLimit((l) => l + PAGE)}>

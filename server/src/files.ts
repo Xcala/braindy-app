@@ -24,10 +24,15 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
   const asset = await db.doc(`brands/${brandId}/assets/${assetId}`).get();
   const storagePath = asset.get('storagePath') as string | undefined;
   if (!asset.exists || !storagePath || !storagePath.startsWith(`brands/${brandId}/`)) return c.json({ error: 'not_found' }, 404);
-  // My files needs the files section; files attached to a request (Uploads) also open from Requests.
-  const viaRequests = access.sections.includes('requests') && asset.get('folder') === 'Uploads';
-  if (!access.sections.includes('files') && !viaRequests) return c.json({ error: 'forbidden' }, 403);
-  if (!access.admin && !(await fileFilter(brandId))(asset)) return c.json({ error: 'not_found' }, 404);
+  // Brand documents NickMark pinned to My brand open for every member, whatever the folder sharing says.
+  const identity = await db.doc(`brands/${brandId}/context/identity`).get();
+  const pinned = ((identity.get('documents') as Array<{ id?: string }> | undefined) ?? []).some((d) => d.id === assetId);
+  if (!pinned) {
+    // My files needs the files section; files attached to a request (Uploads) also open from Requests.
+    const viaRequests = access.sections.includes('requests') && asset.get('folder') === 'Uploads';
+    if (!access.sections.includes('files') && !viaRequests) return c.json({ error: 'forbidden' }, 403);
+    if (!access.admin && !(await fileFilter(brandId))(asset)) return c.json({ error: 'not_found' }, 404);
+  }
 
   const disposition = c.req.query('inline') === '1' ? 'inline' : 'attachment';
   const filename = String(asset.get('title') ?? 'file').replace(/["\\\r\n]/g, '');

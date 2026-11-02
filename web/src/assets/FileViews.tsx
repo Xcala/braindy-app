@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes } from './fileApi';
@@ -6,7 +7,21 @@ import { extLabel, kindOf, thumbClass, type FileItem } from './fileKinds';
 const date = (ms?: number, lang = 'en') =>
   ms ? new Date(ms).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
 
-export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void }) {
+/** NickMark only: pin a file to the brand documents in My brand. */
+export type Pin = { on: (id: string) => boolean; toggle: (f: FileItem) => void };
+
+function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProperties }) {
+  const { t } = useI18n();
+  const on = pin.on(f.id);
+  return (
+    <button type="button" aria-pressed={on} title={t(on ? 'bf.unpin' : 'bf.pin')} onClick={(e) => { e.stopPropagation(); pin.toggle(f); }} className="t-xs w7"
+      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--ink)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer', whiteSpace: 'nowrap', ...style }}>
+      {on ? `✓ ${t('bf.pinned')}` : `+ ${t('bf.pin')}`}
+    </button>
+  );
+}
+
+export function FileGrid({ files, thumbs, onOpen, pin }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin }) {
   const { lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -14,7 +29,8 @@ export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs:
         const kind = kindOf(f);
         const thumb = thumbs[f.id];
         return (
-          <button key={f.id} type="button" className="tile text-left" style={{ cursor: 'pointer', padding: 0 }} onClick={() => onOpen(f)}>
+          <div key={f.id} className="tile" style={{ padding: 0, position: 'relative' }}>
+          <button type="button" className="text-left" style={{ cursor: 'pointer', padding: 0, border: 0, background: 'none', width: '100%' }} onClick={() => onOpen(f)}>
             <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: 180, overflow: 'hidden', width: '100%' }}>
               {thumb ? (
                 <img className="cover h-full w-full object-cover" src={thumb} alt="" loading="lazy" />
@@ -28,26 +44,31 @@ export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs:
               <span className="t-sm t-mute">{formatBytes(f.size)}{f.mtimeMs ? ` · ${date(f.mtimeMs, lang)}` : ''}</span>
             </div>
           </button>
+          {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
+          </div>
         );
       })}
     </div>
   );
 }
 
-export function FileList({ files, onOpen, onDownload }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void }) {
+export function FileList({ files, onOpen, onDownload, pin }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin }) {
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
-      <div className="lrow head label min-w-[640px]"><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
+      <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
-        <div key={f.id} className="lrow min-w-[640px]">
+        <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}`}>
           <button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
           <span className="t-sm t-mute">{date(f.mtimeMs, lang)}</span>
+          <span className="row g4" style={{ justifyContent: 'flex-end' }}>
+          {pin && <PinButton pin={pin} f={f} />}
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
             <Icon name="download" size={16} />
           </button>
+          </span>
         </div>
       ))}
     </div>

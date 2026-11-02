@@ -15,6 +15,7 @@ import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
 import { useAuth } from '../auth/AuthProvider';
 import { useCanApprove } from '../requests/useCanApprove';
 import { ApprovedWork } from '../brands/identity/ApprovedWork';
+import { BrandFiles, type BrandFile } from '../brands/identity/BrandFiles';
 import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
 import { useI18n } from '../i18n/I18nProvider';
@@ -27,6 +28,7 @@ type Identity = {
   typography?: Array<Record<string, string>>;
   galleryAssets?: Array<{ id?: string; url?: string; name?: string; chosen?: boolean }>;
   concept?: Array<{ url: string; kind: 'hero' | 'design-concept'; caption?: string }>;
+  documents?: BrandFile[];
 };
 
 export function MyBrand() {
@@ -62,6 +64,7 @@ export function MyBrand() {
     { id: 'family', label: 'brand.children', show: children.length > 0 },
     { id: 'overview', label: 'group.overview', show: children.length > 0 },
     { id: 'logos', label: 'brand.logos', show: !!id.logos },
+    { id: 'docs', label: 'bf.title', show: (id.documents ?? []).length > 0 },
     { id: 'concept', label: 'brand.concept', show: shots.length > 0 },
     { id: 'strategy', label: 'brand.strategy', show: hasStrategy(brain) },
     { id: 'colors', label: 'brand.colors', show: colors.length > 0 },
@@ -123,6 +126,12 @@ export function MyBrand() {
         <section className="col g24" id="logos" aria-labelledby="h-logos">
           <SectionHead id="logos" num={num('logos')} title={t('brand.logos')} subtitle={t('brand.logosSub')} />
           <Logos logos={id.logos} />
+        </section>
+      )}
+      {(id.documents ?? []).length > 0 && (
+        <section className="col g24" id="docs" aria-labelledby="h-docs">
+          <SectionHead id="docs" num={num('docs')} title={t('bf.title')} subtitle={t('bf.sub')} />
+          <BrandFiles brandId={current.id} files={id.documents ?? []} isAdmin={isAdmin} />
         </section>
       )}
       {shots.length > 0 && (
