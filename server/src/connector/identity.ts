@@ -30,6 +30,8 @@ export interface IdentityInput {
     keyLanguage?: string[]; example?: string;
   };
   strategy?: { position?: string; audiences?: string; goals?: string; avoid?: string; competitors?: Array<{ name?: string; promise?: string; price?: string; url?: string }> };
+  /** Primal Branding, the seven pieces (Patrick Hanlon); only the pieces sent change. */
+  primal?: Partial<Record<'creationStory' | 'creed' | 'icons' | 'rituals' | 'sacredWords' | 'nonBelievers' | 'leader', string>>;
 }
 
 async function load(src: ImageSrc, local: boolean): Promise<{ buf: Buffer; name: string }> {
@@ -125,8 +127,14 @@ export async function setIdentity(brandId: string, input: IdentityInput, local: 
     extra.push(db.doc(`brands/${brandId}/context/brain`).set({ ...fields, updatedAt: FieldValue.serverTimestamp() }, { merge: true }));
     done.push('estrategia');
   }
+  if (input.primal) {
+    const keys = ['creationStory', 'creed', 'icons', 'rituals', 'sacredWords', 'nonBelievers', 'leader'] as const;
+    const fields: Record<string, unknown> = Object.fromEntries(keys.filter((k) => input.primal![k] !== undefined).map((k) => [k, String(input.primal![k]).slice(0, 3000)]));
+    extra.push(db.doc(`brands/${brandId}/context/primal`).set({ ...fields, updatedAt: FieldValue.serverTimestamp() }, { merge: true }));
+    done.push('primal branding');
+  }
   await Promise.all(extra);
-  if (done.length === 0) throw new Error('No llegó nada para actualizar (logos, colores, tipografía, concepto, mockups, voz o estrategia).');
+  if (done.length === 0) throw new Error('No llegó nada para actualizar (logos, colores, tipografía, concepto, mockups, voz, estrategia o primal branding).');
   if (Object.keys(update).length === 2) return done;
   const ref = db.doc(`brands/${brandId}/context/identity`);
   if (!(await ref.get()).exists) await ref.set({ createdAt: FieldValue.serverTimestamp() });

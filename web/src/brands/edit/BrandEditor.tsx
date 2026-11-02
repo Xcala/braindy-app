@@ -5,18 +5,19 @@ import type { VoiceDoc } from '../identity/Voice';
 import type { BrainDoc } from '../identity/Strategy';
 import { ImagesEdit, LogosEdit, type LogoSet } from './VisualEdit';
 import { ColorsEdit, FontsEdit } from './ListEdit';
-import { StrategyEdit, VoiceEdit } from './WordsEdit';
+import { PrimalEdit, StrategyEdit, VoiceEdit } from './WordsEdit';
+import type { PrimalDoc } from '../identity/Primal';
 
 export type EditableIdentity = {
   logos?: LogoSet; colors?: Array<{ hex?: string; name?: string; pantone?: string }>; typography?: Array<Record<string, string>>;
   concept?: Array<{ url: string; caption?: string }>; galleryAssets?: Array<{ url?: string; name?: string }>;
 };
-const TABS = ['logos', 'colors', 'type', 'concept', 'mockups', 'voice', 'strategy'] as const;
+const TABS = ['logos', 'colors', 'type', 'concept', 'mockups', 'primal', 'voice', 'strategy'] as const;
 type Tab = typeof TABS[number];
 
 /** Admin editor of Mi marca: one tab per section, each saved on its own (same logic as the Braindy connector). */
-export function BrandEditor({ brandId, identity, voice, brain, onClose }: {
-  brandId: string; identity: EditableIdentity; voice: (VoiceDoc & { archetype?: string[] }) | null; brain: BrainDoc | null; onClose: () => void;
+export function BrandEditor({ brandId, identity, voice, brain, primal, onClose }: {
+  brandId: string; identity: EditableIdentity; voice: (VoiceDoc & { archetype?: string[] }) | null; brain: BrainDoc | null; primal: PrimalDoc | null; onClose: () => void;
 }) {
   const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('logos');
@@ -41,6 +42,7 @@ export function BrandEditor({ brandId, identity, voice, brain, onClose }: {
         {tab === 'type' && <FontsEdit brandId={brandId} fonts={identity.typography ?? []} />}
         {tab === 'concept' && <ImagesEdit brandId={brandId} field="concept" items={identity.concept ?? []} />}
         {tab === 'mockups' && <ImagesEdit brandId={brandId} field="mockups" items={identity.galleryAssets ?? []} />}
+        {tab === 'primal' && <PrimalEdit brandId={brandId} primal={primal} />}
         {tab === 'voice' && <VoiceEdit brandId={brandId} voice={voice} />}
         {tab === 'strategy' && <StrategyEdit brandId={brandId} brain={brain} />}
       </div>

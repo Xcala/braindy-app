@@ -8,6 +8,7 @@ import { Logos } from '../brands/identity/Logos';
 import { Colors, brandColors, type Color } from '../brands/identity/Colors';
 import { Typography } from '../brands/identity/Typography';
 import { Strategy, hasStrategy, type BrainDoc } from '../brands/identity/Strategy';
+import { Primal, type PrimalDoc } from '../brands/identity/Primal';
 import { Voice, type VoiceDoc } from '../brands/identity/Voice';
 import { DeckConcept, deckShots } from '../brands/identity/DeckConcept';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
@@ -37,6 +38,7 @@ export function MyBrand() {
   const identity = useBrandDoc(current?.id, 'context/identity');
   const voiceDoc = useBrandDoc(current?.id, 'context/voice');
   const brainDoc = useBrandDoc(current?.id, 'context/brain');
+  const primalDoc = useBrandDoc(current?.id, 'context/primal');
   const legacyShots = deckShots(useLegacyAssets(current?.id));
   const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
@@ -61,10 +63,12 @@ export function MyBrand() {
   const children = brands.filter((b) => b.groupId === current.id);
   const loading = identity.loading || voiceDoc.loading;
   const brain = brainDoc.data as BrainDoc | null;
+  const primal = primalDoc.data as PrimalDoc | null;
 
   const sections: Array<{ id: string; label: StringKey; show: boolean; view: 'essence' | 'visual' | 'docs' }> = [
     { id: 'family', label: 'brand.children', show: children.length > 0, view: 'essence' },
     { id: 'overview', label: 'group.overview', show: children.length > 0, view: 'essence' },
+    { id: 'primal', label: 'primal.title', show: current.kind !== 'group', view: 'essence' },
     { id: 'logos', label: 'brand.logos', show: !!id.logos, view: 'visual' },
     { id: 'docs', label: 'bf.title', show: (id.documents ?? []).length > 0, view: 'docs' },
     { id: 'concept', label: 'brand.concept', show: shots.length > 0, view: 'visual' },
@@ -87,7 +91,7 @@ export function MyBrand() {
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('be.open')}</button>
         </div>
       )}
-      {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} onClose={() => setEditing(false)} />}
+      {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} primal={primal} onClose={() => setEditing(false)} />}
 
       {view === 'visual' && visible.length > 1 && (
         <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
@@ -122,6 +126,12 @@ export function MyBrand() {
           <SectionHead id="overview" num={num('overview')} title={t('group.overview')} subtitle={t('group.overviewHint', { name: current.name })} />
           <GroupWork group={current} all={brands} />
           <GroupAnalysis groupId={current.id} canAsk={canAsk} />
+        </section>
+      )}
+      {on('primal') && (
+        <section className="col g24" id="primal" aria-labelledby="h-primal">
+          <SectionHead id="primal" num={num('primal')} title={t('primal.title')} subtitle={t('primal.sub')} />
+          <Primal primal={primal} />
         </section>
       )}
       {on('logos') && id.logos && (

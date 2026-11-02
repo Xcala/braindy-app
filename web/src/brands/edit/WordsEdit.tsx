@@ -3,6 +3,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
 import type { VoiceDoc } from '../identity/Voice';
 import type { BrainDoc } from '../identity/Strategy';
+import { PRIMAL_KEYS, type PrimalDoc } from '../identity/Primal';
 import { commas, lines, SaveBar, useSave } from './shared';
 
 function Field({ label, value, onChange, rows = 2 }: { label: StringKey; value: string; onChange: (v: string) => void; rows?: number }) {
@@ -56,6 +57,20 @@ export function StrategyEdit({ brandId, brain }: { brandId: string; brain: Brain
       <Field label="be.goals" value={f.goals} onChange={set('goals')} rows={3} />
       <Field label="be.avoid" value={f.avoid} onChange={set('avoid')} rows={2} />
       <SaveBar state={state} error={error} onSave={() => save({ strategy: f })} />
+    </div>
+  );
+}
+
+/** Primal Branding: the seven pieces, one text each (lines become paragraphs). */
+export function PrimalEdit({ brandId, primal }: { brandId: string; primal: PrimalDoc | null }) {
+  const { state, error, save } = useSave(brandId);
+  const [f, setF] = useState<Record<string, string>>(Object.fromEntries(PRIMAL_KEYS.map((k) => [k, primal?.[k] ?? ''])));
+  return (
+    <div className="col g12">
+      <div className="grid gap-3 sm:grid-cols-2">
+        {PRIMAL_KEYS.map((k) => <Field key={k} label={`primal.${k}` as StringKey} value={f[k]!} onChange={(v) => setF((x) => ({ ...x, [k]: v }))} rows={3} />)}
+      </div>
+      <SaveBar state={state} error={error} onSave={() => save({ primal: f })} />
     </div>
   );
 }
