@@ -110,6 +110,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
                 <span className="t-xs t-mute row g8" role="status">
                   {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
                   {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
+                  {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => window.confirm(t('fa.hideAllConfirm')) && share.hideAll().catch(() => setShareError(true))}>{t('fa.hideAll')}</button>}
                 </span>
               )}
             </div>
