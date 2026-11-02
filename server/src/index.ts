@@ -40,7 +40,8 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
 
 const app = new Hono<AuthEnv>();
 
-app.use('*', logger());
+// The WhatsApp webhook path carries a secret key: mask it in request logs.
+app.use('*', logger((s, ...rest) => console.log(s.replace(/(\/webhooks\/whatsapp\/)[^\s?]+/, '$1***'), ...rest)));
 app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 app.onError((err, c) => {
   logError(err, { method: c.req.method, path: c.req.path });
