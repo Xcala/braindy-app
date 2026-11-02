@@ -50,7 +50,7 @@ function Logo({ brand }: { brand: string }) {
 function Video() {
   return (
     <>
-      <div className="sc-story">{[0, 1, 2, 3].map((k) => <span key={k} className="sc-frame" style={at(0.2 + k * 0.5)}><i style={at(0.6 + k * 0.5)} /><b style={at(0.8 + k * 0.5)} /></span>)}</div>
+      <div className="sc-story">{[0, 1, 2, 3].map((k) => <span key={k} className="sc-frame" style={at(0.2 + k * 0.5, { ['--f' as string]: `${6 + k * 0.4}s`, ['--h' as string]: `${190 + k * 30}` })}><i style={at(0.6 + k * 0.5)} /><b style={at(0.8 + k * 0.5)} /></span>)}</div>
       <div className="sc-timeline">
         {[0, 1, 2].map((tr) => (
           <span key={tr} className={`sc-track t${tr}`}>

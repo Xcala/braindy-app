@@ -53,6 +53,7 @@
 .sc-palette i:nth-child(2) { background: var(--marketer); } .sc-palette i:nth-child(3) { background: #0B0D12; } .sc-palette i:nth-child(4) { background: #F3FCFE; border: .3cqw solid #E3E7EF; }
 .sc-stage { position: absolute; right: 4%; bottom: 7%; font: 800 2.2cqw/1 'Red Hat Display', system-ui, sans-serif; }
 .sc-stage em { font-style: normal; padding: 1cqw 1.8cqw; border-radius: 99px; background: #E3E7EF; color: #4A5468; display: inline-block; }
+.sc-stage .w { animation: sc-out .3s ease 5.8s both; }
 .sc-stage .m { position: absolute; right: 0; top: 0; background: var(--creator); color: #04262E; animation-name: sc-pop !important; }
 .sc-cursor { position: absolute; width: 3.4cqw; fill: #0B0D12; stroke: #fff; stroke-width: 1.2; z-index: 3; animation: sc-cursor 8.6s ease-in-out both; }
 .sc-logo { position: absolute; left: 6%; top: 8%; width: 62%; height: 70%; }
@@ -63,6 +64,7 @@
 .sc-word { position: absolute; left: 6%; bottom: 9%; width: 62%; text-align: center; font: 900 4.4cqw/1 'Red Hat Display', system-ui, sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; }
 .sc-story { position: absolute; left: 4%; top: 7%; width: 72%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6cqw; }
 .sc-frame { position: relative; aspect-ratio: 9 / 13; border-radius: 1cqw; border: .35cqw solid #0B0D12; background: #fff; overflow: hidden; }
+.sc-frame { animation: sc-in .45s ease var(--d) both, sc-shot .6s ease var(--f) both !important; }
 .sc-frame i { position: absolute; left: 20%; top: 18%; width: 40%; height: 30%; border-radius: 50%; border: .35cqw solid #8A93A6; }
 .sc-frame b { position: absolute; left: 10%; right: 10%; bottom: 10%; height: 1.2cqw; border-radius: .6cqw; background: var(--creator); }
 .sc-timeline { position: absolute; left: 4%; right: 4%; bottom: 6%; height: 30%; border-radius: 1.4cqw; background: #0B0D12; padding: 1.4cqw; display: flex; flex-direction: column; gap: 1cqw; }
@@ -72,7 +74,8 @@
 .sc-head { position: absolute; top: .6cqw; bottom: .6cqw; left: 2%; width: .4cqw; background: #fff; box-shadow: 0 0 1cqw #fff; animation: sc-in .2s var(--d) both, sc-play 3.4s linear var(--d) both !important; }
 .sc-spread { position: absolute; left: 4%; top: 9%; width: 70%; height: 82%; display: grid; grid-template-columns: 1fr 1fr; background: #fff; border-radius: 1cqw; box-shadow: 0 1cqw 3cqw #0B10221A; }
 .sc-page { position: relative; padding: 3cqw; display: flex; flex-direction: column; gap: 1.2cqw; border-right: .2cqw solid #EEF1F6; }
-.sc-page .col { position: absolute; top: 3cqw; bottom: 3cqw; width: 26%; border-left: .2cqw dashed #F4B4C8; border-right: .2cqw dashed #F4B4C8; }
+.sc-page > :not(.col) { position: relative; z-index: 1; }
+.sc-page .col { z-index: 0; opacity: .6;  position: absolute; top: 3cqw; bottom: 3cqw; width: 26%; border-left: .2cqw dashed #F4B4C8; border-right: .2cqw dashed #F4B4C8; }
 .sc-page .col:nth-child(1) { left: 6%; } .sc-page .col:nth-child(2) { left: 37%; } .sc-page .col:nth-child(3) { left: 68%; }
 .sc-img { display: block; height: 42%; border-radius: .8cqw; background: linear-gradient(140deg, var(--creator), var(--marketer)); } .sc-img.p1 { order: 3; height: 30%; background: linear-gradient(140deg, var(--researcher), #F97316); }
 .sc-page s { display: block; height: 1.2cqw; border-radius: .6cqw; background: #CBD2DE; transform-origin: left; animation-name: sc-grow-x !important; }
@@ -100,6 +103,8 @@
 .sc-file s { display: block; height: 1cqw; border-radius: .5cqw; background: var(--builder); transform-origin: left; animation: sc-grow-x .8s ease var(--d) both; }
 .sc-file em { font-style: normal; color: #34D399; font-weight: 900; animation-name: sc-pop !important; }
 
+@keyframes sc-out { to { opacity: 0; } }
+@keyframes sc-shot { to { background: linear-gradient(150deg, hsl(var(--h) 80% 70%), hsl(calc(var(--h) + 50) 70% 45%)); border-color: transparent; } }
 @keyframes sc-in { from { opacity: 0; transform: translateY(1.2cqw); } }
 @keyframes sc-pop { from { opacity: 0; transform: scale(.4); } }
 @keyframes sc-slide { from { opacity: 0; transform: translateX(4cqw); } }
