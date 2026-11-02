@@ -39,6 +39,8 @@ files.get('/brands/:brandId/assets/:assetId/url', async (c) => {
   const [url] = await bucket().file(storagePath).getSignedUrl({
     version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS,
     responseDisposition: `${disposition}; filename*=UTF-8''${encodeURIComponent(filename)}`,
+    // Text files opened in a tab (.md, .html) read as UTF-8, so accents do not come out garbled.
+    ...(disposition === 'inline' && String(asset.get('contentType')).startsWith('text/') ? { responseType: `${asset.get('contentType')}; charset=utf-8` } : {}),
   });
   return c.json({ url, expiresInSeconds: URL_TTL_MS / 1000 });
 });
