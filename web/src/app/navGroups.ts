@@ -11,7 +11,8 @@ export const SHOW_RESULTS = false;
 
 const ALL: NavGroup[] = [
   { label: 'nav.home', short: 'nav.homeShort', pages: [{ to: '/home', label: 'nav.home' }] },
-  { label: 'nav.brand', short: 'nav.brandShort', pages: [{ to: '/brand', label: 'sub.essence' }, { to: '/brand/visual', label: 'sub.visual' }, { to: '/brand/docs', label: 'sub.docs' }, { to: '/research', label: 'sub.research' }] },
+  { label: 'nav.brand', short: 'nav.brandShort', // Visual first (2026-11-02). Brand documents left My brand: the files already live in Deliveries.
+    pages: [{ to: '/brand/visual', label: 'sub.visual' }, { to: '/brand', label: 'sub.essence' }, { to: '/research', label: 'sub.research' }] },
   { label: 'nav.orders', short: 'nav.askShort', pages: [{ to: '/requests', label: 'nav.orders' }] },
   { label: 'nav.deliveries', short: 'nav.deliveriesShort', pages: [{ to: '/assets', label: 'sub.files' }, { to: '/apps', label: 'sub.apps' }] },
   { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'nav.report' }] },
