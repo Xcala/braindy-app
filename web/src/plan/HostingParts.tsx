@@ -145,7 +145,7 @@ export function Featured({ cur, brandName }: { cur: Cur; brandName: string }) {
   return (
     <article className="hp-feature">
       <div className="hp-feature-main">
-        <span className="hp-tag">{L(['Complemento destacado · Esencial · Pro · Ultra', 'Featured add-on · Esencial · Pro · Ultra'])}</span>
+        <span className="hp-tag">{L(['Créditos Braindy · con los Brains', 'Braindy credits · with the Brains'])}</span>
         <h3>{L(['Diseño de piezas ', 'Design of '])}<b>{L(['on-brand', 'on-brand pieces'])}</b></h3>
         <span className="hp-sub">{L(['Créditos Braindy · 300 créditos al mes', 'Braindy credits · 300 credits a month'])}</span>
         <p>{L(['Pídele a los ', 'Ask the '])}Br<b>ai</b>ns{L([' carruseles, imágenes, videos, investigaciones y planes de marketing. Todo sale con tu logo, tus colores y tu tono ya cargados, y NicoMarca revisa cada pieza antes de entregarla. Ves el costo de cada pedido antes de confirmar.', ' for carousels, images, videos, research and marketing plans. Everything comes out with your logo, colors and tone already loaded, and NickMark reviews every piece before delivering it. You see the cost of each order before confirming.'])}</p>

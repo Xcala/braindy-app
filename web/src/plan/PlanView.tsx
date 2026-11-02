@@ -12,7 +12,7 @@ import type { BrandPlan, PackStatus, StackItem } from './types';
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
-export type PlanTab = 'summary' | 'schedule' | 'site' | 'payments';
+export type PlanTab = 'summary' | 'schedule' | 'brand' | 'site' | 'payments';
 
 export interface PlanViewProps {
   /** Which tab is open; the summary header stays on top of every tab. */
@@ -21,6 +21,8 @@ export interface PlanViewProps {
   tabs: ReactNode;
   /** Extra content for the site tab (hosting plans) and the payments tab (design plan). */
   site?: ReactNode;
+  /** The Brand tab: on-brand piece design with the Brains. */
+  brand?: ReactNode;
   payments?: ReactNode;
   brandName: string;
   plan: BrandPlan | null;
@@ -37,7 +39,7 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, payments, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, site, brand, payments, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -91,6 +93,7 @@ export function PlanView({ tab, tabs, site, payments, brandName, plan, stack, co
           <Checklist items={kickoff.items} start={kickoff.start} onToggle={onTick} />
         </section>
       )}
+      {tab === 'brand' && brand}
       {tab === 'site' && plan && <CareBlock c={plan} />}
       {tab === 'site' && stack && <Stack items={stack} />}
       {tab === 'site' && site}

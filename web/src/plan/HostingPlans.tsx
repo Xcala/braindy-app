@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ADDONS, CHECKOUT, ENTERPRISE, MODULES, WEB_PLANS, type Bill, type Cur, type WebPlan } from './hostingData';
-import { Compare, Featured, Finder, Plan, PriceCards, useL } from './HostingParts';
+import { Compare, Finder, Plan, PriceCards, useL } from './HostingParts';
 import { Faq, Glossary, Sign, Tech } from './HostingInfo';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import './hosting.css';
@@ -81,9 +81,7 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
           </div>
           {moreBtn}
           {more && <>
-          <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus two>
-            <Featured cur={cur} brandName={brandName} />
-          </PriceCards>
+          <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus two />
           <Finder brandName={brandName} />
           <Compare current={current} />
           <aside className="hp-agency" aria-label="Fee">

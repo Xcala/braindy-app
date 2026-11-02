@@ -10,6 +10,7 @@ import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
 import { AdminPlan } from '../plan/AdminPlan';
 import { Subscription } from '../plan/Subscription';
+import { BrandPieces } from '../plan/BrandPieces';
 import { planApi, usePlan } from '../plan/usePlan';
 
 /** Mi plan: everything the client contracted in one place. What they bought, the contract (sign it here, download it
@@ -43,7 +44,7 @@ export function MyPlan() {
   }
 
   // Tabs instead of one long page; the schedule tab only when there is a schedule or a kickoff checklist.
-  const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'site', 'payments'];
+  const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'brand', 'site', 'payments'];
   const asked = params.get('tab') as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
   const switcher = (
@@ -54,7 +55,7 @@ export function MyPlan() {
 
   return (
     <div className="col g32">
-      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />}
+      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brandName={current.name} />}
         payments={<div className="col g16"><Subscription current={current} part="design" /><p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p></div>}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
         contract={<ContractCard brandId={id} contract={contract} />}

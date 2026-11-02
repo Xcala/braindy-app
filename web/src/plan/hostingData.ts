@@ -77,7 +77,7 @@ export const COMPARE: Array<{ group: Tx; rows: Array<[Tx, Tx, Tx, Tx]> }> = [
   ] },
 ];
 
-/** Featured add-on: on-brand pieces (Braindy credits, 300 a month), and the Ultra + credits combo. */
+/** On-brand pieces (Braindy credits, 300 a month, in the Brand tab of Mi plan), and the Ultra + credits combo. */
 export const CREDITS = { usd: 49, cop: 194900 }, COMBO = { usd: 79, cop: 314900 };
 
 export const ADDONS: Array<{ name: Tx; for: string; price: Record<Cur, number>; body: Tx; note?: Tx }> = [
