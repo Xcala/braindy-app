@@ -16,7 +16,9 @@ function clock(r: ScopedRequest, now: number) {
   return { asked, due, share: Math.min(1, used / total), late: now > due, leftH: Math.max(0, Math.ceil((total - used) / 3600_000)) };
 }
 
-/** In production: the 48-business-hour promise up top, then one card per piece with its own clock. */
+/** In production: the 48-business-hour promise up top, then one card per piece with its own clock (the first four; the rest in Requests). */
+const FIRST = 4;
+
 export function HomeProduction({ items }: { items: ScopedRequest[] }) {
   const { t, lang } = useI18n();
   const { current, select } = useBrands();
@@ -31,7 +33,7 @@ export function HomeProduction({ items }: { items: ScopedRequest[] }) {
       </div>
       {items.length === 0 && <div className="card t-mute">{t('hg.nothingProd')}</div>}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {items.map((r) => {
+        {items.slice(0, FIRST).map((r) => {
           const c = clock(r, now);
           const tone = c.late ? 'late' : c.share > 0.75 ? 'near' : 'ok';
           return (
@@ -54,6 +56,7 @@ export function HomeProduction({ items }: { items: ScopedRequest[] }) {
           );
         })}
       </div>
+      {items.length > FIRST && <Link to="/requests" className="t-sm w7 self-start" style={{ color: 'var(--azul)' }}>{t('home.seeAll')} ({items.length}) →</Link>}
     </section>
   );
 }

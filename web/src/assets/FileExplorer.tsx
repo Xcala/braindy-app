@@ -19,6 +19,8 @@ import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity
 type Folder = { path: string; files: number; bytes: number };
 type Filter = 'all' | FileKind;
 const PAGE = 48;
+// Many folders (Quimiolab has 39) start as three rows; the rest opens on request.
+const FOLDERS_FIRST = 12;
 const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndexOf('/')) : '');
 
 /** startPath/openId come from a search result: open that folder and show that file. */
@@ -31,6 +33,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [limit, setLimit] = useState(PAGE);
   const [preview, setPreview] = useState<FileItem | null>(null);
+  const [allFolders, setAllFolders] = useState(false);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -51,7 +54,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
 
   useEffect(() => { setPath(startPath); }, [brandId, startPath]);
-  useEffect(() => { setLimit(PAGE); setQ(''); }, [brandId, path]);
+  useEffect(() => { setLimit(PAGE); setQ(''); setAllFolders(false); }, [brandId, path]);
   const pathShared = visible(path);
   useEffect(() => {
     if (!pathShared) { setFiles([]); return; }
@@ -122,7 +125,12 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
                 </span>
               )}
             </div>
-            <FolderGrid folders={subfolders} onOpen={setPath} />
+            <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath} />
+            {subfolders.length > FOLDERS_FIRST && (
+              <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
+                {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}
+              </button>
+            )}
           </div>
         )}
         <div className="col g12">

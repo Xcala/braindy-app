@@ -20,7 +20,7 @@ export function HomeDelivered({ items }: { items: ScopedRequest[] }) {
         <Link to="/requests" className="t-sm w7">{t('home.seeAll')}</Link>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.slice(0, 6).map((r) => <Piece key={`${r.brandId}/${r.id}`} r={r} />)}
+        {items.slice(0, 3).map((r) => <Piece key={`${r.brandId}/${r.id}`} r={r} />)}
       </div>
     </section>
   );
