@@ -9,12 +9,13 @@ const SIGN_IN: [SignIn, StringKey][] = [['password', 'acc.signInPassword'], ['go
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
 
 /** Add or edit an access (design 17). The password is sent once to the backend, encrypted before saving. */
-export function AccessForm({ brandId, editing, onClose }: { brandId: string; editing: Access | null; onClose: () => void }) {
+export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId: string; editing: Access | null; groups?: string[]; onClose: () => void }) {
   const { t } = useI18n();
   const [platform, setPlatform] = useState(editing?.platform ?? '');
   const [username, setUsername] = useState(editing?.username ?? '');
   const [password, setPassword] = useState('');
   const [link, setLink] = useState(editing?.link ?? '');
+  const [group, setGroup] = useState(editing?.group ?? '');
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [shared, setShared] = useState(!!editing?.sharedWithBraindy);
   const [isSub, setIsSub] = useState(!!editing?.subscription);
@@ -42,7 +43,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setError(false);
-    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, subscription: isSub ? sub : null, signIn, ...(password && signIn === 'password' ? { password } : {}) };
+    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, group: group.trim(), subscription: isSub ? sub : null, signIn, ...(password && signIn === 'password' ? { password } : {}) };
     try {
       if (editing) await accessesApi.update(brandId, editing.id, body);
       else await accessesApi.add(brandId, body);
@@ -61,6 +62,12 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
           <label htmlFor="acc-platform">{t('acc.platform')}</label>
           <input ref={first} id="acc-platform" className="input" list="acc-platforms" value={platform} onChange={(e) => setPlatform(e.target.value)} required maxLength={80} />
           <datalist id="acc-platforms">{PLATFORMS.map((p) => <option key={p} value={p} />)}</datalist>
+        </div>
+        <div className="field">
+          <label htmlFor="acc-group">{t('apps.group')}</label>
+          <input id="acc-group" className="input" list="acc-groups" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} />
+          <datalist id="acc-groups">{groups.map((g) => <option key={g} value={g} />)}</datalist>
+          <span className="help">{t('apps.groupHelp')}</span>
         </div>
         <div className="field">
           <label htmlFor="acc-user">{t('acc.userOrEmail')}</label>

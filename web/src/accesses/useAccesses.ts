@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 
 export type Access = {
   id: string; platform: string; username?: string; link?: string; notes?: string; hasSecret?: boolean;
-  sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
+  sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string; order?: number; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
 };
 /** How people get in: their own password, or a Google / Microsoft (Outlook) account with nothing to keep here. */
 export type SignIn = 'password' | 'google' | 'microsoft';
@@ -40,12 +40,14 @@ export function useAccessLog(brandId?: string, max = 8) {
 }
 
 const base = (brandId: string) => `/v1/brands/${encodeURIComponent(brandId)}/accesses`;
-export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn };
+export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string };
 
 export const accessesApi = {
   add: (brandId: string, a: AccessInput) => api<{ id: string }>(base(brandId), { method: 'POST', body: JSON.stringify(a) }),
   update: (brandId: string, id: string, a: Partial<AccessInput>) => api(`${base(brandId)}/${id}`, { method: 'PATCH', body: JSON.stringify(a) }),
   remove: (brandId: string, id: string) => api(`${base(brandId)}/${id}`, { method: 'DELETE' }),
   reveal: (brandId: string, id: string) => api<{ value: string; seconds: number }>(`${base(brandId)}/${id}/reveal`, { method: 'POST', body: '{}' }),
+  /** Ids top to bottom after a drag, and the new group of the one that changed group. */
+  reorder: (brandId: string, ids: string[], groups: Record<string, string>) => api(`/v1/brands/${encodeURIComponent(brandId)}/accesses-order`, { method: 'POST', body: JSON.stringify({ ids, groups }) }),
   copied: (brandId: string, id: string) => api(`${base(brandId)}/${id}/copied`, { method: 'POST', body: '{}' }),
 };

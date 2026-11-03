@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { logoDomain } from '../accesses/AppLogo';
-import { ALL_COLS, AccessRow, gridFor, priceLabel, type AccessCol } from '../accesses/AccessRow';
+import { ALL_COLS, priceLabel, type AccessCol } from '../accesses/AccessRow';
+import { AppsList } from '../accesses/AppsList';
+import { AppsToolbar } from '../accesses/AppsToolbar';
+import { loadView, monthlyTotals, passes, saveView, type AppsView } from '../accesses/appsView';
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
 import { BackToAccount } from './Account';
 
-/** Accesses (design 07): encrypted credentials, reveal on demand, read-only access log. */
+/** Third party apps (design 07): encrypted credentials, reveal on demand, search, groups, grid, read-only log. */
 export function Accesses() {
   const { current } = useBrands();
   const { t, lang } = useI18n();
@@ -16,13 +18,14 @@ export function Accesses() {
   const [editing, setEditing] = useState<Access | null | 'new'>(null);
   const [cols, setCols] = useState<AccessCol[]>(loadCols);
   const toggle = (c: AccessCol) => setCols((now) => { const next = now.includes(c) ? now.filter((x) => x !== c) : ALL_COLS.filter((x) => x === c || now.includes(x)); saveCols(next); return next; });
+  const [view, setView] = useState<AppsView>(loadView);
+  const set = (p: Partial<AppsView>) => setView((v) => { const next = { ...v, ...p }; saveView(next); return next; });
+  const [q, setQ] = useState('');
+  const FILTERS: AppsView['filter'][] = ['all', 'subs', 'google', 'microsoft', 'missing'];
+  const counts = Object.fromEntries(FILTERS.map((f) => [f, list.filter((a) => passes(a, f)).length])) as Record<AppsView['filter'], number>;
+  const groupNames = [...new Set(list.map((a) => a.group).filter((g): g is string => !!g))].sort();
   const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('acc.password'), link: t('acc.link'), plan: t('acc.subscription'), notes: t('acc.notes') };
-  // What the subscriptions cost, per month and per currency (yearly plans count a twelfth).
-  const monthly = new Map<string, number>();
-  for (const a of list) {
-    const s = a.subscription;
-    if (s?.price != null) monthly.set(s.currency ?? 'USD', (monthly.get(s.currency ?? 'USD') ?? 0) + (s.period === 'year' ? s.price / 12 : s.price));
-  }
+  const monthly = monthlyTotals(list);
   const subs = list.filter((a) => a.subscription).length;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
@@ -48,20 +51,15 @@ export function Accesses() {
       {denied ? <div className="card t-mute">{t('acc.ownersOnly')}</div> : (
         <div className="col g24">
           <div className="col g12 min-w-0">
-          <div className="row g8 wrap" role="group" aria-label={t('acc.columns')}>
+          <AppsToolbar view={view} set={set} q={q} setQ={setQ} counts={counts} />
+          {view.layout === 'list' && <div className="row g8 wrap" role="group" aria-label={t('acc.columns')}>
             <span className="label">{t('acc.columns')}</span>
             {ALL_COLS.map((c) => (
               <button key={c} type="button" aria-pressed={cols.includes(c)} onClick={() => toggle(c)} className={`btn btn-sm ${cols.includes(c) ? 'btn-primary' : 'btn-secondary'}`}>{cols.includes(c) ? '✓ ' : ''}{label[c]}</button>
             ))}
-          </div>
-          <div className="table acc-table overflow-x-auto">
-            <div className="trow head label" style={{ gridTemplateColumns: gridFor(cols), minWidth: 260 + cols.length * 170 }}>
-              <span>{t('acc.platform')}</span>{cols.map((c) => <span key={c}>{label[c]}</span>)}<span />
-            </div>
-            {loading && <p className="t-sm t-mute" style={{ padding: 16 }}>{t('common.loading')}…</p>}
-            {!loading && list.length === 0 && <p className="t-sm t-mute" style={{ padding: 16 }}>{t('acc.empty')}</p>}
-            {list.map((a) => <AccessRow key={a.id} brandId={current.id} a={a} cols={cols} logo={logoDomain(a, list)} onEdit={() => setEditing(a)} />)}
-          </div>
+          </div>}
+          {loading ? <p className="t-sm t-mute">{t('common.loading')}…</p> : list.length === 0 ? <div className="card t-mute">{t('acc.empty')}</div>
+            : <AppsList brandId={current.id} list={list} view={view} q={q} cols={cols} onEdit={setEditing} onClear={() => { setQ(''); set({ filter: 'all' }); }} />}
           {subs > 0 && (
             <p className="t-sm" style={{ margin: 0 }}>
               <span className="w7">{t('acc.subsTotal', { n: String(subs) })}</span>
@@ -89,7 +87,7 @@ export function Accesses() {
           </aside>
         </div>
       )}
-      {editing && <AccessForm brandId={current.id} editing={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <AccessForm brandId={current.id} editing={editing === 'new' ? null : editing} groups={groupNames} onClose={() => setEditing(null)} />}
     </div>
   );
 }
