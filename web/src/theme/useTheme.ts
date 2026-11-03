@@ -13,7 +13,8 @@ export const readTheme = (): ThemePref => {
 export function applyTheme(pref: ThemePref) {
   const dark = pref === 'dark' || (pref === 'system' && media().matches);
   document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0B1020' : '#F4F6FB');
+  // Both theme-color tags (light and dark system) follow the choice made here, so the installed app's title bar matches.
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', dark ? '#0B1020' : '#F4F6FB'));
 }
 
 /** The person's appearance choice on this device (light, dark or like the system). */

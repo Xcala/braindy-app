@@ -157,7 +157,7 @@
 .hp summary::after { content: "+"; font-family: var(--mono); font-size: 20px; color: var(--mute); transition: transform .2s; }
 .hp details[open] > summary::after { transform: rotate(45deg); }
 .hp .hp-terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; align-items: start; border-top: 1px solid var(--line); }
-.hp .hp-terms details { scroll-margin-top: 90px; min-width: 0; transition: background .3s; }
+.hp .hp-terms details { scroll-margin-top: calc(var(--top-h, 0px) + 90px); min-width: 0; transition: background .3s; }
 .hp .hp-terms summary { font-size: 16px; font-weight: 900; padding-block: 14px; }
 .hp .hp-terms summary span span { font-weight: 400; color: var(--mute); }
 .hp .hp-terms details > p { color: var(--mute); padding-bottom: 16px; }

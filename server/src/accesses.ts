@@ -40,7 +40,9 @@ function subscription(v: unknown) {
     period: s.period === 'year' ? 'year' : 'month',
   };
 }
-const secretRef = (brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
+/** How people sign in: a password kept here, or their Google / Microsoft account. */
+const signIn = (v: unknown) => (v === 'google' || v === 'microsoft' ? v : 'password');
+const secretRef =(brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
 const aad = (brandId: string, id: string) => `brands/${brandId}/accesses/${id}`;
 
 export const accesses = new Hono<AuthEnv>();
@@ -64,7 +66,7 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   }
   await ref.set({
     platform, username: clean(b.username), link: clean(b.link, 500), notes: clean(b.notes, 1000),
-    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription),
+    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription), signIn: signIn(b.signIn), group: clean(b.group, 40),
     createdBy: user.uid, updatedBy: user.uid, updatedByName: byName, createdAt: now(), updatedAt: now(),
   });
   await log(brandId, ref.id, platform, 'added', user.uid, byName);
@@ -88,6 +90,8 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   if (b.notes !== undefined) patch.notes = clean(b.notes, 1000);
   if (b.sharedWithBraindy !== undefined) patch.sharedWithBraindy = b.sharedWithBraindy === true;
   if (b.subscription !== undefined) patch.subscription = subscription(b.subscription);
+  if (b.signIn !== undefined) patch.signIn = signIn(b.signIn);
+  if (b.group !== undefined) patch.group = clean(b.group, 40);
   if (typeof b.password === 'string' && b.password) {
     const s = await seal(b.password, aad(brandId, id)).catch(() => null);
     if (!s) return c.json({ error: 'vault_unavailable' }, 503);
@@ -96,6 +100,28 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   }
   await ref.update(patch);
   await log(brandId, id, String(patch.platform ?? snap.get('platform')), 'updated', user.uid, byName);
+  return c.json({ ok: true });
+});
+
+/**
+ * The order people arranged by dragging: ids top to bottom, and optionally the group each one sits in now.
+ * Not logged (nothing secret moves). Ids that are not accesses of this brand are skipped.
+ */
+accesses.post('/brands/:brandId/accesses-order', async (c) => {
+  const { brandId } = c.req.param();
+  const user = c.get('user');
+  if (!(await canHandle(user.uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const b = await c.req.json<{ ids?: unknown; groups?: Record<string, unknown> }>();
+  const ids = (Array.isArray(b.ids) ? b.ids : []).filter((x): x is string => typeof x === 'string' && /^[w-]{1,64}$/.test(x)).slice(0, 500);
+  const col = db.collection(`brands/${brandId}/accesses`);
+  const snaps = await db.getAll(...ids.map((id) => col.doc(id)));
+  const batch = db.batch();
+  snaps.forEach((s, i) => {
+    if (!s.exists) return;
+    const g = b.groups?.[s.id];
+    batch.update(s.ref, { order: i, ...(g !== undefined ? { group: clean(g, 40) } : {}) });
+  });
+  if (ids.length) await batch.commit();
   return c.json({ ok: true });
 });
 

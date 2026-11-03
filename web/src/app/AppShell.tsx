@@ -13,6 +13,7 @@ import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { SubNav } from './SubNav';
 import { Sidebar } from './Sidebar';
+import { useEffect, useRef } from 'react';
 
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/today', label: 'today.title' },
@@ -32,6 +33,15 @@ export function AppShell() {
   const isAdmin = profile?.role === 'admin';
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  // The top bar stays fixed while scrolling; its height goes to --top-h so the page's own sticky bars sit just under it.
+  const head = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = head.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--top-h', `${el.offsetHeight}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // Admin is its own space (design 24): never mixed with the client tabs.
   const adminSpace = isAdmin && (pathname.startsWith('/admin') || pathname === '/team');
 
@@ -41,7 +51,7 @@ export function AppShell() {
       <div className="flex min-h-full">
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="flex min-h-full min-w-0 flex-1 flex-col">
-        <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', gap: 8 }}>
+        <header ref={head} className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', paddingTop: 'max(8px, env(safe-area-inset-top))', gap: 8, position: 'sticky', top: 0 }}>
           <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
           <div className="vsep hidden sm:block md:hidden" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
