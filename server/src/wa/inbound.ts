@@ -10,6 +10,7 @@ import { brandAccess } from '../access.js';
 import { sendChoices, sendText } from '../whatsapp.js';
 import { brandsOf, contactRef, getContact, type Contact, type Pending } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
+import { queueWork } from '../autopilot.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const FOLLOW_UP_MS = 15 * 60_000;
@@ -90,7 +91,10 @@ async function comment(brandId: string, requestId: string, uid: string, text: st
     .set(ref.collection('comments').doc(), { author: uid, text: text || (files.length ? `📎 ${files.map((f) => f.name).join(', ')}` : ''), files, kind: 'comment', source: 'whatsapp', createdAt: now() })
     .update(ref, { updatedAt: now() })
     .commit();
-  return String((await ref.get()).get('title') ?? '');
+  const r = await ref.get();
+  // On free action, a follow-up on finished work (not yet approved) puts the Brains back on it.
+  if (r.get('work.state') === 'done' && r.get('status') !== 'approved' && r.get('status') !== 'published') await queueWork(brandId, requestId, 'comment');
+  return String(r.get('title') ?? '');
 }
 
 async function fileRequest(phone: string, uid: string, brandId: string, p: Pending, lang: 'es' | 'en') {

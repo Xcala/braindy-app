@@ -10,6 +10,7 @@ import { notifyDelivery } from './review.js';
 import { noticeToBrand } from './wa/notices.js';
 import { proposePlan } from './brains/plan.js';
 import { recordLearning } from './brains/learn.js';
+import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
@@ -110,6 +111,8 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
   });
   // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
   await proposePlan(brandId, ref.id).catch(() => null);
+  // Brands on free action skip the plan gate: the worker starts right away.
+  await queueWork(brandId, ref.id, 'new', true);
   return { requestId: ref.id };
 }
 
@@ -130,6 +133,7 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   await batch.commit();
   await recordLearning(brandId, requestId, versionId, state, note);
   if (state === 'approved') await noticeToBrand(brandId, 'approved', requestId);
+  else await queueWork(brandId, requestId, 'changes');
   return 'ok';
 }
 
