@@ -77,6 +77,11 @@ function partsOf(m: WaMsg): { text: string; media: InMedia[]; choice: string } {
 
 const firstLine = (t: string) => t.split('\n')[0].trim().slice(0, 80);
 
+// A contact marked silent (set by hand in waContacts) still files requests and comments, but gets no automatic reply.
+const silent = async (phone: string) => (await contactRef(phone).get()).get('silent') === true;
+const say = async (phone: string, text: string) => { if (!(await silent(phone))) return sendText(phone, text); };
+const choose = async (...a: Parameters<typeof sendChoices>) => { if (!(await silent(a[0]))) return sendChoices(...a); };
+
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 /** The brand a message names: its full name, its first long word ("Hacienda") or its initials ("CEEA"). */
 export function brandNamed(text: string, brands: { id: string; name: string }[]) {
@@ -113,15 +118,15 @@ async function fileRequest(phone: string, uid: string, brandId: string, p: Pendi
   const files = await storeMedia(brandId, uid, p.media);
   const text = p.text || COPY[lang].files;
   const r = await createRequest(brandId, uid, { title: firstLine(text), source: 'whatsapp', cards: { product: { text, files } } });
-  if ('error' in r) return sendText(phone, COPY[lang].failed);
+  if ('error' in r) return say(phone, COPY[lang].failed);
   await contactRef(phone).set({ state: null, lastRequest: { brandId, requestId: r.requestId, at: Timestamp.now() } }, { merge: true });
-  return sendText(phone, COPY[lang].received(firstLine(text), `${PUBLIC_BASE}/requests/${r.requestId}`));
+  return say(phone, COPY[lang].received(firstLine(text), `${PUBLIC_BASE}/requests/${r.requestId}`));
 }
 
 async function decideByButton(phone: string, token: string, state: 'approved' | 'changes_requested', note: string, lang: 'es' | 'en') {
   const r = await decideWithLink(token, state, note, phone);
   const c = COPY[lang];
-  return sendText(phone, r === 'ok' ? (state === 'approved' ? c.approved : c.changes) : r === 'used' ? c.used : r === 'expired' ? c.expired : c.failed);
+  return say(phone, r === 'ok' ? (state === 'approved' ? c.approved : c.changes) : r === 'used' ? c.used : r === 'expired' ? c.expired : c.failed);
 }
 
 export async function handleMessage(m: WaMsg, profileName: string) {
@@ -133,14 +138,14 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   await contactRef(phone).set({ lastInboundAt: now() }, { merge: true });
 
   // Opt-out / opt-in for notices.
-  if (/^(stop|baja|parar)$/i.test(text)) { await contactRef(phone).set({ optIn: false }, { merge: true }); return sendText(phone, COPY[lang].stopped); }
-  if (/^(start|alta)$/i.test(text) && contact?.uid) { await contactRef(phone).set({ optIn: true }, { merge: true }); return sendText(phone, COPY[lang].started); }
+  if (/^(stop|baja|parar)$/i.test(text)) { await contactRef(phone).set({ optIn: false }, { merge: true }); return say(phone, COPY[lang].stopped); }
+  if (/^(start|alta)$/i.test(text) && contact?.uid) { await contactRef(phone).set({ optIn: true }, { merge: true }); return say(phone, COPY[lang].started); }
 
   // Review buttons work by the number the link was sent to, even if that number is not linked to a person.
   if (choice.startsWith('ap:')) return decideByButton(phone, choice.slice(3), 'approved', '', lang);
   if (choice.startsWith('ch:')) {
     await contactRef(phone).set({ state: { awaitNote: choice.slice(3) } }, { merge: true });
-    return sendText(phone, COPY[lang].askNote);
+    return say(phone, COPY[lang].askNote);
   }
   if (contact?.state?.awaitNote && text) {
     await contactRef(phone).set({ state: null }, { merge: true });
@@ -154,7 +159,7 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     const polite = contact?.politeAt?.toMillis() ?? 0;
     if (Date.now() - polite > 864e5) {
       await contactRef(phone).set({ politeAt: now() }, { merge: true });
-      await sendText(phone, COPY[lang].unknown);
+      await say(phone, COPY[lang].unknown);
     }
     return;
   }
@@ -172,13 +177,13 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   const replied = m.context?.id ? await db.doc(`waOutbound/${m.context.id}`).get() : null;
   if (replied?.exists && (await brandAccess(uid, replied.get('brandId'))).member) {
     const title = await comment(replied.get('brandId'), replied.get('requestId'), uid, text, media);
-    return sendText(phone, COPY[lang].added(title));
+    return say(phone, COPY[lang].added(title));
   }
   // Follow-up right after a request (more photos, "and make it blue") → comment on it.
   const last = contact?.lastRequest;
   if (last && Date.now() - last.at.toMillis() < FOLLOW_UP_MS && brands.some((b) => b.id === last.brandId)) {
     const title = await comment(last.brandId, last.requestId, uid, text, media);
-    if (text) await sendText(phone, COPY[lang].added(title));
+    if (text) await say(phone, COPY[lang].added(title));
     return;
   }
 
@@ -189,5 +194,5 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   const usual = brands.find((b) => b.id === last?.brandId);
   if (named || usual) return fileRequest(phone, uid, (named ?? usual)!.id, pending, lang);
   await contactRef(phone).set({ state: { pending } }, { merge: true });
-  return sendChoices(phone, COPY[lang].which, brands.map((b) => ({ id: `br:${b.id}`, title: b.name })), lang === 'es' ? 'Marcas' : 'Brands');
+  return choose(phone, COPY[lang].which, brands.map((b) => ({ id: `br:${b.id}`, title: b.name })), lang === 'es' ? 'Marcas' : 'Brands');
 }
