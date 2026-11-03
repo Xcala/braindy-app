@@ -77,6 +77,18 @@ function partsOf(m: WaMsg): { text: string; media: InMedia[]; choice: string } {
 
 const firstLine = (t: string) => t.split('\n')[0].trim().slice(0, 80);
 
+const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+/** The brand a message names: its full name, its first long word ("Hacienda") or its initials ("CEEA"). */
+export function brandNamed(text: string, brands: { id: string; name: string }[]) {
+  const t = ` ${fold(text).replace(/[^a-z0-9]+/g, ' ')} `;
+  const hits = brands.filter((b) => {
+    const words = fold(b.name).split(/[^a-z0-9]+/).filter(Boolean);
+    const initials = words.map((w) => w[0]).join('');
+    return t.includes(` ${words.join(' ')} `) || (words[0]?.length >= 6 && t.includes(` ${words[0]} `)) || (initials.length >= 3 && t.includes(` ${initials} `));
+  });
+  return hits.length === 1 ? hits[0] : undefined;
+}
+
 async function toInbox(m: WaMsg, name: string, text: string, media: InMedia[]) {
   await db.doc(`waInbox/${m.id}`).set({
     phone: m.from, name: name.slice(0, 80), text, type: m.type, media: media.map((x) => ({ id: x.id, name: x.name, contentType: x.contentType })),
@@ -172,6 +184,10 @@ export async function handleMessage(m: WaMsg, profileName: string) {
 
   const pending: Pending = { text, media, at: Date.now() };
   if (brands.length === 1) return fileRequest(phone, uid, brands[0].id, pending, lang);
+  // Several brands: the one the message names, else the one they last asked for. Only a first-time sender gets the list.
+  const named = brandNamed(text, brands);
+  const usual = brands.find((b) => b.id === last?.brandId);
+  if (named || usual) return fileRequest(phone, uid, (named ?? usual)!.id, pending, lang);
   await contactRef(phone).set({ state: { pending } }, { merge: true });
   return sendChoices(phone, COPY[lang].which, brands.map((b) => ({ id: `br:${b.id}`, title: b.name })), lang === 'es' ? 'Marcas' : 'Brands');
 }
