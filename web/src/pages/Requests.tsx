@@ -10,6 +10,8 @@ import { STATUS_CHIP, type BrandRequest, type RequestStatus } from '../requests/
 import { AskBox } from '../requests/AskBox';
 import { useAuth } from '../auth/AuthProvider';
 import { moveRequest } from '../requests/moveRequest';
+import { RequestsToolbar } from '../requests/RequestsToolbar';
+import { NO_FILTERS, inTab, narrow, sortRequests, type ReqFilters } from '../requests/requestFilters';
 
 const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
   { status: 'in_production', bg: '#EEF1F7' }, { status: 'to_approve', bg: '#FFF7E3' },
@@ -19,8 +21,6 @@ const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
 // Each board column and the list start short; the rest opens on request so the page does not run for metres.
 const COL_FIRST = 6;
 const LIST_FIRST = 20;
-type Filter = 'all' | 'to_approve' | 'in_production' | 'done';
-const inFilter = (f: Filter, r: BrandRequest) => f === 'all' || (f === 'done' ? r.status === 'approved' || r.status === 'published' : r.status === f);
 
 /** When the brand asked for it: always shown on every request. */
 const asked = (r: BrandRequest, lang: 'es' | 'en') => dateLabel(r.createdAt?.toDate(), lang);
@@ -39,12 +39,16 @@ export function Requests() {
   const [overCol, setOverCol] = useState<RequestStatus | null>(null);
   const [moveError, setMoveError] = useState(false);
   const [openCols, setOpenCols] = useState<RequestStatus[]>([]);
-  const [filter, setFilter] = useState<Filter>('all');
+  const [f, setF] = useState<ReqFilters>(NO_FILTERS);
   const [listMax, setListMax] = useState(LIST_FIRST);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const typeLabel = (r: BrandRequest) => [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang]].filter(Boolean).join(' · ');
   const toApprove = list.filter((r) => r.status === 'to_approve').length;
+  const narrowed = narrow(list, f, typeLabel);
+  const shown = sortRequests(narrowed.filter((r) => inTab(f.tab, r)), f.sort);
+  const setFilters = (next: ReqFilters) => { setF(next); setListMax(LIST_FIRST); };
+  const columns = COLUMNS.filter(({ status }) => f.tab === 'all' || (f.tab === 'late' ? status === 'in_production' : status === f.tab));
   const drop = (status: RequestStatus) => {
     const r = list.find((x) => x.id === dragId);
     setDragId(null); setOverCol(null); setMoveError(false);
@@ -71,15 +75,19 @@ export function Requests() {
         </div>
       </div>
 
+      {!loading && list.length > 0 && <RequestsToolbar brandId={current.id} all={list} narrowed={narrowed} shown={shown.length} f={f} set={setFilters} />}
+
       {loading ? <div className="grid gap-5 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 300 }} />)}</div>
         : list.length === 0 ? (
           <div className="card empty"><p className="h3">{t('req.empty')}</p></div>
+        ) : shown.length === 0 ? (
+          <div className="card empty col g12"><p className="h3">{t('rf.none')}</p><button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setFilters(NO_FILTERS)}>{t('rf.clear')}</button></div>
         ) : view === 'board' ? (
           <div className="col g8">
           {isAdmin && <p className="t-xs t-mute">{t(moveError ? 'req.moveError' : 'req.dragHint')}</p>}
           <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {COLUMNS.map(({ status, bg }) => {
-              const all = list.filter((r) => r.status === status);
+            {columns.map(({ status, bg }) => {
+              const all = shown.filter((r) => r.status === status);
               const items = openCols.includes(status) ? all : all.slice(0, COL_FIRST);
               const target = isAdmin ? {
                 onDragOver: (e: React.DragEvent) => { if (dragId) { e.preventDefault(); setOverCol(status); } },
@@ -121,18 +129,11 @@ export function Requests() {
           </div>
         ) : (
           <div className="col g12">
-          <div className="seg seg-scroll" role="group" aria-label={t('files.filter')}>
-            {(['all', 'to_approve', 'in_production', 'done'] as Filter[]).map((f) => (
-              <button key={f} className={filter === f ? 'is-on' : ''} aria-pressed={filter === f} onClick={() => { setFilter(f); setListMax(LIST_FIRST); }}>
-                {t(`req.filter.${f}`)} · {list.filter((r) => inFilter(f, r)).length}
-              </button>
-            ))}
-          </div>
           <div className="table overflow-x-auto">
             <div className="trow head label min-w-[880px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 180px 110px 180px 140px' }}>
               <span>{t('req.col.request')}</span><span>{t('req.col.requested')}</span><span>{t('req.col.type')}</span><span>{t('req.col.due')}</span><span>{t('req.col.brains')}</span><span>{t('req.col.status')}</span>
             </div>
-            {list.filter((r) => inFilter(filter, r)).slice(0, listMax).map((r) => (
+            {shown.slice(0, listMax).map((r) => (
               <div key={r.id} className="trow min-w-[880px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 180px 110px 180px 140px', background: r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
                 <Link to={`/requests/${r.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{r.title}</Link>
                 <span className="t-sm">{asked(r, lang) || '—'}</span>
@@ -143,7 +144,7 @@ export function Requests() {
               </div>
             ))}
           </div>
-          {list.filter((r) => inFilter(filter, r)).length > listMax && (
+          {shown.length > listMax && (
             <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setListMax((m) => m + LIST_FIRST)}>{t('files.showMore', { n: LIST_FIRST })}</button>
           )}
           </div>
