@@ -8,6 +8,13 @@ export const requestFilterEn = {
   'rf.status': 'Filter by status',
   'rf.tab.all': 'All', 'rf.tab.to_approve': 'To approve', 'rf.tab.in_production': 'In production', 'rf.tab.late': 'Overdue', 'rf.tab.approved': 'Approved', 'rf.tab.published': 'Published',
   'rf.count': '{n} of {total}', 'rf.clear': 'Clear filters', 'rf.none': 'No request matches these filters.',
+  'rf.tag': 'Campaign', 'rf.tagAll': 'All campaigns', 'rf.versions': 'Versions', 'rf.archived': 'Archived ({n})',
+  'rf.copyLink': 'Copy link to this view', 'rf.linkCopied': 'Link copied', 'rf.excel': 'Excel', 'rf.pdf': 'PDF',
+  'rb.move': 'Move to…', 'rb.moved': '{n} moved.', 'rb.due': 'Set due date', 'rb.dueSet': 'Due date set on {n}.',
+  'rb.tagPh': 'Campaign (e.g. Christmas)', 'rb.tagAdd': 'Tag', 'rb.tagRemove': 'Untag', 'rb.tagged': '{n} tagged #{tag}.', 'rb.untagged': '#{tag} removed from {n}.',
+  'rb.archive': 'Archive', 'rb.unarchive': 'Bring back', 'rb.archived': '{n} archived.', 'rb.unarchived': '{n} back on the board.',
+  'rv.calendar': 'Calendar', 'rv.dueThisMonth': '{n} due this month', 'rv.noDate': '{n} without a date', 'rv.noneThisMonth': 'Nothing due this month.',
+  'rp.label': 'Your pace', 'rp.sub': 'Last 90 days · {n} pieces approved', 'rp.day': '{n} day', 'rp.days': '{n} days', 'rp.toApproved': 'from asking to approved (typical)', 'rp.firstTry': 'approved at the first version',
 };
 export const requestFilterEs: Record<keyof typeof requestFilterEn, string> = {
   'rf.search': 'Buscar por título o tipo',
@@ -18,4 +25,11 @@ export const requestFilterEs: Record<keyof typeof requestFilterEn, string> = {
   'rf.status': 'Filtrar por estado',
   'rf.tab.all': 'Todas', 'rf.tab.to_approve': 'Por aprobar', 'rf.tab.in_production': 'En producción', 'rf.tab.late': 'Atrasadas', 'rf.tab.approved': 'Aprobadas', 'rf.tab.published': 'Publicadas',
   'rf.count': '{n} de {total}', 'rf.clear': 'Quitar filtros', 'rf.none': 'Ninguna solicitud coincide con estos filtros.',
+  'rf.tag': 'Campaña', 'rf.tagAll': 'Todas las campañas', 'rf.versions': 'Versiones', 'rf.archived': 'Archivadas ({n})',
+  'rf.copyLink': 'Copiar enlace de esta vista', 'rf.linkCopied': 'Enlace copiado', 'rf.excel': 'Excel', 'rf.pdf': 'PDF',
+  'rb.move': 'Mover a…', 'rb.moved': '{n} movidas.', 'rb.due': 'Poner fecha de entrega', 'rb.dueSet': 'Fecha puesta en {n}.',
+  'rb.tagPh': 'Campaña (ej. Navidad)', 'rb.tagAdd': 'Etiquetar', 'rb.tagRemove': 'Quitar', 'rb.tagged': '{n} con #{tag}.', 'rb.untagged': '#{tag} quitada de {n}.',
+  'rb.archive': 'Archivar', 'rb.unarchive': 'Devolver al tablero', 'rb.archived': '{n} archivadas.', 'rb.unarchived': '{n} de vuelta en el tablero.',
+  'rv.calendar': 'Calendario', 'rv.dueThisMonth': '{n} se entregan este mes', 'rv.noDate': '{n} sin fecha', 'rv.noneThisMonth': 'Nada se entrega este mes.',
+  'rp.label': 'Tu ritmo', 'rp.sub': 'Últimos 90 días · {n} piezas aprobadas', 'rp.day': '{n} día', 'rp.days': '{n} días', 'rp.toApproved': 'de pedirla a aprobada (lo normal)', 'rp.firstTry': 'aprobadas en la primera versión',
 };
