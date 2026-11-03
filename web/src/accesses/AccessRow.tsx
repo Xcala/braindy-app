@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { StringKey } from '../i18n/strings';
 import { useI18n } from '../i18n/I18nProvider';
-import { accessesApi, type Access } from './useAccesses';
+import { accessesApi, signInOf, type Access } from './useAccesses';
 import { AppLogo } from './AppLogo';
 
 export type AccessCol = 'user' | 'password' | 'link' | 'plan' | 'notes';
@@ -63,6 +63,7 @@ export function AccessRow({ brandId, a, cols, logo, onEdit }: { brandId: string;
     catch { setError(true); } finally { setBusy(false); }
   }
 
+  const signIn = signInOf(a);
   const date = a.updatedAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric' });
   const sub = a.sharedWithBraindy ? t('acc.shared') : [date, a.updatedByName].filter(Boolean).join(' · ');
 
@@ -70,7 +71,9 @@ export function AccessRow({ brandId, a, cols, logo, onEdit }: { brandId: string;
     user: a.username
       ? <span className="row g4 min-w-0"><span className="t-sm truncate" title={a.username}>{a.username}</span><CopyBtn value={a.username} label={`${t('acc.copy')} · ${t('acc.user')}`} /></span>
       : <span className="t-sm t-mute">—</span>,
-    password: !a.hasSecret
+    password: signIn !== 'password'
+      ? <span className="row g8 t-sm w7"><AppLogo name={signIn} domain={signIn === 'google' ? 'google.com' : 'outlook.com'} size={20} />{t(signIn === 'google' ? 'acc.signInGoogle' : 'acc.signInMicrosoft')}</span>
+      : !a.hasSecret
       ? <span className="row g8"><span className="chip c-approve">{t('acc.missing')}</span><button type="button" className="btn btn-secondary btn-sm" onClick={onEdit}>{t('acc.add')}</button></span>
       : value ? (
         <span className="row g4 min-w-0">

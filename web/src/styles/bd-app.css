@@ -95,7 +95,7 @@ p{margin:0}
 
 /* inputs */
 .field{display:flex;flex-direction:column;gap:8px}
-.field label{font:600 14px/18px var(--f-text);color:var(--ink)}
+.field label,.field .label{font:600 14px/18px var(--f-text);color:var(--ink)}
 .input{height:48px;border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:0 16px;font:400 15px/20px var(--f-text);color:var(--ink);background:#fff;width:100%}
 .input::placeholder{color:#6B7285}
 .input.is-focus{border-color:var(--azul)}

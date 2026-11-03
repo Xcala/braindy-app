@@ -40,7 +40,9 @@ function subscription(v: unknown) {
     period: s.period === 'year' ? 'year' : 'month',
   };
 }
-const secretRef = (brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
+/** How people sign in: a password kept here, or their Google / Microsoft account. */
+const signIn = (v: unknown) => (v === 'google' || v === 'microsoft' ? v : 'password');
+const secretRef =(brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
 const aad = (brandId: string, id: string) => `brands/${brandId}/accesses/${id}`;
 
 export const accesses = new Hono<AuthEnv>();
@@ -64,7 +66,7 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   }
   await ref.set({
     platform, username: clean(b.username), link: clean(b.link, 500), notes: clean(b.notes, 1000),
-    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription),
+    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription), signIn: signIn(b.signIn),
     createdBy: user.uid, updatedBy: user.uid, updatedByName: byName, createdAt: now(), updatedAt: now(),
   });
   await log(brandId, ref.id, platform, 'added', user.uid, byName);
@@ -88,6 +90,7 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   if (b.notes !== undefined) patch.notes = clean(b.notes, 1000);
   if (b.sharedWithBraindy !== undefined) patch.sharedWithBraindy = b.sharedWithBraindy === true;
   if (b.subscription !== undefined) patch.subscription = subscription(b.subscription);
+  if (b.signIn !== undefined) patch.signIn = signIn(b.signIn);
   if (typeof b.password === 'string' && b.password) {
     const s = await seal(b.password, aad(brandId, id)).catch(() => null);
     if (!s) return c.json({ error: 'vault_unavailable' }, 503);

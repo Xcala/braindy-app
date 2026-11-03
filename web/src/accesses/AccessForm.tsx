@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { accessesApi, type Access, type Subscription } from './useAccesses';
+import type { StringKey } from '../i18n/strings';
+import { accessesApi, signInOf, type Access, type SignIn, type Subscription } from './useAccesses';
 import { looksLikeSecret, splitSecretLines } from './secretNotes';
 
+const SIGN_IN: [SignIn, StringKey][] = [['password', 'acc.signInPassword'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft']];
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
 
 /** Add or edit an access (design 17). The password is sent once to the backend, encrypted before saving. */
@@ -17,6 +19,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   const [shared, setShared] = useState(!!editing?.sharedWithBraindy);
   const [isSub, setIsSub] = useState(!!editing?.subscription);
   const [sub, setSub] = useState<Subscription>(editing?.subscription ?? { plan: '', price: null, currency: 'USD', period: 'month' });
+  const [signIn, setSignIn] = useState<SignIn>(editing ? signInOf(editing) : 'password');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<false | 'save' | 'vault'>(false);
   const [deleting, setDeleting] = useState(false);
@@ -39,7 +42,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setError(false);
-    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, subscription: isSub ? sub : null, ...(password ? { password } : {}) };
+    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, subscription: isSub ? sub : null, signIn, ...(password && signIn === 'password' ? { password } : {}) };
     try {
       if (editing) await accessesApi.update(brandId, editing.id, body);
       else await accessesApi.add(brandId, body);
@@ -64,11 +67,23 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
           <input id="acc-user" className="input" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={200} autoComplete="off" />
         </div>
         <div className="field">
-          <label htmlFor="acc-pass">{t('acc.password')}</label>
-          <input id="acc-pass" className="input mono" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder={editing?.hasSecret ? t('acc.keepPassword') : ''} autoComplete="new-password" />
-          <span className="help">{t('acc.passwordHelp')}</span>
+          <span id="acc-signin" className="label">{t('acc.signIn')}</span>
+          <div className="row g8 wrap" role="radiogroup" aria-labelledby="acc-signin">
+            {SIGN_IN.map(([v, k]) => (
+              <button key={v} type="button" role="radio" aria-checked={signIn === v} className={`btn btn-sm ${signIn === v ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSignIn(v)}>{t(k)}</button>
+            ))}
+          </div>
+          {signIn !== 'password' && <span className="help">{t('acc.signInHelp')}</span>}
         </div>
+        {signIn === 'password' && (
+          <div className="field">
+            <label htmlFor="acc-pass">{t('acc.password')}</label>
+            <input id="acc-pass" className="input mono" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder={editing?.hasSecret ? t('acc.keepPassword') : ''} autoComplete="new-password" />
+            <span className="help">{t('acc.passwordHelp')}</span>
+          </div>
+        )}
         <div className="field">
           <label htmlFor="acc-link">{t('acc.link')}</label>
           <input id="acc-link" className="input" value={link} onChange={(e) => setLink(e.target.value)} maxLength={500} placeholder="https://" />
