@@ -116,6 +116,7 @@ async function main() {
     const files = await download(job.brandId, assetIds, join(folder, 'archivos'));
     const jobData: Job = {
       brandId: job.brandId, brandName: job.brandName, requestId, category, publish: job.auto.publish, folder, files,
+      cwd, workspaces: job.auto.workspaces,
       title: String(r.get('title') ?? ''), text: String(r.get('cards.product.text') ?? ''), dueDate: r.get('dueDate') ?? null,
       reason: String(r.get('work.reason') ?? 'new'),
       comments: comments.docs.map((c) => ({ kind: String(c.get('kind') ?? 'comment'), text: String(c.get('text') ?? '') })).filter((c) => c.text),
