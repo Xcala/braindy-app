@@ -13,6 +13,7 @@ import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
 import { HomeMeetings } from '../home/HomeMeetings';
+import { HomeThisMonth } from '../home/HomeThisMonth';
 
 /**
  * Home, by hierarchy: the studio with what was launched (4 columns: studio 3, launches 1), what was delivered
@@ -42,6 +43,7 @@ export function Home() {
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
+      <HomeThisMonth brandId={current.id} requests={all} />
       <HomeDelivered items={needsYou} />
       <HomeProduction items={inProd} />
       <div data-tour="home-meetings"><HomeMeetingsRow brandId={current.id} brandName={current.name} /></div>

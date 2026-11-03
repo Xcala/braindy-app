@@ -7,6 +7,7 @@ import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
+import { Calendar } from '../pages/Calendar';
 import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -56,8 +57,9 @@ export const router = createBrowserRouter([
           { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },
+          { path: 'calendar', element: <Calendar /> },
           { path: 'research', element: <MyResearch /> },
-          { path: 'ask', element: <Navigate to="/requests#ask" replace /> },
+          { path: 'ask', element: <Navigate to="/requests?new=1" replace /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },

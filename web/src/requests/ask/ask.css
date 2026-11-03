@@ -1,0 +1,29 @@
+/* "New request" side panel: 600 px from the right on desktop, full screen on phones. */
+.ask-layer { position: fixed; inset: 0; z-index: 80; }
+.ask-scrim { position: absolute; inset: 0; background: rgba(11, 18, 32, .38); animation: ask-fade .2s ease; }
+.ask-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(600px, 100vw); overflow-y: auto; background: var(--white, #fff);
+  display: flex; flex-direction: column; gap: 24px; padding: 28px 28px 40px; box-shadow: -18px 0 48px rgba(11, 18, 32, .16); outline: none;
+  animation: ask-in .26s cubic-bezier(.2, .8, .2, 1); }
+@media (max-width: 639px) { .ask-panel { padding: 20px 16px 32px; } }
+@keyframes ask-in { from { transform: translateX(40px); opacity: 0; } }
+@keyframes ask-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ask-panel, .ask-scrim { animation: none; } }
+
+/* Intents: big tap targets with an icon. */
+.ask-intent { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid var(--line-strong);
+  background: #fff; text-align: left; cursor: pointer; color: var(--ink); min-height: 72px; }
+.ask-intent:hover, .ask-intent:focus-visible { border-color: var(--azul); background: #F7F9FF; }
+.ask-intent-ico { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F2F5FF; color: var(--azul); }
+
+/* Ideas and "ask again": one-line rows. */
+.ask-idea { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--niebla, #F6F7FB); text-align: left; cursor: pointer; color: var(--ink); width: 100%; }
+.ask-idea:hover, .ask-idea:focus-visible { border-color: var(--azul); background: #F2F5FF; }
+.ask-idea > svg:first-child { color: var(--azul); flex: none; }
+
+/* Checklist and "how NickMark read it". */
+.ask-summary { padding: 16px; border-radius: 16px; background: #F4F7FF; border: 1px solid #DCE4FF; }
+.ask-check { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ask-check li { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 999px; background: #fff;
+  border: 1px dashed var(--line-strong); font: 700 12px/1 var(--f-text); color: var(--graphite); }
+.ask-check li.is-ok { border: 1px solid #B9E5CC; background: #EAF7EF; color: #0E5A3A; }

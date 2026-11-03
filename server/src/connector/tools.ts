@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand, setLink, syncSiteChanges, uploadContent, uploadPath } from './store.js';
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
+import { syncSocialPosts } from './social.js';
 import { setIdentity } from './identity.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 
@@ -110,6 +111,35 @@ Ver: ${APP}/plan`;
     const name = await requireBrand(brandId);
     const r = await syncSiteChanges(brandId, items, { siteUrl, round, removeMissing });
     return `${name}: ${r.total} puntos · ${r.created} nuevos · ${r.updated} actualizados · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} borrados` : ''}.\nVer: ${APP}/apps`;
+  }));
+
+  server.registerTool('braindy_social_calendar_sync', {
+    title: 'Subir el calendario de redes a Braindy App',
+    description: 'Mirrors a brand\'s social media posts from Metricool (published and scheduled) into Braindy App, section "Calendario", which the client can only view. '
+      + 'Read the posts with the Metricool getScheduledPosts tool (it returns published and pending ones), then send all posts of the range here: '
+      + 'posts of that range missing from the list are removed. Keep ranges to a few weeks per call. '
+      + 'Use when Nicolas says "sincroniza el calendario de X", "sube las publicaciones a Braindy", or after scheduling posts in Metricool.',
+    inputSchema: {
+      brandId: z.string(),
+      from: z.string().describe('Start of the range read from Metricool, ISO 8601 with offset'),
+      to: z.string().describe('End of the range, ISO 8601 with offset'),
+      metricoolBrand: z.string().optional().describe('Metricool brand (blog) id, e.g. "6032280"'),
+      posts: z.array(z.object({
+        id: z.string().describe('Metricool post id'),
+        date: z.string().describe('publicationDate.dateTime with its timezone offset, ISO 8601'),
+        text: z.string().optional(),
+        title: z.string().optional().describe('YouTube title, if any'),
+        type: z.string().optional().describe('POST, REEL, STORY, CAROUSEL, SHORT…'),
+        draft: z.boolean().optional(),
+        networks: z.array(z.object({ network: z.string(), status: z.string().optional().describe('PUBLISHED, PENDING, ERROR'), url: z.string().optional().describe('publicUrl') })),
+        media: z.array(z.string()).optional().describe('Media URLs (https)'),
+        thumb: z.string().optional().describe('videoThumbnailUrl, if any'),
+      })).max(400),
+    },
+  }, run(async ({ brandId, from, to, metricoolBrand, posts }) => {
+    const name = await requireBrand(brandId);
+    const r = await syncSocialPosts(brandId, posts, { from, to }, metricoolBrand);
+    return `${name}: ${r.total} publicaciones · ${r.created} nuevas · ${r.updated} actualizadas · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} quitadas` : ''}.\nVer: ${APP}/calendar`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {
