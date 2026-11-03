@@ -31,6 +31,7 @@ import { adminGranola, granolaWebhook } from './granola.js';
 import { whatsappWebhook } from './wa/webhook.js';
 import { meWhatsapp } from './wa/contacts.js';
 import { adminWhatsapp } from './wa/admin.js';
+import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
@@ -71,6 +72,9 @@ app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
 app.route('/webhooks', granolaWebhook);
 app.route('/webhooks', whatsappWebhook);
+// Notices for work delivered from Nicolas's PC (Google identity token of an admin).
+app.use('/internal/*', rateLimit('internal', 30, 60_000));
+app.route('/', relay);
 // Google Calendar OAuth return (public, checked by a one-time state).
 app.use('/integrations/*', rateLimit('integrations', 30, 60_000));
 app.route('/', calendarCallback);

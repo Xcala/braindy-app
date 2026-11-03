@@ -5,6 +5,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { bucket, createRequest, publishVersion } from '../requests.js';
 import { contentTypeOf } from '../lib/mime.js';
+import { whatsappConfigured } from '../whatsapp.js';
+import { relayDelivery } from '../wa/relay.js';
 
 export type FileWriter = { name: string; size: number; write: (file: ReturnType<ReturnType<typeof bucket>['file']>, contentType: string) => Promise<void> };
 
@@ -49,5 +51,7 @@ export async function deliverVersion(brandId: string, requestId: string, uid: st
   });
   const r = await publishVersion(brandId, requestId, `v${n}`, uid);
   if ('error' in r) throw new Error(`La versión v${n} quedó guardada pero no se publicó (${r.error}).`);
+  // On the PC there is no WhatsApp key: the backend sends the notice.
+  if (!whatsappConfigured()) return { n, notice: { status: await relayDelivery(brandId, requestId, `v${n}`) } };
   return { n, notice: r.notice };
 }

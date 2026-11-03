@@ -20,17 +20,28 @@ const NOTICES = ['delivery', 'approved', 'published', 'brandBrain', 'report'] as
 type Notices = { whatsapp?: string; groupLink?: string; groups?: Array<{ name?: string; url?: string }>; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
 const settingsRef = (brandId: string) => db.doc(`brands/${brandId}/settings/notices`);
 
+/** The requester's own number, when they linked one with consent and may approve for the brand. */
+async function deliveryTarget(uid: string, brandId: string) {
+  if (!uid) return null;
+  const wa = (await db.doc(`users/${uid}`).get()).get('whatsapp') as { phone?: string; optIn?: boolean } | undefined;
+  const phone = wa?.optIn && wa.phone ? normalizePhone(wa.phone) : null;
+  return phone && (await canApprove(uid, brandId)) ? { uid, phone } : null;
+}
+
 /** Creates a review link and sends it (WhatsApp API) or returns a wa.me link to send by hand. */
 export async function notifyDelivery(brandId: string, requestId: string, versionId: string, by: string, force = false) {
   const s = ((await settingsRef(brandId).get()).data() ?? {}) as Notices;
-  const phone = s.whatsapp ? normalizePhone(s.whatsapp) : null;
-  if (!phone || !s.approverUid) return { status: 'no_number' as const };
   if (!force && s.notices?.delivery === false) return { status: 'off' as const };
-
   const [brand, req] = await Promise.all([db.doc(`brands/${brandId}`).get(), db.doc(`brands/${brandId}/requests/${requestId}`).get()]);
+  // The person who asked gets it on their own WhatsApp when they can approve; otherwise the brand's notice number.
+  const asker = await deliveryTarget(String(req.get('createdBy') ?? ''), brandId);
+  const phone = asker?.phone ?? (s.whatsapp ? normalizePhone(s.whatsapp) : null);
+  const approverUid = asker?.uid ?? s.approverUid;
+  if (!phone || !approverUid) return { status: 'no_number' as const };
+
   const token = randomBytes(24).toString('base64url');
   await db.doc(`reviewLinks/${token}`).set({
-    brandId, requestId, versionId, approverUid: s.approverUid, phoneLast4: phone.slice(-4), phoneHash: phoneHash(phone),
+    brandId, requestId, versionId, approverUid, phoneLast4: phone.slice(-4), phoneHash: phoneHash(phone),
     expiresAt: Timestamp.fromMillis(Date.now() + LINK_DAYS * 864e5), createdBy: by, createdAt: now(), usedAt: null,
   });
   const url = `${PUBLIC_BASE}/r/${token}`;
