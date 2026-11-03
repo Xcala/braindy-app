@@ -7,6 +7,7 @@ import { bucket, createRequest, publishVersion } from '../requests.js';
 import { contentTypeOf } from '../lib/mime.js';
 import { whatsappConfigured } from '../whatsapp.js';
 import { relayDelivery } from '../wa/relay.js';
+import { assertOwnBrand } from './brandGuard.js';
 
 export type FileWriter = { name: string; size: number; write: (file: ReturnType<ReturnType<typeof bucket>['file']>, contentType: string) => Promise<void> };
 
@@ -29,6 +30,7 @@ export async function newRequest(brandId: string, uid: string, r: { text: string
 export async function deliverVersion(brandId: string, requestId: string, uid: string, files: FileWriter[], notes: string) {
   if (!files.length) throw new Error('Una versión necesita al menos un archivo.');
   if (files.length > 20) throw new Error('Máximo 20 archivos por versión.');
+  await assertOwnBrand(brandId, files.map((f) => f.name));
   const reqRef = db.doc(`brands/${brandId}/requests/${requestId}`);
   const n = await db.runTransaction(async (tx) => {
     const r = await tx.get(reqRef);
