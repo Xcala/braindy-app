@@ -23,6 +23,7 @@ import { pwaEn, pwaEs } from './pwaStrings';
 import { appsViewEn, appsViewEs } from './appsViewStrings';
 import { sitePanelEn, sitePanelEs } from './sitePanelStrings';
 import { calendarEn, calendarEs } from './calendarStrings';
+import { outcomeEn, outcomeEs } from './outcomeStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -182,7 +183,7 @@ const baseEn = {
   'login.kicker': 'The Braindy app',
   'login.hero1': 'Your brand,',
   'login.hero2': 'remembered.',
-  'login.heroBody': 'Every file, request and approval in one place, signed by NickMark. You will see the work happening.',
+  'login.heroBody': 'What was delivered, published and what comes next, in one place and signed by NickMark. No tools to learn: you approve, the work gets done.',
   'login.brainsAlt': 'Researcher, Marketer, Creator and Builder',
   'login.studioAlt': 'NickMark and his four Brains working in the Braindy studio in San Francisco', 'login.studioLive': 'Live from San Francisco',
   'login.line1': 'Made by NickMark.',
@@ -205,7 +206,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...outcomeEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -367,7 +368,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.kicker': 'La app de Braindy',
   'login.hero1': 'Tu marca,',
   'login.hero2': 'recordada.',
-  'login.heroBody': 'Cada archivo, solicitud y aprobación en un solo lugar, firmado por NicoMarca. Vas a ver el trabajo avanzar.',
+  'login.heroBody': 'Lo entregado, lo publicado y lo que viene, en un solo lugar y firmado por NicoMarca. Sin herramientas que aprender: tú apruebas, el trabajo se hace.',
   'login.brainsAlt': 'Researcher, Marketer, Creator y Builder',
   'login.studioAlt': 'NicoMarca y sus cuatro Brains trabajando en el estudio de Braindy en San Francisco', 'login.studioLive': 'En vivo desde San Francisco',
   'login.line1': 'Lo hace NicoMarca.',
@@ -390,4 +391,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...outcomeEs };
