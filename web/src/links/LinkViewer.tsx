@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { api } from '../lib/api';
+import { SitePanel } from './SitePanel';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
 
@@ -32,6 +33,9 @@ export function LinkViewer({ brandId, link, onClose }: { brandId: string; link: 
     api<{ embeddable: boolean | null }>(`/v1/brands/${brandId}/links/${link.id}/frame`).then((r) => setFrame(r.embeddable), () => setFrame(null));
   }, [brandId, link.id, frame]);
   const blocked = frame === false;
+  // The adjustments column: open by default where there is room, folded on phones.
+  const hasPanel = link.section === 'apps';
+  const [panel, setPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
 
   return (
     <div className="lview" role="dialog" aria-modal="true" aria-label={link.title}>
@@ -47,24 +51,28 @@ export function LinkViewer({ brandId, link, onClose }: { brandId: string; link: 
             ))}
           </div>
         )}
+        {hasPanel && <button type="button" className="btn btn-secondary btn-sm lview-panel-btn" aria-pressed={panel} aria-controls="site-panel" onClick={() => setPanel((p) => !p)}>{t('sp.toggle')}</button>}
         <a href={link.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">{t('lv.newTab')} ↗</a>
         <button ref={close} type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('lb.close')}>✕</button>
       </div>
-      <div className="lview-stage">
-        {frame === undefined ? <div className="skel lview-frame" style={{ width: SIZES[size] }} /> : blocked ? (
-          <div className="card col g12 lview-blocked">
-            <p className="h3" style={{ margin: 0 }}>{t('lv.blockedTitle')}</p>
-            <p className="t-sm t-mute" style={{ margin: 0 }}>{t('lv.blocked')}</p>
-            <a href={link.url} target="_blank" rel="noreferrer" className="btn btn-primary self-start">{t('lv.newTab')} ↗</a>
-          </div>
-        ) : (
-          <>
-            <iframe title={link.title} src={link.url} className="lview-frame" style={{ width: SIZES[size] }}
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
-              referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
-            {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
-          </>
-        )}
+      <div className="lview-body">
+        <div className="lview-stage">
+          {frame === undefined ? <div className="skel lview-frame" style={{ width: SIZES[size] }} /> : blocked ? (
+            <div className="card col g12 lview-blocked">
+              <p className="h3" style={{ margin: 0 }}>{t('lv.blockedTitle')}</p>
+              <p className="t-sm t-mute" style={{ margin: 0 }}>{t('lv.blocked')}</p>
+              <a href={link.url} target="_blank" rel="noreferrer" className="btn btn-primary self-start">{t('lv.newTab')} ↗</a>
+            </div>
+          ) : (
+            <>
+              <iframe title={link.title} src={link.url} className="lview-frame" style={{ width: SIZES[size] }}
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+                referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
+              {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
+            </>
+          )}
+        </div>
+        {hasPanel && panel && <SitePanel brandId={brandId} url={link.url} />}
       </div>
     </div>
   );

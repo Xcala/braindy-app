@@ -12,3 +12,28 @@
 .lview-hint { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; margin: 0; }
 .lview-blocked { align-self: center; max-width: 460px; }
 html[data-theme="dark"] .lview-bar { background: var(--white); }
+
+/* The site on the left, a narrow column with its adjustments and a box to ask for more on the right. */
+.lview-body { flex: 1; min-height: 0; display: flex; }
+.lview-body .lview-stage { flex: 1; min-width: 0; }
+.spanel { flex: none; width: 340px; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; overflow-y: auto; background: var(--white); border-left: 1px solid var(--line); }
+.spanel-pct { font: 300 14px/1 var(--f-display); color: var(--graphite); }
+.spanel-pct b { font-weight: 900; font-size: 26px; color: var(--ink); }
+.spanel-ask { padding: 12px; border-radius: 14px; background: var(--niebla); }
+.spanel-ask textarea { height: auto; min-height: 84px; padding-top: 10px; resize: vertical; background: #fff; }
+.spanel-ask .btn-sm { height: 34px; }
+.spanel-pt { border: 1px solid var(--line); border-radius: 12px; background: var(--white); }
+.spanel-pt > summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; align-items: center; padding: 10px 12px; cursor: pointer; list-style: none; }
+.spanel-pt > summary::-webkit-details-marker { display: none; }
+.spanel-pt .sx-key { padding: 4px 6px; font-size: 11px; }
+.spanel-ptitle { font: 600 13px/1.3 var(--f-text); }
+.spanel-pt .sx-status { grid-column: 2; justify-self: start; height: 24px; padding: 0 10px; font-size: 11px; }
+.spanel-pt > p, .spanel-pt > a { margin: 0 12px 10px; }
+.spanel-pt[open] { border-color: color-mix(in srgb, var(--c) 40%, var(--line)); }
+.spanel-done > summary { cursor: pointer; padding: 6px 0; }
+.lview-panel-btn[aria-pressed='true'] { background: var(--azul); color: #fff; border-color: var(--azul); }
+@media (max-width: 1023px) { .spanel { width: 300px; } }
+@media (max-width: 767px) {
+  .lview-body { flex-direction: column; }
+  .spanel { width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--line); }
+}

@@ -5,12 +5,12 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 
-type Status = 'delivered' | 'in_progress' | 'decision' | 'client' | 'discarded';
-interface SiteChange { id: string; key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: Status; link?: string; round?: string; updatedAt?: Timestamp }
+export type Status = 'delivered' | 'in_progress' | 'decision' | 'client' | 'discarded';
+export interface SiteChange { id: string; key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: Status; link?: string; round?: string; updatedAt?: Timestamp }
 
-const STATUSES: Status[] = ['delivered', 'in_progress', 'decision', 'client', 'discarded'];
+export const STATUSES: Status[] = ['delivered', 'in_progress', 'decision', 'client', 'discarded'];
 
-function useSiteChanges(brandId: string) {
+export function useSiteChanges(brandId: string) {
   const [list, setList] = useState<SiteChange[]>([]);
   useEffect(() => onSnapshot(query(collection(db, 'brands', brandId, 'siteChanges'), orderBy('order')),
     (s) => setList(s.docs.map((d) => ({ id: d.id, ...d.data() }) as SiteChange)), () => setList([])), [brandId]);
@@ -18,7 +18,7 @@ function useSiteChanges(brandId: string) {
 }
 
 /** Share delivered, leaving out what was discarded. */
-const pct = (items: SiteChange[]) => {
+export const pct = (items: SiteChange[]) => {
   const live = items.filter((x) => x.status !== 'discarded');
   return live.length ? Math.round((live.filter((x) => x.status === 'delivered').length / live.length) * 100) : 100;
 };

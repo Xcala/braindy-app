@@ -21,6 +21,7 @@ import { brandEditEn, brandEditEs } from './brandEditStrings';
 import { whatsappEn, whatsappEs } from './whatsappStrings';
 import { pwaEn, pwaEs } from './pwaStrings';
 import { appsViewEn, appsViewEs } from './appsViewStrings';
+import { sitePanelEn, sitePanelEs } from './sitePanelStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -203,7 +204,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -388,4 +389,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs };
