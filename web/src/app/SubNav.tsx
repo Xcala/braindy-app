@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandLinks } from '../links/useBrandLinks';
+import { useHasSocial } from '../calendar/useSocialPosts';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
@@ -26,16 +27,17 @@ export function SubNav() {
 }
 
 /** Whether a page has content: research needs studies or market maps, apps an app, the visual identity logos, colors, type
- *  or concept images, documents a pinned file. The rest always count. */
+ *  or concept images, documents a pinned file, the calendar a social post. The rest always count. */
 export function useFilled() {
   const brandId = useBrands().current?.id;
   const apps = useBrandLinks(brandId, 'apps');
   const research = useBrandLinks(brandId, 'research');
   const legacy = useLegacyAssets(brandId);
+  const social = useHasSocial(brandId);
   const maps = legacy.some((a) => a.type === 'marketmap');
   const id = (useBrandDoc(brandId, 'context/identity').data ?? {}) as Record<string, unknown[] | object | undefined>;
   const has = (k: string) => Array.isArray(id[k]) ? (id[k] as unknown[]).length > 0 : !!id[k];
   const visual = has('logos') || has('colors') || has('typography') || has('concept') || legacy.some((a) => a.type === 'logodeck');
-  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/research' ? research.links.length > 0 || maps
+  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/calendar' ? social : to === '/research' ? research.links.length > 0 || maps
     : to === '/brand/visual' ? visual : to === '/brand/docs' ? has('documents') : true);
 }
