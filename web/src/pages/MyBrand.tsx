@@ -94,7 +94,7 @@ export function MyBrand() {
       {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} primal={primal} onClose={() => setEditing(false)} />}
 
       {view === 'visual' && visible.length > 1 && (
-        <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 8 }}>
+        <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[20px]" style={{ marginTop: -24, padding: '12px 16px', top: 'calc(var(--top-h, 0px) + 8px)' }}>
           <nav className="anchors" aria-label={t('brand.onThisPage')}>
             {visible.map((s) => <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-on' : ''} aria-current={active === s.id ? 'location' : undefined}>{t(s.label)}</a>)}
           </nav>

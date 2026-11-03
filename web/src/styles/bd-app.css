@@ -416,7 +416,7 @@ p{margin:0}
 .d-fit-lg{font-size:34px;line-height:40px}
 @media (max-width:767px){
   .brandpage{gap:32px}
-  .brandpage section[id]{scroll-margin-top:72px}
+  .brandpage section[id]{scroll-margin-top:calc(var(--top-h,0px) + 72px)}
   .thumb.thumb-work{height:160px}
   .brandbar{flex-wrap:nowrap;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:8px 10px!important;border-radius:16px!important;margin-top:-16px!important}
   .brandbar::-webkit-scrollbar{display:none}
