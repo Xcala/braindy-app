@@ -1,6 +1,6 @@
 /* Calendar: the brand's social posts by month (view only). Month grid on desktop, agenda on phones. */
 .cal-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.cal-month { margin: 0; min-width: 190px; text-align: center; text-transform: capitalize; }
+.cal-month { margin: 0; min-width: 190px; text-align: center; }
 .cal-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); vertical-align: middle; }
 :is(.cal-dot, .cal-post, .cal-row, .cal-st).is-published { --c: var(--success); }
 :is(.cal-dot, .cal-post, .cal-row, .cal-st).is-scheduled { --c: var(--azul); }

@@ -6,6 +6,7 @@ import { PostDetail } from '../calendar/PostDetail';
 import { useSocialPosts, type SocialPost } from '../calendar/useSocialPosts';
 import '../calendar/calendar.css';
 
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
 /** Calendar: the brand's social media posts, published and scheduled, by month. View only; Metricool publishes. */
@@ -45,7 +46,7 @@ export function Calendar() {
       <div className="cal-bar">
         <div className="row g8">
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => move(-1)} aria-label={t('cal.prev')}>‹</button>
-          <h2 className="h3 cal-month" aria-live="polite">{month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })}</h2>
+          <h2 className="h3 cal-month" aria-live="polite">{cap(month.toLocaleDateString(locale, { month: 'long', year: 'numeric' }))}</h2>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => move(1)} aria-label={t('cal.next')}>›</button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}>{t('cal.today')}</button>
         </div>
