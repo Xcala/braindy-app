@@ -124,6 +124,11 @@ async function main() {
     const logFile = join(HOME, 'logs', `${new Date().toISOString().replace(/[:.]/g, '-')}-${job.brandId}-${requestId}.log`);
     console.log(`worker: ${job.brandId}/${requestId} in ${cwd}`);
     const { code, tail } = await runClaude(cwd, buildPrompt(jobData), logFile);
+    // Claude Code logged out on this PC: nothing was done, so the request waits for the next run.
+    if (/Failed to authenticate|Please run \/login|Invalid API key/i.test(tail)) {
+      await job.ref.update({ 'work.state': 'queued', 'work.summary': 'Claude Code no tiene sesión iniciada en el PC (claude → /login).', 'work.log': logFile });
+      return console.log('worker: Claude Code needs /login');
+    }
     const result = /RESULTADO:\s*(listo|fallo)([^\n]*)/i.exec(tail);
     const ok = code === 0 && result?.[1]?.toLowerCase() === 'listo';
     await job.ref.update({
