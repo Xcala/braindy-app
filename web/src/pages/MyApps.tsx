@@ -2,9 +2,8 @@ import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { LinkGrid } from '../links/LinkGrid';
 import { useBrandLinks } from '../links/useBrandLinks';
-import { SiteChanges } from '../links/SiteChanges';
 
-/** My apps: the brand's website and the web apps built for it, each one a link that opens in a new tab. */
+/** My apps: the brand's website and the web apps built for it. Each opens inside Braindy beside its own adjustments. */
 export function MyApps() {
   const { current } = useBrands();
   const { t } = useI18n();
@@ -18,7 +17,6 @@ export function MyApps() {
       </div>
       <LinkGrid brandId={current.id} section="apps" links={links} />
       {!loading && links.length === 0 && <div className="card t-mute">{t('apps.empty')}</div>}
-      <SiteChanges brandId={current.id} />
     </div>
   );
 }

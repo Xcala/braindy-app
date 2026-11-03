@@ -12,7 +12,7 @@ type Size = keyof typeof SIZES;
  * A site or app opened inside Braindy, full screen, with a computer / tablet / phone width and a way out to a new tab.
  * Sites that refuse to be shown inside another page (checked when NickMark saves the link) get the new-tab button instead.
  */
-export function LinkViewer({ brandId, link, onClose }: { brandId: string; link: BrandLink; onClose: () => void }) {
+export function LinkViewer({ brandId, link, links, onClose }: { brandId: string; link: BrandLink; links: BrandLink[]; onClose: () => void }) {
   const { t } = useI18n();
   const [size, setSize] = useState<Size>('desktop');
   const close = useRef<HTMLButtonElement>(null);
@@ -72,7 +72,7 @@ export function LinkViewer({ brandId, link, onClose }: { brandId: string; link: 
             </>
           )}
         </div>
-        {hasPanel && panel && <SitePanel brandId={brandId} url={link.url} />}
+        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} />}
       </div>
     </div>
   );

@@ -37,3 +37,12 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
   .lview-body { flex-direction: column; }
   .spanel { width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--line); }
 }
+.spanel-set { margin: 0 12px 10px; height: 28px; font-size: 11px; }
+
+/* On the app card: its adjustments and the way into the page with its triage. */
+.ladj { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--niebla); color: var(--ink); text-align: left; cursor: pointer; }
+.ladj:hover, .ladj:focus-visible { border-color: var(--azul); }
+.ladj-pct { font: 300 12px/1 var(--f-text); color: var(--graphite); }
+.ladj-pct b { font: 900 16px/1 var(--f-display); color: var(--ink); }
+.ladj-bar { display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.ladj-bar span { display: block; height: 100%; border-radius: inherit; background: var(--success); }

@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { createRequest } from '../requests/api';
-import { pct, STATUSES, useSiteChanges, type SiteChange } from './SiteChanges';
+import { pct, pointsFor, STATUSES, useSiteChanges, type SiteChange } from './SiteChanges';
+import type { BrandLink } from './useBrandLinks';
 
 /**
  * The narrow column beside the site in the viewer: the site's adjustments triage at a glance
  * (open points first, delivered folded) and a box to ask for one more adjustment, which becomes a web request.
  */
-export function SitePanel({ brandId, url }: { brandId: string; url: string }) {
+export function SitePanel({ brandId, link, links }: { brandId: string; link: BrandLink; links: BrandLink[] }) {
   const { t } = useI18n();
-  const list = useSiteChanges(brandId);
+  const list = pointsFor(useSiteChanges(brandId), link, links);
   const open = list.filter((x) => x.status !== 'delivered' && x.status !== 'discarded');
   const done = list.filter((x) => x.status === 'delivered');
   const total = pct(list);
@@ -28,16 +32,16 @@ export function SitePanel({ brandId, url }: { brandId: string; url: string }) {
         {list.length > 0 && <div className="sx-bar" aria-hidden="true">{counts.map(([s, n]) => <span key={s} className={`is-${s}`} style={{ flexGrow: n }} />)}</div>}
       </header>
 
-      <AskAdjustment brandId={brandId} url={url} />
+      <AskAdjustment brandId={brandId} url={link.url} />
 
       {list.length === 0 ? <p className="t-sm t-mute" style={{ margin: 0 }}>{t('sp.empty')}</p> : (
         <div className="col g8">
           {open.length > 0 && <p className="label" style={{ margin: 0 }}>{t('sp.open', { n: open.length })}</p>}
-          {open.map((x) => <Point key={x.id} x={x} />)}
+          {open.map((x) => <Point key={x.id} brandId={brandId} x={x} />)}
           {done.length > 0 && (
             <details className="spanel-done">
               <summary className="label">{t('sp.done', { n: done.length })}</summary>
-              <div className="col g8">{done.map((x) => <Point key={x.id} x={x} />)}</div>
+              <div className="col g8">{done.map((x) => <Point key={x.id} brandId={brandId} x={x} />)}</div>
             </details>
           )}
         </div>
@@ -46,9 +50,10 @@ export function SitePanel({ brandId, url }: { brandId: string; url: string }) {
   );
 }
 
-/** One triage point, folded to its title and state; opens to what was asked and what was done. */
-function Point({ x }: { x: SiteChange }) {
+/** One triage point, folded to its title and state; opens to what was asked and what was done. NickMark changes the state here. */
+function Point({ brandId, x }: { brandId: string; x: SiteChange }) {
   const { t } = useI18n();
+  const isAdmin = useAuth().profile?.role === 'admin';
   return (
     <details className={`spanel-pt is-${x.status}`}>
       <summary>
@@ -56,6 +61,12 @@ function Point({ x }: { x: SiteChange }) {
         <span className="spanel-ptitle">{x.title}</span>
         <span className={`sx-status is-${x.status}`}>{t(`site.status.${x.status}` as StringKey)}</span>
       </summary>
+      {isAdmin && (
+        <select className={`sx-status spanel-set is-${x.status}`} aria-label={`${t('site.state')} ${x.key}`} value={x.status}
+          onChange={(e) => updateDoc(doc(db, 'brands', brandId, 'siteChanges', x.id), { status: e.target.value, updatedAt: serverTimestamp() })}>
+          {STATUSES.map((s) => <option key={s} value={s}>{t(`site.status.${s}` as StringKey)}</option>)}
+        </select>
+      )}
       {x.request && <p className="t-xs"><span className="sx-lbl">{t('site.asked')}</span> {x.request}</p>}
       {x.delivered && <p className="t-xs"><span className="sx-lbl">{t('site.done')}</span> {x.delivered}</p>}
       {x.link && <a className="sx-link t-xs" href={x.link} target="_blank" rel="noreferrer">{t('site.seeChange')} ↗</a>}

@@ -4,6 +4,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { Icon } from '../components/Icon';
 import { LinkViewer } from './LinkViewer';
+import { LinkAdjust } from './LinkAdjust';
+import { useSiteChanges } from './SiteChanges';
 import { addLink, isHttps, removeLink, saveLink, type BrandLink, type LinkInput, type LinkKind, type LinkSection } from './useBrandLinks';
 
 const COVERS: Record<LinkKind, string> = {
@@ -16,7 +18,8 @@ const COVERS: Record<LinkKind, string> = {
 const KINDS: Record<LinkSection, LinkKind[]> = { apps: ['web', 'app', 'dashboard'], research: ['research', 'marketmap'] };
 const host = (url: string) => { try { return new URL(url).host.replace(/^www\./, ''); } catch { return url; } };
 
-/** Cards for My apps / My research. Everyone in the brand opens them; NickMark adds, edits and deletes. */
+/** Cards for My apps / My research. Everyone in the brand opens them; NickMark adds, edits and deletes.
+ *  A site or app card shows its adjustments; opening it puts the page beside its triage. */
 export function LinkGrid({ brandId, section, links }: { brandId: string; section: LinkSection; links: BrandLink[] }) {
   const { t } = useI18n();
   const { profile } = useAuth();
@@ -24,6 +27,7 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
   const [editing, setEditing] = useState<BrandLink | 'new' | null>(null);
   const [viewing, setViewing] = useState<BrandLink | null>(null);
   const closeViewer = useCallback(() => setViewing(null), []);
+  const changes = useSiteChanges(brandId);
 
   return (
     <div className="col g16">
@@ -47,6 +51,7 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
               </div>
               <span className="h3">{l.title}</span>
               {l.description && <p className="t-sm t-mute line-clamp-2">{l.description}</p>}
+              {section === 'apps' && <LinkAdjust link={l} links={links} all={changes} onOpen={() => setViewing(l)} />}
               <div className="row between g8 wrap">
                 <span className="row g12">
                   <button type="button" className="t-sm w7" style={{ color: 'var(--azul)', background: 'none', border: 0, padding: 0, cursor: 'pointer' }} onClick={() => setViewing(l)}>{t('links.open')}</button>
@@ -63,7 +68,7 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
           </div>
         ))}
       </div>
-      {viewing && <LinkViewer brandId={brandId} link={viewing} onClose={closeViewer} />}
+      {viewing && <LinkViewer brandId={brandId} link={viewing} links={links} onClose={closeViewer} />}
     </div>
   );
 }
