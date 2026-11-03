@@ -3,23 +3,28 @@ import type { BrandRequest } from './types';
 
 // Requests toolbar: what the old brief app let you narrow by (search, who asked, due date, requested date,
 // status tabs) plus campaign, archived and sort. Pure functions so board, list and calendar read the same set.
-export type Tab = 'all' | 'to_approve' | 'in_production' | 'late' | 'approved' | 'published';
-export const TABS: Tab[] = ['all', 'to_approve', 'in_production', 'late', 'approved', 'published'];
+export type Tab = 'all' | 'active' | 'to_approve' | 'late' | 'done';
+export const TABS: Tab[] = ['all', 'active', 'to_approve', 'late', 'done'];
 export type Due = 'all' | 'late' | 'week' | 'month' | 'none';
 export const DUES: Due[] = ['all', 'late', 'week', 'month', 'none'];
 export type Asked = 'all' | '7' | '30' | '90' | 'year';
 export const ASKEDS: Asked[] = ['all', '7', '30', '90', 'year'];
-export type Sort = 'new' | 'old' | 'due' | 'updated' | 'name';
-export const SORTS: Sort[] = ['new', 'old', 'due', 'updated', 'name'];
+export type Sort = 'action' | 'new' | 'old' | 'due' | 'updated' | 'name';
+export const SORTS: Sort[] = ['action', 'new', 'old', 'due', 'updated', 'name'];
 
 export type ReqFilters = { q: string; who: string; due: Due; asked: Asked; sort: Sort; tab: Tab; tag: string; archived: boolean };
-export const NO_FILTERS: ReqFilters = { q: '', who: '', due: 'all', asked: 'all', sort: 'new', tab: 'all', tag: '', archived: false };
+export const NO_FILTERS: ReqFilters = { q: '', who: '', due: 'all', asked: 'all', sort: 'action', tab: 'all', tag: '', archived: false };
 
 export const isLate = (r: BrandRequest) => r.status === 'in_production' && !!r.dueDate && isOverdue(r.dueDate);
 const ms = (r: BrandRequest, k: 'createdAt' | 'updatedAt') => r[k]?.toMillis?.() ?? 0;
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-export const inTab = (tab: Tab, r: BrandRequest) => tab === 'all' || (tab === 'late' ? isLate(r) : r.status === tab);
+export const inTab = (tab: Tab, r: BrandRequest) =>
+  tab === 'all' || (tab === 'late' ? isLate(r) : tab === 'active' ? r.status === 'in_production' || r.status === 'to_approve'
+    : tab === 'done' ? r.status === 'approved' || r.status === 'published' : r.status === tab);
+
+/** What needs someone first: to approve, then overdue, then in production by due date, then the rest newest first. */
+const rank = (r: BrandRequest) => (r.status === 'to_approve' ? 0 : isLate(r) ? 1 : r.status === 'in_production' ? 2 : 3);
 
 function inDue(due: Due, r: BrandRequest) {
   if (due === 'all') return true;
@@ -46,6 +51,7 @@ export function narrow(list: BrandRequest[], f: ReqFilters, typeLabel: (r: Brand
 
 export function sortRequests(list: BrandRequest[], sort: Sort) {
   const by: Record<Sort, (a: BrandRequest, b: BrandRequest) => number> = {
+    action: (a, b) => rank(a) - rank(b) || (rank(a) === 2 ? String(a.dueDate || '9999').localeCompare(String(b.dueDate || '9999')) : ms(b, 'createdAt') - ms(a, 'createdAt')),
     new: (a, b) => ms(b, 'createdAt') - ms(a, 'createdAt'),
     old: (a, b) => ms(a, 'createdAt') - ms(b, 'createdAt'),
     due: (a, b) => String(a.dueDate || '9999').localeCompare(String(b.dueDate || '9999')),
@@ -56,13 +62,15 @@ export function sortRequests(list: BrandRequest[], sort: Sort) {
 }
 
 export const isFiltered = (f: ReqFilters) => !!f.q || !!f.who || !!f.tag || f.archived || f.due !== 'all' || f.asked !== 'all' || f.tab !== 'all';
+/** How many of the filters behind the "Filters" button are on (search and tabs are always in sight). */
+export const hiddenCount = (f: ReqFilters) => [!!f.who, !!f.tag, f.archived, f.due !== 'all', f.asked !== 'all', f.sort !== 'action'].filter(Boolean).length;
 
 /** Filters live in the address (?tab=late&q=logo) so a filtered view can be sent as a link. Defaults stay out of it. */
 export function filtersFromParams(p: URLSearchParams): ReqFilters {
   const pick = <T extends string>(k: string, ok: readonly T[], d: T) => (ok.includes(p.get(k) as T) ? (p.get(k) as T) : d);
   return {
     q: p.get('q') ?? '', who: p.get('who') ?? '', tag: p.get('tag') ?? '', archived: p.get('archived') === '1',
-    due: pick('due', DUES, 'all'), asked: pick('asked', ASKEDS, 'all'), sort: pick('sort', SORTS, 'new'), tab: pick('tab', TABS, 'all'),
+    due: pick('due', DUES, 'all'), asked: pick('asked', ASKEDS, 'all'), sort: pick('sort', SORTS, 'action'), tab: pick('tab', TABS, 'all'),
   };
 }
 

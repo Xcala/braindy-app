@@ -35,6 +35,8 @@ export interface BrandRequest {
   /** Hidden from the board and list unless "Archived" is on (admin sets it). */
   archived?: boolean;
   approvedAt?: Timestamp;
+  /** NickMark asked the client for what the request lacked (date, where, material). */
+  askedMissingAt?: Timestamp;
   /** Shown to every client as a launch beside the studio (set by the API when NickMark marks it). */
   launch?: { versionId: string; title: string } | null;
 }

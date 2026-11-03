@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName } from '../components/BrainStack';
-import { dateLabel, dayLabel, isOverdue } from '../lib/dates';
+import { dateLabel } from '../lib/dates';
 import { STATUS_CHIP, type BrandRequest, type RequestStatus } from './types';
 import { moveRequest } from './moveRequest';
+import { missingOf, pieceLabel, smartDate } from './requestBits';
 
 export const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
   { status: 'in_production', bg: '#EEF1F7' }, { status: 'to_approve', bg: '#FFF7E3' },
@@ -16,6 +17,14 @@ const COL_FIRST = 6;
 export function TagChips({ tags }: { tags?: string[] }) {
   if (!tags?.length) return null;
   return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: 22, fontSize: 11, background: '#F2F5FF', color: 'var(--azul)' }}>#{g}</span>)}</span>;
+}
+
+/** NickMark only: what an open request still lacks ("Missing: date · where"). */
+export function MissingChip({ r }: { r: BrandRequest }) {
+  const { t } = useI18n();
+  const m = missingOf(r);
+  if (!m.length) return null;
+  return <span className="chip chip-plain" style={{ height: 22, fontSize: 11, background: '#FFF4E5', color: '#8A4B00' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
 }
 
 /** Board by status. NickMark drags a card to another column to move it. */
@@ -54,8 +63,9 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
                   style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
                   <span className="w7" style={{ overflowWrap: 'anywhere' }}>{r.title}</span>
                   {r.createdAt && <span className="t-xs t-mute">{t('req.requestedOn', { day: dateLabel(r.createdAt.toDate(), lang) })}</span>}
-                  {r.formatType && r.formatType !== r.title && <span className="t-xs t-mute">{r.formatType}</span>}
+                  {pieceLabel(r, lang) && <span className="t-xs t-mute">{pieceLabel(r, lang)}</span>}
                   <TagChips tags={r.tags} />
+                  {isAdmin && <MissingChip r={r} />}
                   {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>{t('home.version', { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
                   <div className="row between g8">
                     <span className="row g8" style={{ minWidth: 0 }}>
@@ -64,7 +74,7 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
                     </span>
                     {status === 'to_approve' && <span className="btn btn-primary btn-sm flex-none" style={{ height: 32 }}>{t('req.review')}</span>}
                   </div>
-                  {status === 'in_production' && r.dueDate && <span className="t-xs" style={{ color: isOverdue(r.dueDate) ? '#C0362C' : 'var(--graphite)' }}>{t(isOverdue(r.dueDate) ? 'home.late' : 'home.dueDay', { day: dayLabel(r.dueDate, lang) })}</span>}
+                  {(() => { const d = smartDate(r, lang, t); return d.text && <span className="t-xs" style={{ color: d.late ? '#C0362C' : 'var(--graphite)' }}>{d.text}</span>; })()}
                 </Link>
               ))}
               {all.length > COL_FIRST && (

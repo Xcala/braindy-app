@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
           { path: 'apps', element: <MyApps /> },
           { path: 'calendar', element: <Calendar /> },
           { path: 'research', element: <MyResearch /> },
-          { path: 'ask', element: <Navigate to="/requests#ask" replace /> },
+          { path: 'ask', element: <Navigate to="/requests?new=1" replace /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
