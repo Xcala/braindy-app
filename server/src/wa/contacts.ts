@@ -7,7 +7,7 @@ import { normalizePhone } from '../whatsapp.js';
 import type { AuthEnv } from '../auth.js';
 
 export type Contact = {
-  uid?: string | null; optIn?: boolean; lastInboundAt?: Timestamp; politeAt?: Timestamp; lang?: 'es' | 'en';
+  uid?: string | null; optIn?: boolean; silent?: boolean; lastInboundAt?: Timestamp; politeAt?: Timestamp; lang?: 'es' | 'en';
   state?: { awaitNote?: string; pending?: Pending } | null;
   lastRequest?: { brandId: string; requestId: string; at: Timestamp } | null;
 };
