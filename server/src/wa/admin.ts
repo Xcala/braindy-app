@@ -5,8 +5,8 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { brandAccess } from '../access.js';
 import { createRequest } from '../requests.js';
-import { getProfile, saveProfile, whatsappConfigured } from '../whatsapp.js';
-import { linkPhone, contactRef } from './contacts.js';
+import { getProfile, normalizePhone, saveProfile, whatsappConfigured } from '../whatsapp.js';
+import { linkPhone, contactRef, unlinkPhone } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
 import type { AuthEnv } from '../auth.js';
 
@@ -62,6 +62,40 @@ adminWhatsapp.post('/whatsapp/inbox/:id/dismiss', async (c) => {
   const ref = db.doc(`waInbox/${c.req.param('id')}`);
   if (!(await ref.get()).exists) return c.json({ error: 'not_found' }, 404);
   await ref.update({ status: 'dismissed', dismissedBy: c.get('user').uid, dismissedAt: FieldValue.serverTimestamp() });
+  return c.json({ ok: true });
+});
+
+// ---------- who may use WhatsApp, brand by brand ----------
+adminWhatsapp.get('/whatsapp/brands/:brandId/people', async (c) => {
+  const members = await db.collection(`brands/${c.req.param('brandId')}/members`).get();
+  const users = await Promise.all(members.docs.map((m) => db.doc(`users/${m.id}`).get()));
+  return c.json({
+    people: members.docs.map((m, i) => ({
+      uid: m.id, name: String(m.get('name') ?? ''), email: String(m.get('email') ?? ''), role: String(m.get('role') ?? 'client_member'),
+      allowed: m.get('whatsapp') !== false,
+      phone: String(users[i].get('whatsapp.phone') ?? ''), optIn: users[i].get('whatsapp.optIn') === true,
+    })),
+  });
+});
+
+/** Turns the channel on/off for one member of the brand, and/or sets or removes their number. */
+adminWhatsapp.put('/whatsapp/brands/:brandId/people/:uid', async (c) => {
+  const { brandId, uid } = c.req.param();
+  const member = db.doc(`brands/${brandId}/members/${uid}`);
+  if (!(await member.get()).exists) return c.json({ error: 'not_a_member' }, 404);
+  const b = await c.req.json<{ allowed?: boolean; phone?: string }>().catch(() => ({} as { allowed?: boolean; phone?: string }));
+  if (typeof b.phone === 'string') {
+    if (!b.phone.trim()) await unlinkPhone(uid);
+    else {
+      const phone = normalizePhone(b.phone);
+      if (!phone) return c.json({ error: 'invalid_phone' }, 400);
+      const taken = (await contactRef(phone).get()).get('uid') as string | null | undefined;
+      if (taken && taken !== uid) return c.json({ error: 'phone_taken' }, 409);
+      await linkPhone(phone, uid, 'admin');
+    }
+  }
+  if (typeof b.allowed === 'boolean') await member.set({ whatsapp: b.allowed }, { merge: true });
+  await db.collection('audit').doc().set({ type: 'whatsapp_access', brandId, uid, allowed: b.allowed ?? null, phoneChanged: typeof b.phone === 'string', by: c.get('user').uid, at: FieldValue.serverTimestamp() });
   return c.json({ ok: true });
 });
 

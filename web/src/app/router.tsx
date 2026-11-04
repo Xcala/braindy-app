@@ -19,6 +19,7 @@ import { RequestDetail } from '../pages/RequestDetail';
 import { BatchApprove } from '../pages/BatchApprove';
 import { Home } from '../pages/Home';
 import { AdminTeam } from '../pages/admin/Team';
+import { AdminWhatsapp } from '../pages/admin/Whatsapp';
 import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
 import { Settings } from '../pages/Settings';
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
               { path: 'admin/proposals', element: <AdminProposals /> },
               { path: 'admin/proposals/:id', element: <ProposalDetail /> },
               { path: 'team', element: <AdminTeam /> },
+              { path: 'admin/whatsapp', element: <AdminWhatsapp /> },
               { path: 'admin/onboarding', element: <AdminOnboarding /> },
               { path: 'admin/billing', element: <AdminBilling /> },
               { path: 'admin/costs', element: <AdminCosts /> },

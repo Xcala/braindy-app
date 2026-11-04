@@ -44,11 +44,18 @@ export async function unlinkPhone(uid: string) {
   await batch.commit();
 }
 
-/** Brands a person can ask for (direct memberships on their profile). */
+/** WhatsApp access per brand: a member may use the channel unless NickMark turned it off (members/{uid}.whatsapp). */
+export async function waAllowed(uid: string, brandId: string) {
+  const m = await db.doc(`brands/${brandId}/members/${uid}`).get();
+  return m.exists && m.get('whatsapp') !== false;
+}
+
+/** Brands a person can ask for by WhatsApp (direct memberships on their profile, with the channel on). */
 export async function brandsOf(uid: string): Promise<Array<{ id: string; name: string }>> {
   const ids = (((await db.doc(`users/${uid}`).get()).get('brandIds') as string[]) ?? []).slice(0, 10);
   const docs = await Promise.all(ids.map((id) => db.doc(`brands/${id}`).get()));
-  return docs.filter((d) => d.exists && d.get('status') !== 'archived').map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id) }));
+  const open = await Promise.all(docs.map((d) => waAllowed(uid, d.id)));
+  return docs.filter((d, i) => open[i] && d.exists && d.get('status') !== 'archived').map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id) }));
 }
 
 // ---------- signed-in: my own number ----------

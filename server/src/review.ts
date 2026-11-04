@@ -9,7 +9,7 @@ import { brandAccess } from './access.js';
 import { URL_TTL_MS, bucket, canApprove, decide } from './requests.js';
 import { normalizePhone, waMeLink, whatsappConfigured } from './whatsapp.js';
 import { sendDeliveryNotice } from './wa/notices.js';
-import { contactRef, linkPhone } from './wa/contacts.js';
+import { contactRef, linkPhone, waAllowed } from './wa/contacts.js';
 import type { AuthEnv } from './auth.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
@@ -25,7 +25,7 @@ async function deliveryTarget(uid: string, brandId: string) {
   if (!uid) return null;
   const wa = (await db.doc(`users/${uid}`).get()).get('whatsapp') as { phone?: string; optIn?: boolean } | undefined;
   const phone = wa?.optIn && wa.phone ? normalizePhone(wa.phone) : null;
-  return phone && (await canApprove(uid, brandId)) ? { uid, phone } : null;
+  return phone && (await canApprove(uid, brandId)) && (await waAllowed(uid, brandId)) ? { uid, phone } : null;
 }
 
 /** Creates a review link and sends it (WhatsApp API) or returns a wa.me link to send by hand. */

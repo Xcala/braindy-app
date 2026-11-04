@@ -22,6 +22,7 @@ export const NAV_ICON: Record<string, ReactNode> = {
   '/admin/billing': svg(<><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>),
   '/admin/costs': svg(<><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 5-6" /></>),
   '/team': svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6" /></>),
+  '/admin/whatsapp': svg(<><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" /><path d="M9 9.5c.3 2.2 2.3 4.2 4.5 4.5l1.2-1.2 2 .8v1.4c-3.9.6-8.6-4.1-8-8h1.4l.8 2z" /></>),
   '/admin/criterio': svg(<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" /><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" /></>),
   collapse: svg(<><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 10l-2 2 2 2" /></>),
   expand: svg(<><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M13 10l2 2-2 2" /></>),
