@@ -9,8 +9,6 @@ import { MembersCard } from '../../team/MembersCard';
 import type { BrainId } from '../../requests/taxonomy';
 import { useBrainTasks } from '../../brains/useBrains';
 import { GranolaInbox } from '../../team/GranolaInbox';
-import { WhatsappInbox } from '../../team/WhatsappInbox';
-import { WhatsappProfileCard } from '../../team/WhatsappProfileCard';
 import { TeamLineup } from '../../team/TeamLineup';
 
 /** Active brands Nicolas takes on at once. */
@@ -107,8 +105,6 @@ export function AdminTeam() {
           <h2 className="h3" id="m">{t('team.members')}</h2>
           {current ? <MembersCard key={current.id} brandId={current.id} brandName={current.name} /> : <p className="t-mute">{t('brand.none')}</p>}
           <p className="t-xs t-mute">{t('team.membersHint')}</p>
-          <WhatsappInbox />
-          <WhatsappProfileCard />
           <GranolaInbox />
         </section>
       </div>

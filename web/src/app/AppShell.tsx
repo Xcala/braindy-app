@@ -24,6 +24,7 @@ const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/billing', label: 'nav.billing' },
   { to: '/admin/costs', label: 'cost.nav' },
   { to: '/team', label: 'nav.team' },
+  { to: '/admin/whatsapp', label: 'waa.nav' },
   { to: '/admin/criterio', label: 'cra.nav' },
 ];
 

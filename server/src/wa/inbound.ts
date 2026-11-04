@@ -6,7 +6,6 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { createRequest } from '../requests.js';
 import { decideWithLink } from '../review.js';
-import { brandAccess } from '../access.js';
 import { sendChoices, sendText } from '../whatsapp.js';
 import { brandsOf, contactRef, getContact, type Contact, type Pending } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
@@ -173,7 +172,7 @@ export async function handleMessage(m: WaMsg, profileName: string) {
 
   // Reply to one of our notices → comment on that request, silently (an "added to…" echo on every message is noise).
   const replied = m.context?.id ? await db.doc(`waOutbound/${m.context.id}`).get() : null;
-  if (replied?.exists && (await brandAccess(uid, replied.get('brandId'))).member) {
+  if (replied?.exists && brands.some((b) => b.id === replied.get('brandId'))) {
     await comment(replied.get('brandId'), replied.get('requestId'), uid, text, media);
     return;
   }
