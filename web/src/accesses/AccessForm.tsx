@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { accessesApi, type Access } from './useAccesses';
+import type { StringKey } from '../i18n/strings';
+import { accessesApi, signInOf, type Access, type SignIn, type Subscription } from './useAccesses';
 import { looksLikeSecret, splitSecretLines } from './secretNotes';
 
+const SIGN_IN: [SignIn, StringKey][] = [['password', 'acc.signInPassword'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft']];
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
 
 /** Add or edit an access (design 17). The password is sent once to the backend, encrypted before saving. */
-export function AccessForm({ brandId, editing, onClose }: { brandId: string; editing: Access | null; onClose: () => void }) {
+export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId: string; editing: Access | null; groups?: string[]; onClose: () => void }) {
   const { t } = useI18n();
   const [platform, setPlatform] = useState(editing?.platform ?? '');
   const [username, setUsername] = useState(editing?.username ?? '');
   const [password, setPassword] = useState('');
   const [link, setLink] = useState(editing?.link ?? '');
+  const [group, setGroup] = useState(editing?.group ?? '');
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [shared, setShared] = useState(!!editing?.sharedWithBraindy);
+  const [isSub, setIsSub] = useState(!!editing?.subscription);
+  const [sub, setSub] = useState<Subscription>(editing?.subscription ?? { plan: '', price: null, currency: 'USD', period: 'month' });
+  const [signIn, setSignIn] = useState<SignIn>(editing ? signInOf(editing) : 'password');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<false | 'save' | 'vault'>(false);
   const [deleting, setDeleting] = useState(false);
@@ -37,7 +43,7 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setError(false);
-    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, ...(password ? { password } : {}) };
+    const body = { platform: platform.trim(), username: username.trim(), link: link.trim(), notes: notes.trim(), sharedWithBraindy: shared, group: group.trim(), subscription: isSub ? sub : null, signIn, ...(password && signIn === 'password' ? { password } : {}) };
     try {
       if (editing) await accessesApi.update(brandId, editing.id, body);
       else await accessesApi.add(brandId, body);
@@ -58,15 +64,33 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
           <datalist id="acc-platforms">{PLATFORMS.map((p) => <option key={p} value={p} />)}</datalist>
         </div>
         <div className="field">
+          <label htmlFor="acc-group">{t('apps.group')}</label>
+          <input id="acc-group" className="input" list="acc-groups" value={group} onChange={(e) => setGroup(e.target.value)} maxLength={40} />
+          <datalist id="acc-groups">{groups.map((g) => <option key={g} value={g} />)}</datalist>
+          <span className="help">{t('apps.groupHelp')}</span>
+        </div>
+        <div className="field">
           <label htmlFor="acc-user">{t('acc.userOrEmail')}</label>
           <input id="acc-user" className="input" value={username} onChange={(e) => setUsername(e.target.value)} maxLength={200} autoComplete="off" />
         </div>
         <div className="field">
-          <label htmlFor="acc-pass">{t('acc.password')}</label>
-          <input id="acc-pass" className="input mono" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder={editing?.hasSecret ? t('acc.keepPassword') : ''} autoComplete="new-password" />
-          <span className="help">{t('acc.passwordHelp')}</span>
+          <span id="acc-signin" className="label">{t('acc.signIn')}</span>
+          <div className="row g8 wrap" role="radiogroup" aria-labelledby="acc-signin">
+            {SIGN_IN.map(([v, k]) => (
+              <button key={v} type="button" role="radio" aria-checked={signIn === v} className={`btn btn-sm ${signIn === v ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSignIn(v)}>{t(k)}</button>
+            ))}
+          </div>
+          {signIn !== 'password' && <span className="help">{t('acc.signInHelp')}</span>}
         </div>
+        {signIn === 'password' && (
+          <div className="field">
+            <label htmlFor="acc-pass">{t('acc.password')}</label>
+            <input id="acc-pass" className="input mono" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              placeholder={editing?.hasSecret ? t('acc.keepPassword') : ''} autoComplete="new-password" />
+            <span className="help">{t('acc.passwordHelp')}</span>
+          </div>
+        )}
         <div className="field">
           <label htmlFor="acc-link">{t('acc.link')}</label>
           <input id="acc-link" className="input" value={link} onChange={(e) => setLink(e.target.value)} maxLength={500} placeholder="https://" />
@@ -81,6 +105,24 @@ export function AccessForm({ brandId, editing, onClose }: { brandId: string; edi
             </div>
           ) : <span className="help">{t('acc.notesHelp')}</span>}
         </div>
+        <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
+          <input type="checkbox" checked={isSub} onChange={(e) => setIsSub(e.target.checked)} /> {t('acc.isSub')}
+        </label>
+        {isSub && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="field"><label htmlFor="acc-plan">{t('acc.plan')}</label>
+              <input id="acc-plan" className="input" value={sub.plan ?? ''} onChange={(e) => setSub((s) => ({ ...s, plan: e.target.value }))} maxLength={80} placeholder="Pro" /></div>
+            <div className="field"><label htmlFor="acc-price">{t('acc.price')}</label>
+              <input id="acc-price" className="input" type="number" min={0} step="0.01" inputMode="decimal" value={sub.price ?? ''}
+                onChange={(e) => setSub((s) => ({ ...s, price: e.target.value === '' ? null : Number(e.target.value) }))} /></div>
+            <div className="field"><label htmlFor="acc-cur">{t('acc.currency')}</label>
+              <select id="acc-cur" className="input" value={sub.currency ?? 'USD'} onChange={(e) => setSub((s) => ({ ...s, currency: e.target.value as Subscription['currency'] }))}>
+                <option>USD</option><option>COP</option><option>EUR</option></select></div>
+            <div className="field"><label htmlFor="acc-per">{t('acc.period')}</label>
+              <select id="acc-per" className="input" value={sub.period ?? 'month'} onChange={(e) => setSub((s) => ({ ...s, period: e.target.value as Subscription['period'] }))}>
+                <option value="month">{t('acc.monthly')}</option><option value="year">{t('acc.yearly')}</option></select></div>
+          </div>
+        )}
         <label className="row g8 t-sm" style={{ cursor: 'pointer' }}>
           <input type="checkbox" checked={shared} onChange={(e) => setShared(e.target.checked)} /> {t('acc.sharedLabel')}
         </label>

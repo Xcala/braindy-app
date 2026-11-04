@@ -1,34 +1,47 @@
 // Review by link (design 31): approve from WhatsApp without logging in. One token per delivery and person,
 // valid 7 days, one decision. It can approve or request changes, nothing else. Plus the per-brand notice
 // settings (WhatsApp number, which approver it belongs to, which notices go out).
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { Hono } from 'hono';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { URL_TTL_MS, bucket, canApprove, decide } from './requests.js';
-import { normalizePhone, sendTemplate, waMeLink, whatsappConfigured } from './whatsapp.js';
+import { normalizePhone, waMeLink, whatsappConfigured } from './whatsapp.js';
+import { sendDeliveryNotice } from './wa/notices.js';
+import { contactRef, linkPhone } from './wa/contacts.js';
 import type { AuthEnv } from './auth.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const LINK_DAYS = 7;
 const now = () => FieldValue.serverTimestamp();
-const NOTICES = ['delivery', 'approved', 'brandBrain', 'report'] as const;
+const NOTICES = ['delivery', 'approved', 'published', 'brandBrain', 'report'] as const;
 
 type Notices = { whatsapp?: string; groupLink?: string; groups?: Array<{ name?: string; url?: string }>; approverUid?: string; lang?: 'es' | 'en'; notices?: Partial<Record<(typeof NOTICES)[number], boolean>> };
 const settingsRef = (brandId: string) => db.doc(`brands/${brandId}/settings/notices`);
 
+/** The requester's own number, when they linked one with consent and may approve for the brand. */
+async function deliveryTarget(uid: string, brandId: string) {
+  if (!uid) return null;
+  const wa = (await db.doc(`users/${uid}`).get()).get('whatsapp') as { phone?: string; optIn?: boolean } | undefined;
+  const phone = wa?.optIn && wa.phone ? normalizePhone(wa.phone) : null;
+  return phone && (await canApprove(uid, brandId)) ? { uid, phone } : null;
+}
+
 /** Creates a review link and sends it (WhatsApp API) or returns a wa.me link to send by hand. */
 export async function notifyDelivery(brandId: string, requestId: string, versionId: string, by: string, force = false) {
   const s = ((await settingsRef(brandId).get()).data() ?? {}) as Notices;
-  const phone = s.whatsapp ? normalizePhone(s.whatsapp) : null;
-  if (!phone || !s.approverUid) return { status: 'no_number' as const };
   if (!force && s.notices?.delivery === false) return { status: 'off' as const };
-
   const [brand, req] = await Promise.all([db.doc(`brands/${brandId}`).get(), db.doc(`brands/${brandId}/requests/${requestId}`).get()]);
+  // The person who asked gets it on their own WhatsApp when they can approve; otherwise the brand's notice number.
+  const asker = await deliveryTarget(String(req.get('createdBy') ?? ''), brandId);
+  const phone = asker?.phone ?? (s.whatsapp ? normalizePhone(s.whatsapp) : null);
+  const approverUid = asker?.uid ?? s.approverUid;
+  if (!phone || !approverUid) return { status: 'no_number' as const };
+
   const token = randomBytes(24).toString('base64url');
   await db.doc(`reviewLinks/${token}`).set({
-    brandId, requestId, versionId, approverUid: s.approverUid, phoneLast4: phone.slice(-4),
+    brandId, requestId, versionId, approverUid, phoneLast4: phone.slice(-4), phoneHash: phoneHash(phone),
     expiresAt: Timestamp.fromMillis(Date.now() + LINK_DAYS * 864e5), createdBy: by, createdAt: now(), usedAt: null,
   });
   const url = `${PUBLIC_BASE}/r/${token}`;
@@ -37,8 +50,10 @@ export async function notifyDelivery(brandId: string, requestId: string, version
   const text = lang === 'es'
     ? `${brand.get('name')}: NicoMarca te envía "${title}" para revisar. Apruébalo aquí (sin iniciar sesión, válido ${LINK_DAYS} días): ${url}`
     : `${brand.get('name')}: NickMark sends you "${title}" to review. Approve it here (no login, valid ${LINK_DAYS} days): ${url}`;
-  // The delivery is signed by NickMark (EN) / NicoMarca (ES): the person, with his team.
-  const sent = await sendTemplate(phone, 'delivery_ready', lang, [String(brand.get('name')), lang === 'es' ? 'NicoMarca' : 'NickMark', title], token);
+  // The delivery is signed by NickMark (EN) / NicoMarca (ES): the person, with his team. With Approve / Ask for
+  // changes buttons: free buttons inside the 24 h window, the approved template outside it.
+  const sent = await sendDeliveryNotice(phone, lang, { brand: String(brand.get('name')), title, url, token });
+  if (sent.sent && sent.messageId) await db.doc(`waOutbound/${sent.messageId}`).set({ kind: 'delivery', brandId, requestId, versionId, token, at: now() });
   await db.collection('audit').doc().set({ type: 'review_link', brandId, requestId, versionId, sent: sent.sent, by, at: now() });
   return { status: sent.sent ? 'sent' as const : 'manual' as const, url, waUrl: sent.sent ? null : waMeLink(phone, text) };
 }
@@ -73,6 +88,12 @@ review.put('/brands/:brandId/settings/notices', async (c) => {
     whatsapp: whatsapp ?? '', groups, groupLink: FieldValue.delete(), approverUid: String(b.approverUid ?? '').slice(0, 128), lang: b.lang === 'en' ? 'en' : 'es',
     notices, updatedBy: uid, updatedAt: now(),
   }, { merge: true });
+  // The notice number belongs to the approver: link it so their WhatsApp replies land in this brand,
+  // unless someone already registered that number as their own.
+  if (whatsapp && b.approverUid) {
+    const taken = (await contactRef(whatsapp).get()).get('uid') as string | null | undefined;
+    if (!taken) await linkPhone(whatsapp, String(b.approverUid), 'settings');
+  }
   return c.json({ ok: true });
 });
 
@@ -117,33 +138,42 @@ publicReview.get('/r/:token', async (c) => {
   });
 });
 
-publicReview.post('/r/:token/decision', async (c) => {
-  const token = c.req.param('token');
+export const phoneHash = (phone: string) => createHash('sha256').update(`wa:${phone}`).digest('hex');
+const STATUS: Record<string, number> = { not_found: 404, expired: 410, used: 409, forbidden: 403, wrong_phone: 403 };
+
+/** One decision per link (web page or WhatsApp button). From WhatsApp, only the number the link was sent to. */
+export async function decideWithLink(token: string, rawState: string, note: string, fromPhone?: string) {
   const l = await load(token);
-  if (!l) return c.json({ error: 'not_found' }, 404);
-  if (l.expired) return c.json({ error: 'expired' }, 410);
-  const b = await c.req.json<{ state?: string; note?: string }>().catch(() => ({} as { state?: string; note?: string }));
-  const state = b.state === 'approved' ? 'approved' : b.state === 'changes_requested' ? 'changes_requested' : '';
-  if (!state) return c.json({ error: 'invalid' }, 400);
-  // One decision per link: claim it in a transaction so a double tap cannot decide twice.
+  if (!l) return 'not_found';
+  if (l.expired) return 'expired';
+  const state = rawState === 'approved' ? 'approved' : rawState === 'changes_requested' ? 'changes_requested' : '';
+  if (!state) return 'invalid';
+  if (fromPhone && l.link.get('phoneHash') !== phoneHash(fromPhone)) return 'wrong_phone';
+  // Claim it in a transaction so a double tap cannot decide twice.
   const claimed = await db.runTransaction(async (tx) => {
     const snap = await tx.get(l.link.ref);
     if (snap.get('usedAt')) return false;
     tx.update(l.link.ref, { usedAt: now(), decision: state });
     return true;
   });
-  if (!claimed) return c.json({ error: 'used' }, 409);
+  if (!claimed) return 'used';
   const { brandId, requestId, versionId, approverUid } = l.link.data() as Record<string, string>;
   // The person may have lost approval rights since the link was sent.
   if (!(await canApprove(approverUid, brandId))) {
     await l.link.ref.update({ usedAt: null, decision: null });
-    return c.json({ error: 'forbidden' }, 403);
+    return 'forbidden';
   }
-  const r = await decide(brandId, requestId, versionId, approverUid, state, String(b.note ?? '').trim().slice(0, 4000));
+  const r = await decide(brandId, requestId, versionId, approverUid, state, note.trim().slice(0, 4000));
   if (r !== 'ok') {
     await l.link.ref.update({ usedAt: null, decision: null });
-    return c.json({ error: r }, r === 'not_found' ? 404 : 400);
+    return r;
   }
-  await db.collection('audit').doc().set({ type: 'review_link_decision', brandId, requestId, versionId, state, by: approverUid, at: now() });
-  return c.json({ ok: true });
+  await db.collection('audit').doc().set({ type: 'review_link_decision', brandId, requestId, versionId, state, by: approverUid, via: fromPhone ? 'whatsapp' : 'link', at: now() });
+  return 'ok';
+}
+
+publicReview.post('/r/:token/decision', async (c) => {
+  const b = await c.req.json<{ state?: string; note?: string }>().catch(() => ({} as { state?: string; note?: string }));
+  const r = await decideWithLink(c.req.param('token'), String(b.state ?? ''), String(b.note ?? ''));
+  return r === 'ok' ? c.json({ ok: true }) : c.json({ error: r }, (STATUS[r] ?? 400) as 400);
 });

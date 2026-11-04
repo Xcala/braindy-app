@@ -11,6 +11,7 @@ import { proposePlan } from './plan.js';
 import { draftReport } from './report.js';
 import { watchCompetitors } from './watch.js';
 import { analyzeGroup } from './group.js';
+import { remindDueTomorrow } from '../dueReminders.js';
 
 export const adminBrains = new Hono<AuthEnv>();
 adminBrains.use('/brands/:brandId/brains/*', async (c, next) => {
@@ -54,15 +55,19 @@ brains.post('/brands/:brandId/analysis', async (c) => {
 // ---------- cron (Cloud Scheduler with an OIDC token; nothing runs without CRON_AUDIENCE + CRON_SA) ----------
 const oidc = new OAuth2Client();
 export const cron = new Hono();
-cron.post('/weekly', async (c) => {
+/** True when the call carries Cloud Scheduler's OIDC token for CRON_SA with audience CRON_AUDIENCE. */
+async function fromScheduler(authorization?: string) {
   const audience = process.env.CRON_AUDIENCE;
   const sa = process.env.CRON_SA;
-  const token = (c.req.header('Authorization') ?? '').replace(/^Bearer /, '');
-  if (!audience || !sa || !token) return c.json({ error: 'unauthorized' }, 401);
+  const token = (authorization ?? '').replace(/^Bearer /, '');
+  if (!audience || !sa || !token) return false;
   try {
-    const t = await oidc.verifyIdToken({ idToken: token, audience });
-    if (t.getPayload()?.email !== sa || !t.getPayload()?.email_verified) return c.json({ error: 'unauthorized' }, 401);
-  } catch { return c.json({ error: 'unauthorized' }, 401); }
+    const p = (await oidc.verifyIdToken({ idToken: token, audience })).getPayload();
+    return p?.email === sa && !!p?.email_verified;
+  } catch { return false; }
+}
+cron.use('*', async (c, next) => ((await fromScheduler(c.req.header('Authorization'))) ? next() : c.json({ error: 'unauthorized' }, 401)));
+cron.post('/weekly', async (c) => {
   const active = await db.collection('brands').where('status', '==', 'active').select().get();
   let watched = 0;
   for (const b of active.docs) {
@@ -72,3 +77,6 @@ cron.post('/weekly', async (c) => {
   }
   return c.json({ ok: true, watched });
 });
+
+/** Daily: WhatsApp the brand the day before a request is due (once per due date). */
+cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()) }));

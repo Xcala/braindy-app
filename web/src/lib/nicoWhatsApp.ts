@@ -14,6 +14,10 @@ export function inColombia(brand?: Pick<Brand, 'city'> | null): boolean {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone === BOGOTA; } catch { return false; }
 }
 
+/** His number for this brand, digits only (same rule as WhatsApp). */
+export const nicoPhone = (brand?: Pick<Brand, 'city'> | null) => (inColombia(brand) ? NUMBERS.co : NUMBERS.world);
+export const NICO_EMAIL = 'nicolas@braindy.co';
+
 export const nicoWhatsApp = (brand?: Pick<Brand, 'city'> | null, text?: string) =>
   `https://wa.me/${inColombia(brand) ? NUMBERS.co : NUMBERS.world}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 

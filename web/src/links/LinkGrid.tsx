@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { Icon } from '../components/Icon';
+import { LinkViewer } from './LinkViewer';
+import { LinkAdjust } from './LinkAdjust';
+import { useSiteChanges } from './SiteChanges';
 import { addLink, isHttps, removeLink, saveLink, type BrandLink, type LinkInput, type LinkKind, type LinkSection } from './useBrandLinks';
 
 const COVERS: Record<LinkKind, string> = {
@@ -15,12 +18,16 @@ const COVERS: Record<LinkKind, string> = {
 const KINDS: Record<LinkSection, LinkKind[]> = { apps: ['web', 'app', 'dashboard'], research: ['research', 'marketmap'] };
 const host = (url: string) => { try { return new URL(url).host.replace(/^www\./, ''); } catch { return url; } };
 
-/** Cards for My apps / My research. Everyone in the brand opens them; NickMark adds, edits and deletes. */
+/** Cards for My apps / My research. Everyone in the brand opens them; NickMark adds, edits and deletes.
+ *  A site or app card shows its adjustments; opening it puts the page beside its triage. */
 export function LinkGrid({ brandId, section, links }: { brandId: string; section: LinkSection; links: BrandLink[] }) {
   const { t } = useI18n();
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const [editing, setEditing] = useState<BrandLink | 'new' | null>(null);
+  const [viewing, setViewing] = useState<BrandLink | null>(null);
+  const closeViewer = useCallback(() => setViewing(null), []);
+  const changes = useSiteChanges(brandId);
 
   return (
     <div className="col g16">
@@ -29,14 +36,14 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {links.map((l) => (
           <div key={l.id} className="deck">
-            <a href={l.url} target="_blank" rel="noreferrer" className="cover" style={{ background: COVERS[l.kind] ?? COVERS.web, color: '#fff', textDecoration: 'none' }}>
+            <button type="button" onClick={() => setViewing(l)} aria-label={`${t('links.open')} ${l.title}`} className="cover" style={{ background: COVERS[l.kind] ?? COVERS.web, color: '#fff', textDecoration: 'none', border: 0, width: '100%', cursor: 'pointer', padding: 0 }}>
               {l.ogImage ? <img className="bg" src={l.ogImage} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : (
                 <div className="col g8" style={{ alignItems: 'center' }}>
                   <Icon name="file" size={30} />
                   <span className="t-sm w7" style={{ opacity: 0.85 }}>{host(l.url)}</span>
                 </div>
               )}
-            </a>
+            </button>
             <div className="body">
               <div className="row between g8">
                 <span className="kind kind-logodeck">{t(`links.kind.${l.kind}` as StringKey)}</span>
@@ -44,8 +51,12 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
               </div>
               <span className="h3">{l.title}</span>
               {l.description && <p className="t-sm t-mute line-clamp-2">{l.description}</p>}
+              {section === 'apps' && <LinkAdjust link={l} links={links} all={changes} onOpen={() => setViewing(l)} />}
               <div className="row between g8 wrap">
-                <a href={l.url} target="_blank" rel="noreferrer" className="t-sm w7" style={{ color: 'var(--azul)' }}>{t('links.open')} ↗</a>
+                <span className="row g12">
+                  <button type="button" className="t-sm w7" style={{ color: 'var(--azul)', background: 'none', border: 0, padding: 0, cursor: 'pointer' }} onClick={() => setViewing(l)}>{t('links.open')}</button>
+                  <a href={l.url} target="_blank" rel="noreferrer" className="t-sm" style={{ color: 'var(--graphite)' }} title={t('lv.newTab')} aria-label={`${t('lv.newTab')}: ${l.title}`}>↗</a>
+                </span>
                 {isAdmin && (
                   <span className="row g8">
                     <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(l)}>{t('links.edit')}</button>
@@ -57,6 +68,7 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
           </div>
         ))}
       </div>
+      {viewing && <LinkViewer brandId={brandId} link={viewing} links={links} onClose={closeViewer} />}
     </div>
   );
 }

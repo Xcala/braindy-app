@@ -1,0 +1,11 @@
+/* Offline and update notices: a pill at the top centre, under the safe area of phones with a notch. */
+.pwa-bar { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 0; right: 0; z-index: 90; display: flex; justify-content: center; pointer-events: none; padding: 0 16px; }
+.pwa-pill { pointer-events: auto; display: inline-flex; align-items: center; gap: 12px; min-height: 40px; padding: 6px 6px 6px 16px; border-radius: 999px;
+  background: var(--ink); color: var(--white); font: 600 13px/18px var(--f-text); box-shadow: 0 10px 30px rgba(11, 18, 32, .22); }
+.pwa-pill button { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--azul); color: #fff; font: inherit; cursor: pointer; }
+.pwa-pill.is-off { padding-right: 16px; }
+.pwa-pill.is-off i { width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+.pwa-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.pwa-steps li { display: flex; align-items: center; gap: 12px; }
+.pwa-n { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--hielo); color: var(--azul); font-weight: 800; }
+.pwa-ico { display: inline-flex; vertical-align: middle; color: var(--azul); }

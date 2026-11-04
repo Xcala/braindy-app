@@ -241,7 +241,7 @@ describe('accesses (credentials)', () => {
   });
 
   it('billing: owners and admin read, members and others do not, nobody writes; Stripe maps backend only', async () => {
-    for (const p of ['billing/plan', 'invoices/i1', 'transfers/t1']) {
+    for (const p of ['billing/plan', 'billing/contracted', 'billing/stack', 'invoices/i1', 'transfers/t1']) {
       await assertSucceeds(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/${p}`)));
       await assertSucceeds(getDoc(doc(as(env, ADMIN), `brands/${BRAND_A}/${p}`)));
       await assertFails(getDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/${p}`)));
@@ -291,6 +291,12 @@ describe('audit and brains', () => {
     await assertSucceeds(getDoc(doc(as(env, ADMIN), 'audit/e1')));
     await assertFails(getDoc(doc(as(env, OWNER), 'audit/e1')));
     await assertFails(setDoc(doc(as(env, ADMIN), 'audit/e2'), { type: 'fake' }));
+  });
+
+  it('only admin reads hosting signups; nobody writes them from the client', async () => {
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'hostingSignups/cs_1')));
+    await assertFails(getDoc(doc(as(env, OWNER), 'hostingSignups/cs_1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'hostingSignups/cs_2'), { plan: 'pro' }));
   });
 
   it('signed-in users read Brain status; only admin edits it', async () => {

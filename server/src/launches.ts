@@ -22,6 +22,10 @@ launches.get('/launches', async (c) => {
   const uid = c.get('user').uid;
   if (!(await db.doc(`users/${uid}`).get()).exists) return c.json({ items: [] });
   const snap = await db.collection('launches').orderBy('at', 'desc').limit(12).get();
+  // Each launch carries its brand's city, so the band can tag it (BOG, NYC).
+  const ids = [...new Set(snap.docs.map((d) => String(d.get('brandId'))))];
+  const brands = ids.length ? await db.getAll(...ids.map((id) => db.doc(`brands/${id}`))) : [];
+  const cityOf = new Map(brands.map((b) => [b.id, b.get('city') ?? null]));
   const items = await Promise.all(snap.docs.map(async (d) => {
     const x = d.data();
     const [[url], mine] = await Promise.all([
@@ -30,7 +34,7 @@ launches.get('/launches', async (c) => {
     ]);
     const counts = Object.fromEntries(REACTIONS.map((r) => [r, Math.max(0, (x.reactions?.[r] as number) ?? 0)]));
     return {
-      id: d.id, brandId: x.brandId, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', at: x.at?.toMillis?.() ?? null, url,
+      id: d.id, brandId: x.brandId, brandName: x.brandName, title: x.title, category: x.category ?? null, kind: x.kind === 'video' ? 'video' : 'image', city: cityOf.get(x.brandId) ?? null, at: x.at?.toMillis?.() ?? null, url,
       counts, mine: ((mine.get('reactions') as Reaction[]) ?? []).filter((r) => REACTIONS.includes(r)),
     };
   }));
@@ -46,10 +50,13 @@ launches.get('/brands/:brandId/launches/own', async (c) => {
   const done = snap.docs.filter((d) => d.get('latestVersion')).sort((a, b) => ms(b.get('updatedAt')) - ms(a.get('updatedAt'))).slice(0, 8);
   const items = await Promise.all(done.map(async (d) => {
     const ver = await d.ref.collection('versions').doc(d.get('latestVersion')).get();
-    const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string }>) ?? [];
-    const file = files.find((f) => isShowable(f) && f.storagePath?.startsWith(`brands/${brandId}/`));
+    const files = (ver.get('files') as Array<{ storagePath?: string; contentType?: string; url?: string }>) ?? [];
+    // Files uploaded here live in the brand's folder; work migrated from the old apps keeps its own https link.
+    const file = files.find((f) => isShowable(f) && (f.storagePath?.startsWith(`brands/${brandId}/`) || /^https:\/\//.test(f.url ?? '')));
     if (!file) return null;
-    const [url] = await bucket().file(file.storagePath!).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS });
+    const url = file.storagePath?.startsWith(`brands/${brandId}/`)
+      ? (await bucket().file(file.storagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS }))[0]
+      : file.url!;
     return { id: d.id, title: str(d.get('title'), 120), category: d.get('category') ?? null, kind: String(file.contentType).startsWith('video/') ? 'video' : 'image', at: ms(d.get('updatedAt')) || null, url };
   }));
   return c.json({ items: items.filter(Boolean) });

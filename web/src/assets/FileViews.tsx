@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes } from './fileApi';
@@ -6,7 +7,33 @@ import { extLabel, kindOf, thumbClass, type FileItem } from './fileKinds';
 const date = (ms?: number, lang = 'en') =>
   ms ? new Date(ms).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
 
-export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void }) {
+/** NickMark only: pin a file to the brand documents in My brand. */
+export type Pin = { on: (id: string) => boolean; toggle: (f: FileItem) => void };
+/** Files ticked for a bulk action (.zip for everyone; move and trash for NickMark). */
+export type Sel = { on: (id: string) => boolean; toggle: (id: string, range?: boolean) => void };
+
+function Check({ sel, f, style }: { sel: Sel; f: FileItem; style?: CSSProperties }) {
+  const { t } = useI18n();
+  return (
+    <label className="fx-check" style={style} onClick={(e) => e.stopPropagation()}>
+      <input type="checkbox" checked={sel.on(f.id)} onChange={(e) => sel.toggle(f.id, (e.nativeEvent as MouseEvent).shiftKey)} aria-label={`${t('files.select')} ${f.title}`} />
+    </label>
+  );
+}
+
+function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProperties }) {
+  const { t } = useI18n();
+  const on = pin.on(f.id);
+  return (
+    <button type="button" aria-pressed={on} title={t(on ? 'bf.unpin' : 'bf.pin')} onClick={(e) => { e.stopPropagation(); pin.toggle(f); }} className={`fx-pin${on ? ' is-on' : ''}`} style={style}>
+      {on ? `✓ ${t('bf.pinned')}` : `+ ${t('bf.pin')}`}
+    </button>
+  );
+}
+
+type Menu = (f: FileItem, style?: CSSProperties) => ReactNode;
+
+export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel }) {
   const { lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -14,7 +41,8 @@ export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs:
         const kind = kindOf(f);
         const thumb = thumbs[f.id];
         return (
-          <button key={f.id} type="button" className="tile text-left" style={{ cursor: 'pointer', padding: 0 }} onClick={() => onOpen(f)}>
+          <div key={f.id} className={`tile${sel?.on(f.id) ? ' is-picked' : ''}`} style={{ padding: 0, position: 'relative' }}>
+          <button type="button" className="text-left" style={{ cursor: 'pointer', padding: 0, border: 0, background: 'none', width: '100%' }} onClick={() => onOpen(f)}>
             <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: 180, overflow: 'hidden', width: '100%' }}>
               {thumb ? (
                 <img className="cover h-full w-full object-cover" src={thumb} alt="" loading="lazy" />
@@ -28,26 +56,36 @@ export function FileGrid({ files, thumbs, onOpen }: { files: FileItem[]; thumbs:
               <span className="t-sm t-mute">{formatBytes(f.size)}{f.mtimeMs ? ` · ${date(f.mtimeMs, lang)}` : ''}</span>
             </div>
           </button>
+          {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
+          {menu?.(f, { position: 'absolute', top: 136, right: 12, zIndex: 3 })}
+          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 136, left: 12, zIndex: 2 }} />}
+          </div>
         );
       })}
     </div>
   );
 }
 
-export function FileList({ files, onOpen, onDownload }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void }) {
+/** `onFolder` (search across all folders) shows each file's folder under its name, as a link to open it. */
+export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }: { files: FileItem[]; onOpen: (f: FileItem) => void; onDownload: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel; onFolder?: (folder: string) => void }) {
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
-      <div className="lrow head label min-w-[640px]"><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
+      <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
-        <div key={f.id} className="lrow min-w-[640px]">
-          <button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+        <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}${sel?.on(f.id) ? ' is-picked' : ''}`}>
+          <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<span className="col" style={{ minWidth: 0 }}><button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+            {onFolder && <button type="button" className="t-xs t-mute truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }} onClick={() => onFolder(f.folder ?? '')}><Icon name="folder" size={12} /> {f.folder || t('files.rootFolder')}</button>}</span></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
           <span className="t-sm t-mute">{date(f.mtimeMs, lang)}</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
+          <span className="row g4" style={{ justifyContent: 'flex-end' }}>
+          {pin && <PinButton pin={pin} f={f} />}
+          <button type="button" className="fx-ibtn" onClick={() => onDownload(f)} aria-label={`${t('common.download')} ${f.title}`}>
             <Icon name="download" size={16} />
           </button>
+          {menu?.(f)}
+          </span>
         </div>
       ))}
     </div>

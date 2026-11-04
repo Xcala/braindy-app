@@ -1,0 +1,79 @@
+import { useState, type ReactNode } from 'react';
+import { useI18n } from '../i18n/I18nProvider';
+import { planApi } from './usePlan';
+import { EXAMPLE, EXAMPLE_STACK } from './example';
+import { tidy } from './formFields';
+import { EMPTY_PLAN, PlanForm } from './PlanForm';
+import { StackForm } from './StackForm';
+import type { BrandPlan, StackItem } from './types';
+
+interface AdminProps<T> {
+  title: string; help: string; value: T | null; empty: T; example: T;
+  save: (v: T) => Promise<{ summary: string }>; remove: () => Promise<unknown>;
+  form: (v: T, set: (v: T) => void) => ReactNode;
+}
+
+/** A collapsible admin form with save, load example and delete; the server validates and says what is missing. */
+function Admin<T>({ title, help, value, empty, example, save, remove, form }: AdminProps<T>) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(!value);
+  const [v, setV] = useState<T>(() => structuredClone(value ?? empty));
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const set = (x: T) => { setV(x); setMsg(null); };
+
+  async function onSave() {
+    setBusy(true); setMsg(null);
+    try {
+      const r = await save(tidy(v));
+      setMsg({ ok: true, text: `${t('plan.a.saved')} ${r.summary}.` });
+    } catch (e) {
+      setMsg({ ok: false, text: String((e as Error).message ?? e).replace(/^API \d+ · /, '') });
+    } finally { setBusy(false); }
+  }
+  async function onRemove() {
+    if (!window.confirm(t('plan.a.removeConfirm'))) return;
+    await remove(); set(structuredClone(empty));
+  }
+
+  return (
+    <section className="card card-tight col g12" style={{ borderStyle: 'dashed' }} aria-label={title}>
+      <div className="row g8" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="col" style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit' }}>
+          <span className="label">{t('bill.a.only')}</span><span className="w7">{title}</span>
+        </button>
+        {open
+          ? <button type="button" className="btn btn-primary btn-sm" onClick={onSave} disabled={busy}>{busy ? `${t('common.loading')}…` : msg?.ok ? `✓ ${t('set.saved').replace(/\.$/, '')}` : t('set.save')}</button>
+          : <button type="button" className="t-sm" style={{ color: 'var(--azul)', border: 0, background: 'none', cursor: 'pointer' }} onClick={() => setOpen(true)}>{t('plan.a.edit')}</button>}
+      </div>
+      {open && (
+        <>
+          <p className="t-sm t-mute" style={{ margin: 0 }}>{help}</p>
+          {msg && <p role="status" className="t-sm w7" style={{ margin: 0, color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
+          {form(v, set)}
+          {msg && !msg.ok && <p role="status" className="t-sm w7" style={{ margin: 0, color: 'var(--danger)' }}>{msg.text}</p>}
+          <div className="row g8" style={{ flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={onSave} disabled={busy}>{t('set.save')}</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => set(structuredClone(example))}>{t('plan.a.example')}</button>
+            {value != null && <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove}>{t('plan.a.remove')}</button>}
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>{t('plan.a.hide')}</button>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** Admin only · What the brand contracted (connector tool braindy_plan) and its apps stack (braindy_stack), as forms.
+ *  The schedule is edited in the contract panel (Onboarding), where it is Anexo 2. */
+export function AdminPlan({ brandId, plan, stack }: { brandId: string; plan: BrandPlan | null; stack: StackItem[] | null }) {
+  const { t } = useI18n();
+  return (
+    <div className="col g12">
+      <Admin<BrandPlan> title={t('plan.a.title')} help={t('plan.a.help')} value={plan} empty={EMPTY_PLAN} example={EXAMPLE}
+        save={(v) => planApi.set(brandId, v)} remove={() => planApi.remove(brandId)} form={(v, set) => <PlanForm v={v} set={set} />} />
+      <Admin<StackItem[]> title={t('plan.a.stackTitle')} help={t('plan.a.stackHelp')} value={stack} empty={[]} example={EXAMPLE_STACK}
+        save={(v) => planApi.setStack(brandId, v)} remove={() => planApi.removeStack(brandId)} form={(v, set) => <StackForm v={v} set={set} />} />
+    </div>
+  );
+}

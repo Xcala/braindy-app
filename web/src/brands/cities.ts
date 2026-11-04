@@ -37,3 +37,15 @@ const slug = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 /** The brand's city: an id from the old list, or a searched place. */
 export const cityById = (v?: string | CityPlace | null): City | undefined =>
   !v ? undefined : typeof v === 'string' ? CITIES.find((c) => c.id === v) : { id: slug(v.name), es: v.name, en: v.name, tz: v.tz };
+
+/** Short city tags, airport style (BOG, NYC, SF), shown on launches. Searched places use their first three letters. */
+const CODES: Record<string, string> = {
+  bogota: 'BOG', medellin: 'MDE', cali: 'CLO', barranquilla: 'BAQ', mexico: 'CDMX', lima: 'LIM', quito: 'UIO', panama: 'PTY',
+  santiago: 'SCL', montevideo: 'MVD', buenosaires: 'BUE', saopaulo: 'SAO', miami: 'MIA', newyork: 'NYC', boston: 'BOS',
+  chicago: 'CHI', dallas: 'DAL', houston: 'HOU', denver: 'DEN', losangeles: 'LA', sanfrancisco: 'SF', toronto: 'TOR',
+  madrid: 'MAD', barcelona: 'BCN', london: 'LON', paris: 'PAR',
+};
+export const cityCode = (v?: string | CityPlace | null): string | null => {
+  const c = cityById(v);
+  return c ? CODES[c.id] ?? c.id.slice(0, 3).toUpperCase() : null;
+};

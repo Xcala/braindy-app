@@ -82,9 +82,14 @@ service cloud.firestore {
         : s in m.sections;
     }
 
+    // NickMark can switch a section off for the whole brand (brands/{id}.sectionsOff); that wins over each person.
+    function brandOn(brandId, s) {
+      return !(s in get(/databases/$(database)/documents/brands/$(brandId)).data.get('sectionsOff', []));
+    }
+
     function can(brandId, s) {
       let a = ancestors(brandId);
-      return signedIn() && (memberAt(brandId) ? allowsAt(brandId, s)
+      return signedIn() && brandOn(brandId, s) && (memberAt(brandId) ? allowsAt(brandId, s)
         : a.size() > 0 && memberAt(a[0]) ? allowsAt(a[0], s)
         : a.size() > 1 && memberAt(a[1]) ? allowsAt(a[1], s)
         : a.size() > 2 && memberAt(a[2]) && allowsAt(a[2], s));
@@ -205,12 +210,45 @@ service cloud.firestore {
 
       // Site changes (the website triage): what was asked, what was delivered and its state. Synced by the
       // Braindy connector from each site's working session; the brand reads it, NickMark edits.
+      // Social media calendar mirrored from Metricool by the server (connector): the brand only reads it.
+      match /socialPosts/{postId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
       match /siteChanges/{changeId} {
         allow read: if canReadBrand(brandId);
         allow create, update: if isAdmin()
           && request.resource.data.status in ['delivered', 'in_progress', 'decision', 'client', 'discarded']
           && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 300;
         allow delete: if isAdmin();
+      }
+
+      // Comments pinned on a part of the site (Figma style): anyone of the brand writes them, the team and the Brains read them.
+      // Resolving: its author, anyone who can approve, or the admin. Text and place never change.
+      match /siteComments/{commentId} {
+        allow read: if canReadBrand(brandId);
+        allow create: if (isAdmin() || isMember(brandId))
+          && request.resource.data.author == uid()
+          && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+          && request.resource.data.url is string && request.resource.data.url.size() <= 1000
+          && request.resource.data.resolved == false
+          && request.resource.data.createdAt == request.time;
+        allow update: if isAdmin()
+          || ((resource.data.author == uid() || canApprove(brandId))
+              && onlyChanges(['resolved', 'resolvedBy', 'resolvedAt'])
+              && request.resource.data.resolved is bool);
+        allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
+        match /replies/{replyId} {
+          allow read: if canReadBrand(brandId);
+          allow create: if (isAdmin() || isMember(brandId))
+            && request.resource.data.author == uid()
+            && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
+            && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+            && request.resource.data.createdAt == request.time;
+          allow update: if false;
+          allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
+        }
       }
 
       // Work log written from Claude sessions (what was done, when). Internal: NickMark only.
@@ -324,6 +362,11 @@ service cloud.firestore {
     match /stripeEvents/{eventId} {
       allow read, write: if false;
     }
+    // Paid hosting plans from the public pricing page (no brand yet): admin reads, backend writes.
+    match /hostingSignups/{sessionId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
 
     // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
     match /{path=**}/requests/{requestId} {
@@ -386,6 +429,28 @@ service cloud.firestore {
     match /granolaInbox/{noteId} {
       allow read: if isAdmin();
       allow write: if false;
+    }
+
+    // ---------- WhatsApp channel (phase 5): the backend writes everything ----------
+    // Messages from numbers no brand knows: admin only, never inside a brand.
+    match /waInbox/{messageId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // Channel health (last webhook, last error, counters): admin only.
+    match /waChannel/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+    // Phone → person index, processed message ids and sent notices: backend only (they hold phone numbers).
+    match /waContacts/{phone} {
+      allow read, write: if false;
+    }
+    match /waEvents/{messageId} {
+      allow read, write: if false;
+    }
+    match /waOutbound/{messageId} {
+      allow read, write: if false;
     }
     match /granolaNotes/{noteId} {
       allow read, write: if false;

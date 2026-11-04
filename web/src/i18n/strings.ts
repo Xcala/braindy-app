@@ -5,24 +5,35 @@ import { teamHomeEn, teamHomeEs } from './teamHomeStrings';
 import { accessEn, accessEs } from './accessStrings';
 import { reviewEn, reviewEs } from './reviewStrings';
 import { onboardingEn, onboardingEs } from './onboardingStrings';
-import { contractEn, contractEs } from './contractStrings';
 import { billingEn, billingEs } from './billingStrings';
-import { costEn, costEs } from './costStrings';
 import { planEn, planEs } from './planStrings';
+import { planFormEn, planFormEs } from './planFormStrings';
+import { contractEn, contractEs } from './contractStrings';
+import { costEn, costEs } from './costStrings';
 import { uxEn, uxEs } from './uxStrings';
 import { brainEn, brainEs } from './brainStrings';
 import { polishEn, polishEs } from './polishStrings';
 import { criterioEn, criterioEs } from './criterioStrings';
 import { studioEn, studioEs } from './studioStrings';
+import { homeGridEn, homeGridEs } from './homeGridStrings';
 import { linksEn, linksEs } from './linksStrings';
 import { brandEditEn, brandEditEs } from './brandEditStrings';
+import { whatsappEn, whatsappEs } from './whatsappStrings';
+import { pwaEn, pwaEs } from './pwaStrings';
+import { appsViewEn, appsViewEs } from './appsViewStrings';
+import { sitePanelEn, sitePanelEs } from './sitePanelStrings';
+import { calendarEn, calendarEs } from './calendarStrings';
+import { outcomeEn, outcomeEs } from './outcomeStrings';
+import { requestFilterEn, requestFilterEs } from './requestFilterStrings';
+import { askPanelEn, askPanelEs } from './askPanelStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
+  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps',
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
-  'nav.requests': 'My requests',
-  'nav.accesses': 'Connectors',
+  'nav.requests': 'Requests',
+  'nav.accesses': 'Third Party Apps',
   'nav.brands': 'Brands',
   'nav.team': 'Team',
   'common.signOut': 'Sign out',
@@ -31,7 +42,7 @@ const baseEn = {
   'common.comingPhase': 'Coming in phase {n}.',
   'common.copy': 'Copy',
   'brand.pantoneApprox': 'Nearest Pantone (approximate): confirm with a printed swatch book',
-  'common.copied': 'Copied',
+  'common.copied': 'Copied', 'common.showAll': 'See all ({n})', 'common.showLess': 'See less',
   'common.download': 'Download',
   'common.open': 'Open',
   'brand.tapToZoom': 'Enlarge',
@@ -54,7 +65,9 @@ const baseEn = {
   'brand.typography': 'Typography',
   'brand.fontDownload': 'Download font', 'brand.fontAdobe': 'Activate on Adobe Fonts', 'brand.fontFind': 'Find where to download it',
   'lb.image': 'Image', 'lb.download': 'Download', 'lb.close': 'Close', 'lb.prev': 'Previous', 'lb.next': 'Next',
-  'fa.clientSees': 'The client sees {n} of {m} folders', 'fa.showAll': 'Show all', 'fa.on': 'Visible', 'fa.off': 'Hidden', 'fa.toggleLabel': 'Visible to the client: {name}', 'fa.onHint': 'The client sees this folder. Tap to hide it.', 'fa.offHint': 'Hidden from the client. Tap to show it.', 'fa.root': 'Loose files', 'fa.error': 'Could not save. Try again.', 'fa.hiddenTag': 'hidden from the client',
+  'fa.clientSees': 'The client sees {n} of {m} folders', 'fa.showAll': 'Show all', 'fa.hideAll': 'Hide all', 'fa.hideAllConfirm': 'Hide every folder from the client? You can show them again anytime.', 'fa.on': 'Visible', 'fa.off': 'Hidden', 'fa.toggleLabel': 'Visible to the client: {name}', 'fa.onHint': 'The client sees this folder. Tap to hide it.', 'fa.offHint': 'Hidden from the client. Tap to show it.', 'fa.root': 'Loose files', 'fa.error': 'Could not save. Try again.', 'fa.hiddenTag': 'hidden from the client',
+  'bf.title': 'Brand documents', 'bf.sub': 'The brand book and everything made around the brand.', 'files.delete': 'Delete', 'files.more': 'More actions', 'files.rename': 'Rename', 'files.renamePrompt': 'New name', 'files.share': 'Copy link (7 days)', 'files.shareDone': 'Link copied. It works for 7 days.', 'files.move': 'Move to…', 'files.moveTo': 'Move to', 'files.moveBtn': 'Move', 'files.moved': 'Moved.', 'files.rootFolder': 'Main folder', 'files.zip': 'Download .zip', 'files.zipTooBig': 'Too much for one .zip (2 GB max). Pick fewer files.', 'files.toTrash': 'Move to trash', 'files.trash': 'Trash', 'files.trashSub': 'Files stay here {days} days, then they are gone for good.', 'files.trashEmpty': 'The trash is empty.', 'files.restore': 'Restore', 'files.purge': 'Delete for good', 'files.purgeConfirm': 'Delete “{name}” for good? It cannot be undone.', 'files.back': 'Back to files', 'files.dups': '{n} repeated copies here (same name and size).', 'files.dupsPick': 'Select the copies', 'files.everywhere': 'All folders', 'files.inFolder': 'in {name}', 'files.uploadHere': 'Upload here', 'files.dropHere': 'Drop files to upload them to {name}', 'files.actionError': 'Something failed. Try again.', 'files.trashedN': '{n} moved to the trash.', 'files.restoredN': '{n} restored.', 'files.purged': 'Deleted for good.', 'files.renamed': 'Name changed.', 'files.rangeHint': 'Tip: hold Shift to tick a whole range.', 'files.sort': 'Sort', 'files.sort.name': 'Name A–Z', 'files.sort.new': 'Newest first', 'files.sort.old': 'Oldest first', 'files.sort.big': 'Largest first', 'files.selected': '{n} selected', 'files.selectAll': 'Select all', 'files.clearSel': 'Cancel', 'files.deleteSel': 'Delete {n}', 'files.deleteSelConfirm': 'Move {n} files to the trash? You can restore them for 30 days.', 'files.select': 'Select', 'files.deleteConfirm': 'Move “{name}” to the trash? You can restore it for 30 days.', 'files.deleteError': 'Could not delete the file. Try again.', 'bf.pin': 'Add to My brand', 'bf.pinned': 'In My brand', 'bf.unpin': 'Remove from My brand', 'bf.unpinConfirm': 'Remove this document from My brand? The file stays in Files.',
+  'bsec.title': 'What this brand can use', 'bsec.hint': 'Switch a part off for everyone in the brand, for example Requests when the contract ends. Home is always on.',
   'perm.profile': 'What they can see', 'perm.all': 'Sees everything', 'perm.team': 'Team', 'perm.view': 'View only', 'perm.custom': 'Custom', 'perm.allHint': 'Everything, including Accesses and Billing. Can invite their team.', 'perm.teamHint': 'Everything except Accesses and Billing.', 'perm.viewHint': 'Sees the brand, files, apps, research and results. Does not request or approve.', 'perm.sections': 'Sections', 'perm.billing': 'Billing', 'perm.hint': 'Pick a profile or tap each section to open or close it. Home is always open.', 'perm.groupHint': 'This is a group: what you give here applies to all its brands. For someone from one brand only, invite them from that brand.', 'perm.error': 'Could not save the change. Try again.',
   'brand.voice': 'Voice',
   'brand.essence': 'Essence',
@@ -113,7 +126,7 @@ const baseEn = {
   'files.folders': 'Folders',
   'files.files': 'Files',
   'files.noMatch': 'No file matches.',
-  'files.showMore': 'Show {n} more',
+  'files.showMore': 'Show {n} more', 'req.moreN': 'See {n} more', 'req.filter.all': 'All', 'req.filter.to_approve': 'To approve', 'req.filter.in_production': 'In progress', 'req.filter.done': 'Delivered',
   'files.uploadsHint': 'Your team drops files here',
   'files.uploaded': 'Uploaded.',
   'files.kind.all': 'All',
@@ -172,7 +185,7 @@ const baseEn = {
   'login.kicker': 'The Braindy app',
   'login.hero1': 'Your brand,',
   'login.hero2': 'remembered.',
-  'login.heroBody': 'Every file, request and approval in one place, signed by NickMark. You will see the work happening.',
+  'login.heroBody': 'What was delivered, published and what comes next, in one place and signed by NickMark. No tools to learn: you approve, the work gets done.',
   'login.brainsAlt': 'Researcher, Marketer, Creator and Builder',
   'login.studioAlt': 'NickMark and his four Brains working in the Braindy studio in San Francisco', 'login.studioLive': 'Live from San Francisco',
   'login.line1': 'Made by NickMark.',
@@ -195,16 +208,17 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn } as const;
 
 export type StringKey = keyof typeof en;
 
 const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.brand': 'Mi marca',
+  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps',
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
-  'nav.requests': 'Mis solicitudes',
-  'nav.accesses': 'Conectores',
+  'nav.requests': 'Pedidos',
+  'nav.accesses': 'Apps de terceros',
   'nav.brands': 'Marcas',
   'nav.team': 'Equipo',
   'common.signOut': 'Cerrar sesión',
@@ -213,7 +227,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'common.comingPhase': 'Llega en la fase {n}.',
   'common.copy': 'Copiar',
   'brand.pantoneApprox': 'Pantone más cercano (aproximado): confírmalo con la guía impresa',
-  'common.copied': 'Copiado',
+  'common.copied': 'Copiado', 'common.showAll': 'Ver todos ({n})', 'common.showLess': 'Ver menos',
   'common.download': 'Descargar',
   'common.open': 'Abrir',
   'brand.tapToZoom': 'Ampliar',
@@ -236,7 +250,9 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'brand.typography': 'Tipografía',
   'brand.fontDownload': 'Descargar fuente', 'brand.fontAdobe': 'Activar en Adobe Fonts', 'brand.fontFind': 'Buscar dónde descargarla',
   'lb.image': 'Imagen', 'lb.download': 'Descargar', 'lb.close': 'Cerrar', 'lb.prev': 'Anterior', 'lb.next': 'Siguiente',
-  'fa.clientSees': 'El cliente ve {n} de {m} carpetas', 'fa.showAll': 'Mostrar todas', 'fa.on': 'Visible', 'fa.off': 'Oculta', 'fa.toggleLabel': 'Visible para el cliente: {name}', 'fa.onHint': 'El cliente ve esta carpeta. Toca para ocultarla.', 'fa.offHint': 'Oculta al cliente. Toca para mostrársela.', 'fa.root': 'Archivos sueltos', 'fa.error': 'No se pudo guardar. Intenta de nuevo.', 'fa.hiddenTag': 'oculta al cliente',
+  'fa.clientSees': 'El cliente ve {n} de {m} carpetas', 'fa.showAll': 'Mostrar todas', 'fa.hideAll': 'Ocultar todas', 'fa.hideAllConfirm': '¿Ocultar todas las carpetas al cliente? Puedes volver a mostrarlas cuando quieras.', 'fa.on': 'Visible', 'fa.off': 'Oculta', 'fa.toggleLabel': 'Visible para el cliente: {name}', 'fa.onHint': 'El cliente ve esta carpeta. Toca para ocultarla.', 'fa.offHint': 'Oculta al cliente. Toca para mostrársela.', 'fa.root': 'Archivos sueltos', 'fa.error': 'No se pudo guardar. Intenta de nuevo.', 'fa.hiddenTag': 'oculta al cliente',
+  'bf.title': 'Documentos de marca', 'bf.sub': 'El manual de marca y todo lo que creamos en torno a la marca.', 'files.delete': 'Borrar', 'files.more': 'Más acciones', 'files.rename': 'Renombrar', 'files.renamePrompt': 'Nuevo nombre', 'files.share': 'Copiar enlace (7 días)', 'files.shareDone': 'Enlace copiado. Funciona 7 días.', 'files.move': 'Mover a…', 'files.moveTo': 'Mover a', 'files.moveBtn': 'Mover', 'files.moved': 'Movido.', 'files.rootFolder': 'Carpeta principal', 'files.zip': 'Descargar .zip', 'files.zipTooBig': 'Es demasiado para un .zip (máx. 2 GB). Elige menos archivos.', 'files.toTrash': 'Mover a la papelera', 'files.trash': 'Papelera', 'files.trashSub': 'Los archivos quedan aquí {days} días y luego se borran para siempre.', 'files.trashEmpty': 'La papelera está vacía.', 'files.restore': 'Recuperar', 'files.purge': 'Borrar para siempre', 'files.purgeConfirm': '¿Borrar «{name}» para siempre? No se puede deshacer.', 'files.back': 'Volver a archivos', 'files.dups': '{n} copias repetidas aquí (mismo nombre y peso).', 'files.dupsPick': 'Seleccionar las copias', 'files.everywhere': 'Todas las carpetas', 'files.inFolder': 'en {name}', 'files.uploadHere': 'Subir aquí', 'files.dropHere': 'Suelta los archivos para subirlos a {name}', 'files.actionError': 'Algo falló. Intenta de nuevo.', 'files.trashedN': '{n} a la papelera.', 'files.restoredN': '{n} recuperados.', 'files.purged': 'Borrado para siempre.', 'files.renamed': 'Nombre cambiado.', 'files.rangeHint': 'Truco: mantén Shift para marcar un rango completo.', 'files.sort': 'Ordenar', 'files.sort.name': 'Nombre A–Z', 'files.sort.new': 'Más recientes', 'files.sort.old': 'Más antiguos', 'files.sort.big': 'Más pesados', 'files.selected': '{n} seleccionados', 'files.selectAll': 'Seleccionar todos', 'files.clearSel': 'Cancelar', 'files.deleteSel': 'Borrar {n}', 'files.deleteSelConfirm': '¿Mover {n} archivos a la papelera? Puedes recuperarlos durante 30 días.', 'files.select': 'Seleccionar', 'files.deleteConfirm': '¿Mover «{name}» a la papelera? Puedes recuperarlo durante 30 días.', 'files.deleteError': 'No se pudo borrar el archivo. Intenta de nuevo.', 'bf.pin': 'Agregar a Mi marca', 'bf.pinned': 'En Mi marca', 'bf.unpin': 'Quitar de Mi marca', 'bf.unpinConfirm': '¿Quitar este documento de Mi marca? El archivo sigue en Archivos.',
+  'bsec.title': 'Lo que esta marca puede usar', 'bsec.hint': 'Apaga una parte para todas las personas de la marca, por ejemplo Pedidos cuando termina el contrato. Inicio siempre queda.',
   'perm.profile': 'Qué puede ver', 'perm.all': 'Ve todo', 'perm.team': 'Equipo', 'perm.view': 'Solo ver', 'perm.custom': 'Personalizado', 'perm.allHint': 'Todo, incluidos Accesos y Facturación. Puede invitar a su equipo.', 'perm.teamHint': 'Todo menos Accesos y Facturación.', 'perm.viewHint': 'Mira la marca, archivos, apps, investigación y resultados. No pide ni aprueba.', 'perm.sections': 'Secciones', 'perm.billing': 'Facturación', 'perm.hint': 'Elige un perfil o toca cada sección para abrirla o cerrarla. Inicio siempre está abierto.', 'perm.groupHint': 'Este es un grupo: lo que des aquí vale para todas sus marcas. Para alguien de una sola marca, invítalo desde esa marca.', 'perm.error': 'No se pudo guardar el cambio. Intenta de nuevo.',
   'brand.voice': 'Voz',
   'brand.essence': 'Esencia',
@@ -295,7 +311,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'files.folders': 'Carpetas',
   'files.files': 'Archivos',
   'files.noMatch': 'Ningún archivo coincide.',
-  'files.showMore': 'Ver {n} más',
+  'files.showMore': 'Ver {n} más', 'req.moreN': 'Ver {n} más', 'req.filter.all': 'Todas', 'req.filter.to_approve': 'Por aprobar', 'req.filter.in_production': 'En curso', 'req.filter.done': 'Entregadas',
   'files.uploadsHint': 'Aquí sube archivos tu equipo',
   'files.uploaded': 'Subido.',
   'files.kind.all': 'Todo',
@@ -354,7 +370,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.kicker': 'La app de Braindy',
   'login.hero1': 'Tu marca,',
   'login.hero2': 'recordada.',
-  'login.heroBody': 'Cada archivo, solicitud y aprobación en un solo lugar, firmado por NicoMarca. Vas a ver el trabajo avanzar.',
+  'login.heroBody': 'Lo entregado, lo publicado y lo que viene, en un solo lugar y firmado por NicoMarca. Sin herramientas que aprender: tú apruebas, el trabajo se hace.',
   'login.brainsAlt': 'Researcher, Marketer, Creator y Builder',
   'login.studioAlt': 'NicoMarca y sus cuatro Brains trabajando en el estudio de Braindy en San Francisco', 'login.studioLive': 'En vivo desde San Francisco',
   'login.line1': 'Lo hace NicoMarca.',
@@ -377,4 +393,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs };

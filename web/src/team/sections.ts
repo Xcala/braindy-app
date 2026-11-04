@@ -34,7 +34,7 @@ export function profileOf(m: MemberLike): Profile {
 
 /** Which section each client route belongs to. */
 export const ROUTE_SECTION: Record<string, Section> = {
-  '/brand': 'brand', '/requests': 'requests', '/assets': 'files', '/apps': 'apps', '/research': 'research',
+  '/brand': 'brand', '/requests': 'requests', '/assets': 'files', '/apps': 'apps', '/calendar': 'files', '/research': 'research',
   '/report': 'results', '/learn': 'learn', '/accesses': 'accesses', '/pay': 'billing', '/plan': 'billing',
 };
 export const sectionOfPath = (path: string) => ROUTE_SECTION[`/${path.split('/')[1] ?? ''}`];
@@ -59,6 +59,8 @@ export function useMySections() {
   const ids = key ? key.split('/') : [];
   const ready = ids.every((id) => id in docs);
   const nearest = ids.map((id) => docs[id]).find(Boolean);
-  const mine = new Set(nearest ? sectionsOf(nearest) : []);
+  // The brand's own switches win over each person's sections.
+  const off = current?.sectionsOff ?? [];
+  const mine = new Set((nearest ? sectionsOf(nearest) : []).filter((s) => !off.includes(s)));
   return { ready, can: (s?: Section) => !s || mine.has(s) };
 }

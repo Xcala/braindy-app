@@ -7,22 +7,14 @@ import { BrandProvider } from '../brands/BrandProvider';
 import { BrandMenu } from '../brands/BrandMenu';
 import { CommandK } from '../components/CommandK';
 import { Notifications } from '../components/Notifications';
+import { AccountMenu } from './AccountSheet';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
+import { SubNav } from './SubNav';
+import { Sidebar } from './Sidebar';
+import { useEffect, useRef } from 'react';
 
-const TABS: Array<{ to: string; label: StringKey }> = [
-  { to: '/home', label: 'nav.home' },
-  { to: '/brand', label: 'nav.brand' },
-  { to: '/requests', label: 'nav.requests' },
-  { to: '/assets', label: 'nav.assets' },
-  { to: '/apps', label: 'nav.apps' },
-  { to: '/research', label: 'nav.research' },
-  { to: '/report', label: 'nav.report' },
-  { to: '/learn', label: 'cr.nav' },
-  { to: '/accesses', label: 'nav.accesses' },
-  { to: '/plan', label: 'nav.plan' },
-];
 const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/today', label: 'today.title' },
   { to: '/admin/studio', label: 'st.nav' },
@@ -41,16 +33,27 @@ export function AppShell() {
   const isAdmin = profile?.role === 'admin';
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  // The top bar stays fixed while scrolling; its height goes to --top-h so the page's own sticky bars sit just under it.
+  const head = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = head.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => document.documentElement.style.setProperty('--top-h', `${el.offsetHeight}px`));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   // Admin is its own space (design 24): never mixed with the client tabs.
   const adminSpace = isAdmin && (pathname.startsWith('/admin') || pathname === '/team');
 
   return (
     <BrandProvider>
       <Toaster>
-      <div className="flex min-h-full flex-col">
-        <header className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', gap: 8 }}>
-          <span className="hidden sm:inline-flex"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
-          <div className="vsep hidden sm:block" style={{ height: 32, margin: 0 }} />
+      <div className="flex min-h-full">
+      <Sidebar admin={adminSpace} items={ADMIN_TABS} />
+      <div className="flex min-h-full min-w-0 flex-1 flex-col">
+        <header ref={head} className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', paddingTop: 'max(8px, env(safe-area-inset-top))', gap: 8, position: 'sticky', top: 0 }}>
+          <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
+          <div className="vsep hidden sm:block md:hidden" style={{ height: 32, margin: 0 }} />
           {adminSpace ? (
             <>
               <Link to="/admin/today" className="ws" aria-label="Braindy admin" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span><span className="hidden sm:inline">Braindy admin</span></Link>
@@ -68,26 +71,21 @@ export function AppShell() {
           <Notifications />
           <AccountMenu />
         </header>
-        <div className={adminSpace ? '' : 'hidden md:block'}>
-        <nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
-          {adminSpace ? ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />) : <ClientTabs />}
-        </nav>
-        </div>
+        {/* Admin on a phone: its pages as tabs (the client has the bottom bar; desktop has the sidebar). */}
+        {adminSpace && (
+          <div className="md:hidden"><nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
+            {ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />)}
+          </nav></div>
+        )}
         <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
-          <SectionGate><Outlet /></SectionGate>
+          <SectionGate>{!adminSpace && <SubNav />}<Outlet /></SectionGate>
         </main>
         {!adminSpace && <BottomNav />}
+      </div>
       </div>
       </Toaster>
     </BrandProvider>
   );
-}
-
-/** Client tabs, only the sections this person may use on the current brand. */
-function ClientTabs() {
-  const { t } = useI18n();
-  const { can } = useMySections();
-  return <>{TABS.filter((tab) => can(sectionOfPath(tab.to))).map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} />)}</>;
 }
 
 /** A closed section sends the person back home (the rules and the API block its data anyway). */
@@ -98,27 +96,10 @@ function SectionGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function Tab({ to, label, admin }: { to: string; label: string; admin?: boolean }) {
+function Tab({ to, label, admin, on }: { to: string; label: string; admin?: boolean; on?: boolean }) {
   return (
-    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${isActive ? 'is-active' : ''}`}>
+    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${on ?? isActive ? 'is-active' : ''}`}>
       {label}
     </NavLink>
-  );
-}
-
-/** Your photo: opens the account page (ChatGPT-style list), where every setting has its own row. */
-function AccountMenu() {
-  const { profile, user } = useAuth();
-  const { t } = useI18n();
-  const name = profile?.name ?? user?.email ?? '';
-  const initials = name.split(/[s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join('');
-  return (
-    <Link to="/account" aria-label={t('acct.account')} className="row g12" style={{ textDecoration: 'none', padding: 2, borderRadius: 999 }}>
-      {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
-      <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
-        <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
-        <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
-      </span>
-    </Link>
   );
 }

@@ -1,0 +1,85 @@
+/* Files: one rhythm for every control. Toolbar controls are 40 px, controls inside bars and on tiles 36 / 32 px;
+   pills everywhere, 16 px corners on bars and menus (tiles and lists keep the 20 / 24 px card corners). */
+
+/* Toolbar: two rows, 16 px apart, 24 px side padding (16 on phones). */
+.fx-bar { display: grid; gap: 14px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
+@media (max-width: 639px) { .fx-bar { padding: 14px 16px; } }
+.fx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.fx-find { display: flex; align-items: center; gap: 8px; width: 100%; }
+@media (min-width: 900px) { .fx-find { width: 420px; } }
+.fx .search .input { height: 40px; font-size: 14px; }
+.fx .seg { padding: 3px; }
+.fx .seg button { height: 32px; }
+.fx-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.fx-actions .btn-sm { height: 40px; padding: 0 16px; }
+
+/* "All folders" toggle beside the search. */
+.fx-chip { flex: none; height: 40px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--line-strong); background: #fff;
+  font: 700 13px/1 var(--f-text); color: var(--graphite); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.fx-chip:hover { border-color: var(--ink); color: var(--ink); }
+.fx-chip.is-on { background: var(--hielo); border-color: var(--azul); color: var(--azul); }
+
+/* Native select dressed as a pill with its own chevron. */
+.fx-select { position: relative; display: inline-flex; align-items: center; }
+.fx-select select { appearance: none; height: 40px; padding: 0 38px 0 16px; border-radius: var(--r-pill); border: 1px solid var(--line-strong);
+  background: #fff; font: 700 13px/1 var(--f-text); color: var(--ink); cursor: pointer; max-width: 240px; text-overflow: ellipsis; }
+.fx-select select:hover { border-color: var(--ink); }
+.fx-select svg { position: absolute; right: 14px; pointer-events: none; color: var(--graphite); }
+.fx-select.is-sm select { height: 36px; padding: 0 34px 0 14px; }
+.fx-select.is-sm svg { right: 12px; }
+
+/* Selection bar and the repeated-copies note: same box, same 36 px controls. The bar sticks to the top of the window
+   while you scroll a long folder (the card uses overflow: clip, not hidden, so sticky still works). */
+.selbar { position: sticky; top: calc(var(--top-h, 0px) + 12px); z-index: 6; box-shadow: 0 10px 28px rgba(11, 18, 32, .10); }
+.fx-check { user-select: none; }
+@media (hover: none) { .fx-hint { display: none; } }
+.selbar, .fnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 56px; padding: 10px 10px 10px 18px; border-radius: var(--r-md); }
+.selbar { background: #F2F5FF; border: 1px solid #D6DEFF; }
+.selbar .btn-sm, .fnote .btn-sm { height: 36px; padding: 0 14px; font-size: 13px; }
+.selbar .btn[disabled] { background: #fff; border-color: var(--line); color: #A0A7B5; }
+.selbar .btn-danger[disabled] { background: var(--danger); color: #fff; opacity: .5; }
+.fx-count { font: 700 14px/1 var(--f-text); margin-right: 6px; }
+.fx-move { display: inline-flex; align-items: center; gap: 6px; }
+.fx-end { margin-left: auto; }
+.fnote { justify-content: space-between; background: #FFF8E6; border: 1px solid #F5E2B0; color: #7A5300; }
+.fnote .btn-secondary { border-color: #E9D29A; }
+
+/* Tiles and rows: picked state, a 32 px checkbox circle and 32 px icon buttons. */
+.fx .tile.is-picked { border-color: var(--azul); box-shadow: 0 0 0 2px var(--azul); }
+.fx .lrow.is-picked { background: #F5F8FF; }
+.fx-check { width: 32px; height: 32px; border-radius: var(--r-pill); background: #fff; border: 1px solid var(--line); display: inline-grid; place-items: center; cursor: pointer; flex: none; }
+.fx-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--azul); cursor: pointer; }
+.fx .lrow .fx-check { width: 28px; height: 28px; border: 0; background: transparent; }
+.fx-ibtn { width: 32px; height: 32px; border-radius: var(--r-pill); border: 1px solid var(--line); background: #fff; color: var(--graphite);
+  display: inline-grid; place-items: center; cursor: pointer; flex: none; }
+.fx-ibtn:hover { color: var(--ink); border-color: var(--line-strong); }
+.fx .lrow .fx-ibtn { border-color: transparent; background: transparent; }
+.fx .lrow .fx-ibtn:hover { background: var(--niebla); }
+.fx-pin { height: 28px; padding: 0 12px; border-radius: var(--r-pill); border: 1px solid var(--line); background: #fff; color: var(--ink);
+  font: 700 12px/1 var(--f-text); white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; }
+.fx-pin:hover { border-color: var(--line-strong); }
+.fx-pin.is-on { border-color: #B9E5CC; background: #EAF7EF; color: #0E5A3A; }
+
+/* Row menu (in a portal on <body>, so not scoped to .fx). */
+.fmenu { position: fixed; z-index: 60; min-width: 220px; display: grid; padding: 6px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: 0 18px 40px rgba(11, 18, 32, .16); }
+.fmenu button { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px; border: 0; background: none; border-radius: 10px; font: 600 13px/1 var(--f-text); color: var(--ink); cursor: pointer; text-align: left; white-space: nowrap; }
+.fmenu button:hover, .fmenu button:focus-visible { background: var(--niebla); }
+
+/* Drop files from the desktop. */
+.card.is-drop { outline: 2px dashed var(--azul); outline-offset: -6px; }
+.fdrop { position: absolute; inset: 0; z-index: 40; display: grid; place-content: center; justify-items: center; gap: 10px; background: rgba(242, 245, 255, .92); color: var(--azul); font: 700 16px/1.3 var(--f-text); pointer-events: none; }
+
+html[data-theme="dark"] .fmenu, html[data-theme="dark"] .fx-check, html[data-theme="dark"] .fx-ibtn, html[data-theme="dark"] .fx-pin,
+html[data-theme="dark"] .fx-select select, html[data-theme="dark"] .fx-chip { background: var(--white); }
+html[data-theme="dark"] .selbar { background: #141C36; border-color: #26305A; }
+html[data-theme="dark"] .fnote { background: #2A2210; border-color: #4A3A12; color: #F5D98A; }
+html[data-theme="dark"] .fx .lrow.is-picked { background: #141C36; }
+
+/* Phones: search on its own line, the type filter scrolls on its own line, then sort, view and upload. */
+@media (max-width: 639px) {
+  .fx-find { flex-wrap: wrap; }
+  .fx-find .search { flex: 1 1 100%; }
+  .fx .seg.fseg { flex: 1 1 100%; max-width: 100%; overflow-x: auto; }
+  .fx-actions { margin-left: 0; }
+  .selbar .fx-end { margin-left: 0; }
+}

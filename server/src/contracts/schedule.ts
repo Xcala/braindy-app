@@ -3,7 +3,10 @@
 // Grupo Alternativas (AI-First Marketing 360, 6 months by pillar). He edits them per contract.
 
 export type RowStatus = 'pending' | 'doing' | 'done' | 'blocked';
-export interface ScheduleRow { id: string; title: string; note: string; from: number; to: number; milestone: boolean; status: RowStatus }
+/** Bar color by kind of work (the Brains' palette); the label goes inside the bar, e.g. "IDENTIDAD". Both optional. */
+export const TONES = ['strategy', 'brand', 'web', 'content', 'agents', 'ads', 'knowledge'] as const;
+export type Tone = (typeof TONES)[number];
+export interface ScheduleRow { id: string; title: string; note: string; from: number; to: number; milestone: boolean; status: RowStatus; tone?: Tone; label?: string }
 export interface ScheduleGroup { id: string; title: string; rows: ScheduleRow[] }
 export interface Schedule {
   /** Monday of week 1 (YYYY-MM-DD). */
@@ -48,6 +51,8 @@ export function cleanSchedule(input: unknown): Schedule {
           id: id(r?.id, ri, `${gi + 1}r`), title: str(r?.title, 160), note: str(r?.note, 300),
           from, to: int(r?.to, from, weeks - 1, from), milestone: r?.milestone === true,
           status: STATUSES.includes(r?.status as RowStatus) ? (r!.status as RowStatus) : 'pending',
+          ...(TONES.includes(r?.tone as Tone) ? { tone: r!.tone as Tone } : {}),
+          ...(r?.label ? { label: str(r.label, 30) } : {}),
         };
       }),
     })),
@@ -61,10 +66,10 @@ export function cleanChecklist(input: unknown, weeks = MAX_WEEKS): ChecklistItem
 }
 
 type Row = [title: string, from: number, to: number, note?: string];
-const group = (gid: string, title: string, rows: Row[], milestones: Array<[string, number, string?]> = []): ScheduleGroup => ({
+const group = (gid: string, title: string, tone: Tone, rows: Row[], milestones: Array<[string, number, string?]> = []): ScheduleGroup => ({
   id: gid, title,
   rows: [
-    ...rows.map(([t, from, to, note], i) => ({ id: `${gid}r${i + 1}`, title: t, note: note ?? '', from, to, milestone: false, status: 'pending' as const })),
+    ...rows.map(([t, from, to, note], i) => ({ id: `${gid}r${i + 1}`, title: t, note: note ?? '', from, to, milestone: false, status: 'pending' as const, tone })),
     ...milestones.map(([t, at, note], i) => ({ id: `${gid}m${i + 1}`, title: t, note: note ?? '', from: at, to: at, milestone: true, status: 'pending' as const })),
   ],
 });
@@ -74,12 +79,12 @@ export const PRESETS = {
   brand3m: (start: string): Schedule => ({
     start, weeks: 12, meeting: { weekday: 4, time: '10:00', minutes: 60 },
     groups: [
-      group('marca', 'Marca', [
+      group('marca', 'Marca', 'brand', [
         ['Discovery, talleres y auditoría', 0, 1, 'Marca, producto y política de imagen'],
         ['Sistema de identidad', 1, 3, 'Símbolo, tipografía, color y tokens'],
         ['Manual, plantillas y empaque', 4, 5, 'Aplicación, prohibiciones y artes para impresión'],
       ], [['Entrega de identidad', 3, 'Símbolo, logotipo y sistema en SVG'], ['Entrega de manual y empaque', 5, 'Manual, kit editable y artes listas para el impresor']]),
-      group('brandos', 'Brand OS y pauta', [
+      group('brandos', 'Brand OS y pauta', 'agents', [
         ['Base de conocimiento', 6, 7, 'ADN, productos, precios y cobertura'],
         ['Agentes de identidad y contenido', 7, 8, 'Aplican el sistema y escriben con la voz de marca'],
         ['Agentes de producto, ventas y recompra', 8, 10],
@@ -92,20 +97,20 @@ export const PRESETS = {
   marketing6m: (start: string): Schedule => ({
     start, weeks: 26, meeting: { weekday: 4, time: '10:00', minutes: 60 },
     groups: [
-      group('estrategia', 'Estrategia e insights', [
+      group('estrategia', 'Estrategia e insights', 'strategy', [
         ['Investigación de marca y mercado', 0, 2, 'Deep research, competencia y huella digital'],
         ['Primal Branding y arquetipo', 2, 4],
         ['Estrategia y Brand Brain', 3, 5],
       ], [['Entrega de estrategia', 5]]),
-      group('identidad', 'Identidad', [
+      group('identidad', 'Identidad', 'brand', [
         ['Sistema de identidad', 5, 9, 'Logo, color, tipografía y tokens'],
         ['Manual y plantillas', 9, 11],
       ], [['Entrega de identidad y manual', 11]]),
-      group('producto', 'Producto digital', [
+      group('producto', 'Producto digital', 'web', [
         ['Sitio web: arquitectura y diseño', 10, 14],
         ['Desarrollo y publicación', 14, 18],
       ], [['Sitio publicado', 18]]),
-      group('activacion', 'Activación', [
+      group('activacion', 'Activación', 'content', [
         ['Contenido y calendario', 16, 25],
         ['Pauta y medición', 18, 25],
         ['Agentes de IA', 19, 24],

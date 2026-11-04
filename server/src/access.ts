@@ -32,7 +32,9 @@ export async function brandAccess(uid: string, brandId: string): Promise<Access>
   const chain = [brandId, ...((brand.get('ancestors') as string[]) ?? [])];
   for (const id of chain) {
     const m = await db.doc(`brands/${id}/members/${uid}`).get();
-    if (m.exists) return { admin: false, member: true, role: m.get('role') ?? 'client_member', sections: sectionsOf(m.data() ?? {}) };
+    // The brand's own switches (sectionsOff) win over the person's sections, as in firestore.rules.
+    const off = (brand.get('sectionsOff') as string[] | undefined) ?? [];
+    if (m.exists) return { admin: false, member: true, role: m.get('role') ?? 'client_member', sections: sectionsOf(m.data() ?? {}).filter((s) => !off.includes(s)) };
   }
   return { admin: false, member: false, role: null, sections: [] };
 }

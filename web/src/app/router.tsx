@@ -7,6 +7,8 @@ import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
+import { Calendar } from '../pages/Calendar';
+import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
 import { AdminProposals } from '../pages/admin/Proposals';
@@ -31,8 +33,8 @@ import { Learn, LearnLesson } from '../pages/Learn';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
-import { MyPlan } from '../pages/MyPlan';
 import { Account } from '../pages/Account';
+import { OpenFile } from '../pages/OpenFile';
 
 export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
@@ -44,16 +46,20 @@ export const router = createBrowserRouter([
     children: [
       // Consent for the remote Braindy connector (Claude): outside the app shell, like the login.
       { path: 'conectar', element: <Connect /> },
+      { path: 'open/:brandId/:assetId', element: <OpenFile /> },
       {
         element: <AppShell />,
         children: [
           { index: true, element: <Landing /> },
           { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
+          { path: 'brand/docs', element: <Navigate to="/brand/visual" replace /> },
+          { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },
+          { path: 'calendar', element: <Calendar /> },
           { path: 'research', element: <MyResearch /> },
-          { path: 'ask', element: <Navigate to="/requests#ask" replace /> },
+          { path: 'ask', element: <Navigate to="/requests?new=1" replace /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },

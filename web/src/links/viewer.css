@@ -1,0 +1,57 @@
+/* Site viewer: a bar on top (title, widths, new tab, close) and the site below, centred, at the chosen width. */
+.lview { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: var(--niebla); }
+.lview-bar { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: max(10px, env(safe-area-inset-top)) 16px 10px; background: #fff; border-bottom: 1px solid var(--line); }
+.lview-bar > .col { flex: 1; }
+.lview-bar .btn-sm { height: 36px; }
+.lview-sizes button { height: 30px; }
+@media (max-width: 767px) { .lview-sizes { display: none; } }
+.lview-stage { position: relative; flex: 1; min-height: 0; display: flex; justify-content: center; padding: 16px; overflow: auto; }
+.lview-frame { height: 100%; max-width: 100%; border: 0; border-radius: 16px; background: #fff; box-shadow: 0 18px 50px rgba(11, 18, 32, .14); transition: width .2s ease; }
+@media (max-width: 767px) { .lview-stage { padding: 0; } .lview-frame { border-radius: 0; width: 100% !important; } }
+@media (prefers-reduced-motion: reduce) { .lview-frame { transition: none; } }
+.lview-hint { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; margin: 0; }
+.lview-blocked { align-self: center; max-width: 460px; }
+html[data-theme="dark"] .lview-bar { background: var(--white); }
+
+/* The site on the left, a narrow column with its adjustments and a box to ask for more on the right. */
+.lview-body { flex: 1; min-height: 0; display: flex; }
+.lview-body .lview-stage { flex: 1; min-width: 0; }
+.spanel { flex: none; width: 340px; display: flex; flex-direction: column; gap: 16px; padding: 20px 16px; overflow-y: auto; background: var(--white); border-left: 1px solid var(--line); }
+.spanel-pct { font: 300 14px/1 var(--f-display); color: var(--graphite); }
+.spanel-pct b { font-weight: 900; font-size: 26px; color: var(--ink); }
+.spanel-ask { padding: 12px; border-radius: 14px; background: var(--niebla); }
+.spanel-ask textarea { height: auto; min-height: 84px; padding-top: 10px; resize: vertical; background: #fff; }
+.spanel-ask .btn-sm { height: 34px; }
+.spanel-pt { border: 1px solid var(--line); border-radius: 12px; background: var(--white); }
+.spanel-pt > summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; align-items: center; padding: 10px 12px; cursor: pointer; list-style: none; }
+.spanel-pt > summary::-webkit-details-marker { display: none; }
+.spanel-pt .sx-key { padding: 4px 6px; font-size: 11px; }
+.spanel-ptitle { font: 600 13px/1.3 var(--f-text); }
+.spanel-pt .sx-status { grid-column: 2; justify-self: start; height: 24px; padding: 0 10px; font-size: 11px; }
+.spanel-pt > p, .spanel-pt > a { margin: 0 12px 10px; }
+.spanel-pt[open] { border-color: color-mix(in srgb, var(--c) 40%, var(--line)); }
+.spanel-done > summary { cursor: pointer; padding: 6px 0; }
+.lview-panel-btn[aria-pressed='true'] { background: var(--azul); color: #fff; border-color: var(--azul); }
+@media (max-width: 1023px) { .spanel { width: 300px; } }
+@media (max-width: 767px) {
+  .lview-body { flex-direction: column; }
+  .spanel { width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--line); }
+}
+.spanel-set { margin: 0 12px 10px; height: 28px; font-size: 11px; }
+
+/* On the app card: its adjustments and the way into the page with its triage. */
+.ladj { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--niebla); color: var(--ink); text-align: left; cursor: pointer; }
+.ladj:hover, .ladj:focus-visible { border-color: var(--azul); }
+.ladj-pct { font: 300 12px/1 var(--f-text); color: var(--graphite); }
+.ladj-pct b { font: 900 16px/1 var(--f-display); color: var(--ink); }
+.ladj-bar { display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.ladj-bar span { display: block; height: 100%; border-radius: inherit; background: var(--success); }
+.lview-note { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--ink, #14141f); color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: calc(100% - 32px); }
+.lview-note .btn { color: inherit; }
+.spanel-pt.is-on { box-shadow: 0 0 0 2px var(--marketer, #8B5CF6); }
+.sc-tabs { align-self: stretch; display: flex; }
+.sc-tabs button { flex: 1; }
+.sc-picking { padding: 10px 12px; border-radius: 12px; background: rgba(139, 92, 246, .1); border: 1px dashed var(--marketer, #8B5CF6); }
+.sc-n { flex: none; width: 22px; height: 22px; border-radius: 50% 50% 50% 4px; background: var(--marketer, #8B5CF6); color: #fff; font: 700 11px/22px var(--f-text, system-ui); text-align: center; }
+.sc-item.is-done .sc-n { background: #9CA3AF; }
+.sc-reply { margin: 0; padding-left: 10px; border-left: 2px solid var(--line, #e5e7eb); }

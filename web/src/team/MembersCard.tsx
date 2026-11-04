@@ -6,6 +6,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { cancelInvite, inviteMember, listInvites, removeMember, updateMember } from './membersApi';
 import { MemberAccess, profilePatch } from './MemberAccess';
+import { BrandSections } from './BrandSections';
 import { profileOf } from './sections';
 import { sendAccessLink } from '../auth/emailLink';
 import { useBrands } from '../brands/BrandProvider';
@@ -51,6 +52,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
   return (
     <div className="card col g16">
       <div className="row between"><h3 className="h3">{t('team.membersOf', { name: brandName })}</h3><span className="t-sm t-mute">{members.length}</span></div>
+      {isAdmin && !isGroup && <BrandSections brandId={brandId} />}
       {isAdmin && <p className="t-sm t-mute">{t(isGroup ? 'perm.groupHint' : 'perm.hint')}</p>}
       {saveError && <p className="t-sm" role="status" style={{ color: 'var(--danger)' }}>{t('perm.error')}</p>}
       {members.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}

@@ -35,4 +35,12 @@ export function dayLabel(v: string | Date | null | undefined, lang: Lang) {
   return d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\./g, '');
 }
 
+/** A past moment with its year, for "requested on": "29 oct 2026" (today and yesterday in words). */
+export function dateLabel(v: Date | null | undefined, lang: Lang) {
+  if (!v) return '';
+  const n = daysFrom(v);
+  if (n === 0 || n === -1) return WORDS[lang][n === 0 ? 'today' : 'yesterday'];
+  return v.toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/\./g, '');
+}
+
 export const isOverdue = (v?: string | Date | null) => (daysFrom(v) ?? 0) < 0;

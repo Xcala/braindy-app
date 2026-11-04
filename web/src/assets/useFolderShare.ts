@@ -19,5 +19,6 @@ export function useFolderShare(brand: Brand | undefined, tops: string[]) {
     count: tops.filter((p) => shared.has(p)).length,
     toggle: (top: string) => { const n = new Set(shared); if (n.has(top)) n.delete(top); else n.add(top); return write(n); },
     showAll: () => write(new Set(tops)),
+    hideAll: () => write(new Set()),
   };
 }

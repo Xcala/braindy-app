@@ -68,7 +68,10 @@ for (const brandId of brandIds.sort()) {
     (await db.collection(`brands/${brandId}/assets`).where('source', '==', 'drive').select('size', 'mtimeMs').get())
       .docs.map((d) => [d.id, d.data() as { size: number; mtimeMs: number }]),
   );
+  // Files NickMark deleted in Braindy stay deleted.
+  const deleted = new Set((await db.collection(`brands/${brandId}/deletedAssets`).select().get()).docs.map((d) => d.id));
   const todo = files.filter((f) => {
+    if (deleted.has(assetId(f.relPath))) return false;
     const prev = existing.get(assetId(f.relPath));
     return !prev || prev.size !== f.size || Math.abs(prev.mtimeMs - f.mtimeMs) > 2000;
   });

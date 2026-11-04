@@ -7,10 +7,13 @@ import { clientErrors, logError, rateLimit } from './guard.js';
 import { appCheck, requireUser, type AuthEnv } from './auth.js';
 import { db } from './firebase.js';
 import { files } from './files.js';
+import { fileOps } from './fileOps.js';
 import { search } from './search.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { adminLaunches, launches } from './launches.js';
+import { adminCalendar, calendarCallback, meetings } from './meetings.js';
+import { booking } from './booking.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
@@ -21,8 +24,14 @@ import { contracts } from './contracts/routes.js';
 import { adminContracts } from './contracts/admin.js';
 import { adminReports } from './reports.js';
 import { adminBilling, billing, stripeWebhook } from './billing.js';
+import { adminPlan } from './brandPlan.js';
+import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
 import { adminGranola, granolaWebhook } from './granola.js';
+import { whatsappWebhook } from './wa/webhook.js';
+import { meWhatsapp } from './wa/contacts.js';
+import { adminWhatsapp } from './wa/admin.js';
+import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
@@ -34,7 +43,8 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
 
 const app = new Hono<AuthEnv>();
 
-app.use('*', logger());
+// The WhatsApp webhook path carries a secret key: mask it in request logs.
+app.use('*', logger((s, ...rest) => console.log(s.replace(/(\/webhooks\/whatsapp\/)[^\s?]+/, '$1***'), ...rest)));
 app.use('*', secureHeaders({ crossOriginResourcePolicy: 'cross-origin' }));
 app.onError((err, c) => {
   logError(err, { method: c.req.method, path: c.req.path });
@@ -50,15 +60,24 @@ app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type
 app.use('/public/p/:token/accept', rateLimit('accept', 10, 10 * 60_000));
 app.use('/public/p/:token/pay', rateLimit('pay', 10, 10 * 60_000));
 app.use('/public/r/:token/decision', rateLimit('decision', 20, 10 * 60_000));
+app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
+app.route('/public', hostingCheckout);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
 app.route('/webhooks', granolaWebhook);
+app.route('/webhooks', whatsappWebhook);
+// Notices for work delivered from Nicolas's PC (Google identity token of an admin).
+app.use('/internal/*', rateLimit('internal', 30, 60_000));
+app.route('/', relay);
+// Google Calendar OAuth return (public, checked by a one-time state).
+app.use('/integrations/*', rateLimit('integrations', 30, 60_000));
+app.route('/', calendarCallback);
 // Scheduled Brain work (Cloud Scheduler, OIDC-verified inside).
 app.use('/cron/*', rateLimit('cron', 30, 60_000));
 app.route('/cron', cron);
@@ -85,10 +104,16 @@ app.get('/v1/me', async (c) => {
 });
 
 app.route('/v1', files);
+app.route('/v1', meWhatsapp);
+app.route('/v1/admin', adminWhatsapp);
+app.route('/v1', fileOps);
 app.route('/v1', search);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
 app.route('/v1', launches);
+app.route('/v1', meetings);
+app.route('/v1', booking);
+app.route('/v1/admin', adminCalendar);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
 app.route('/v1', accesses);
@@ -105,6 +130,7 @@ app.route('/v1/admin', adminOnboarding);
 app.route('/v1/admin', adminReports);
 app.route('/v1', billing);
 app.route('/v1/admin', adminBilling);
+app.route('/v1/admin', adminPlan);
 app.route('/v1', brains);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);

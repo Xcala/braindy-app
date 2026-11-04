@@ -1,7 +1,7 @@
 import { useTour } from '../tour/useTour';
 import { reviewSteps } from '../tour/steps';
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useParams, useSearchParams } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
@@ -10,6 +10,7 @@ import { useComments, useRequest, useVersions } from '../requests/useRequests';
 import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { Progress } from '../requests/Progress';
+import { TeamAtWork } from '../requests/TeamAtWork';
 import { PlanCard } from '../requests/PlanCard';
 import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
@@ -23,7 +24,10 @@ import { AttachedFiles } from '../requests/AttachedFiles';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
-  const { current } = useBrands();
+  const { current, brands, select } = useBrands();
+  // A shared link can carry its brand (?brand=quimiolab), so it opens whatever brand is selected now.
+  const linked = useSearchParams()[0].get('brand');
+  useEffect(() => { if (linked && linked !== current?.id && brands.some((b) => b.id === linked)) select(linked); }, [linked, brands.length]);
   const { profile } = useAuth();
   const { t, lang } = useI18n();
   const r = useRequest(current?.id, id);
@@ -48,13 +52,15 @@ export function RequestDetail() {
   return (
     <div className="col g20">
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <div className="col g8">
+        <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
           <nav className="crumbs" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav>
-          <div className="row g12 wrap"><h1 className="h2">{r.title}</h1><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
+          <div className="row g12 wrap"><h1 className="h2" style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{r.title}</h1><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
           <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
         </div>
         <Progress r={r} />
       </div>
+
+      {r.status === 'in_production' && <TeamAtWork r={r} />}
 
       {versions.length > 0 && (
         <SafeBoundary>

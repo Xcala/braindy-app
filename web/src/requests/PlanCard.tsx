@@ -43,7 +43,7 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
     <div className="card col g20">
       <div className="row between g12 wrap">
         <BrainStack lead={r.leadBrain} state={approved ? 'idle' : 'approval'} label={t('req.planBy', { brain: brainName(r.leadBrain) })} />
-        <span className="row g8">
+        <span className="row g8 wrap min-w-0">
           {r.plan?.proposedBy && !approved && <span className="chip chip-plain">{r.plan.proposedWithAi ? t('brains.proposedAi') : t('brains.proposedBasic')}</span>}
           <span className={`chip ${approved ? 'c-approved' : 'c-approve'}`}>{approved ? t('req.planApproved') : t('req.planToApprove')}</span>
         </span>
@@ -55,21 +55,21 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
           <div key={i} className="rule">
             <span className="ok"><Icon name="check" size={14} /></span>
             {isAdmin && !approved
-              ? <input className="input" style={{ height: 38 }} value={s} aria-label={`${t('req.scope')} ${i + 1}`} onChange={(e) => setScope((l) => l.map((x, j) => (j === i ? e.target.value : x)))} />
+              ? <textarea className="input pf-area" rows={1} style={{ minHeight: 40, padding: '8px 14px' }} value={s} aria-label={`${t('req.scope')} ${i + 1}`} onChange={(e) => setScope((l) => l.map((x, j) => (j === i ? e.target.value : x)))} />
               : <span>{s}</span>}
           </div>
         ))}
         {isAdmin && !approved && <button className="btn btn-ghost btn-sm self-start" onClick={() => setScope((l) => [...l, ''])}>+ {t('req.addScope')}</button>}
-        <div className="row g24 wrap t-sm">
-          <span><span className="t-mute">{t('req.firstDelivery')}</span>{' '}
-            {isAdmin && !approved ? <input className="input inline-block" style={{ height: 34, width: 170 }} type="date" value={firstDelivery} onChange={(e) => setFirstDelivery(e.target.value)} aria-label={t('req.firstDelivery')} /> : <strong>{r.plan?.firstDelivery ? dayLabel(r.plan.firstDelivery, lang) : '—'}</strong>}
+        <div className="row g24 wrap t-sm" style={{ alignItems: 'flex-end' }}>
+          <span className={isAdmin && !approved ? 'col g4' : undefined}><span className="t-mute">{t('req.firstDelivery')}</span>{' '}
+            {isAdmin && !approved ? <input className="input" style={{ height: 40, width: 180 }} type="date" value={firstDelivery} onChange={(e) => setFirstDelivery(e.target.value)} aria-label={t('req.firstDelivery')} /> : <strong>{r.plan?.firstDelivery ? dayLabel(r.plan.firstDelivery, lang) : '—'}</strong>}
           </span>
           <span><span className="t-mute">{t('req.approval')}</span> <strong>{r.approvalLevel === 'nicolas' ? t('req.approvalNicolas') : t('req.approvalClient')}</strong></span>
         </div>
       </div>
       {isAdmin && !approved && (
         <>
-          <div className="field"><label htmlFor="note">{t('req.noteForBrains')}</label><input className="input" id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('req.notePh')} /></div>
+          <div className="field"><label htmlFor="note">{t('req.noteForBrains')}</label><textarea className="input pf-area" rows={2} id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t('req.notePh')} /></div>
           <div className="row g12 wrap">
             <button className="btn btn-primary" disabled={busy} onClick={() => save(true)}><Icon name="check" />{t('req.approvePlan')}</button>
             <button className="btn btn-secondary" disabled={busy} onClick={() => save(false)}>{t('req.saveDraft')}</button>

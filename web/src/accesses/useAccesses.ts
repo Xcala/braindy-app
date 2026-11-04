@@ -5,8 +5,15 @@ import { api } from '../lib/api';
 
 export type Access = {
   id: string; platform: string; username?: string; link?: string; notes?: string; hasSecret?: boolean;
-  sharedWithBraindy?: boolean; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
+  sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string; order?: number; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
 };
+/** How people get in: their own password, or a Google / Microsoft (Outlook) account with nothing to keep here. */
+export type SignIn = 'password' | 'google' | 'microsoft';
+/** The saved choice; older accesses only said it in the notes ("ingresa con google"). */
+export const signInOf = (a: Pick<Access, 'signIn' | 'notes'>): SignIn =>
+  a.signIn ?? (/\bgoogle\b/i.test(a.notes ?? '') ? 'google' : /\b(outlook|microsoft|hotmail)\b/i.test(a.notes ?? '') ? 'microsoft' : 'password');
+/** A paid plan on the platform: shown in its own column and added up below the table. */
+export type Subscription = { plan?: string; price?: number | null; currency?: 'USD' | 'COP' | 'EUR'; period?: 'month' | 'year' };
 export type AccessEvent = { id: string; platform: string; action: 'added' | 'updated' | 'deleted' | 'revealed' | 'copied'; byName: string; at?: Timestamp };
 
 /** Credential metadata of a brand. `denied` = the user is not an owner (rules refuse the read). */
@@ -33,12 +40,14 @@ export function useAccessLog(brandId?: string, max = 8) {
 }
 
 const base = (brandId: string) => `/v1/brands/${encodeURIComponent(brandId)}/accesses`;
-export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean };
+export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string };
 
 export const accessesApi = {
   add: (brandId: string, a: AccessInput) => api<{ id: string }>(base(brandId), { method: 'POST', body: JSON.stringify(a) }),
   update: (brandId: string, id: string, a: Partial<AccessInput>) => api(`${base(brandId)}/${id}`, { method: 'PATCH', body: JSON.stringify(a) }),
   remove: (brandId: string, id: string) => api(`${base(brandId)}/${id}`, { method: 'DELETE' }),
   reveal: (brandId: string, id: string) => api<{ value: string; seconds: number }>(`${base(brandId)}/${id}/reveal`, { method: 'POST', body: '{}' }),
+  /** Ids top to bottom after a drag, and the new group of the one that changed group. */
+  reorder: (brandId: string, ids: string[], groups: Record<string, string>) => api(`/v1/brands/${encodeURIComponent(brandId)}/accesses-order`, { method: 'POST', body: JSON.stringify({ ids, groups }) }),
   copied: (brandId: string, id: string) => api(`${base(brandId)}/${id}/copied`, { method: 'POST', body: '{}' }),
 };

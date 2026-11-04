@@ -56,3 +56,34 @@ describe('The Studio · launches', () => {
     await assertFails(getDocs(collection(as(env, MEMBER), 'launches/l1/reactions')));
   });
 });
+
+describe('Home · calendar and meetings', () => {
+  it('the calendar connection and its OAuth states are server-only, even for the admin', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'integrations/googleCalendar'), { ciphertext: 'x', scheme: 'kms' });
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'calendarStates/s1'), { uid: ADMIN });
+    });
+    await assertFails(getDoc(doc(as(env, ADMIN), 'integrations/googleCalendar')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'integrations/googleCalendar'), { ciphertext: 'y' }));
+    await assertFails(getDoc(doc(as(env, OWNER), 'calendarStates/s1')));
+    await assertFails(setDoc(doc(as(env, OWNER), 'calendarStates/s2'), { uid: OWNER }));
+  });
+  it('meeting notes stay admin-only: a brand member cannot read them directly', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'brands/brand-a/meetings/m1'), { title: 'Kickoff', notes: 'internal' });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'brands/brand-a/meetings/m1')));
+    await assertFails(getDoc(doc(as(env, MEMBER), 'brands/brand-a/meetings/m1')));
+  });
+});
+
+describe('Home · meeting bookings', () => {
+  it('bookings are server-only: nobody reads or writes them from the browser', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'bookings/b1'), { uid: OWNER, brandId: 'brand-a' });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'bookings/b1')));
+    await assertFails(getDoc(doc(as(env, ADMIN), 'bookings/b1')));
+    await assertFails(setDoc(doc(as(env, OWNER), 'bookings/b2'), { uid: OWNER }));
+  });
+});

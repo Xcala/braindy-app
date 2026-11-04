@@ -7,11 +7,14 @@ import { router } from './app/router';
 import { installErrorReporting } from './lib/reportError';
 import { installExternalLinks } from './lib/externalLinks';
 import { applyTheme, readTheme } from './theme/useTheme';
+import { installPwa } from './pwa/pwa';
+import { PwaBar } from './pwa/PwaBar';
 import './tour/tour.css';
 import './index.css';
 
 installErrorReporting();
 installExternalLinks();
+installPwa();
 applyTheme(readTheme());
 // "System" follows the device even when the account page is not open.
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (readTheme() === 'system') applyTheme('system'); });
@@ -21,6 +24,7 @@ createRoot(document.getElementById('root')!).render(
     <I18nProvider>
       <AuthProvider>
         <RouterProvider router={router} />
+        <PwaBar />
       </AuthProvider>
     </I18nProvider>
   </StrictMode>,

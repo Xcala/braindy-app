@@ -13,6 +13,7 @@ import { Icon } from './Icon';
 import type { StringKey } from '../i18n/strings';
 import { folderVisible } from '../assets/folderRules';
 import { useFileSearch, useSearchSources } from './useSearchSources';
+import { SHOW_RESULTS } from '../app/navGroups';
 import { useMySections } from '../team/sections';
 
 type Item = { id: string; group: StringKey; icon?: React.ReactNode; label: string; hint?: string; run: () => void; brand?: { name: string; logoUrl: string | null }; swatch?: string; path?: string };
@@ -67,7 +68,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 
   const items = useMemo<Item[]>(() => {
     const go = (path: string, id?: string, label?: string) => () => { if (id && label) pushRecent({ id, label, path }); navigate(path); onClose(); };
-    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/plan', 'nav.plan'], ['/account', 'acct.account'], ['/settings?tab=billing', 'set.tab.billing'], ['/settings?tab=team', 'set.tab.team'], ['/settings?tab=notices', 'set.tab.notices'], ['/settings', 'nav.settings'], ['/report', 'nav.report'], ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
+    const pages: Item[] = ([['/home', 'nav.home'], ['/brand', 'nav.brand'], ['/assets', 'nav.assets'], ['/apps', 'nav.apps'], ['/research', 'nav.research'], ['/requests', 'nav.requests'], ['/accesses', 'nav.accesses'], ['/plan', 'nav.plan'], ['/account', 'acct.account'], ['/settings?tab=billing', 'set.tab.billing'], ['/settings?tab=team', 'set.tab.team'], ['/settings?tab=notices', 'set.tab.notices'], ['/settings', 'nav.settings'], ...(SHOW_RESULTS ? [['/report', 'nav.report']] : []), ['/onboarding', 'nav.onboarding']] as Array<[string, StringKey]>)
       .concat(isAdmin ? [['/admin/today', 'today.title'], ['/admin/studio', 'st.nav'], ['/admin/brands', 'nav.brands'], ['/admin/proposals', 'nav.proposals'], ['/team', 'nav.team'], ['/admin/onboarding', 'nav.onboarding'], ['/admin/billing', 'nav.billing'], ['/admin/costs', 'cost.nav'], ['/admin/criterio', 'cra.nav']] : [['/learn', 'cr.nav']])
       .map(([p, k]) => ({ id: p, group: 'search.pages' as StringKey, label: t(k), run: go(p) }));
     const brandItems: Item[] = brands.map((b) => ({ id: `b-${b.id}`, group: 'search.brands' as StringKey, label: b.name, brand: b, hint: b.kind === 'group' ? t('brand.group') : undefined, run: () => { select(b.id); onClose(); } }));

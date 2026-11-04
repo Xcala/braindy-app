@@ -8,7 +8,10 @@ import { z } from 'zod';
 import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand, setLink, syncSiteChanges, uploadContent, uploadPath } from './store.js';
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
+import { syncSocialPosts } from './social.js';
 import { setIdentity } from './identity.js';
+import { registerSiteCommentTools } from './siteComments.js';
+import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -26,6 +29,7 @@ const REMOTE_FILE = z.object({
 });
 
 export function registerTools(server: McpServer, ctx: ToolContext) {
+  registerSiteCommentTools(server, ctx.uid);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',
@@ -53,6 +57,37 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
     return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\nVer: ${APP}/apps`;
   }));
 
+  server.registerTool('braindy_plan', {
+    title: 'Cargar el plan contratado en Mi plan',
+    description: 'Sets the brand\'s "Mi plan" page in Braindy App from the accepted proposal: '
+      + '(1) packs: only the plans or packs the client bought (not the alternatives), each with price and what it includes and excludes, plus total and payment terms; '
+      + '(2) care: website hosting and the maintenance plan that follows; '
+      + '(3) schedule (optional): the work plan BY WEEK (week 0 = the Monday in start), groups by stage or pack, rows from week to week, milestone = contract delivery. '
+      + 'The schedule goes into the draft contract (its Anexo 2) or, once signed, into the live schedule; create the contract in Onboarding first. '
+      + 'Plan replaces the previous one, so send all of it. Amounts are numbers in full units (9500000, not "9.5M"). Never put internal notes or other clients\' names. '
+      + 'Use when Nicolas says "carga el plan en Braindy App", "sube la propuesta a Mi plan", "pon lo que contrató".',
+    inputSchema: { brandId: z.string(), plan: PlanSchema, schedule: WeekSchedule.optional() },
+  }, run(async ({ brandId, plan, schedule }) => {
+    const name = await requireBrand(brandId);
+    const parts = [await setPlan(brandId, plan, ctx.uid)];
+    if (schedule) parts.push(await setSchedule(brandId, schedule));
+    return `${name}: Mi plan actualizado (${parts.join('; ')}).\nVer: ${APP}/plan`;
+  }));
+
+  server.registerTool('braindy_stack', {
+    title: 'Cargar el stack de apps de la marca en Mi plan',
+    description: 'Sets the third-party apps a brand runs on and pays for (Webflow, Mailchimp, Resend, Metricool, WordPress, AI tools, automations…), '
+      + 'shown in "Mi plan" in Braindy App: what each one does for the brand, plan, cost and period, who pays it (braindy = Braindy pays and bills it, '
+      + 'client = the client pays the provider directly) and next renewal. Replaces the previous list, so send all of it. '
+      + 'Never put credentials, API keys or internal notes here (credentials go in Accesos). '
+      + 'Use when Nicolas says "carga el stack de apps de X", "X paga Webflow y Resend", "las apps que tiene contratadas".',
+    inputSchema: { brandId: z.string(), items: StackSchema },
+  }, run(async ({ brandId, items }) => {
+    const name = await requireBrand(brandId);
+    return `${name}: ${await setStack(brandId, items, ctx.uid)} en Mi plan.
+Ver: ${APP}/plan`;
+  }));
+
   server.registerTool('braindy_site_changes_sync', {
     title: 'Subir el triage del sitio a Braindy App',
     description: 'Uploads the website triage (requested changes, what was delivered, state) of a brand to Braindy App, section "Ajustes del sitio". '
@@ -68,7 +103,8 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
         source: z.string().optional().describe('Where it was asked (meeting, video minute, WhatsApp)'),
         delivered: z.string().optional().describe('What was done'),
         status: STATUS,
-        link: z.string().optional().describe('https link to the change, if any'),
+        link: z.string().optional().describe('https URL of the exact page where it was done (or will be done), e.g. https://www.site.com/nosotros/. Always fill it for site changes: Braindy opens that page beside the triage'),
+        spot: z.string().optional().describe('The part of that page: a short text that is visible there (a heading, button label or phrase, copied exactly) or a CSS selector like #contacto. Braindy scrolls to it and outlines it. Always fill it when the change is a specific part'),
       })).min(1).max(500),
       siteUrl: z.string().optional().describe('https URL of the site'),
       round: z.string().optional().describe('Round or date of this update, e.g. "6.ª ronda · 28 oct"'),
@@ -78,6 +114,35 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
     const name = await requireBrand(brandId);
     const r = await syncSiteChanges(brandId, items, { siteUrl, round, removeMissing });
     return `${name}: ${r.total} puntos · ${r.created} nuevos · ${r.updated} actualizados · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} borrados` : ''}.\nVer: ${APP}/apps`;
+  }));
+
+  server.registerTool('braindy_social_calendar_sync', {
+    title: 'Subir el calendario de redes a Braindy App',
+    description: 'Mirrors a brand\'s social media posts from Metricool (published and scheduled) into Braindy App, section "Calendario", which the client can only view. '
+      + 'Read the posts with the Metricool getScheduledPosts tool (it returns published and pending ones), then send all posts of the range here: '
+      + 'posts of that range missing from the list are removed. Keep ranges to a few weeks per call. '
+      + 'Use when Nicolas says "sincroniza el calendario de X", "sube las publicaciones a Braindy", or after scheduling posts in Metricool.',
+    inputSchema: {
+      brandId: z.string(),
+      from: z.string().describe('Start of the range read from Metricool, ISO 8601 with offset'),
+      to: z.string().describe('End of the range, ISO 8601 with offset'),
+      metricoolBrand: z.string().optional().describe('Metricool brand (blog) id, e.g. "6032280"'),
+      posts: z.array(z.object({
+        id: z.string().describe('Metricool post id'),
+        date: z.string().describe('publicationDate.dateTime with its timezone offset, ISO 8601'),
+        text: z.string().optional(),
+        title: z.string().optional().describe('YouTube title, if any'),
+        type: z.string().optional().describe('POST, REEL, STORY, CAROUSEL, SHORT…'),
+        draft: z.boolean().optional(),
+        networks: z.array(z.object({ network: z.string(), status: z.string().optional().describe('PUBLISHED, PENDING, ERROR'), url: z.string().optional().describe('publicUrl') })),
+        media: z.array(z.string()).optional().describe('Media URLs (https)'),
+        thumb: z.string().optional().describe('videoThumbnailUrl, if any'),
+      })).max(400),
+    },
+  }, run(async ({ brandId, from, to, metricoolBrand, posts }) => {
+    const name = await requireBrand(brandId);
+    const r = await syncSocialPosts(brandId, posts, { from, to }, metricoolBrand);
+    return `${name}: ${r.total} publicaciones · ${r.created} nuevas · ${r.updated} actualizadas · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} quitadas` : ''}.\nVer: ${APP}/calendar`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {
@@ -111,7 +176,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   }, run(async ({ brandId }) => {
     await requireBrand(brandId);
     const list = await listSiteChanges(brandId);
-    return list.length ? list.map((x) => `${x.key} · ${x.group} · ${x.title} · ${x.status}`).join('\n') : 'Todavía no hay ajustes del sitio guardados.';
+    return list.length ? list.map((x) => `${x.key} · ${x.group} · ${x.title} · ${x.status}${x.link ? ` · ${x.link}` : ''}${x.spot ? ` · «${x.spot}»` : ''}`).join('\n') : 'Todavía no hay ajustes del sitio guardados.';
   }));
 
   server.registerTool('braindy_log_session', {
@@ -159,7 +224,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   server.registerTool('braindy_brand_identity', {
     title: 'Actualizar Mi marca en Braindy App',
     description: 'Updates the brand\'s "Mi marca" page in Braindy App with everything it shows: logos (primary, secondary, icon and other versions), colors, typography, '
-      + 'design concept images, mockups (shown as approved work), tone and voice (essence, archetypes, principles, how it sounds, key language) and strategy. '
+      + 'design concept images, mockups (shown as approved work), tone and voice (essence, archetypes, principles, how it sounds, key language), strategy and Primal Branding. '
       + 'After creating a brand, send all of it in one call. '
       + 'Send only what you have: what is sent replaces what was there, the rest stays. Use right after creating or updating a brand, when Nicolas says '
       + '"actualiza Mi marca", "sube la marca a Braindy App", "pon los logos y colores en Braindy". Prefer SVG or PNG with transparent background for logos.',
@@ -194,6 +259,15 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
         position: z.string().optional().describe('Positioning in one or two sentences'), audiences: z.string().optional(), goals: z.string().optional(), avoid: z.string().optional(),
         competitors: z.array(z.object({ name: z.string(), promise: z.string().optional(), price: z.string().optional(), url: z.string().optional() })).max(12).optional(),
       }).optional().describe('Brand strategy: only the fields sent change'),
+      primal: z.object({
+        creationStory: z.string().optional().describe('Creation story: where the brand comes from and why'),
+        creed: z.string().optional().describe('Creed: what the brand believes'),
+        icons: z.string().optional().describe('Icons: the symbols people recognise it by'),
+        rituals: z.string().optional().describe('Rituals: repeated moments of contact with the brand'),
+        sacredWords: z.string().optional().describe('Sacred words: its own vocabulary'),
+        nonBelievers: z.string().optional().describe('Non-believers: who and what the brand stands against'),
+        leader: z.string().optional().describe('Leader: the person or idea that leads it'),
+      }).optional().describe('Primal Branding, always first in Essence; one text per piece, lines become separate paragraphs; only the pieces sent change'),
     },
   }, run(async ({ brandId, ...input }) => {
     const name = await requireBrand(brandId);

@@ -1,0 +1,100 @@
+/* Mi plan explainers (summary, site, payments). Every stage runs one 10 s loop of five 2 s beats:
+   .ex-b1…b5 show only in their beat, .ex-f2…f5 appear in their beat and stay until the loop restarts. */
+.ex-b1, .ex-b2, .ex-b3, .ex-b4, .ex-b5 { animation: ex-only 10s infinite both; }
+.ex-b2 { animation-delay: 2s; } .ex-b3 { animation-delay: 4s; } .ex-b4 { animation-delay: 6s; } .ex-b5 { animation-delay: 8s; }
+@keyframes ex-only { 0% { opacity: 0; transform: translateY(8px); } 4%, 17% { opacity: 1; transform: none; } 21%, 100% { opacity: 0; transform: translateY(-6px); } }
+.ex-f2 { animation: ex-f2 10s infinite both; } .ex-f3 { animation: ex-f3 10s infinite both; } .ex-f4 { animation: ex-f4 10s infinite both; } .ex-f5 { animation: ex-f5 10s infinite both; }
+@keyframes ex-f2 { 0%, 19% { opacity: 0; transform: scale(.9); } 24%, 97% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes ex-f3 { 0%, 39% { opacity: 0; transform: scale(.9); } 44%, 97% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes ex-f4 { 0%, 59% { opacity: 0; transform: scale(.9); } 64%, 97% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes ex-f5 { 0%, 79% { opacity: 0; transform: scale(.9); } 84%, 97% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.ex-gone3 { animation: ex-gone3 10s infinite both; }
+@keyframes ex-gone3 { 0%, 39% { opacity: 1; } 42%, 99% { opacity: 0; } 100% { opacity: 1; } }
+
+.ex-center { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%); }
+.ex-layer { position: absolute; inset: 0; display: grid; place-items: center; }
+.ex-card { background: #fff; color: #0B1220; border-radius: 16px; box-shadow: 0 18px 40px rgba(11, 18, 32, .16); }
+.ex-pill { font: 700 12px/1 var(--f-text); padding: 6px 10px; border-radius: 99px; background: #fff; color: var(--ink); box-shadow: var(--sh-1); white-space: nowrap; }
+.ex-ok { background: #EAF7EF; color: #0E5A3A; }
+.ex-dot { width: 9px; height: 9px; border-radius: 50%; background: #1F9D5C; display: inline-block; box-shadow: 0 0 0 0 rgba(31, 157, 92, .5); animation: ex-pulse 1.6s infinite; }
+@keyframes ex-pulse { 70% { box-shadow: 0 0 0 9px rgba(31, 157, 92, 0); } 100% { box-shadow: 0 0 0 0 rgba(31, 157, 92, 0); } }
+.ex-lines { display: grid; gap: 6px; }
+.ex-lines i { display: block; height: 7px; border-radius: 99px; background: #E3E7F0; }
+
+/* Summary · the project from contract to care. */
+.sm-doc { width: 170px; padding: 16px; display: grid; gap: 10px; }
+.sm-sign { width: 120px; height: 34px; }
+.sm-sign path { fill: none; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 220; stroke-dashoffset: 220; animation: sm-draw 10s infinite; }
+@keyframes sm-draw { 0%, 4% { stroke-dashoffset: 220; } 14%, 100% { stroke-dashoffset: 0; } }
+.sm-gantt { width: 220px; padding: 14px 16px; display: grid; gap: 8px; }
+.sm-gantt div { display: grid; grid-template-columns: 26px 1fr; align-items: center; gap: 8px; font: 700 11px/1 var(--f-text); color: var(--graphite); }
+.sm-gantt i { display: block; height: 12px; border-radius: 99px; transform-origin: left; animation: sm-grow 10s infinite both; }
+@keyframes sm-grow { 0%, 20% { transform: scaleX(0); } 34%, 100% { transform: scaleX(1); } }
+.sm-thumbs { display: flex; gap: 10px; }
+.sm-thumbs > div { width: 70px; height: 86px; border-radius: 12px; box-shadow: 0 10px 22px rgba(11, 18, 32, .18); display: flex; align-items: flex-end; padding: 8px; }
+.sm-live { width: 210px; overflow: hidden; }
+.sm-live-top { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; background: #EEF1F7; }
+.sm-live-top i { width: 7px; height: 7px; border-radius: 50%; background: #CBD2DC; }
+.sm-live-body { height: 90px; display: flex; align-items: center; justify-content: center; }
+.sm-shield { width: 96px; height: 110px; border-radius: 48px 48px 48px 48px / 36px 36px 74px 74px; display: grid; place-items: center; color: #fff; font-size: 40px; font-weight: 900; box-shadow: 0 16px 34px rgba(11, 18, 32, .2); }
+.sm-track { position: absolute; left: 8%; right: 8%; bottom: 28px; height: 4px; border-radius: 99px; background: #DDE3EE; }
+.sm-track b { position: absolute; inset: 0; border-radius: 99px; transform-origin: left; animation: sm-fill 10s linear infinite; }
+@keyframes sm-fill { 0% { transform: scaleX(0); } 96%, 100% { transform: scaleX(1); } }
+.sm-track i { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #fff; border: 3px solid #DDE3EE; }
+
+/* Site · edit, publish, always online. */
+.st-browser { width: 250px; overflow: hidden; }
+.st-nav { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
+.st-nav img { height: 14px; max-width: 70px; object-fit: contain; filter: brightness(0) invert(1); }
+.st-hero { position: relative; padding: 16px 14px 18px; display: grid; gap: 8px; }
+.st-h { position: relative; height: 40px; font-weight: 900; font-size: 17px; line-height: 1.1; }
+.st-h span { position: absolute; inset: 0; }
+.st-edit { position: absolute; inset: 10px 8px auto 8px; height: 50px; border: 2px dashed #2F4DE0; border-radius: 8px; }
+.st-edit em { position: absolute; right: -6px; top: -14px; font-style: normal; background: #2F4DE0; color: #fff; font: 700 10px/1 var(--f-text); padding: 4px 7px; border-radius: 99px; }
+.st-cursor { position: absolute; left: 62%; top: 40%; font-size: 20px; animation: st-cursor 10s infinite both; }
+@keyframes st-cursor { 0%, 19% { transform: translate(60px, 60px); opacity: 0; } 26%, 38% { transform: none; opacity: 1; } 44%, 100% { transform: translate(40px, 80px); opacity: 0; } }
+.st-btn { justify-self: start; font: 700 11px/1 var(--f-text); padding: 7px 12px; border-radius: 99px; }
+.st-publish { position: absolute; right: 18%; top: 18px; background: #1F9D5C; color: #fff; }
+.st-publish.ex-b4 { animation-name: st-press; }
+@keyframes st-press { 0% { opacity: 0; transform: scale(.9); } 4% { opacity: 1; transform: scale(1); } 9% { transform: scale(.92); } 12%, 17% { opacity: 1; transform: scale(1); } 21%, 100% { opacity: 0; } }
+.st-status { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 8px; align-items: center; }
+
+/* Payments · invoice, pay, paid, receipt, next charge. */
+.py-inv { width: 236px; padding: 16px; display: grid; gap: 10px; position: relative; }
+.py-inv img { height: 18px; max-width: 90px; object-fit: contain; object-position: left; }
+.py-amount { font-weight: 900; font-size: 22px; }
+.py-methods { display: flex; gap: 6px; }
+.py-methods span { white-space: nowrap; font: 700 11px/1 var(--f-text); padding: 6px 9px; border-radius: 99px; border: 1px solid #DDE3EE; background: #fff; color: var(--ink); }
+.py-methods .ex-glow { animation: py-glow 10s infinite both; animation-delay: 2s; }
+@keyframes py-glow { 0% { box-shadow: none; } 4%, 17% { box-shadow: 0 0 0 3px #C9D3FF; border-color: #2F4DE0; } 21%, 100% { box-shadow: none; } }
+.py-stamp-at { position: absolute; right: -14px; top: 30px; transform: rotate(-12deg); }
+.py-stamp { display: block; border: 3px solid #1F9D5C; color: #1F9D5C; font: 900 15px/1 var(--f-text); padding: 6px 10px; border-radius: 8px; background: rgba(255, 255, 255, .92); }
+.py-mail { position: absolute; left: 12%; top: 18px; display: flex; gap: 8px; align-items: center; }
+.py-cal { position: absolute; right: 9%; bottom: 20px; width: 92px; overflow: hidden; text-align: center; }
+.py-cal b { display: block; color: #fff; font: 700 10px/1 var(--f-text); padding: 5px 0; }
+.py-cal strong { display: block; font-size: 26px; font-weight: 900; padding: 6px 0 0; }
+.py-cal small { display: block; font-size: 10px; color: var(--graphite); padding-bottom: 8px; }
+
+/* Small example art. */
+.ex-art-doc { width: 110px; padding: 12px; display: grid; gap: 7px; }
+.ex-art-check { width: 130px; padding: 12px; display: grid; gap: 8px; font: 600 11px/1.2 var(--f-text); }
+.ex-art-check span { display: flex; gap: 6px; align-items: center; }
+.ex-art-check i { width: 14px; height: 14px; border-radius: 4px; border: 2px solid #CBD2DC; flex: none; display: grid; place-items: center; font-style: normal; font-size: 9px; color: #fff; }
+.ex-art-check i.on { background: #1F9D5C; border-color: #1F9D5C; }
+.ex-art-cc { width: 150px; height: 92px; border-radius: 12px; padding: 12px; color: #fff; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 24px rgba(11, 18, 32, .2); font: 700 11px/1 var(--f-text); }
+.ex-art-cc i { width: 26px; height: 18px; border-radius: 4px; background: #F5D98A; }
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="ex-b"], [class*="ex-f"], .ex-gone3, .sm-sign path, .sm-gantt i, .sm-track b, .st-cursor, .py-methods .ex-glow, .ex-dot { animation: none !important; }
+  .ex-b1, .ex-b2, .ex-b3, .ex-b4, .st-cursor, .ex-gone3 { opacity: 0; }
+  .sm-sign path { stroke-dashoffset: 0; }
+}
+
+/* Examples as a compact strip inside the explainer card. */
+.ex-strip { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 20px; }
+.ex-strip-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 1000px) { .ex-strip-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ex-mini { margin: 0; display: flex; gap: 12px; align-items: center; min-width: 0; }
+.ex-mini-art { width: 96px; height: 76px; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 14px; background: radial-gradient(120% 100% at 50% 0%, #EEF2FF, var(--niebla, #F4F6FB)); }
+.ex-mini-art > * { transform: scale(.6); flex: none; }
+html[data-theme="dark"] .ex-mini-art { background: radial-gradient(120% 100% at 50% 0%, #1A2240, #0E1528); }

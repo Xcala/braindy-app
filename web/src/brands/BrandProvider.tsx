@@ -19,6 +19,8 @@ export interface Brand {
   city: string | CityPlace | null;
   /** Drive folders the client sees in My files; absent or mode 'all' means every folder. */
   fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
+  /** Sections NickMark switched off for the whole brand (e.g. Requests after the contract ends). */
+  sectionsOff: string[];
 }
 
 /** contract = step 1 (rules of the game), kickoff = step 2, brief → firstDelivery = step 3 (strategy and training). */
@@ -46,6 +48,7 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   onboarding: toOnboarding(d.onboarding as Record<string, { toDate?: () => Date }> | undefined),
   city: (d.city as Brand['city']) ?? null,
   fileAccess: (d.fileAccess as Brand['fileAccess']) ?? null,
+  sectionsOff: Array.isArray(d.sectionsOff) ? (d.sectionsOff as string[]) : [],
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {

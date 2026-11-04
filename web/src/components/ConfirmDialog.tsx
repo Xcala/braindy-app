@@ -10,11 +10,12 @@ export function ConfirmDialog({ title, children, confirmLabel, danger, busy, onC
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
-    ref.current?.querySelector<HTMLButtonElement>('button[data-autofocus]')?.focus();
+    // The first [data-autofocus] wins: a field in the body before the Cancel button.
+    ref.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel();
       if (e.key === 'Tab' && ref.current) {
-        const f = [...ref.current.querySelectorAll<HTMLElement>('button')];
+        const f = [...ref.current.querySelectorAll<HTMLElement>('button, input, select, textarea')];
         if (!f.length) return;
         if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
         else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }

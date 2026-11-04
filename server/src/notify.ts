@@ -5,9 +5,9 @@ import { db } from './firebase.js';
 import { normalizePhone, sendTemplate, waMeLink } from './whatsapp.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
-export type NoticeKind = 'contract_ready' | 'contract_signed' | 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live';
+export type NoticeKind = 'contract_ready' | 'contract_signed' | 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live' | 'due_tomorrow';
 
-// Template name in Meta → body text (ES / EN) used for the wa.me fallback. {name} = brand, {when} = session.
+// Template name in Meta → body text (ES / EN) used for the wa.me fallback. {name} = brand, {when} = session (or the request title for due_tomorrow).
 const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string; en: string }> = {
   contract_ready: { template: 'contract_ready', path: '/onboarding', es: '{name}: su contrato con NicoMarca está listo para firmar. Lo firma el representante legal aquí:', en: '{name}: your contract with NickMark is ready to sign. The legal representative signs it here:' },
   contract_signed: { template: 'contract_signed', path: '/onboarding', es: '{name}: el contrato quedó firmado por las dos partes. El PDF está en Mis archivos. Arrancamos:', en: '{name}: the contract is signed by both parties. The PDF is in My files. We start:' },
@@ -15,6 +15,7 @@ const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string
   brain_ready: { template: 'brand_brain_ready', path: '/onboarding', es: '{name}: su Brand Brain está listo. NicoMarca lo armó con su brief, con el Researcher. Revísenlo antes de la sesión:', en: '{name}: your Brand Brain is ready. NickMark built it from your brief, with the Researcher. Review it before the session:' },
   session_confirmed: { template: 'session_confirmed', path: '/onboarding', es: '{name}: sesión con Nicolas confirmada para {when}. Traigan preguntas, no tareas.', en: '{name}: session with Nicolas confirmed for {when}. Bring questions, not homework.' },
   brain_signed: { template: 'brand_brain_signed', path: '/brand', es: '{name}: su Brand Brain está firmado por NicoMarca. Su equipo arranca ya.', en: '{name}: your Brand Brain is signed by NickMark. His team starts now.' },
+  due_tomorrow: { template: 'request_due_tomorrow', path: '/requests', es: '{name}: mañana se entrega «{when}». Lo puedes seguir aquí:', en: '{name}: "{when}" is due tomorrow. Follow it here:' },
   live: { template: 'system_live', path: '/home', es: '{name}: su sistema de marca está vivo. Todo en marca, en un solo lugar:', en: '{name}: your brand system is live. Everything on brand, in one place:' },
 };
 
