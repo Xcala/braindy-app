@@ -28,6 +28,8 @@ export interface Contract {
   client?: ClientData;
   signatures?: { client?: SignatureInfo; contractor?: SignatureInfo };
   pdf?: { fileName: string; sha256: string; size: number };
+  /** 'external' = signed outside Braindy and uploaded as a PDF (no in-app text, schedule or certificate). */
+  source?: 'external';
 }
 
 /** Terms Nicolas edits, in the order of the form. Keys match server DEFAULT_TERMS. */

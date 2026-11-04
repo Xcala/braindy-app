@@ -36,7 +36,7 @@ export function ContractCard({ brandId, contract }: { brandId: string; contract:
       ? <div className="col g12">{head(t('plan.c.toSign'), t('plan.c.toSignBody'), TONE.wait)}<SignContract brandId={brandId} contract={contract} /></div>
       : head(t('plan.c.toSign'), t('plan.c.waitingSigner', { name: contract.signer.name || contract.signer.email }), TONE.wait);
   } else if (contract.status === 'clientSigned') body = head(t('plan.c.clientSigned'), admin ? t('plan.c.countersignAdmin') : t('ctr.waitingNicolas'), TONE.wait);
-  else body = <div className="col g12">{head(t('plan.c.signed'), t('ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /></div>;
+  else body = <div className="col g12">{head(t('plan.c.signed'), t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /></div>;
 
   return <section className="col g12" aria-label={t('plan.c.label')}>{body}</section>;
 }
