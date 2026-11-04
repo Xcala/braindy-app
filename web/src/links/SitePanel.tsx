@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -8,14 +8,22 @@ import type { StringKey } from '../i18n/strings';
 import { createRequest } from '../requests/api';
 import { pct, pointsFor, STATUSES, useSiteChanges, type SiteChange } from './SiteChanges';
 import type { BrandLink } from './useBrandLinks';
-import type { Spot } from './useSpot';
+import type { SiteFrame, Spot } from './useSpot';
+import { SiteComments, useSiteComments } from './SiteComments';
 
 /**
  * The narrow column beside the site in the viewer: the site's adjustments triage at a glance
- * (open points first, delivered folded) and a box to ask for one more adjustment, which becomes a web request.
+ * (open points first, delivered folded) and a box to ask for one more adjustment, which becomes a web request;
+ * a second tab holds the comments pinned on the site.
  */
-export function SitePanel({ brandId, link, links, onShow, active }: { brandId: string; link: BrandLink; links: BrandLink[]; onShow?: (s: Spot) => void; active?: string | null }) {
+export function SitePanel({ brandId, link, links, frame }: { brandId: string; link: BrandLink; links: BrandLink[]; frame?: SiteFrame }) {
   const { t } = useI18n();
+  const onShow = frame?.go, active = frame?.active;
+  const comments = useSiteComments(brandId, link.url);
+  const openComments = comments.filter((c) => !c.resolved).length;
+  const [tab, setTab] = useState<'changes' | 'comments'>('changes');
+  // A pin clicked on the site, or comment mode turned on, brings the comments tab forward.
+  useEffect(() => { if (frame?.pinned || frame?.picking) setTab('comments'); }, [frame?.pinned, frame?.picking]);
   const list = pointsFor(useSiteChanges(brandId), link, links);
   const open = list.filter((x) => x.status !== 'delivered' && x.status !== 'discarded');
   const done = list.filter((x) => x.status === 'delivered');
@@ -33,6 +41,12 @@ export function SitePanel({ brandId, link, links, onShow, active }: { brandId: s
         {list.length > 0 && <div className="sx-bar" aria-hidden="true">{counts.map(([s, n]) => <span key={s} className={`is-${s}`} style={{ flexGrow: n }} />)}</div>}
       </header>
 
+      <div className="seg sc-tabs" role="tablist" aria-label={t('site.title')}>
+        <button type="button" role="tab" aria-selected={tab === 'changes'} className={tab === 'changes' ? 'is-on' : ''} onClick={() => setTab('changes')}>{t('sc.tabChanges')}</button>
+        <button type="button" role="tab" aria-selected={tab === 'comments'} className={tab === 'comments' ? 'is-on' : ''} onClick={() => setTab('comments')}>{t('sc.tabComments')}{openComments ? ` (${openComments})` : ''}</button>
+      </div>
+
+      {tab === 'comments' ? <SiteComments brandId={brandId} list={comments} frame={frame} /> : <>
       <AskAdjustment brandId={brandId} url={link.url} />
 
       {list.length === 0 ? <p className="t-sm t-mute" style={{ margin: 0 }}>{t('sp.empty')}</p> : (
@@ -47,6 +61,7 @@ export function SitePanel({ brandId, link, links, onShow, active }: { brandId: s
           )}
         </div>
       )}
+      </>}
     </aside>
   );
 }

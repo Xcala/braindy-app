@@ -10,6 +10,7 @@ import { deliverVersion, listRequests, newRequest, type FileWriter } from './del
 import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
 import { setIdentity } from './identity.js';
+import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
@@ -28,6 +29,7 @@ const REMOTE_FILE = z.object({
 });
 
 export function registerTools(server: McpServer, ctx: ToolContext) {
+  registerSiteCommentTools(server, ctx.uid);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',

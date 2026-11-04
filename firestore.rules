@@ -223,6 +223,34 @@ service cloud.firestore {
         allow delete: if isAdmin();
       }
 
+      // Comments pinned on a part of the site (Figma style): anyone of the brand writes them, the team and the Brains read them.
+      // Resolving: its author, anyone who can approve, or the admin. Text and place never change.
+      match /siteComments/{commentId} {
+        allow read: if canReadBrand(brandId);
+        allow create: if (isAdmin() || isMember(brandId))
+          && request.resource.data.author == uid()
+          && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
+          && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+          && request.resource.data.url is string && request.resource.data.url.size() <= 1000
+          && request.resource.data.resolved == false
+          && request.resource.data.createdAt == request.time;
+        allow update: if isAdmin()
+          || ((resource.data.author == uid() || canApprove(brandId))
+              && onlyChanges(['resolved', 'resolvedBy', 'resolvedAt'])
+              && request.resource.data.resolved is bool);
+        allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
+        match /replies/{replyId} {
+          allow read: if canReadBrand(brandId);
+          allow create: if (isAdmin() || isMember(brandId))
+            && request.resource.data.author == uid()
+            && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
+            && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+            && request.resource.data.createdAt == request.time;
+          allow update: if false;
+          allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
+        }
+      }
+
       // Work log written from Claude sessions (what was done, when). Internal: NickMark only.
       match /activity/{entryId} {
         allow read, delete: if isAdmin();

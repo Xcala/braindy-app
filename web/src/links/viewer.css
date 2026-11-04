@@ -49,3 +49,9 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
 .lview-note { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--ink, #14141f); color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: calc(100% - 32px); }
 .lview-note .btn { color: inherit; }
 .spanel-pt.is-on { box-shadow: 0 0 0 2px var(--marketer, #8B5CF6); }
+.sc-tabs { align-self: stretch; display: flex; }
+.sc-tabs button { flex: 1; }
+.sc-picking { padding: 10px 12px; border-radius: 12px; background: rgba(139, 92, 246, .1); border: 1px dashed var(--marketer, #8B5CF6); }
+.sc-n { flex: none; width: 22px; height: 22px; border-radius: 50% 50% 50% 4px; background: var(--marketer, #8B5CF6); color: #fff; font: 700 11px/22px var(--f-text, system-ui); text-align: center; }
+.sc-item.is-done .sc-n { background: #9CA3AF; }
+.sc-reply { margin: 0; padding-left: 10px; border-left: 2px solid var(--line, #e5e7eb); }

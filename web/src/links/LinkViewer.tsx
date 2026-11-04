@@ -71,11 +71,11 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
                 referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
               {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
-              {spot.note && <p className="lview-note t-sm" role="status">{t(spot.note === 'moved' ? 'sp.noBridge' : 'sp.notFound')} <button type="button" className="btn btn-ghost btn-sm" onClick={spot.dismiss} aria-label={t('lb.close')}>✕</button></p>}
+              {spot.note && <p className="lview-note t-sm" role="status">{t(spot.note === 'moved' ? 'sp.noBridge' : spot.note === 'nobridge' ? 'sc.noBridge' : 'sp.notFound')} <button type="button" className="btn btn-ghost btn-sm" onClick={spot.dismiss} aria-label={t('lb.close')}>✕</button></p>}
             </>
           )}
         </div>
-        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} onShow={blocked ? undefined : spot.go} active={spot.active} />}
+        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} frame={blocked ? undefined : spot} />}
       </div>
     </div>
   );
