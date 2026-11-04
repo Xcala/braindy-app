@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { api } from '../lib/api';
 import { SitePanel } from './SitePanel';
+import { useSpot } from './useSpot';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
 
@@ -33,6 +34,7 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
     api<{ embeddable: boolean | null }>(`/v1/brands/${brandId}/links/${link.id}/frame`).then((r) => setFrame(r.embeddable), () => setFrame(null));
   }, [brandId, link.id, frame]);
   const blocked = frame === false;
+  const spot = useSpot(link.url);
   // The adjustments column: open by default where there is room, folded on phones.
   const hasPanel = link.section === 'apps';
   const [panel, setPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
@@ -65,14 +67,15 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
             </div>
           ) : (
             <>
-              <iframe title={link.title} src={link.url} className="lview-frame" style={{ width: SIZES[size] }}
+              <iframe ref={spot.frame} title={link.title} src={link.url} className="lview-frame" style={{ width: SIZES[size] }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
                 referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
               {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
+              {spot.note && <p className="lview-note t-sm" role="status">{t(spot.note === 'moved' ? 'sp.noBridge' : 'sp.notFound')} <button type="button" className="btn btn-ghost btn-sm" onClick={spot.dismiss} aria-label={t('lb.close')}>✕</button></p>}
             </>
           )}
         </div>
-        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} />}
+        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} onShow={blocked ? undefined : spot.go} active={spot.active} />}
       </div>
     </div>
   );

@@ -46,3 +46,6 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
 .ladj-pct b { font: 900 16px/1 var(--f-display); color: var(--ink); }
 .ladj-bar { display: block; height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
 .ladj-bar span { display: block; height: 100%; border-radius: inherit; background: var(--success); }
+.lview-note { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0; padding: 6px 6px 6px 14px; border-radius: 999px; background: var(--ink, #14141f); color: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: calc(100% - 32px); }
+.lview-note .btn { color: inherit; }
+.spanel-pt.is-on { box-shadow: 0 0 0 2px var(--marketer, #8B5CF6); }

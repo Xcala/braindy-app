@@ -8,12 +8,13 @@ import type { StringKey } from '../i18n/strings';
 import { createRequest } from '../requests/api';
 import { pct, pointsFor, STATUSES, useSiteChanges, type SiteChange } from './SiteChanges';
 import type { BrandLink } from './useBrandLinks';
+import type { Spot } from './useSpot';
 
 /**
  * The narrow column beside the site in the viewer: the site's adjustments triage at a glance
  * (open points first, delivered folded) and a box to ask for one more adjustment, which becomes a web request.
  */
-export function SitePanel({ brandId, link, links }: { brandId: string; link: BrandLink; links: BrandLink[] }) {
+export function SitePanel({ brandId, link, links, onShow, active }: { brandId: string; link: BrandLink; links: BrandLink[]; onShow?: (s: Spot) => void; active?: string | null }) {
   const { t } = useI18n();
   const list = pointsFor(useSiteChanges(brandId), link, links);
   const open = list.filter((x) => x.status !== 'delivered' && x.status !== 'discarded');
@@ -37,11 +38,11 @@ export function SitePanel({ brandId, link, links }: { brandId: string; link: Bra
       {list.length === 0 ? <p className="t-sm t-mute" style={{ margin: 0 }}>{t('sp.empty')}</p> : (
         <div className="col g8">
           {open.length > 0 && <p className="label" style={{ margin: 0 }}>{t('sp.open', { n: open.length })}</p>}
-          {open.map((x) => <Point key={x.id} brandId={brandId} x={x} />)}
+          {open.map((x) => <Point key={x.id} brandId={brandId} x={x} onShow={onShow} on={active === x.key} />)}
           {done.length > 0 && (
             <details className="spanel-done">
               <summary className="label">{t('sp.done', { n: done.length })}</summary>
-              <div className="col g8">{done.map((x) => <Point key={x.id} brandId={brandId} x={x} />)}</div>
+              <div className="col g8">{done.map((x) => <Point key={x.id} brandId={brandId} x={x} onShow={onShow} on={active === x.key} />)}</div>
             </details>
           )}
         </div>
@@ -51,11 +52,13 @@ export function SitePanel({ brandId, link, links }: { brandId: string; link: Bra
 }
 
 /** One triage point, folded to its title and state; opens to what was asked and what was done. NickMark changes the state here. */
-function Point({ brandId, x }: { brandId: string; x: SiteChange }) {
+function Point({ brandId, x, onShow, on }: { brandId: string; x: SiteChange; onShow?: (s: Spot) => void; on?: boolean }) {
   const { t } = useI18n();
   const isAdmin = useAuth().profile?.role === 'admin';
   return (
-    <details className={`spanel-pt is-${x.status}`}>
+    // Opening a point takes the site beside it to where the point lives.
+    <details className={`spanel-pt is-${x.status}${on ? ' is-on' : ''}`}
+      onToggle={(e) => { if (e.currentTarget.open && onShow && (x.link || x.spot)) onShow({ url: x.link, spot: x.spot, label: x.key, auto: true }); }}>
       <summary>
         <span className="sx-key">{x.key}</span>
         <span className="spanel-ptitle">{x.title}</span>
@@ -69,7 +72,9 @@ function Point({ brandId, x }: { brandId: string; x: SiteChange }) {
       )}
       {x.request && <p className="t-xs"><span className="sx-lbl">{t('site.asked')}</span> {x.request}</p>}
       {x.delivered && <p className="t-xs"><span className="sx-lbl">{t('site.done')}</span> {x.delivered}</p>}
-      {x.link && <a className="sx-link t-xs" href={x.link} target="_blank" rel="noreferrer">{t('site.seeChange')} ↗</a>}
+      {onShow && (x.link || x.spot)
+        ? <button type="button" className="sx-link t-xs" onClick={() => onShow({ url: x.link, spot: x.spot, label: x.key })}>{t('sp.showOnPage')}</button>
+        : x.link && <a className="sx-link t-xs" href={x.link} target="_blank" rel="noreferrer">{t('site.seeChange')} ↗</a>}
     </details>
   );
 }

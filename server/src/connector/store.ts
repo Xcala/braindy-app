@@ -14,7 +14,7 @@ const MAX_FILE = 500 * 1024 ** 2;
 const MAX_FILES = 200;
 
 export type SiteChangeStatus = 'delivered' | 'in_progress' | 'decision' | 'client' | 'discarded';
-export interface SiteChangeInput { key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: SiteChangeStatus; link?: string }
+export interface SiteChangeInput { key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: SiteChangeStatus; link?: string; spot?: string }
 
 export async function findBrands(query: string) {
   const q = query.trim().toLowerCase();
@@ -33,7 +33,7 @@ export async function requireBrand(brandId: string) {
 }
 
 const docId = (key: string) => key.trim().replace(/[\/\s]+/g, '-').slice(0, 120);
-const FIELDS = ['group', 'title', 'request', 'source', 'delivered', 'status', 'link'] as const;
+const FIELDS = ['group', 'title', 'request', 'source', 'delivered', 'status', 'link', 'spot'] as const;
 
 /** Upserts the triage by key. Unchanged points are not rewritten; nothing is deleted unless asked. */
 export async function syncSiteChanges(brandId: string, items: SiteChangeInput[], opts: { siteUrl?: string; round?: string; removeMissing?: boolean }) {
@@ -65,7 +65,7 @@ export async function syncSiteChanges(brandId: string, items: SiteChangeInput[],
 
 export async function listSiteChanges(brandId: string) {
   const snap = await db.collection(`brands/${brandId}/siteChanges`).orderBy('order').get();
-  return snap.docs.map((d) => { const x = d.data(); return { key: x.key, group: x.group, title: x.title, status: x.status, delivered: x.delivered }; });
+  return snap.docs.map((d) => { const x = d.data(); return { key: x.key, group: x.group, title: x.title, status: x.status, delivered: x.delivered, link: x.link, spot: x.spot }; });
 }
 
 export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';

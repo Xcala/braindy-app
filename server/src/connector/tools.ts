@@ -101,7 +101,8 @@ Ver: ${APP}/plan`;
         source: z.string().optional().describe('Where it was asked (meeting, video minute, WhatsApp)'),
         delivered: z.string().optional().describe('What was done'),
         status: STATUS,
-        link: z.string().optional().describe('https link to the change, if any'),
+        link: z.string().optional().describe('https URL of the exact page where it was done (or will be done), e.g. https://www.site.com/nosotros/. Always fill it for site changes: Braindy opens that page beside the triage'),
+        spot: z.string().optional().describe('The part of that page: a short text that is visible there (a heading, button label or phrase, copied exactly) or a CSS selector like #contacto. Braindy scrolls to it and outlines it. Always fill it when the change is a specific part'),
       })).min(1).max(500),
       siteUrl: z.string().optional().describe('https URL of the site'),
       round: z.string().optional().describe('Round or date of this update, e.g. "6.ª ronda · 28 oct"'),
@@ -173,7 +174,7 @@ Ver: ${APP}/plan`;
   }, run(async ({ brandId }) => {
     await requireBrand(brandId);
     const list = await listSiteChanges(brandId);
-    return list.length ? list.map((x) => `${x.key} · ${x.group} · ${x.title} · ${x.status}`).join('\n') : 'Todavía no hay ajustes del sitio guardados.';
+    return list.length ? list.map((x) => `${x.key} · ${x.group} · ${x.title} · ${x.status}${x.link ? ` · ${x.link}` : ''}${x.spot ? ` · «${x.spot}»` : ''}`).join('\n') : 'Todavía no hay ajustes del sitio guardados.';
   }));
 
   server.registerTool('braindy_log_session', {
