@@ -17,6 +17,13 @@ English bodies: `{{1}}: {{2}} sends you "{{3}}" to review.` · `{{1}}: "{{2}}" i
 
 When app.braindy.co goes live, change the button URLs to that domain (Meta reviews them again).
 
+Contract templates (onboarding step 1), one variable `{{1}}` = brand:
+
+| Name | Body (ES) | Body (EN) | Button |
+|---|---|---|---|
+| `contract_ready` | `{{1}}: su contrato con NicoMarca está listo para firmar. Lo firma el representante legal en Braindy.` | `{{1}}: your contract with NickMark is ready to sign. The legal representative signs it in Braindy.` | URL «Firmar» `https://app.braindy.co/onboarding` |
+| `contract_signed` | `{{1}}: el contrato quedó firmado por las dos partes. El PDF está en Mis archivos. Arrancamos.` | `{{1}}: the contract is signed by both parties. The PDF is in My files. We start.` | URL «Ver arranque» `https://app.braindy.co/onboarding` |
+
 The onboarding templates (`onboarding_welcome`, `brand_brain_ready`, `session_confirmed`, `brand_brain_signed`, `system_live`) and the old `delivery_ready` are described in `docs/setup-pending.md`. `delivery_review` replaces `delivery_ready`.
 
 ## How the channel works
