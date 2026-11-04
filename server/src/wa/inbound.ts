@@ -28,7 +28,6 @@ const COPY = {
   es: {
     unknown: 'Hola, este es el WhatsApp de Braindy. No encontramos tu número en ninguna marca todavía. NicoMarca lo revisa y te escribe pronto.',
     received: (t: string, url: string) => `Recibido. NicoMarca y su equipo ya tienen tu solicitud «${t}».\nSíguela aquí: ${url}`,
-    added: (t: string) => `Lo agregué a «${t}».`,
     which: 'Recibido. ¿Para qué marca es?',
     askNote: 'Cuéntame en un mensaje qué cambiarías.',
     approved: 'Aprobado. Gracias, NicoMarca ya lo sabe.',
@@ -42,7 +41,6 @@ const COPY = {
   en: {
     unknown: "Hi, this is Braindy's WhatsApp. We can't find your number in any brand yet. NickMark will check and write to you soon.",
     received: (t: string, url: string) => `Got it. NickMark and his team have your request "${t}".\nFollow it here: ${url}`,
-    added: (t: string) => `Added to "${t}".`,
     which: 'Got it. Which brand is it for?',
     askNote: 'Tell me in one message what you would change.',
     approved: 'Approved. Thanks, NickMark knows.',
@@ -173,17 +171,16 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     return fileRequest(phone, uid, brandId, pending, lang);
   }
 
-  // Reply to one of our notices → comment on that request.
+  // Reply to one of our notices → comment on that request, silently (an "added to…" echo on every message is noise).
   const replied = m.context?.id ? await db.doc(`waOutbound/${m.context.id}`).get() : null;
   if (replied?.exists && (await brandAccess(uid, replied.get('brandId'))).member) {
-    const title = await comment(replied.get('brandId'), replied.get('requestId'), uid, text, media);
-    return say(phone, COPY[lang].added(title));
+    await comment(replied.get('brandId'), replied.get('requestId'), uid, text, media);
+    return;
   }
-  // Follow-up right after a request (more photos, "and make it blue") → comment on it.
+  // Follow-up right after a request (more photos, "and make it blue") → comment on it, silently.
   const last = contact?.lastRequest;
   if (last && Date.now() - last.at.toMillis() < FOLLOW_UP_MS && brands.some((b) => b.id === last.brandId)) {
-    const title = await comment(last.brandId, last.requestId, uid, text, media);
-    if (text) await say(phone, COPY[lang].added(title));
+    await comment(last.brandId, last.requestId, uid, text, media);
     return;
   }
 
