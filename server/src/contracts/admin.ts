@@ -9,14 +9,14 @@ import type { AuthEnv } from '../auth.js';
 import { TEMPLATE_VERSION } from './template.js';
 import { CONTRACTOR_KEYS, fill, missingTerms, pickRecord, pickTerms, type Contractor, type Terms } from './terms.js';
 import { DEFAULT_CHECKLIST, PRESETS, cleanChecklist, cleanSchedule, mondayOf, type PresetKey } from './schedule.js';
-import { CONSENT, METHOD, contractRef, evidence, now, saveSignature, seal, signaturePng } from './store.js';
+import { CONSENT, METHOD, bucket, contractRef, evidence, now, saveSignature, seal, sha256, signaturePng } from './store.js';
 
 export const adminContracts = new Hono<AuthEnv>();
 const adminOnly: MiddlewareHandler<AuthEnv> = async (c, next) => {
   if (!(await brandAccess(c.get('user').uid, c.req.param('brandId')!)).admin) return c.json({ error: 'forbidden' }, 403);
   await next();
 };
-for (const path of ['/brands/:brandId/contracts', '/brands/:brandId/contracts/*', '/brands/:brandId/schedule']) adminContracts.use(path, adminOnly);
+for (const path of ['/brands/:brandId/contracts', '/brands/:brandId/contracts/*', '/brands/:brandId/signed-contracts', '/brands/:brandId/schedule']) adminContracts.use(path, adminOnly);
 
 const contractor = async () => pickRecord(CONTRACTOR_KEYS, (await db.doc('config/contractor').get()).data()) as Contractor;
 const brandRef = (id: string) => db.doc(`brands/${id}`);
@@ -149,4 +149,31 @@ adminContracts.post('/brands/:brandId/schedule', async (c) => {
   const schedule = cleanSchedule((await c.req.json<{ schedule?: unknown }>()).schedule);
   await db.doc(`brands/${brandId}/context/schedule`).set({ ...schedule, updatedAt: now() }, { merge: true });
   return c.json({ ok: true });
+});
+
+/** A contract already signed outside Braindy (e.g. on paper or another platform): the PDF as signed, stored
+ *  privately and shown as signed. Existing clients without onboarding stay out of it (step live). */
+adminContracts.post('/brands/:brandId/signed-contracts', async (c) => {
+  const { brandId } = c.req.param();
+  const b = await c.req.json<{ pdf?: string; fileName?: string; title?: string; signedOn?: string; clientName?: string; clientRole?: string }>().catch(() => ({} as Record<string, string>));
+  const bytes = Buffer.from(String(b.pdf ?? ''), 'base64');
+  if (bytes.length < 300 || bytes.length > 15_000_000 || bytes.subarray(0, 5).toString() !== '%PDF-') return c.json({ error: 'pdf' }, 400);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(b.signedOn ?? ''))) return c.json({ error: 'missing', fields: ['signedOn'] }, 400);
+  const clean = (v: unknown, max = 160) => String(v ?? '').replace(/[\u0000-\u001f]/g, '').trim().slice(0, max);
+  const ref = db.collection(`brands/${brandId}/contracts`).doc();
+  const fileName = (clean(b.fileName, 120).replace(/[\/]/g, '-') || 'Contrato firmado').replace(/(\.pdf)?$/i, '.pdf');
+  const storagePath = `brands/${brandId}/contracts/${ref.id}/${fileName}`;
+  await bucket().file(storagePath).save(bytes, { contentType: 'application/pdf', resumable: false });
+  const pdf = { storagePath, sha256: sha256(bytes), size: bytes.length, fileName };
+  const signedAt = new Date(`${b.signedOn}T12:00:00-05:00`).toISOString();
+  const who = await contractor();
+  await ref.set({
+    status: 'signed', source: 'external', title: clean(b.title, 200), templateVersion: 'external', terms: {}, scope: '', schedule: null, checklist: [],
+    signer: { email: '', name: clean(b.clientName) }, pdf, signedAt: now(), createdBy: c.get('user').uid, createdAt: now(), updatedAt: now(),
+    signatures: { client: { name: clean(b.clientName), cargo: clean(b.clientRole), signedAt }, contractor: { name: who.nombre, cargo: 'Contratista, persona natural', signedAt } },
+  });
+  const step = (await brandRef(brandId).get()).get('onboarding.step');
+  await brandRef(brandId).set({ onboarding: { ...(step ? {} : { step: 'live' }), contractId: ref.id, contractSignedAt: now() } }, { merge: true });
+  await db.collection('audit').add({ type: 'contract_uploaded', brandId, contractId: ref.id, by: c.get('user').uid, pdfSha256: pdf.sha256, at: now() });
+  return c.json({ id: ref.id, pdf });
 });

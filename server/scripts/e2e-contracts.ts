@@ -91,6 +91,23 @@ if (process.env.E2E_PDF_OUT) writeFileSync(process.env.E2E_PDF_OUT, bytes);
 const dl = await call(rep.token, 'GET', `/v1/brands/e2e/contracts/${id}/pdf`).catch((e) => ({ status: 0, json: String(e) }));
 console.log('signer download (signed URLs need a service account; Cloud Run has one):', dl.status, dl.json?.url ? 'url ok' : dl.json);
 
+// A contract signed outside Braindy, uploaded by NickMark for an existing client (no onboarding).
+const { PDFDocument } = await import('pdf-lib');
+const outside = await PDFDocument.create(); outside.addPage().drawText('Contrato firmado fuera de Braindy');
+const outsideB64 = Buffer.from(await outside.save()).toString('base64');
+await db.doc('brands/e2e-old').set({ name: 'Cliente antiguo' });
+const U = '/v1/admin/brands/e2e-old/signed-contracts';
+const upBody = { pdf: outsideB64, fileName: 'Contrato 2026.pdf', title: 'Plan 2026', signedOn: '2026-03-15', clientName: 'Rep', clientRole: 'Representante legal' };
+check('client cannot upload a signed contract', (await call(rep.token, 'POST', U, upBody)).status === 403);
+check('upload refuses a file that is not a PDF', (await call(admin.token, 'POST', U, { ...upBody, pdf: Buffer.from('x'.repeat(2000)).toString('base64') })).status === 400);
+const up = await call(admin.token, 'POST', U, upBody);
+check('admin uploads a signed contract', up.status === 200, up);
+const old = (await db.doc('brands/e2e-old').get()).data()!;
+const upDoc = (await db.doc(`brands/e2e-old/contracts/${up.json.id}`).get()).data()!;
+check('uploaded contract is signed and linked, brand stays out of onboarding', upDoc.status === 'signed' && upDoc.source === 'external' && old.onboarding.contractId === up.json.id && old.onboarding.step === 'live');
+const [upBytes] = await getStorage().bucket('braindy-app-files').file(upDoc.pdf.storagePath).download();
+check('uploaded pdf stored as sent', createHash('sha256').update(upBytes).digest('hex') === upDoc.pdf.sha256 && upBytes.toString('base64') === outsideB64);
+
 /** A drawn-looking signature (a wave) as a real PNG, so the PDF embeds an image like the browser sends. */
 function wavePng() {
   const crc = (b: Buffer) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };

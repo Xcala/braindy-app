@@ -11,6 +11,7 @@ import { brainsApi } from '../../brains/useBrains';
 import { onboardingApi, type BrainDraft } from '../../onboarding/api';
 import { ContractPanel } from '../../contracts/admin/ContractPanel';
 import { ContractorForm } from '../../contracts/admin/ContractorForm';
+import { SignedUpload } from '../../contracts/admin/SignedUpload';
 import { contractsApi } from '../../contracts/api';
 
 /** Admin · onboarding queue: step 1 contract, step 2 kickoff, step 3 review and sign the Brand Brain (design 18). */
@@ -47,6 +48,7 @@ export function AdminOnboarding() {
           {sessions.map((s) => <div key={s.id} className="row between t-sm"><span>{fmt(s.at)}</span><span className="w7 truncate">{brands.find((b) => b.id === s.brandId)?.name}</span></div>)}
         </div>
         <ContractorForm />
+        <SignedUpload />
         <div className="card col g8">
           <h2 className="h3">{t('ob.a.start')}</h2>
           <select className="input" value={startId} onChange={(e) => setStartId(e.target.value)} aria-label={t('ob.a.start')}>

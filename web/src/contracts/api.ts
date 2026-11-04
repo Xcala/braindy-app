@@ -20,6 +20,8 @@ export const contractsApi = {
     api<{ textHash: string }>(`${b(brandId)}/contracts/${id}/sign`, post(body)),
   pdfUrl: (brandId: string, id: string) => api<{ url: string }>(`${b(brandId)}/contracts/${id}/pdf`),
   tick: (brandId: string, itemId: string, done: boolean) => api(`${b(brandId)}/kickoff/${itemId}`, post({ done })),
+  uploadSigned: (brandId: string, body: { pdf: string; fileName: string; title: string; signedOn: string; clientName: string; clientRole: string }) =>
+    api<{ id: string }>(`${a(brandId)}/signed-contracts`, post(body)),
 };
 
 /** Error code and missing fields from a failed call (the backend answers { error, fields }). */
