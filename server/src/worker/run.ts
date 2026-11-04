@@ -1,8 +1,9 @@
-// Free-action worker, run on Nicolas's PC every few minutes by Windows Task Scheduler (scripts/worker.cmd).
+// Free-action worker on Nicolas's PC, started at logon by Windows Task Scheduler in --watch mode (scripts/worker.vbs).
 // Takes one queued request of a brand on autopilot, downloads its files, and runs a headless Claude Code session in
 // the brand's workspace folder for that kind of request. The session does the work, publishes it and delivers a
 // version through the Braindy connector. Uses his gcloud login (application default credentials), like the connector.
-// Run: node node_modules/tsx/dist/cli.mjs server/src/worker/run.ts   (from the main checkout)
+// Run: node node_modules/tsx/dist/cli.mjs server/src/worker/run.ts [--watch]   (from the main checkout; without
+// --watch it takes one job and exits)
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, createWriteStream } from 'node:fs';
 import { homedir, hostname } from 'node:os';
@@ -92,19 +93,21 @@ function runClaude(cwd: string, prompt: string, logFile: string): Promise<{ code
   });
 }
 
-async function main() {
-  if (!takeLock()) return console.log('worker: another run is active');
+type Outcome = 'none' | 'busy' | 'ran' | 'login';
+
+async function runNext(): Promise<Outcome> {
+  if (!takeLock()) { console.log('worker: another run is active'); return 'busy'; }
   try {
     const job = await nextJob();
-    if (!job) return console.log('worker: nothing queued');
-    if (!(await claim(job.ref))) return console.log('worker: taken by another run');
+    if (!job) { console.log('worker: nothing queued'); return 'none'; }
+    if (!(await claim(job.ref))) { console.log('worker: taken by another run'); return 'ran'; }
     const r = await job.ref.get();
     const requestId = job.ref.id;
     const category = String(r.get('category') ?? 'other');
     const cwd = workspaceFor(job.auto, category);
     if (!cwd || !existsSync(cwd)) {
       await job.ref.update({ 'work.state': 'failed', 'work.finishedAt': now(), 'work.summary': `No encuentro la carpeta de trabajo (${cwd ?? 'sin carpeta'}).` });
-      return;
+      return 'ran';
     }
     const comments = await job.ref.collection('comments').orderBy('createdAt').limitToLast(30).get();
     const versions = await job.ref.collection('versions').orderBy('n').get();
@@ -128,7 +131,8 @@ async function main() {
     // Claude Code logged out on this PC: nothing was done, so the request waits for the next run.
     if (/Failed to authenticate|Please run \/login|Invalid API key/i.test(tail)) {
       await job.ref.update({ 'work.state': 'queued', 'work.summary': 'Claude Code no tiene sesión iniciada en el PC (claude → /login).', 'work.log': logFile });
-      return console.log('worker: Claude Code needs /login');
+      console.log('worker: Claude Code needs /login');
+      return 'login';
     }
     const result = /RESULTADO:\s*(listo|fallo)([^\n]*)/i.exec(tail);
     const ok = code === 0 && result?.[1]?.toLowerCase() === 'listo';
@@ -136,9 +140,41 @@ async function main() {
       'work.state': ok ? 'done' : 'failed', 'work.finishedAt': now(), 'work.log': logFile,
       'work.summary': (result?.[2] ?? tail.slice(-600)).replace(/^[\s:—-]+/, '').slice(0, 1000),
     });
+    return 'ran';
   } finally {
     rmSync(LOCK, { force: true });
   }
 }
 
-main().then(() => process.exit(0)).catch((e) => { console.error('worker failed', e); rmSync(LOCK, { force: true }); process.exit(1); });
+/** --watch: stays open (started at logon) and listens for queued requests of autopilot brands, so a session starts
+ *  as soon as a client's WhatsApp message queues work, with no polling. Listener errors exit; Task Scheduler restarts. */
+function watch() {
+  let busy = false, again = false, pausedUntil = 0;
+  const drain = async () => {
+    if (Date.now() < pausedUntil) return;
+    if (busy) { again = true; return; }
+    busy = true;
+    try {
+      do {
+        again = false;
+        let r: Outcome;
+        while ((r = await runNext()) === 'ran');
+        if (r === 'login') { pausedUntil = Date.now() + 10 * 60_000; setTimeout(() => void drain(), 10 * 60_000 + 1000); break; }
+      } while (again);
+    } catch (e) { console.error('worker failed', e); } finally { busy = false; }
+  };
+  const fail = (e: unknown) => { console.error('worker: listener failed', e); process.exit(1); };
+  const subs = new Map<string, () => void>();
+  db.collection('brands').where('autopilot.on', '==', true).onSnapshot((s) => {
+    const ids = new Set(s.docs.map((d) => d.id));
+    for (const [id, off] of subs) if (!ids.has(id)) { off(); subs.delete(id); }
+    for (const id of ids) if (!subs.has(id)) {
+      subs.set(id, db.collection(`brands/${id}/requests`).where('work.state', '==', 'queued')
+        .onSnapshot((q) => { if (!q.empty) void drain(); }, fail));
+    }
+  }, fail);
+  console.log(`worker: listening (${new Date().toISOString()})`);
+}
+
+if (process.argv.includes('--watch')) watch();
+else runNext().then(() => process.exit(0)).catch((e) => { console.error('worker failed', e); rmSync(LOCK, { force: true }); process.exit(1); });
