@@ -112,14 +112,14 @@ export function FolderGrid({ folders, onOpen }: { folders: Array<{ path: string;
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {folders.map((f) => (
-        <div key={f.path} className="folder fcard"
+        <div key={f.path} className={`folder fcard${f.toggle ? " has-switch" : ""}`}
           style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
           <button type="button" className="fopen" onClick={() => onOpen(f.path)} style={f.hidden ? { opacity: 0.55 } : undefined}>
             <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
               <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
             </span>
             <span className="col grow" style={{ minWidth: 0 }}>
-              <span className="w7 fname">{f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
+              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
               <span className="t-sm t-mute truncate">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
             </span>
           </button>

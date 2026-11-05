@@ -71,6 +71,7 @@ export function AdminBrands() {
           <p className="label">{t('role.admin')}</p>
           <h1 className="h1"><span className="w9">{t('admin.brands.title')}.</span> {t('admin.brands.summary', { active, total: brands.length })}</h1>
         </div>
+        <Capacity n={brands.filter((b) => b.status === 'active' && b.kind === 'brand').length} />
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="search w-full sm:w-[320px]">
@@ -140,6 +141,20 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
         <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />
         <span className="t-sm w7" style={{ color: on ? 'var(--success)' : 'var(--graphite)' }}>{t(`status.${brand.status}`)}</span>
       </span>
+    </div>
+  );
+}
+
+/** Active brands Nicolas takes on at once. */
+const CAP = 50;
+
+function Capacity({ n }: { n: number }) {
+  const { t } = useI18n();
+  return (
+    <div className="col" style={{ gap: 6, width: 260 }}>
+      <div className="row between"><span className="w7 t-sm">{t('team.capacity')}</span><span className="t-xs t-mute">{t('team.ceiling', { n: CAP })}</span></div>
+      <div className="bar"><i style={{ width: `${Math.min(100, (n / CAP) * 100)}%`, background: n > CAP * 0.8 ? 'var(--warning)' : 'var(--azul)' }} /></div>
+      <span className="t-xs t-mute">{t('team.activeBrands', { n })}</span>
     </div>
   );
 }

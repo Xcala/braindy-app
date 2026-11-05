@@ -13,6 +13,7 @@ import { proposePlan } from './brains/plan.js';
 import { recordLearning } from './brains/learn.js';
 import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
+import { fileApproved } from './approvedFiles.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 export const URL_TTL_MS = 15 * 60 * 1000;
@@ -134,7 +135,11 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   batch.set(db.collection('audit').doc(), { type: 'approval', brandId, requestId, versionId, state, by: uid, at: now() });
   await batch.commit();
   await recordLearning(brandId, requestId, versionId, state, note);
-  if (state === 'approved') await noticeToBrand(brandId, 'approved', requestId);
+  if (state === 'approved') {
+    // What was approved goes to Files right away; a failure here must not undo the approval.
+    await fileApproved(brandId, requestId, versionId).catch((e) => console.error('fileApproved', brandId, requestId, e));
+    await noticeToBrand(brandId, 'approved', requestId);
+  }
   else await queueWork(brandId, requestId, 'changes');
   return 'ok';
 }
