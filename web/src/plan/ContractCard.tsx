@@ -11,7 +11,7 @@ const TONE = {
 };
 
 /** The contract that makes the plan binding, where it stands: in preparation, to sign (the signer signs right here),
- *  waiting for NickMark's countersignature, or signed with the sealed PDF. Admin gets a shortcut to the contract panel. */
+ *  or signed with the sealed PDF (NickMark signs when sending, so the client's signature closes it). Admin gets a shortcut to the contract panel. */
 export function ContractCard({ brandId, contract }: { brandId: string; contract: Contract | null }) {
   const { t } = useI18n();
   const { user, profile } = useAuth();
@@ -35,8 +35,7 @@ export function ContractCard({ brandId, contract }: { brandId: string; contract:
     body = isSigner && !admin
       ? <div className="col g12">{head(t('plan.c.toSign'), t('plan.c.toSignBody'), TONE.wait)}<SignContract brandId={brandId} contract={contract} /></div>
       : head(t('plan.c.toSign'), t('plan.c.waitingSigner', { name: contract.signer.name || contract.signer.email }), TONE.wait);
-  } else if (contract.status === 'clientSigned') body = head(t('plan.c.clientSigned'), admin ? t('plan.c.countersignAdmin') : t('ctr.waitingNicolas'), TONE.wait);
-  else body = <div className="col g12">{head(t('plan.c.signed'), t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /></div>;
+  } else body = <div className="col g12">{head(t('plan.c.signed'), t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /></div>;
 
   return <section className="col g12" aria-label={t('plan.c.label')}>{body}</section>;
 }

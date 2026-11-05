@@ -1,8 +1,9 @@
 // Contract + working agreement template (v1). Reviewed by the lawyer on 2026-10-30, plus two changes Nicolas
-// asked for afterwards: the closing for lack of contact (13 e) and the one-time email link at signing (18).
+// asked for afterwards: the closing for lack of contact (13 e) and (v2, 2026-11-04) signing with the signer's
+// verified session instead of a separate one-time email link (18).
 // {{placeholders}} are filled from the contract terms, the contractor profile and the client data at signing.
 // Never put ID numbers, NITs or addresses here: they live in the app.
-export const TEMPLATE_VERSION = "v1";
+export const TEMPLATE_VERSION = "v2";
 
 export const TEMPLATE_TITLE = "Contrato de prestación de servicios y Acuerdo de trabajo";
 
@@ -81,6 +82,6 @@ Las partes intentan un arreglo directo en 10 días hábiles. Si no lo logran, ac
 Este contrato presta mérito ejecutivo. Domicilio contractual: {{domicilio}}. Notificaciones: EL CONTRATANTE en {{cliente.direccion}}, {{cliente.correo}}; EL CONTRATISTA en {{contratista.direccion}}, {{contratista.correo}}.
 
 ## DÉCIMA OCTAVA. Firma electrónica y perfeccionamiento
-Las partes firman electrónicamente en la plataforma Braindy, conforme a la Ley 527 de 1999 y el Decreto 2364 de 2012. La firma queda respaldada por: verificación del correo del firmante con un enlace de un solo uso, nombre completo, documento y cargo, firma manuscrita trazada en pantalla, fecha y hora, dirección IP, y la huella digital (hash SHA-256) del documento firmado. Cada parte recibe el PDF firmado por ambas, con su certificado de firma. Este contrato y sus anexos recogen la totalidad de lo acordado y reemplazan acuerdos previos.
+Las partes firman electrónicamente en la plataforma Braindy, conforme a la Ley 527 de 1999 y el Decreto 2364 de 2012. La firma queda respaldada por: verificación del correo del firmante con su sesión en la plataforma, nombre completo, documento y cargo, firma manuscrita trazada en pantalla, fecha y hora, dirección IP, y la huella digital (hash SHA-256) del documento firmado. Cada parte recibe el PDF firmado por ambas, con su certificado de firma. Este contrato y sus anexos recogen la totalidad de lo acordado y reemplazan acuerdos previos.
 
 **Anexos:** 1. Alcance y métricas de éxito. 2. Cronograma (Gantt por semana). 3. Lista de arranque (información y accesos). 4. Certificado de firma electrónica.`;

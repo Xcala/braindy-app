@@ -26,7 +26,7 @@ export function ContractStep({ brandId, contractId }: { brandId: string; contrac
       <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
         <p className="label">{t('ctr.step1')}</p>
         <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.youSigned1')}</span> {t('ctr.youSigned2')}</h1>
-        <p className="t-lg muted">{contract.status === 'signed' ? t('ctr.bothSigned') : t('ctr.waitingNicolas')}</p>
+        <p className="t-lg muted">{t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned')}</p>
       </div>
       {contract.status === 'signed' && <ContractDownload brandId={brandId} contract={contract} />}
     </section>

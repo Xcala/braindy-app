@@ -11,8 +11,7 @@ import { brainsApi } from '../../brains/useBrains';
 import { onboardingApi, type BrainDraft } from '../../onboarding/api';
 import { ContractPanel } from '../../contracts/admin/ContractPanel';
 import { ContractorForm } from '../../contracts/admin/ContractorForm';
-import { SignedUpload } from '../../contracts/admin/SignedUpload';
-import { contractsApi } from '../../contracts/api';
+import { NewContract } from '../../contracts/admin/NewContract';
 
 /** Admin · onboarding queue: step 1 contract, step 2 kickoff, step 3 review and sign the Brand Brain (design 18). */
 export function AdminOnboarding() {
@@ -21,7 +20,6 @@ export function AdminOnboarding() {
   const inFlight = brands.filter((b) => b.onboarding && b.onboarding.step !== 'live');
   const [sel, setSel] = useState<string | null>(null);
   const [sessions, setSessions] = useState<Array<{ id: string; brandId: string; at: Date }>>([]);
-  const [startId, setStartId] = useState('');
   useEffect(() => {
     getDocs(query(collection(db, 'sessions'), where('at', '>=', new Date()), orderBy('at'))).then((s) =>
       setSessions(s.docs.map((d) => ({ id: d.id, brandId: d.get('brandId'), at: d.get('at').toDate() })))).catch(() => setSessions([]));
@@ -42,21 +40,13 @@ export function AdminOnboarding() {
             </button>
           ))}
         </div>
+        <NewContract onCreated={setSel} />
         <div className="card col g8">
           <h2 className="h3">{t('ob.a.sessions')}</h2>
           {sessions.length === 0 && <p className="t-sm t-mute">{t('ob.a.noSessions')}</p>}
           {sessions.map((s) => <div key={s.id} className="row between t-sm"><span>{fmt(s.at)}</span><span className="w7 truncate">{brands.find((b) => b.id === s.brandId)?.name}</span></div>)}
         </div>
         <ContractorForm />
-        <SignedUpload />
-        <div className="card col g8">
-          <h2 className="h3">{t('ob.a.start')}</h2>
-          <select className="input" value={startId} onChange={(e) => setStartId(e.target.value)} aria-label={t('ob.a.start')}>
-            <option value="">{t('ob.a.pickBrand')}</option>
-            {brands.filter((b) => !b.onboarding && b.status === 'active').map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
-          <button className="btn btn-secondary btn-sm" disabled={!startId} onClick={() => contractsApi.create(startId, 'brand3m').then(() => { setSel(startId); setStartId(''); })}>{t('ob.a.startBtn')}</button>
-        </div>
       </aside>
       {selected ? <SignPanel key={selected.id} brand={selected} /> : <div className="card t-mute">{t('ob.a.queueEmpty')}</div>}
     </div>

@@ -1,5 +1,5 @@
 // Same shapes as server/src/contracts (terms, schedule, checklist, signatures).
-export type ContractStatus = 'draft' | 'sent' | 'clientSigned' | 'signed';
+export type ContractStatus = 'draft' | 'sent' | 'signed';
 export type RowStatus = 'pending' | 'doing' | 'done' | 'blocked';
 export type Tone = 'strategy' | 'brand' | 'web' | 'content' | 'agents' | 'ads' | 'knowledge';
 export interface ScheduleRow { id: string; title: string; note: string; from: number; to: number; milestone: boolean; status: RowStatus; tone?: Tone; label?: string }

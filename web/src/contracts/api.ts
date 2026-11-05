@@ -12,9 +12,8 @@ export const contractsApi = {
   create: (brandId: string, preset: PresetKey) => api<{ id: string }>(`${a(brandId)}/contracts`, post({ preset })),
   save: (brandId: string, id: string, patch: DraftPatch) => api(`${a(brandId)}/contracts/${id}`, post(patch)),
   preview: (brandId: string, id: string) => api<{ text: string }>(`${a(brandId)}/contracts/${id}/preview`),
-  send: (brandId: string, id: string) => api(`${a(brandId)}/contracts/${id}/send`, post()),
+  send: (brandId: string, id: string, signature: string) => api(`${a(brandId)}/contracts/${id}/send`, post({ signature })),
   reopen: (brandId: string, id: string) => api(`${a(brandId)}/contracts/${id}/reopen`, post()),
-  countersign: (brandId: string, id: string, signature: string) => api(`${a(brandId)}/contracts/${id}/countersign`, post({ signature })),
   saveSchedule: (brandId: string, schedule: Schedule) => api(`${a(brandId)}/schedule`, post({ schedule })),
   sign: (brandId: string, id: string, body: { client: Omit<ClientData, 'correo'>; signature: string; consent: boolean; textHash: string }) =>
     api<{ textHash: string }>(`${b(brandId)}/contracts/${id}/sign`, post(body)),
