@@ -21,8 +21,9 @@ export const db = getFirestore(app, env.VITE_FIRESTORE_DATABASE_ID || 'braindy-a
 export const googleProvider = new GoogleAuthProvider();
 
 if (env.VITE_USE_EMULATORS === 'true') {
-  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-  connectFirestoreEmulator(db, '127.0.0.1', 8081);
+  // Other ports when another session already runs its own emulators.
+  connectAuthEmulator(auth, `http://127.0.0.1:${env.VITE_EMULATOR_AUTH_PORT || 9099}`, { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', Number(env.VITE_EMULATOR_FIRESTORE_PORT || 8081));
 }
 
 // App Check (reCAPTCHA Enterprise): only when a site key is configured. The backend enforces it
