@@ -13,7 +13,7 @@ export function SelectionBar({ actions, pageIds, folders, admin }: { actions: Fi
   const ids = [...actions.picked];
   if (!ids.length) {
     return pageIds.length > 0
-      ? <p className="t-xs t-mute row g8 wrap" style={{ margin: 0 }}><button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => actions.setPicked(new Set(pageIds))}>{t('files.selectAll')}</button><span className="fx-hint">{t('files.rangeHint')}</span></p>
+      ? <p className="t-xs t-mute row g8 wrap" style={{ margin: 0 }}><button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} title={t('files.rangeHint')} onClick={() => actions.setPicked(new Set(pageIds))}>{t('files.selectAll')}</button></p>
       : null;
   }
   return (

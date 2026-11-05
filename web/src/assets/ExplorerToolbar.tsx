@@ -2,13 +2,14 @@ import { Fragment, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import type { FileKind } from './fileKinds';
+import { UPLOADS } from './folderRules';
 
 export type Filter = 'all' | FileKind;
 export type Sort = 'name' | 'new' | 'old' | 'big';
 export const SORTS: Sort[] = ['name', 'new', 'old', 'big'];
 
 type Props = {
-  brandName: string; path: string; setPath: (p: string) => void;
+  path: string; setPath: (p: string) => void;
   q: string; setQ: (q: string) => void; everywhere: boolean; setEverywhere: (on: boolean) => void;
   filter: Filter; setFilter: (f: Filter) => void; sort: Sort; setSort: (s: Sort) => void;
   view: 'grid' | 'list'; setView: (v: 'grid' | 'list') => void;
@@ -20,16 +21,19 @@ type Props = {
 export function ExplorerToolbar(p: Props) {
   const { t } = useI18n();
   const crumbs = p.path ? p.path.split('/') : [];
+  // Uploads is a fixed folder name in the data; people read it in their language.
+  const label = (c: string, i: number) => (i === 0 && c === UPLOADS ? t('files.uploadsName') : c);
   return (
     <div className="fx-bar">
       <div className="fx-row">
         <nav className="crumbs grow" aria-label="Breadcrumb" id="files-crumbs">
-          <a href="#" onClick={(e) => { e.preventDefault(); p.setPath(''); }} className={crumbs.length ? '' : 'cur'}>{p.brandName}</a>
+          {/* The brand is already in the page title: the path shows only inside a folder. */}
+          {crumbs.length > 0 && <a href="#" onClick={(e) => { e.preventDefault(); p.setPath(''); }}>{t('files.title')}</a>}
           {crumbs.map((c, i) => (
             <Fragment key={i}>
               <Icon name="chevronRight" size={14} />
-              {i === crumbs.length - 1 ? <span className="cur">{c}</span>
-                : <a href="#" onClick={(e) => { e.preventDefault(); p.setPath(crumbs.slice(0, i + 1).join('/')); }}>{c}</a>}
+              {i === crumbs.length - 1 ? <span className="cur">{label(c, i)}</span>
+                : <a href="#" onClick={(e) => { e.preventDefault(); p.setPath(crumbs.slice(0, i + 1).join('/')); }}>{label(c, i)}</a>}
             </Fragment>
           ))}
         </nav>
@@ -37,7 +41,7 @@ export function ExplorerToolbar(p: Props) {
           <div className="search grow">
             <Icon name="search" />
             <input className="input" value={p.q} onChange={(e) => p.setQ(e.target.value)} aria-label={t('files.search')}
-              placeholder={t('files.searchIn', { name: p.everywhere ? p.brandName : crumbs[crumbs.length - 1] ?? p.brandName })} />
+              placeholder={crumbs.length && !p.everywhere ? t('files.searchIn', { name: label(crumbs[crumbs.length - 1], crumbs.length - 1) }) : t('files.search')} />
           </div>
           {p.path && (
             <button type="button" className={`fx-chip${p.everywhere ? ' is-on' : ''}`} aria-pressed={p.everywhere} onClick={() => p.setEverywhere(!p.everywhere)}>
