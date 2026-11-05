@@ -5,6 +5,7 @@ import { Hono, type MiddlewareHandler } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
+import { recordBrainEvent } from './brains/brainEvents.js';
 import { brandAccess } from './access.js';
 import { notifyDelivery } from './review.js';
 import { noticeToBrand } from './wa/notices.js';
@@ -109,6 +110,7 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',
     plan: null, versionCount: 0, source: str(b.source, 20) || 'app', createdBy: uid, createdAt: now(), updatedAt: now(),
   });
+  await recordBrainEvent(brandId, { id: `req-${ref.id}`, kind: 'request', area: 'work', text: str(b.title, 160) || str(b.formatType, 160), requestId: ref.id });
   // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
   await proposePlan(brandId, ref.id).catch(() => null);
   // Brands on free action skip the plan gate: the worker starts right away.

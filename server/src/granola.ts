@@ -6,6 +6,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
+import { recordBrainEvent } from './brains/brainEvents.js';
 import { brandAccess } from './access.js';
 import { logError } from './guard.js';
 import type { AuthEnv } from './auth.js';
@@ -94,6 +95,8 @@ export async function fileNote(note: Note, forcedBrand?: string, viaFolder = fal
     return { status: 'inbox' as const };
   }
   await db.doc(`brands/${brandId}/meetings/granola-${note.id}`).set(doc, { merge: true });
+  // The feed only says a meeting taught the Brain (and when): its title and notes stay internal.
+  await recordBrainEvent(brandId, { id: `meet-granola-${note.id}`, kind: 'meeting', area: 'talks', at: new Date(`${doc.date}T12:00:00Z`) });
   await map.set({ brandId, at: FieldValue.serverTimestamp(), ...(viaFolder ? { folder: true } : mapped.get('folder') ? { folder: true } : {}) });
   await db.doc(`granolaInbox/${note.id}`).delete().catch(() => undefined);
   return { status: 'filed' as const, brandId };

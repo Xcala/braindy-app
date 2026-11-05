@@ -6,6 +6,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+import { identityEvents, recordBrainEvent } from '../brains/brainEvents.js';
 import { db } from '../firebase.js';
 import { contentTypeOf } from '../lib/mime.js';
 import { Hono } from 'hono';
@@ -68,40 +69,41 @@ const HEX = /^#[0-9a-f]{6}$/i;
 export async function setIdentity(brandId: string, input: IdentityInput, local: boolean) {
   const update: Record<string, unknown> = { updatedAt: FieldValue.serverTimestamp(), updatedBy: 'connector' };
   const done: string[] = [];
+  const parts: string[] = []; // stable keys for the Brand Brain feed
   const logos = input.logos ?? {};
   for (const slot of ['primary', 'secondary', 'icon'] as const) {
     const src = logos[slot];
-    if (src) { update[`logos.${slot}`] = await publish(brandId, slot, src, local); done.push(slot); }
+    if (src) { update[`logos.${slot}`] = await publish(brandId, slot, src, local); done.push(slot); parts.push('logos'); }
     else if (src === null) { update[`logos.${slot}`] = FieldValue.delete(); done.push(`${slot} quitado`); } // removed in the editor
   }
   if (logos.variations) {
     update['logos.variations'] = await Promise.all(logos.variations.slice(0, 40).map((v, i) => publish(brandId, `variation-${i + 1}`, v, local)));
-    done.push(`${logos.variations.length} versiones`);
+    done.push(`${logos.variations.length} versiones`); parts.push('logos');
   }
   if (input.colors) {
     const bad = input.colors.filter((c) => !HEX.test(c.hex));
     if (bad.length) throw new Error(`Colores inválidos (usa #RRGGBB): ${bad.map((c) => c.hex).join(', ')}`);
     update.colors = input.colors.slice(0, 24).map((c, i) => ({ id: `c${i + 1}`, hex: c.hex.toUpperCase(), name: (c.name ?? '').slice(0, 60), ...(c.pantone ? { pantone: c.pantone.slice(0, 40) } : {}) }));
-    done.push(`${input.colors.length} colores`);
+    done.push(`${input.colors.length} colores`); parts.push('colors');
   }
   if (input.typography) {
     update.typography = input.typography.slice(0, 8).map((f, i) => ({
       id: `f${i + 1}`, fontFamily: f.fontFamily.slice(0, 80), name: (f.name ?? f.fontFamily).slice(0, 80), role: (f.role ?? '').slice(0, 60),
       type: f.type ?? 'google', description: (f.description ?? '').slice(0, 300), ...(f.url && /^https:\/\//.test(f.url) ? { url: f.url } : {}),
     }));
-    done.push(`${input.typography.length} tipografías`);
+    done.push(`${input.typography.length} tipografías`); parts.push('typography');
   }
   if (input.concept) {
     update.concept = await Promise.all(input.concept.slice(0, 12).map(async (c, i) => ({
       url: await publish(brandId, `concept-${i + 1}`, c.image, local), kind: c.kind ?? 'design-concept', caption: (c.caption ?? '').slice(0, 200),
     })));
-    done.push(`${input.concept.length} imágenes de concepto`);
+    done.push(`${input.concept.length} imágenes de concepto`); parts.push('concept');
   }
   if (input.mockups) {
     update.galleryAssets = await Promise.all(input.mockups.slice(0, 24).map(async (m, i) => ({
       id: `m${i + 1}`, url: await publish(brandId, `mockup-${i + 1}`, m.image, local), name: (m.name ?? '').slice(0, 120), chosen: true,
     })));
-    done.push(`${input.mockups.length} mockups`);
+    done.push(`${input.mockups.length} mockups`); parts.push('mockups');
   }
   const extra: Promise<unknown>[] = [];
   if (input.voice) {
@@ -117,7 +119,7 @@ export async function setIdentity(brandId: string, input: IdentityInput, local: 
       keyLanguage: list(v.keyLanguage, 24), example: clip(v.example, 600),
       updatedAt: FieldValue.serverTimestamp(), updatedBy: 'connector',
     }));
-    done.push('tono y voz');
+    done.push('tono y voz'); parts.push('voice');
   }
   if (input.strategy) {
     const st = input.strategy;
@@ -125,15 +127,16 @@ export async function setIdentity(brandId: string, input: IdentityInput, local: 
     const fields: Record<string, unknown> = Object.fromEntries((['position', 'audiences', 'goals', 'avoid'] as const).filter((k) => st[k] !== undefined).map((k) => [k, String(st[k]).slice(0, 3000)]));
     if (st.competitors) fields.competitors = st.competitors.slice(0, 12).map((c) => ({ name: (c.name ?? '').slice(0, 80), promise: (c.promise ?? '').slice(0, 300), price: (c.price ?? '').slice(0, 80), url: c.url && /^https:\/\//.test(c.url) ? c.url : '' }));
     extra.push(db.doc(`brands/${brandId}/context/brain`).set({ ...fields, updatedAt: FieldValue.serverTimestamp() }, { merge: true }));
-    done.push('estrategia');
+    done.push('estrategia'); parts.push('strategy'); if (st.avoid !== undefined) parts.push('avoid');
   }
   if (input.primal) {
     const keys = ['creationStory', 'creed', 'icons', 'rituals', 'sacredWords', 'nonBelievers', 'leader'] as const;
     const fields: Record<string, unknown> = Object.fromEntries(keys.filter((k) => input.primal![k] !== undefined).map((k) => [k, String(input.primal![k]).slice(0, 3000)]));
     extra.push(db.doc(`brands/${brandId}/context/primal`).set({ ...fields, updatedAt: FieldValue.serverTimestamp() }, { merge: true }));
-    done.push('primal branding');
+    done.push('primal branding'); parts.push('primal');
   }
   await Promise.all(extra);
+  for (const ev of identityEvents([...new Set(parts)])) await recordBrainEvent(brandId, { kind: 'identity', ...ev });
   if (done.length === 0) throw new Error('No llegó nada para actualizar (logos, colores, tipografía, concepto, mockups, voz, estrategia o primal branding).');
   if (Object.keys(update).length === 2) return done;
   const ref = db.doc(`brands/${brandId}/context/identity`);
