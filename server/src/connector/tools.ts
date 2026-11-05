@@ -12,7 +12,7 @@ import { syncSocialPosts } from './social.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
-import { recordBrainEvent } from '../brains/brainEvents.js';
+import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -202,7 +202,7 @@ Ver: ${APP}/plan`;
     }, run(async ({ brandId, path, folder }) => {
       const name = await requireBrand(brandId);
       const { done, skipped } = await uploadPath(brandId, path, folder);
-      if (done.length) await recordBrainEvent(brandId, { kind: 'file', area: 'work', text: done.slice(0, 3).map((d) => d.name).join(', '), count: done.length });
+      await recordFileEvent(brandId, folder ?? 'Uploads', done.map((d) => d.name));
       return `${name}: ${done.length} archivo(s) subidos${skipped.length ? ` · omitidos: ${skipped.join(', ')}` : ''}.\nVer: ${APP}/assets`;
     }));
   } else {
@@ -215,7 +215,7 @@ Ver: ${APP}/plan`;
       const name = await requireBrand(brandId);
       const done = [];
       for (const f of files) done.push(await uploadContent(brandId, f, folder));
-      await recordBrainEvent(brandId, { kind: 'file', area: 'work', text: done.slice(0, 3).map((d) => d.name).join(', '), count: done.length });
+      await recordFileEvent(brandId, folder ?? 'Uploads', done.map((d) => d.name));
       return `${name}: ${done.length} archivo(s) subidos (${done.map((d) => d.name).join(', ')}).\nVer: ${APP}/assets`;
     }));
   }
