@@ -17,7 +17,7 @@ import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
 import { useFileActions } from './useFileActions';
-import { FileMenu } from './FileMenu';
+import { FileMenu, FolderMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
 import { FileDialogs } from './FileDialogs';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -173,7 +173,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>
               </div>
             )}
-            <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath} />
+            <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath}
+              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== 'Entregas aprobadas'} /> : undefined} />
             {subfolders.length > FOLDERS_FIRST && (
               <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
                 {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}

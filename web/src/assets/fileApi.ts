@@ -22,6 +22,9 @@ export type TrashItem = { id: string; title: string; folder: string; size: numbe
 export const listTrash = (brandId: string) => api<{ days: number; files: TrashItem[] }>(`/v1/brands/${brandId}/trash`);
 export const restoreFile = (brandId: string, id: string) => api(`/v1/brands/${brandId}/trash/${id}/restore`, { method: 'POST' });
 export const purgeFile = (brandId: string, id: string) => api(`/v1/brands/${brandId}/trash/${id}`, { method: 'DELETE' });
+/** NickMark only: a folder's new name, or the whole folder to the trash (only Braindy; Drive is never touched). */
+export const renameFolder = (brandId: string, path: string, name: string) => api<{ path: string }>(`/v1/brands/${brandId}/folders/rename`, { method: 'POST', body: JSON.stringify({ path, name }) });
+export const trashFolder = (brandId: string, path: string) => api<{ ids: string[] }>(`/v1/brands/${brandId}/folders/trash`, { method: 'POST', body: JSON.stringify({ path }) });
 
 /** Several files in one .zip, built on the server and saved by the browser. */
 export async function downloadZip(brandId: string, ids: string[], name: string) {
