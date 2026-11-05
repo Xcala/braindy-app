@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName } from '../components/BrainStack';
+import { Scan } from '../components/Scan';
 import type { BrainId } from '../requests/taxonomy';
 
 const ORDER: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
@@ -14,7 +15,7 @@ export function TeamNotes({ notes }: { notes: Partial<Record<BrainId, string>> &
         {ORDER.filter((b) => notes[b]).map((b) => (
           <div key={b} className="row g12" style={{ alignItems: 'flex-start' }}>
             <span className={`brain b-${b}`} style={{ width: 32, height: 32, flex: 'none' }}><img src={`/brand/brains/${b}.png`} alt="" /></span>
-            <span className="col"><span className="t-xs w7">{brainName(b)}</span><span className="t-sm">{notes[b]}</span></span>
+            <span className="col"><span className="t-xs w7">{brainName(b)}</span><Scan text={notes[b]!} points tone="ink" /></span>
           </div>
         ))}
       </div>

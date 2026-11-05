@@ -5,6 +5,7 @@ import { LangToggle } from '../i18n/LangToggle';
 import { BrandMark } from '../brands/BrandMark';
 import { publicReviewApi, type PublicReview as Data } from '../review/api';
 import { VersionNotes } from '../requests/VersionNotes';
+import { Scan } from '../components/Scan';
 
 const BRAIN: Record<string, string> = { researcher: 'Researcher', marketer: 'Marketer', creator: 'Creator', builder: 'Builder' };
 const isImage = (t?: string) => !!t && t.startsWith('image/');
@@ -63,7 +64,7 @@ export function PublicReview() {
       </div>
       {data.version.notes && <VersionNotes text={data.version.notes} />}
       {data.version.reason && (
-        <div className="card col g4"><p className="label">{t('req.whyItWorks')}</p><p className="t-sm">{data.version.reason}</p></div>
+        <div className="card col g4"><p className="label">{t('req.whyItWorks')}</p><Scan text={data.version.reason} points tone="ink" /></div>
       )}
       {decided ? (
         <div className="card col g8" role="status">

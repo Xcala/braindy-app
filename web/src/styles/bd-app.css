@@ -732,3 +732,4 @@ html[data-theme="dark"] .trk-next{background:#22305A}
 .pf-pair:not(.is-narrow)>textarea{grid-column:1/-1;grid-row:2}
 .pf-pair.is-narrow{grid-template-columns:88px minmax(0,1fr) auto;padding-bottom:0;border-bottom:0}
 .pf-toggle{cursor:pointer;align-items:center}
+.sf-v strong{color:var(--ink);font-weight:700}

@@ -5,6 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
 import { ReportEditor } from '../report/ReportEditor';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
+import { Scan } from '../components/Scan';
 
 /** Monthly report (design 19): sales, not likes. Made by the four Brains, signed by Nicolas. */
 export function Report() {
@@ -65,11 +66,11 @@ export function Report() {
                   ))}
                 </div>
               )}
-              {r.whatMoved && <div className="col g4"><p className="label">{t('rep.whatMoved')}</p><p className="t-sm">{r.whatMoved}</p></div>}
+              {r.whatMoved && <div className="col g4"><p className="label">{t('rep.whatMoved')}</p><Scan text={r.whatMoved} points tone="ink" /></div>}
               <p className="t-xs t-mute">{t('rep.likesNote')}</p>
             </section>
             <aside className="col g16">
-              <div className="card col g8"><h2 className="h3">{t('rep.next')}</h2><p className="t-xs t-mute">{t('rep.nextSub')}</p><p className="t-sm" style={{ whiteSpace: 'pre-wrap' }}>{r.nextMonth || '—'}</p></div>
+              <div className="card col g8"><h2 className="h3">{t('rep.next')}</h2><p className="t-xs t-mute">{t('rep.nextSub')}</p>{r.nextMonth ? <Scan text={r.nextMonth} points tone="ink" /> : <p className="t-sm">—</p>}</div>
               <div className="card row g12">
                 <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
                 <div className="col grow"><span className="t-sm w7">{t('rep.reviewed')}</span><span className="t-xs t-mute">{t('rep.book20')}</span></div>

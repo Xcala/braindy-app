@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { ruleLines } from './knowledge';
+import { bold } from '../components/Scan';
 
 type Doc = Record<string, unknown> | null;
 const arr = (v: unknown) => (Array.isArray(v) ? v : []);
@@ -19,7 +20,7 @@ export function BrainUse({ identity, voice, brain, learnings, talks, requests, g
     { k: 'talks', n: Math.min(5, talks), label: t('bb.l.talks'), d: t('bb.l.talksD'), c: 'var(--researcher)' },
   ].filter((l) => l.n > 0);
   const total = layers.reduce((s, l) => s + l.n, 0) || 1;
-  const rules = ruleLines(brain).slice(0, 8);
+  const rules = ruleLines(brain).slice(0, 12);
   return (
     <div className="col g24">
       <div className="col g4"><h2 className="h2">{t('bb.use')}</h2><p className="t-mute" style={{ maxWidth: '70ch' }}>{t('bb.useSub')}</p></div>
@@ -36,7 +37,7 @@ export function BrainUse({ identity, voice, brain, learnings, talks, requests, g
         </section>
         <section className="card card-tight col g12">
           <div className="col g4"><h3 className="h3">{t('bb.rules')}</h3><p className="t-sm t-mute">{t('bb.rulesSub')}</p></div>
-          {rules.length ? <ul className="bb-pins">{rules.map((r, i) => <li key={i} className="t-sm">{r}</li>)}</ul> : <p className="t-sm t-mute">{t('bb.rulesEmpty')}</p>}
+          {rules.length ? <ul className="bb-pins">{rules.map((r, i) => <li key={i} className="t-sm">{bold(r)}</li>)}</ul> : <p className="t-sm t-mute">{t('bb.rulesEmpty')}</p>}
         </section>
         <section className="card card-tight col g12">
           <div className="col g4"><h3 className="h3">{t('bb.gaps')}</h3><p className="t-sm t-mute">{t('bb.gapsSub')}</p></div>

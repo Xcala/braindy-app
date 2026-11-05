@@ -25,7 +25,8 @@
 @keyframes bb-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 @keyframes bb-flash { from { background: var(--hielo); } to { background: transparent; } }
 .bb-chip { flex: none; font: 800 10px/16px var(--f-text); letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: var(--r-xs); color: var(--ink); background: color-mix(in srgb, var(--c) 28%, transparent); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); }
-.bb-txt { color: var(--ink); text-decoration: none; }
+.bb-txt { color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.bb-gist { color: var(--graphite); }
 a.bb-txt:hover { color: var(--azul); }
 .bb-use { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .bb-stack { display: flex; gap: 2px; height: 12px; border-radius: 6px; overflow: hidden; }

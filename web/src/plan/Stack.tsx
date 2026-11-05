@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { money } from '../billing/useBilling';
 import type { StackItem, ToolCategory } from './types';
+import { Scan } from '../components/Scan';
 
 const COLOR: Record<ToolCategory, string> = {
   web: '#2A7FFF', email: '#8B5CF6', ai: '#06B6D4', automation: '#2F4DE0', social: '#E0428A',
@@ -52,7 +53,7 @@ export function Stack({ items }: { items: StackItem[] }) {
                 {x.status !== 'active' && <span className="chip">{t(`plan.tool.${x.status}`)}</span>}
               </div>
               {x.renews && <span className="t-sm" style={{ color: soon ? '#B54708' : 'var(--mute, #5B6475)' }}>{t('plan.renews', { date: date(x.renews) })}</span>}
-              {x.note && <span className="t-sm t-mute">{x.note}</span>}
+              {x.note && <Scan text={x.note} points />}
             </article>
           );
         })}

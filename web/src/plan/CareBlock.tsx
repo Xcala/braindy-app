@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { money } from '../billing/useBilling';
 import type { BrandPlan } from './types';
+import { Scan } from '../components/Scan';
 
 const ACCENTS = ['#8B5CF6', '#2A7FFF', '#E0428A', '#F5B301', '#06B6D4', '#10B981'];
 const HOSTING_NAME = { esencial: 'Esencial', pro: 'Pro', ultra: 'Ultra' } as const;
@@ -22,7 +23,7 @@ export function CareBlock({ c }: { c: BrandPlan }) {
                 {care.includes.map((x, i) => (
                   <div key={i} className="col g4" style={{ borderLeft: `3px solid ${ACCENTS[i % ACCENTS.length]}`, background: 'var(--niebla)', borderRadius: 12, padding: '12px 14px' }}>
                     <span className="label" style={{ color: 'var(--ink)' }}>{x.title}</span>
-                    {x.body && <span className="t-sm">{x.body}</span>}
+                    {x.body && <Scan text={x.body} points tone="ink" />}
                   </div>
                 ))}
               </div>

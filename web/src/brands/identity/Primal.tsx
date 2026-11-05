@@ -1,5 +1,6 @@
 import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
+import { Scan } from '../../components/Scan';
 
 /** The seven pieces of Primal Branding (Patrick Hanlon): what turns a brand into something people believe in. */
 export const PRIMAL_KEYS = ['creationStory', 'creed', 'icons', 'rituals', 'sacredWords', 'nonBelievers', 'leader'] as const;
@@ -29,7 +30,7 @@ export function Primal({ primal }: { primal: PrimalDoc | null }) {
             <span className="label">{t(`primal.${k}` as StringKey)}</span>
           </span>
           <p className="t-xs t-mute" style={{ margin: 0 }}>{t(`primal.${k}Hint` as StringKey)}</p>
-          <div className="col g6">{primal![k]!.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <p key={i} style={{ margin: 0 }}>{l}</p>)}</div>
+          <Scan text={primal![k]!} points tone="ink" className="" />
         </div>
       ))}
     </div>

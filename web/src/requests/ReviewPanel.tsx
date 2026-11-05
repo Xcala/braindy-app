@@ -10,6 +10,7 @@ import { logObjection } from '../criterio/useCriterio';
 import { decide } from './api';
 import { markFile } from './useFileUrl';
 import { VersionNotes } from './VersionNotes';
+import { Scan } from '../components/Scan';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
 
@@ -69,7 +70,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
             <span className="t-sm">{r.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain: brainName(v.brain ?? r.leadBrain) })}</span>
           </span>
           {v.notes && <VersionNotes text={v.notes} />}
-          {v.reason && <div className="col" style={{ gap: 6, padding: '14px 16px', borderRadius: 14, background: 'var(--hielo)' }}><span className="t-sm w7">{t('req.whyItWorks')}</span><span className="t-sm">{v.reason}</span><span className="t-xs t-mute">{t('req.everyPieceReason')}</span></div>}
+          {v.reason && <div className="col" style={{ gap: 6, padding: '14px 16px', borderRadius: 14, background: 'var(--hielo)' }}><span className="t-sm w7">{t('req.whyItWorks')}</span><Scan text={v.reason} points tone="ink" /><span className="t-xs t-mute">{t('req.everyPieceReason')}</span></div>}
           {v.approval?.state === 'approved' && <span className="chip c-approved self-start">{t('req.approvedChip', { n: v.n })}</span>}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
           {canApprove && pending && isLatest && (

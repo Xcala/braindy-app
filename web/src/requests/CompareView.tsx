@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { useFileUrl } from './useFileUrl';
 import { useComments } from './useRequests';
 import type { Version } from './types';
+import { Scan } from '../components/Scan';
 
 /** Compare two versions (design 14/27): slider, side by side, or only what changed. */
 export function CompareView({ brandId, requestId, versions, onClose }: { brandId: string; requestId: string; versions: Version[]; onClose: () => void }) {
@@ -52,8 +53,8 @@ export function CompareView({ brandId, requestId, versions, onClose }: { brandId
         ) : mode === 'changes' ? (
           <div className="card col g12 w-full max-w-[640px]" style={{ maxHeight: '78vh', overflowY: 'auto' }}>
             <h2 className="h3">{t('req.changesTitle', { a: String(a?.n ?? ''), b: String(b?.n ?? '') })}</h2>
-            {b?.notes && <p className="t-sm">{b.notes}</p>}
-            {b?.reason && <div className="col g4"><p className="label">{t('req.whyItWorks')}</p><p className="t-sm">{b.reason}</p></div>}
+            {b?.notes && <Scan text={b.notes} points />}
+            {b?.reason && <div className="col g4"><p className="label">{t('req.whyItWorks')}</p><Scan text={b.reason} points tone="ink" /></div>}
             <p className="label">{t('req.askedOn', { n: String(a?.n ?? '') })}</p>
             {comments.filter((c) => c.versionId === a?.id).map((c) => <p key={c.id} className="t-sm" style={{ borderLeft: '3px solid var(--line)', paddingLeft: 10 }}>{c.text}</p>)}
             {!comments.some((c) => c.versionId === a?.id) && <p className="t-sm t-mute">{t('req.noChangesAsked')}</p>}
