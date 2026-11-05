@@ -20,7 +20,7 @@ import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
-import { AttachedFiles } from '../requests/AttachedFiles';
+import { BriefSummary } from '../requests/BriefSummary';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -78,15 +78,7 @@ export function RequestDetail() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1.2fr]" data-tour="review-brief">
         <div className="col g12">
           <p className="label">{t('req.brief')}</p>
-          {(['product', 'application', 'scene'] as const).filter((k) => k === 'product' || r.cards?.[k]?.text || r.cards?.[k]?.links?.length).map((k) => (
-            <div key={k} className="card card-tight col g8">
-              <span className={`kind ${k === 'scene' ? '' : 'kind-logodeck'}`}>{t(`ask.card.${k}`)}</span>
-              <p className={`t-sm ${r.cards?.[k]?.text ? '' : 't-mute'}`} style={{ whiteSpace: 'pre-line' }}>{r.cards?.[k]?.text || t(`req.emptyCard.${k}`)}</p>
-              {(r.cards?.[k]?.links ?? []).map((l) => <a key={l} href={l} target="_blank" rel="noreferrer" className="t-sm truncate">{l}</a>)}
-              {k === 'product' && <AttachedFiles brandId={current.id} files={r.cards?.product?.files} />}
-            </div>
-          ))}
-          {(r.format || r.language) && <p className="t-sm t-mute">{[r.format, r.language].filter(Boolean).join(' · ')}</p>}
+          <BriefSummary brandId={current.id} r={r} />
         </div>
         <div className="col g12">
           <p className="label">{t('req.plan')}</p>

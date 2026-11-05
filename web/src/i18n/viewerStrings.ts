@@ -17,6 +17,10 @@ export const viewerEn = {
   'vw.noPreview': 'This file is not shown here. Download it to open it.',
   'vw.textError': 'Could not read this text.',
   'vw.onFile': 'on {name}',
+  'brief.glance': 'At a glance',
+  'brief.type': 'Type',
+  'brief.due': 'Due',
+  'brief.ask': 'The request',
 } as const;
 
 export const viewerEs: Record<keyof typeof viewerEn, string> = {
@@ -37,4 +41,8 @@ export const viewerEs: Record<keyof typeof viewerEn, string> = {
   'vw.noPreview': 'Este archivo no se muestra aquí. Descárgalo para abrirlo.',
   'vw.textError': 'No pude leer este texto.',
   'vw.onFile': 'en {name}',
+  'brief.glance': 'En resumen',
+  'brief.type': 'Tipo',
+  'brief.due': 'Para cuándo',
+  'brief.ask': 'El pedido',
 };
