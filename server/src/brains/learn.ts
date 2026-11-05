@@ -2,6 +2,7 @@
 // brands/{id}/context/learnings (last 60), read by every Brain before working (see context.ts).
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
+import { recordBrainEvent } from './brainEvents.js';
 
 export async function recordLearning(brandId: string, requestId: string, versionId: string, state: string, note: string) {
   try {
@@ -19,5 +20,6 @@ export async function recordLearning(brandId: string, requestId: string, version
       items.push({ kind: state === 'approved' ? 'liked' : 'changed', text, requestId, brain: ver.get('brain') ?? req.get('leadBrain') ?? null, at: new Date().toISOString() });
       tx.set(ref, { items, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
     });
+    await recordBrainEvent(brandId, { id: `ver-${requestId}-${versionId}-${state}`, kind: state === 'approved' ? 'approved' : 'changed', area: 'work', text, requestId });
   } catch { /* learning must never block an approval */ }
 }

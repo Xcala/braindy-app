@@ -4,6 +4,7 @@
 import { Hono } from 'hono';
 import { FieldValue, type DocumentData } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
+import { recordBrainEvent } from './brains/brainEvents.js';
 import { brandAccess } from './access.js';
 import { aiConfigured, claudeJson } from './ai.js';
 import { notify } from './notify.js';
@@ -151,6 +152,7 @@ adminOnboarding.post('/brands/:brandId/onboarding/sign', async (c) => {
     .set(brandRef(brandId), { onboarding: { step: 'firstDelivery', signedAt: now() } }, { merge: true })
     .set(db.collection('audit').doc(), { type: 'brand_brain_signed', brandId, version, by: uid, at: now() })
     .commit();
+  await recordBrainEvent(brandId, { id: `signed-v${version}`, kind: 'signed', area: 'strategy' });
   await notify(brandId, 'brain_signed');
   return c.json({ ok: true, version });
 });
