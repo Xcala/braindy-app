@@ -12,6 +12,7 @@ import { syncSocialPosts } from './social.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
+import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
 export interface ToolContext { mode: 'local' | 'remote'; uid: string }
@@ -187,6 +188,8 @@ Ver: ${APP}/plan`;
   }, run(async ({ brandId, text, project, requestId }) => {
     const name = await requireBrand(brandId);
     await logSession(brandId, text, { project, requestId });
+    // The log itself is internal; the Brain feed only shows that a work session happened (and its project name).
+    await recordBrainEvent(brandId, { kind: 'session', area: 'talks', ...(project ? { text: project } : {}) });
     return `Registrado en ${name}.`;
   }));
 
@@ -199,6 +202,7 @@ Ver: ${APP}/plan`;
     }, run(async ({ brandId, path, folder }) => {
       const name = await requireBrand(brandId);
       const { done, skipped } = await uploadPath(brandId, path, folder);
+      await recordFileEvent(brandId, folder ?? 'Uploads', done.map((d) => d.name));
       return `${name}: ${done.length} archivo(s) subidos${skipped.length ? ` · omitidos: ${skipped.join(', ')}` : ''}.\nVer: ${APP}/assets`;
     }));
   } else {
@@ -211,6 +215,7 @@ Ver: ${APP}/plan`;
       const name = await requireBrand(brandId);
       const done = [];
       for (const f of files) done.push(await uploadContent(brandId, f, folder));
+      await recordFileEvent(brandId, folder ?? 'Uploads', done.map((d) => d.name));
       return `${name}: ${done.length} archivo(s) subidos (${done.map((d) => d.name).join(', ')}).\nVer: ${APP}/assets`;
     }));
   }

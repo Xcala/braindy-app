@@ -17,7 +17,7 @@ import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
 import { useFileActions } from './useFileActions';
-import { FileMenu } from './FileMenu';
+import { FileMenu, FolderMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
 import { FileDialogs } from './FileDialogs';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -66,7 +66,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [hideAsk, setHideAsk] = useState(false);
   const index = useBrandDoc(brandId, 'context/fileIndex');
   const folders = (index.data?.folders as Folder[] | undefined) ?? [];
-  const isAdmin = useAuth().profile?.role === 'admin';
+  const realAdmin = useAuth().profile?.role === 'admin';
+  // "View as client": NickMark sees exactly the client's page, without his controls.
+  const [asClient, setAsClient] = useState(false);
+  const isAdmin = realAdmin && !asClient;
   const brand = useBrands().brands.find((b) => b.id === brandId);
   const forClient = folderVisible(brand ?? { fileAccess: null }, false);
   const visible = isAdmin ? () => true : forClient;
@@ -136,11 +139,17 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
 
   return (
     <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'clip', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
-      <ExplorerToolbar brandName={brandName} path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
+      <ExplorerToolbar path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
         filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView}
         actions={canDrop ? <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary /> : undefined} />
       {dragging && <div className="fdrop" aria-hidden="true"><Icon name="upload" size={28} />{t('files.dropHere', { name: path.split('/').pop() ?? '' })}</div>}
       <div className="col g24 p-4 sm:p-6">
+        {asClient && (
+          <div className="fnote" role="status">
+            <span className="t-sm">{t('fa.asClientOn')}</span>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAsClient(false)}>{t('fa.exitClient')}</button>
+          </div>
+        )}
         {trashOpen ? <TrashView brandId={brandId} onBack={() => setTrashOpen(false)} /> : <>
         {subfolders.length > 0 && !needle && (
           <div className="col g12">
@@ -154,10 +163,18 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
                     {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setHideAsk(true)}>{t('fa.hideAll')}</button>}
                   </>}
                   <button type="button" className="t-xs w7 row g4" style={{ color: 'var(--ink)' }} onClick={() => setTrashOpen(true)}><Icon name="trash" size={14} />{t('files.trash')}</button>
+                  <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setAsClient(true)}>{t('fa.asClient')}</button>
                 </span>
               )}
             </div>
-            <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath} />
+            {isAdmin && !path && tops.length > 0 && share.count === 0 && (
+              <div className="fnote" role="status">
+                <span className="t-sm">{t('fa.none')}</span>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>
+              </div>
+            )}
+            <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath}
+              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== 'Entregas aprobadas'} /> : undefined} />
             {subfolders.length > FOLDERS_FIRST && (
               <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
                 {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}

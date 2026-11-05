@@ -5,6 +5,7 @@ import { Landing } from './Landing';
 import { RouteError } from '../components/RouteError';
 import { Login } from '../pages/Login';
 import { MyBrand } from '../pages/MyBrand';
+import { BrandBrain } from '../pages/BrandBrain';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
 import { Calendar } from '../pages/Calendar';
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
           { path: 'home', element: <Home /> },
           { path: 'brand', element: <MyBrand /> },
           { path: 'brand/docs', element: <Navigate to="/brand/visual" replace /> },
+          { path: 'brand/brain', element: <BrandBrain /> },
           { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
           { path: 'apps', element: <MyApps /> },

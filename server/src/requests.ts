@@ -5,6 +5,7 @@ import { Hono, type MiddlewareHandler } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
+import { recordBrainEvent } from './brains/brainEvents.js';
 import { brandAccess } from './access.js';
 import { notifyDelivery } from './review.js';
 import { noticeToBrand } from './wa/notices.js';
@@ -12,6 +13,7 @@ import { proposePlan } from './brains/plan.js';
 import { recordLearning } from './brains/learn.js';
 import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
+import { fileApproved } from './approvedFiles.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 export const URL_TTL_MS = 15 * 60 * 1000;
@@ -109,6 +111,7 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
     leadBrain: route.lead, helperBrains: route.helpers, approvalLevel: withNicolas ? 'nicolas' : 'self',
     plan: null, versionCount: 0, source: str(b.source, 20) || 'app', createdBy: uid, createdAt: now(), updatedAt: now(),
   });
+  await recordBrainEvent(brandId, { id: `req-${ref.id}`, kind: 'request', area: 'work', text: str(b.title, 160) || str(b.formatType, 160), requestId: ref.id });
   // The lead Brain proposes the plan right away (Nicolas approves it at the plan gate).
   await proposePlan(brandId, ref.id).catch(() => null);
   // Brands on free action skip the plan gate: the worker starts right away.
@@ -132,7 +135,11 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   batch.set(db.collection('audit').doc(), { type: 'approval', brandId, requestId, versionId, state, by: uid, at: now() });
   await batch.commit();
   await recordLearning(brandId, requestId, versionId, state, note);
-  if (state === 'approved') await noticeToBrand(brandId, 'approved', requestId);
+  if (state === 'approved') {
+    // What was approved goes to Files right away; a failure here must not undo the approval.
+    await fileApproved(brandId, requestId, versionId).catch((e) => console.error('fileApproved', brandId, requestId, e));
+    await noticeToBrand(brandId, 'approved', requestId);
+  }
   else await queueWork(brandId, requestId, 'changes');
   return 'ok';
 }

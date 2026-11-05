@@ -70,7 +70,7 @@ const FITS = ROWS([
 ]);
 const VS = ROWS([
   [['Sitio básico editable', 'Basic editable site'], [['$4,17', '$4.17'], ['Esencial anual', 'Esencial yearly']], [['$17–19', '$17–19'], ['Light', 'Light']], [['$8', '$8'], ['Premium', 'Premium']], [['$15', '$15'], ['Basic', 'Basic']], ['No aplica', 'N/A']],
-  [['Con CMS o blog', 'With CMS or blog'], [['$12,50', '$12.50'], ['Pro anual', 'Pro yearly']], [['$29', '$29'], ['Core', 'Core']], [['$25', '$25'], ['Business', 'Business']], [['$25', '$25'], ['Premium', 'Premium']], ['No aplica', 'N/A']],
+  [['Con CMS o blog', 'With CMS or blog'], [['$4,17', '$4.17'], ['Esencial anual, hasta 300 entradas', 'Esencial yearly, up to 300 entries']], [['$29', '$29'], ['Core', 'Core']], [['$25', '$25'], ['Business', 'Business']], [['$25', '$25'], ['Premium', 'Premium']], ['No aplica', 'N/A']],
   [['Con tienda', 'With a store'], [['$20,83', '$20.83'], ['Pro anual + tienda', 'Pro yearly + store']], ['$29–39', '$29–39'], [['$45', '$45'], ['Commerce', 'Commerce']], ['desde $29', 'from $29'], [['$29–79', '$29–79'], ['+ comisión por venta', '+ fee per sale']]],
   [['Diseño hecho para tu marca', 'Design made for your brand'], [['Sí, por NicoMarca', 'Yes, by NickMark'], ['Se cotiza una vez, aparte', 'Quoted once, apart']], ['Plantillas', 'Templates'], ['Temas', 'Themes'], ['Lo haces tú', 'You do it'], ['Temas', 'Themes']],
   [['Editar desde WhatsApp', 'Edit from WhatsApp'], ['Sí, plan Ultra', 'Yes, Ultra plan'], ['No', 'No'], ['No', 'No'], ['No', 'No'], ['No', 'No']],

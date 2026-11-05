@@ -57,7 +57,8 @@ export function useMySections() {
   }, [isAdmin, user, key]);
   if (isAdmin) return { ready: true, can: () => true };
   const ids = key ? key.split('/') : [];
-  const ready = ids.every((id) => id in docs);
+  // Not ready until the brand is known: a reload on a deep link must not send the person home before it loads.
+  const ready = ids.length > 0 && ids.every((id) => id in docs);
   const nearest = ids.map((id) => docs[id]).find(Boolean);
   // The brand's own switches win over each person's sections.
   const off = current?.sectionsOff ?? [];

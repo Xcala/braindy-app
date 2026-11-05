@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
+import { recordFileEvent } from './brains/brainEvents.js';
 import { brandAccess, fileFilter } from './access.js';
 import type { AuthEnv } from './auth.js';
 import { bumpIndex } from './fileOps.js';
@@ -113,6 +114,7 @@ files.post('/brands/:brandId/uploads/:assetId/complete', async (c) => {
     tx.update(ref, { status: 'published', size: Number(meta.size), uploadedAt: FieldValue.serverTimestamp() });
   });
   forgetSearch(brandId);
+  await recordFileEvent(brandId, String(asset.get('folder') ?? 'Uploads'), [String(asset.get('title') ?? '')], `file-${assetId}`);
   return c.json({ ok: true });
 });
 

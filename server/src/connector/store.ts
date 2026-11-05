@@ -48,6 +48,9 @@ export async function syncSiteChanges(brandId: string, items: SiteChangeInput[],
     seen.add(id);
     const data: Record<string, unknown> = { key: it.key, order };
     for (const f of FIELDS) data[f] = (it[f] ?? '').toString().slice(0, f === 'title' ? 300 : 4000);
+    // Where a point lives (link, spot) survives a sync that does not send it: other sessions sync without them.
+    const prevPoint = existing.get(id);
+    for (const f of ['link', 'spot'] as const) if (!data[f] && prevPoint?.[f]) data[f] = prevPoint[f];
     if (opts.siteUrl) data.siteUrl = opts.siteUrl;
     if (opts.round) data.round = opts.round;
     const prev = existing.get(id);

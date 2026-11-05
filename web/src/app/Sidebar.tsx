@@ -5,6 +5,7 @@ import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { useRequests } from '../requests/useRequests';
+import { useBrainPulse } from '../brain/useBrainEvents';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { NAV } from './navGroups';
 import { NAV_ICON } from './navIcons';
@@ -47,13 +48,13 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   );
 }
 
-function Link({ item, slim, on, badge, sub }: { item: Item; slim: boolean; on?: boolean; badge?: number; sub?: boolean }) {
+function Link({ item, slim, on, badge, sub, pulse }: { item: Item; slim: boolean; on?: boolean; badge?: number; sub?: boolean; pulse?: boolean }) {
   const { t } = useI18n();
   const label = t(item.label);
   return (
     <NavLink to={item.to} end={sub} data-tour={item.to === '/requests' ? 'ask-nav' : undefined} title={slim ? label : undefined} aria-label={slim ? label : undefined}
       className={({ isActive }) => `${sub ? 'sbar-sub' : 'sbar-link'}${on ?? isActive ? ' is-on' : ''}`}>
-      {!sub && <span className="sbar-ico">{NAV_ICON[item.to] ?? NAV_ICON['/home']}{slim && badge ? <i className="sbar-dot" /> : null}</span>}
+      {!sub && <span className="sbar-ico">{NAV_ICON[item.to] ?? NAV_ICON['/home']}{slim && badge ? <i className="sbar-dot" /> : null}{pulse ? <i className="sbar-pulse" aria-hidden="true" /> : null}</span>}
       {!slim && <span className="grow truncate">{label}</span>}
       {!slim && badge ? <span className="sbar-badge">{badge}</span> : null}
     </NavLink>
@@ -68,6 +69,8 @@ function ClientSections({ slim }: { slim: boolean }) {
   const { current } = useBrands();
   const { list } = useRequests(can('requests') ? current?.id : undefined);
   const waiting = list.filter((r) => r.status === 'to_approve').length;
+  // When the Brain learns something new (an approval, a file, Mi marca…), My brand pulses for a moment.
+  const learned = useBrainPulse(can('brand') && current?.kind === 'brand' ? current.id : undefined);
   return <>{NAV.map((g) => {
     const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
     if (!pages.length) return null;
@@ -76,7 +79,7 @@ function ClientSections({ slim }: { slim: boolean }) {
     const subs = on && !slim ? pages.filter((p) => isAdmin || pathname === p.to || filled(p.to)) : [];
     return (
       <div key={g.label} className="col">
-        <Link item={{ to: pages[0]!.to, label: g.label }} slim={slim} on={on} badge={pages[0]!.to === '/requests' ? waiting : undefined} />
+        <Link item={{ to: pages[0]!.to, label: g.label }} slim={slim} on={on} badge={pages[0]!.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
         {subs.length > 1 && <div className="sbar-subs">{subs.map((p) => <Link key={p.to} item={p} slim={slim} sub />)}</div>}
       </div>
     );

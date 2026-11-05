@@ -107,22 +107,26 @@ export function ShareSwitch({ on, label, onToggle }: { on: boolean; label: strin
   );
 }
 
-export function FolderGrid({ folders, onOpen }: { folders: Array<{ path: string; files: number; bytes: number; highlight?: boolean; hidden?: boolean; toggle?: () => void }>; onOpen: (p: string) => void }) {
+export function FolderGrid({ folders, onOpen, menu }: { folders: Array<{ path: string; files: number; bytes: number; highlight?: boolean; hidden?: boolean; toggle?: () => void }>; onOpen: (p: string) => void; menu?: (path: string) => ReactNode }) {
   const { t } = useI18n();
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    // As many columns as fit with room for the name, the ⋯ menu and the client switch.
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 230px), 1fr))' }}>
       {folders.map((f) => (
-        <div key={f.path} className="folder fcard"
+        <div key={f.path} className={`folder fcard${f.toggle ? " has-switch" : ""}`}
           style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
+          <div className="row" style={{ gap: 4, minWidth: 0, flex: '1 1 auto' }}>
           <button type="button" className="fopen" onClick={() => onOpen(f.path)} style={f.hidden ? { opacity: 0.55 } : undefined}>
             <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
               <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
             </span>
             <span className="col grow" style={{ minWidth: 0 }}>
-              <span className="w7 fname">{f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
+              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
               <span className="t-sm t-mute truncate">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
             </span>
           </button>
+          {menu && !f.highlight && menu(f.path)}
+          </div>
           {f.toggle && <ShareSwitch on={!f.hidden} label={f.path} onToggle={f.toggle} />}
         </div>
       ))}
