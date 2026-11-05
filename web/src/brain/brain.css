@@ -38,6 +38,6 @@ a.bb-txt:hover { color: var(--azul); }
 .bb-pins li::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--azul); }
 .bb-gaps li { padding: 8px 12px; border: 1px dashed var(--line-strong); border-radius: var(--r-sm); }
 @media (max-width: 1100px) { .bb-grid { grid-template-columns: minmax(0, 1fr); } .bb-use { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .bb-use > :first-child { grid-column: 1 / -1; } }
-@media (max-width: 720px) { .bb-use { grid-template-columns: minmax(0, 1fr); } .bb-stage { aspect-ratio: 1 / 1; } .bb-rl { font-size: 10px; letter-spacing: .06em; } }
+@media (max-width: 720px) { .bb-use { grid-template-columns: minmax(0, 1fr); } .bb-list { max-height: none; overflow: visible; } .bb-stage { aspect-ratio: 1 / 1; } .bb-rl { font-size: 10px; letter-spacing: .06em; } }
 @media (prefers-reduced-motion: reduce) { .bb-item.is-new, .bb-live::before { animation: none; } .bb-toast { transition: none; } }
 html[data-theme="dark"] .bb-brain { background: #04080F; border: 1px solid var(--line); }
