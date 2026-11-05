@@ -136,15 +136,17 @@ export async function setIdentity(brandId: string, input: IdentityInput, local: 
     done.push('primal branding'); parts.push('primal');
   }
   await Promise.all(extra);
-  for (const ev of identityEvents([...new Set(parts)])) await recordBrainEvent(brandId, { kind: 'identity', ...ev });
   if (done.length === 0) throw new Error('No llegó nada para actualizar (logos, colores, tipografía, concepto, mockups, voz, estrategia o primal branding).');
-  if (Object.keys(update).length === 2) return done;
+  // The Brain learns it once it is saved.
+  const learned = async () => { for (const ev of identityEvents([...new Set(parts)])) await recordBrainEvent(brandId, { kind: 'identity', ...ev }); };
+  if (Object.keys(update).length === 2) { await learned(); return done; }
   const ref = db.doc(`brands/${brandId}/context/identity`);
   if (!(await ref.get()).exists) await ref.set({ createdAt: FieldValue.serverTimestamp() });
   await ref.update(update);
   // The small mark in menus and lists: the icon if there is one, else the primary logo.
   const mark = update['logos.icon'] ?? update['logos.primary'];
   if (mark) await db.doc(`brands/${brandId}`).update({ logoUrl: mark });
+  await learned();
   return done;
 }
 
