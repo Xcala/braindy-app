@@ -251,6 +251,13 @@ service cloud.firestore {
         }
       }
 
+      // Brand Brain feed: what taught the Brains about the brand (request, approval, change, Mi marca, file, session,
+      // meeting). Client-safe text only. Written by the backend; the brand's members read it live.
+      match /brainEvents/{eventId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
+
       // Work log written from Claude sessions (what was done, when). Internal: NickMark only.
       match /activity/{entryId} {
         allow read, delete: if isAdmin();
