@@ -39,8 +39,9 @@ export function RequestDetail() {
   const [versionId, setVersionId] = useState<string | undefined>();
   const [mark, setMark] = useState<Annotation | null>(null);
   const [comparing, setComparing] = useState(false);
+  const [fileIndex, setFileIndex] = useState(0);
 
-  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); }, [r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); setFileIndex(0); },[r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTour('review', () => reviewSteps(lang), versions.length > 0, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -66,9 +67,10 @@ export function RequestDetail() {
         <SafeBoundary>
         <div className="card grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
+            fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
             comments={comments} onMark={setMark} onCompare={() => setComparing(true)} />
           <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
-            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} />
+            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex} />
         </div>
         </SafeBoundary>
       )}

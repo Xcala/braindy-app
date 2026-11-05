@@ -8,13 +8,14 @@ import { brainName } from '../components/BrainStack';
 import { ObjectionHint, useObjectionMatch } from '../criterio/LessonCards';
 import { logObjection } from '../criterio/useCriterio';
 import { decide } from './api';
+import { markFile } from './useFileUrl';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
-export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark }: {
+export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile }: {
   brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; canApprove: boolean;
-  pendingMark: Annotation | null; clearMark: () => void;
+  pendingMark: Annotation | null; clearMark: () => void; onShowFile: (i: number) => void;
 }) {
   const { t, lang } = useI18n();
   const { user, profile } = useAuth();
@@ -28,7 +29,9 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
   const isLatest = v && r.latestVersion === v.id;
   const pending = v?.published && v.approval?.state === 'pending';
   const shown = comments.filter((c) => (filter === 'resolved' ? c.resolved : !c.resolved));
-  const pinNumber = (c: RequestComment) => comments.filter((x) => x.annotation && x.annotation.versionId === c.annotation?.versionId).indexOf(c) + 1;
+  // Numbered per file, as the pins on the piece are.
+  const pinNumber = (c: RequestComment) => comments.filter((x) => x.annotation && x.annotation.versionId === c.annotation?.versionId && markFile(x.annotation) === markFile(c.annotation)).indexOf(c) + 1;
+  const markedOn = (c: RequestComment) => (c.annotation && (v?.files?.length ?? 0) > 1 ? v?.files?.[markFile(c.annotation)] : undefined);
   const authorName = (c: RequestComment) => (c.author === user?.uid ? t('req.you') : c.kind === 'changes_requested' ? t('req.changesRequested') : t('req.team'));
 
   async function send() {
@@ -93,6 +96,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
               <div className="col g4 grow">
                 <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}</span></span>
                 <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>
+                {markedOn(c) && <button className="t-xs t-mute truncate self-start" title={markedOn(c)!.name} style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0, maxWidth: '100%' }} onClick={() => onShowFile(markFile(c.annotation))}>{t('vw.onFile', { name: markedOn(c)!.name })}</button>}
                 {(c.author === user?.uid || canApprove) && <button className="t-xs w7 self-start" style={{ background: 'none', border: 0, color: 'var(--azul)', cursor: 'pointer', padding: 0 }} onClick={() => resolve(c)}>{c.resolved ? t('req.reopen') : t('req.resolve')}</button>}
               </div>
             </div>
