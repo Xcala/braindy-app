@@ -6,7 +6,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { samePage, type SiteFrame } from './useSpot';
 
 /** A comment on the site (brands/{b}/siteComments), pinned on a part of it or general to a page. n: its number on the pins, oldest first. asPoint: key of the adjustment NickMark made from it. */
-export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp }
+export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp }
 type Reply = { id: string; author: string; authorName: string; text: string; createdAt?: Timestamp };
 
 const hostOf = (url?: string) => { try { return url ? new URL(url).host.replace(/^www\./, '') : ''; } catch { return ''; } };
@@ -32,6 +32,8 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
+  const [where, setWhere] = useState('');
+  const bridge = !!frame?.hasBridge;
   const open_ = list.filter((c) => !c.resolved).reverse();
 
   // Pins of the open comments on the page the frame shows (general comments have no place to pin).
@@ -54,30 +56,32 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
       await addDoc(collection(db, 'brands', brandId, 'siteComments'), {
         author: user.uid, authorName: (profile?.name ?? '').slice(0, 120), text: v.slice(0, 2000), url: (p?.url ?? page ?? siteUrl).slice(0, 1000),
         ...(p ? { spot: { selector: p.selector.slice(0, 500), text: p.text.slice(0, 120), x: p.x, y: p.y } } : {}),
+        ...(!bridge && where.trim() ? { where: where.trim().slice(0, 200) } : {}),
         resolved: false, createdAt: serverTimestamp(),
       });
-      setText(''); frame?.clearPicked();
+      setText(''); setWhere(''); frame?.clearPicked();
     } catch { setError(true); } finally { setBusy(false); }
   }
 
   const p = frame?.picked;
   return (
     <div className="col g8">
-      <p className="t-sm" style={{ margin: 0 }}>{t('sc.hint')}</p>
+      <p className="t-sm" style={{ margin: 0 }}>{t(bridge ? 'sc.hint' : 'sc.hintNoBridge')}</p>
 
-      {frame?.picking && (
+      {bridge && frame?.picking && (
         <div className="sc-picking row between g8"><span className="t-sm">{t('sc.pickOn')}</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => frame.setPicking(false)}>{t('sc.cancel')}</button></div>
       )}
-      {frame && !frame.picking && !p && (
+      {bridge && frame && !frame.picking && !p && (
         <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => frame.setPicking(true)}>⌖ {t('sc.pickAgain')}</button>
       )}
 
       <form className="spanel-ask col g8" onSubmit={send}>
-        <p className="t-xs t-mute" style={{ margin: 0 }}>
+        {!bridge && <input className="input" value={where} maxLength={200} placeholder={t('sc.where')} aria-label={t('sc.where')} onChange={(e) => setWhere(e.target.value)} />}
+        {bridge && <p className="t-xs t-mute" style={{ margin: 0 }}>
           {p ? <>{t('sc.about')} {p.text ? `«${p.text}»` : pathOf(p.url)} · <button type="button" className="spanel-textbtn" onClick={() => frame?.clearPicked()}>{t('sc.dropSpot')}</button></>
             : <>{t('sc.general')} · {pathOf(page ?? siteUrl) || '/'}</>}
-        </p>
+        </p>}
         <textarea className="input" rows={3} value={text} maxLength={2000} placeholder={t('sc.ph')} aria-label={t('sc.ph')} onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) send(e); }} />
         <div className="row g8 between">
@@ -133,7 +137,7 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
         <span className="sc-n">{c.n}</span>
         <span className="spanel-ptitle"><b>{c.authorName || t('sc.someone')}</b> {c.text}</span>
       </summary>
-      <p className="t-xs t-mute">{pathOf(c.url)} · {when(c.createdAt)}{c.spot?.text ? ` · «${c.spot.text}»` : ''}</p>
+      <p className="t-xs t-mute">{pathOf(c.url)} · {when(c.createdAt)}{c.spot?.text ? ` · «${c.spot.text}»` : ''}{c.where ? ` · ${t('sc.whereIs')}: ${c.where}` : ''}</p>
       {replies.map((r) => <p key={r.id} className="t-xs sc-reply"><b>{r.authorName || t('sc.someone')}</b> {r.text} <span className="t-mute">· {when(r.createdAt)}</span></p>)}
       <form className="row g8" onSubmit={reply}>
         <input className="input" value={text} maxLength={2000} placeholder={t('sc.replyPh')} aria-label={t('sc.replyPh')} onChange={(e) => setText(e.target.value)} />

@@ -20,6 +20,8 @@ export function useSpot(siteUrl: string) {
   const frame = useRef<HTMLIFrameElement>(null);
   const current = useRef(siteUrl); // page the frame shows, as last reported by the bridge (or as we loaded it)
   const bridge = useRef(false);
+  const wantPick = useRef(false); // comment mode asked for before the bridge answered: turned on when it does
+  const [hasBridge, setHasBridge] = useState(false);
   const pending = useRef<Spot | null>(null);
   const pinsRef = useRef<Pin[]>([]);
   const [page, setPage] = useState(siteUrl);
@@ -50,18 +52,19 @@ export function useSpot(siteUrl: string) {
       if (e.source !== frame.current?.contentWindow || !e.data || typeof e.data.type !== 'string') return;
       const d = e.data;
       if (d.type === 'braindy:ready') {
-        bridge.current = true;
+        bridge.current = true; setHasBridge(true);
         current.current = String(d.url ?? current.current); setPage(current.current);
         send({ type: 'braindy:pins', pins: pinsRef.current });
         const p = pending.current; pending.current = null;
         if (p) ask(p);
+        if (wantPick.current) { setPickingState(true); send({ type: 'braindy:comment-mode', on: true }); }
       } else if (d.type === 'braindy:spot-result') {
         clearTimeout(wait.current);
         setNote(d.found ? null : 'missing');
       } else if (d.type === 'braindy:picked') {
-        setPickingState(false);
+        wantPick.current = false; setPickingState(false);
         setPicked({ url: String(d.url ?? ''), selector: String(d.selector ?? ''), text: String(d.text ?? ''), x: Number(d.x ?? 0.5), y: Number(d.y ?? 0.5) });
-      } else if (d.type === 'braindy:comment-mode' && !d.on) setPickingState(false);
+      } else if (d.type === 'braindy:comment-mode' && !d.on) { wantPick.current = false; setPickingState(false); }
       else if (d.type === 'braindy:pin') setPinned(String(d.id));
     };
     window.addEventListener('message', onMsg);
@@ -85,7 +88,9 @@ export function useSpot(siteUrl: string) {
   }, [ask, siteUrl]);
 
   const setPicking = useCallback((on: boolean) => {
-    if (on && !bridge.current) { setNote('nobridge'); return; }
+    wantPick.current = on;
+    // No bridge (yet): nothing to point at; comments still work as general ones. If it answers later, comment mode follows.
+    if (on && !bridge.current) return;
     setNote(null); setPicked(null); setPickingState(on);
     send({ type: 'braindy:comment-mode', on });
   }, [send]);
@@ -93,7 +98,7 @@ export function useSpot(siteUrl: string) {
   const setPins = useCallback((pins: Pin[]) => { pinsRef.current = pins; send({ type: 'braindy:pins', pins }); }, [send]);
 
   return {
-    frame, go, note, active, page, dismiss: () => setNote(null),
+    frame, go, note, active, page, hasBridge, dismiss: () => setNote(null),
     picking, setPicking, picked, clearPicked: () => setPicked(null), setPins, pinned, clearPinned: () => setPinned(null),
   };
 }

@@ -17,6 +17,8 @@ export const sitePanelEn = {
   // comment tab
   'sc.hint': 'Write your comment, or click the part of the page you want to comment on.',
   'sc.pickOn': 'Click the page to pin it there.', 'sc.pickAgain': 'Point at the page', 'sc.general': 'General comment on this page',
+  'sc.hintNoBridge': 'Write your comment: it stays on this site. (Pointing at a part of the page is not available here yet.)',
+  'sc.where': 'Which page or part? (optional)', 'sc.whereIs': 'Where',
   'sc.dropSpot': 'Remove spot', 'sc.toPoint': 'Turn into adjustment', 'sc.asPoint': 'Now adjustment {key}',
 };
 export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
@@ -35,5 +37,7 @@ export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
   'sp.kindAdjust': 'Ajuste', 'sp.kindComment': 'Comentario',
   'sc.hint': 'Escribe tu comentario o haz clic en la parte de la página que quieres comentar.',
   'sc.pickOn': 'Haz clic en la página para fijarlo ahí.', 'sc.pickAgain': 'Señalar en la página', 'sc.general': 'Comentario general sobre esta página',
+  'sc.hintNoBridge': 'Escribe tu comentario: queda sobre este sitio. (Señalar una parte de la página aún no está disponible aquí.)',
+  'sc.where': '¿En qué página o parte? (opcional)', 'sc.whereIs': 'Dónde',
   'sc.dropSpot': 'Quitar el lugar', 'sc.toPoint': 'Pasar a ajuste', 'sc.asPoint': 'Ya es el ajuste {key}',
 };

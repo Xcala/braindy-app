@@ -66,6 +66,7 @@ describe('Site comments', () => {
   it('a general comment (no pinned spot) is valid; only the admin marks it as the adjustment it became', async () => {
     const { spot: _spot, ...general } = comment(MEMBER);
     await assertSucceeds(setDoc(doc(as(env, MEMBER), `${C}/c8`), general));
+    await assertSucceeds(setDoc(doc(as(env, MEMBER), `${C}/c9`), { ...general, where: 'Inicio · foto principal' }));
     await assertSucceeds(updateDoc(doc(as(env, ADMIN), `${C}/c1`), { asPoint: 'CM01' }));
     await assertFails(updateDoc(doc(as(env, MEMBER), `${C}/c1`), { asPoint: 'CM02' }));
     await assertFails(updateDoc(doc(as(env, APPROVER), `${C}/c1`), { asPoint: 'CM02' }));

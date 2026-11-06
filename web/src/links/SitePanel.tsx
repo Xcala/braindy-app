@@ -47,7 +47,7 @@ export function SitePanel({ brandId, link, links, frame }: { brandId: string; li
     const spot = c.spot?.text || c.spot?.selector;
     await addDoc(collection(db, 'brands', brandId, 'siteChanges'), {
       key, group: lang === 'es' ? 'Comentarios' : 'Comments', title: c.text.split('\n')[0].slice(0, 90), status: 'in_progress',
-      request: `${c.authorName ? `${c.authorName}: ` : ''}${c.text}`.slice(0, 1500), source: `${t('sp.kindComment')} #${c.n}`,
+      request: `${c.authorName ? `${c.authorName}: ` : ''}${c.text}${c.where ? ` (${c.where})` : ''}`.slice(0, 1500), source: `${t('sp.kindComment')} #${c.n}`,
       link: c.url, ...(spot ? { spot } : {}), siteUrl: link.url,
       order: Math.max(-1, ...all.map((x) => x.order ?? 0)) + 1, updatedAt: serverTimestamp(), createdAt: serverTimestamp(),
     });
