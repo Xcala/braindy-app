@@ -31,8 +31,8 @@ export function homeSteps(lang: Lang): Paso[] {
       texto: es ? '<p>Cada semana, una lección corta de cómo y por qué se hace bien una pieza: un logo, un hero, una estrategia. Entender el criterio te ayuda a <b>pedir y aprobar mejor</b>.</p><p>Todas las lecciones están en <b>Aprende</b>.</p>'
         : '<p>Every week, a short lesson on how and why a piece is done well: a logo, a hero, a strategy. Understanding the taste helps you <b>ask and approve better</b>.</p><p>Every lesson lives in <b>Learn</b>.</p>' },
     { el: '[data-tour="home-meetings"]', titulo: es ? '7 · Reuniones' : '7 · Meetings',
-      texto: es ? '<p>Tu <b>siguiente reunión</b> con Nicolas, con un botón para agregarla a tu calendario, y el historial con los temas de cada una.</p>'
-        : '<p>Your <b>next meeting</b> with Nick, with a button to add it to your calendar, and the history with the topics of each one.</p>' },
+      texto: es ? '<p>Tu <b>siguiente reunión</b> con Nicolas, con un botón para agregarla a tu calendario, y el historial con lo que hablamos en cada una.</p>'
+        : '<p>Your <b>next meeting</b> with Nick, with a button to add it to your calendar, and the history with what we talked about in each one.</p>' },
     { logo: true, titulo: es ? 'Listo para empezar' : 'Ready to start', texto: (es ? '<p>Ya sabes lo esencial. Cuando quieras algo nuevo, ve a <b>Pedir algo</b>.</p>' : '<p>You know the essentials. Whenever you want something new, go to <b>Ask for something</b>.</p>') + fin[lang] },
   ];
 }

@@ -12,7 +12,6 @@ import { HomeMeetingsRow } from '../home/HomeMeetingsRow';
 import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
-import { HomeMeetings } from '../home/HomeMeetings';
 import { HomeThisMonth } from '../home/HomeThisMonth';
 
 /**
@@ -51,7 +50,6 @@ export function Home() {
         <LessonOfTheWeek />
         <InsightsCard brandId={current.id} />
       </div>
-      {profile?.role === 'admin' && <HomeMeetings brandId={current.id} />}
     </div>
   );
 }

@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../lib/api';
-import { dayLabel } from '../lib/dates';
+import { HomeMeetings } from './HomeMeetings';
 
 type Next = { title: string; start: string | null; end: string | null; link: string | null };
-type Past = { id: string; title: string; date: string; topics: string[]; people: number };
 
 const stamp = (iso: string) => new Date(iso).toISOString().replace(/[-:]|\.\d{3}/g, '');
 const googleUrl = (m: Next, brand: string) =>
@@ -16,17 +15,15 @@ const icsUrl = (m: Next, brand: string) => `data:text/calendar;charset=utf-8,${e
   `SUMMARY:${(m.title || `Braindy · ${brand}`).replace(/[,;\n]/g, ' ')}`, ...(m.link ? [`LOCATION:${m.link}`, `URL:${m.link}`] : []), 'END:VEVENT', 'END:VCALENDAR',
 ].join('\r\n'))}`;
 
-/** Meetings row: the next meeting (with add-to-my-calendar) and the history (title, date, topics). */
+/** Meetings row: the next meeting (with add-to-my-calendar) and the history with each meeting's notes. */
 export function HomeMeetingsRow({ brandId, brandName }: { brandId: string; brandName: string }) {
   const { t, lang } = useI18n();
   const { profile } = useAuth();
   const admin = profile?.role === 'admin';
   const [next, setNext] = useState<{ connected: boolean; next: Next | null } | null>(null);
-  const [past, setPast] = useState<Past[]>([]);
   const [cal, setCal] = useState<{ ready: boolean; connected: boolean } | null>(null);
   useEffect(() => {
     api<{ connected: boolean; next: Next | null }>(`/v1/brands/${brandId}/meetings/next`).then(setNext).catch(() => setNext({ connected: false, next: null }));
-    api<{ items: Past[] }>(`/v1/brands/${brandId}/meetings`).then((r) => setPast(r.items)).catch(() => setPast([]));
   }, [brandId]);
   useEffect(() => { if (admin) api<{ ready: boolean; connected: boolean }>('/v1/admin/calendar').then(setCal).catch(() => setCal(null)); }, [admin]);
 
@@ -62,26 +59,7 @@ export function HomeMeetingsRow({ brandId, brandName }: { brandId: string; brand
           </div>
         )}
       </section>
-      <section className="col g12 min-w-0 lg:col-span-3" aria-labelledby="h-history">
-        <h2 className="h3" id="h-history">{t('hg.history')}</h2>
-        {past.length === 0 ? <div className="card t-mute">{t('hg.noHistory')}</div> : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {past.slice(0, 6).map((p) => {
-              const d = new Date(`${p.date.slice(0, 10)}T12:00:00`);
-              return (
-                <article key={p.id} className="card row g12 min-w-0" style={{ alignItems: 'flex-start' }}>
-                  <span className="mdate" aria-hidden="true"><b>{d.getDate()}</b><span>{d.toLocaleDateString(lang, { month: 'short' }).replace('.', '')}</span></span>
-                  <span className="col g4 grow" style={{ minWidth: 0 }}>
-                    <span className="w7 truncate">{p.title}</span>
-                    <span className="t-xs t-mute">{dayLabel(p.date, lang)}{p.people ? ` · ${t('hg.people', { n: p.people })}` : ''}</span>
-                    {p.topics.length > 0 && <span className="mtags">{p.topics.slice(0, 3).map((x) => <span key={x}>{x}</span>)}{p.topics.length > 3 && <span>+{p.topics.length - 3}</span>}</span>}
-                  </span>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
+      <div className="min-w-0 lg:col-span-3"><HomeMeetings brandId={brandId} admin={admin} /></div>
     </div>
   );
 }

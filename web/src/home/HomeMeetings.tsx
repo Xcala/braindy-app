@@ -6,20 +6,30 @@ import { useI18n } from '../i18n/I18nProvider';
 import { dayLabel } from '../lib/dates';
 import { MeetingNotes, topics } from './MeetingNotes';
 
-type Meeting = { id: string; title: string; date: string; notes: string; source?: string; webUrl?: string | null; attendees?: string[] };
+type Meeting = { id: string; title: string; date: string; notes: string; source?: string; webUrl?: string | null; attendees?: string[]; people?: number; hidden?: boolean };
 type Report = { filed?: number; unmatched?: string[]; skipped?: boolean; error?: string };
 const SHOW = 5;
 
-/** Home, NickMark only: the meeting history with this client, fed by its Granola folder; manual notes as a fallback. */
-export function HomeMeetings({ brandId }: { brandId: string }) {
+/**
+ * Home: the meeting history with this client and its notes, fed by its Granola folder (manual notes as a fallback).
+ * The client reads it through the API, without the meetings Nicolas hid; the admin reads it live and can hide, pull or delete.
+ */
+export function HomeMeetings({ brandId, admin }: { brandId: string; admin: boolean }) {
   const { t, lang } = useI18n();
   const [list, setList] = useState<Meeting[]>([]);
   const [all, setAll] = useState(false);
   const [pull, setPull] = useState<'idle' | 'busy' | Report>('idle');
-  useEffect(() => onSnapshot(query(collection(db, 'brands', brandId, 'meetings'), orderBy('date', 'desc')),
-    (s) => setList(s.docs.map((d) => ({ id: d.id, ...d.data() }) as Meeting)), () => setList([])), [brandId]);
-  // Opening the Home pulls new notes from the Granola folders (the server throttles it to every 10 minutes).
-  useEffect(() => { api('/v1/admin/granola/folders', { method: 'POST', body: '{}' }).catch(() => {}); }, [brandId]);
+  useEffect(() => {
+    if (!admin) {
+      let on = true;
+      api<{ items: Meeting[] }>(`/v1/brands/${brandId}/meetings`).then((r) => on && setList(r.items)).catch(() => on && setList([]));
+      return () => { on = false; };
+    }
+    return onSnapshot(query(collection(db, 'brands', brandId, 'meetings'), orderBy('date', 'desc')),
+      (s) => setList(s.docs.map((d) => ({ id: d.id, ...d.data() }) as Meeting)), () => setList([]));
+  }, [brandId, admin]);
+  // Opening the Home (as admin) pulls new notes from the Granola folders (the server throttles it to every 10 minutes).
+  useEffect(() => { if (admin) api('/v1/admin/granola/folders', { method: 'POST', body: '{}' }).catch(() => {}); }, [brandId, admin]);
 
   async function bring() {
     setPull('busy');
@@ -30,45 +40,46 @@ export function HomeMeetings({ brandId }: { brandId: string }) {
   return (
     <section className="col g12" aria-labelledby="h-meetings">
       <div className="row between g8 wrap">
-        <div className="row g8"><h2 className="h3" id="h-meetings">{t('team.meetings')}</h2><span className="chip c-group">{t('role.admin')}</span></div>
-        <button type="button" className="btn btn-secondary btn-sm" disabled={pull === 'busy'} onClick={bring}>{pull === 'busy' ? t('mt.pulling') : t('mt.pull')}</button>
+        <h2 className="h3" id="h-meetings">{t(admin ? 'team.meetings' : 'hg.history')}</h2>
+        {admin && <button type="button" className="btn btn-secondary btn-sm" disabled={pull === 'busy'} onClick={bring}>{pull === 'busy' ? t('mt.pulling') : t('mt.pull')}</button>}
       </div>
-      <p className="t-sm t-mute">{t('mt.sub')}</p>
+      <p className="t-sm t-mute">{t(admin ? 'mt.sub' : 'mt.subClient')}</p>
       {typeof pull === 'object' && (
         <p className="t-xs" role="status" style={{ color: pull.error ? 'var(--danger)' : 'var(--success)' }}>
           {pull.error ?? t('mt.pulled', { filed: String(pull.filed ?? 0) })}
           {!!pull.unmatched?.length && <span className="t-mute"> · {t('mt.unmatched', { list: pull.unmatched.join(', ') })}</span>}
         </p>
       )}
-      {list.length === 0 && <div className="card t-mute">{t('mt.empty')}</div>}
+      {list.length === 0 && <div className="card t-mute">{t(admin ? 'mt.empty' : 'hg.noHistory')}</div>}
       {shown.map((m) => {
         const d = new Date(`${m.date.slice(0, 10)}T12:00:00`);
         const tps = topics(m.notes);
         return (
-        <details key={m.id} className="card mcard">
+        <details key={m.id} className="card mcard" style={m.hidden ? { opacity: 0.6 } : undefined}>
           <summary className="mcard-s">
             <span className="mdate" aria-hidden="true">
               <b>{d.getDate()}</b><span>{d.toLocaleDateString(lang, { month: 'short' }).replace('.', '')}</span>
             </span>
             <span className="col g4 grow" style={{ minWidth: 0 }}>
               <span className="w7 truncate">{m.title}</span>
-              <span className="t-xs t-mute">{dayLabel(m.date, lang)}{m.attendees?.length ? ` · ${t('mt.people', { n: String(m.attendees.length) })}` : ''}{m.source === 'granola' ? ' · Granola' : ''}</span>
+              <span className="t-xs t-mute">{dayLabel(m.date, lang)}{(m.attendees?.length ?? m.people) ? ` · ${t('mt.people', { n: String(m.attendees?.length ?? m.people) })}` : ''}{admin && m.source === 'granola' ? ' · Granola' : ''}{m.hidden ? ` · ${t('mt.hidden')}` : ''}</span>
               {tps.length > 0 && <span className="mtags">{tps.slice(0, 3).map((x) => <span key={x}>{x}</span>)}{tps.length > 3 && <span>+{tps.length - 3}</span>}</span>}
             </span>
             <span className="mchev" aria-hidden="true" />
           </summary>
           <div className="mcard-b">
             <MeetingNotes notes={m.notes} />
-            <div className="row g8 wrap">
+            {admin && <div className="row g8 wrap">
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'PATCH', body: JSON.stringify({ hidden: !m.hidden }) })}>{t(m.hidden ? 'mt.show' : 'mt.hide')}</button>
               {m.webUrl && <a href={m.webUrl} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }}>{t('mt.open')} ↗</a>}
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'DELETE' })}>{t('acc.delete')}</button>
-            </div>
+            </div>}
           </div>
         </details>
         );
       })}
       {!all && list.length > SHOW && <button type="button" className="btn btn-ghost btn-sm self-start" onClick={() => setAll(true)}>{t('mt.more', { n: String(list.length - SHOW) })}</button>}
-      <ManualMeeting brandId={brandId} />
+      {admin && <ManualMeeting brandId={brandId} />}
     </section>
   );
 }
