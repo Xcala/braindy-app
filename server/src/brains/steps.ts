@@ -31,7 +31,8 @@ export async function ensureSteps(ref: DocumentReference, fresh = false): Promis
   const have = r.work?.steps as Step[] | undefined;
   if (have?.length === RELAY.length && !fresh) return have;
   const steps = seedSteps(r);
-  await ref.update({ 'work.steps': steps, 'work.current': null });
+  // A new round also starts a new brand check.
+  await ref.update({ 'work.steps': steps, 'work.current': null, ...(fresh ? { quality: FieldValue.delete() } : {}) });
   return steps;
 }
 

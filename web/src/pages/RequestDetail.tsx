@@ -11,6 +11,7 @@ import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { Progress } from '../requests/Progress';
 import { TeamAtWork } from '../requests/TeamAtWork';
+import { QualityCard } from '../requests/QualityCard';
 import { PlanCard } from '../requests/PlanCard';
 import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
@@ -62,6 +63,7 @@ export function RequestDetail() {
       </div>
 
       {r.status === 'in_production' && <TeamAtWork r={r} />}
+      {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (
         <SafeBoundary>

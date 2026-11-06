@@ -24,6 +24,8 @@ export interface BrandRequest {
   approvalLevel: 'self' | 'nicolas';
   /** The team at work for real (server/brains/steps.ts): one step per Brain, moved by the session doing the request. */
   work?: { state?: string; current?: BrainId | null; steps?: WorkStep[] } | null;
+  /** Brand check the team ran before delivering (admin). */
+  quality?: { score: number; passed: boolean; round: number; checks: Array<{ id: string; text: string; critical: boolean; ok: boolean; note?: string }> } | null;
   teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;

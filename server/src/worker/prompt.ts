@@ -53,9 +53,10 @@ ${j.steps.map((s, i) => `${i + 1}. ${s.brain}${s.task ? ` — ${s.task}` : ''}`)
 ${j.publish
     ? '7. Publicación: esta marca tiene acción libre. Si la solicitud es del sitio web, publícalo en producción siguiendo el procedimiento del proyecto y verifica que quedó en línea. Si pide publicar o programar en redes, hazlo con la herramienta del proyecto (por ejemplo la skill de publicar contenido de Level / Metricool). Si no pide publicar, solo entrega.'
     : '7. No publiques nada al aire: solo entrega la versión.'}
-8. Entrega con braindy_deliver_version (brandId ${j.brandId}, requestId ${j.requestId}): los archivos finales (imágenes, PDF, video; para la web, capturas de pantalla) y unas notas en español, cortas y claras para el cliente, con el enlace si quedó publicado. Esta entrega está autorizada.
-9. Si es un sitio web, lee antes los comentarios que dejaron sobre las páginas con braindy_site_comments_get y atiende los que tocan este pedido; al terminar, respóndelos y resuélvelos con braindy_site_comment_reply. Regístralo también en el triage con braindy_site_changes_sync (lee antes las keys con braindy_site_changes_get y reutilízalas), con link = la página exacta donde quedó y spot = un texto corto que se ve en esa parte (o un selector CSS), para que el cliente lo vea resaltado.
-10. Registra la sesión con braindy_log_session (marca ${j.brandId}, resumen de lo hecho).
+8. Revisión de marca antes de entregar: pide la lista con braindy_quality_checklist (brandId ${j.brandId}), abre y mira cada archivo final, revisa punto por punto y repórtalo con braindy_quality_report (requestId ${j.requestId}). Si no pasa, corrige y revisa otra vez (máximo 2 rondas). Si después de 2 rondas no pasa, no entregues: termina con RESULTADO: fallo y lo que no pasó.
+9. Entrega con braindy_deliver_version (brandId ${j.brandId}, requestId ${j.requestId}): los archivos finales (imágenes, PDF, video; para la web, capturas de pantalla) y unas notas en español, cortas y claras para el cliente, con el enlace si quedó publicado. Esta entrega está autorizada.
+10. Si es un sitio web, lee antes los comentarios que dejaron sobre las páginas con braindy_site_comments_get y atiende los que tocan este pedido; al terminar, respóndelos y resuélvelos con braindy_site_comment_reply. Regístralo también en el triage con braindy_site_changes_sync (lee antes las keys con braindy_site_changes_get y reutilízalas), con link = la página exacta donde quedó y spot = un texto corto que se ve en esa parte (o un selector CSS), para que el cliente lo vea resaltado.
+11. Registra la sesión con braindy_log_session (marca ${j.brandId}, resumen de lo hecho).
 
 ## Al final
 Tu última línea debe ser exactamente una de estas:
