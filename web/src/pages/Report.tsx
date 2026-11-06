@@ -3,7 +3,6 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
-import { ReportEditor } from '../report/ReportEditor';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { useSocialStats } from '../report/useSocialStats';
 import { SocialResults } from '../report/SocialResults';
@@ -84,7 +83,6 @@ export function Report() {
           </div>
         </>
       )}
-      {admin && <div className="print:hidden"><ReportEditor brandId={current.id} existing={list} /></div>}
     </div>
   );
 }
