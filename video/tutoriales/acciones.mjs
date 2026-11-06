@@ -65,13 +65,13 @@ export const ESCENAS = {
   'inicio.5': { url: '/home', pasos: [['ve', 'Siguiente reunión', 1800], ['ve', 'Historial de reuniones', 1800]] },
   // ---------- Mi marca ----------
   'mi-marca.1': { url: '/brand/visual', pasos: [['ve', 'Logos', 1500], ['toca', /Cambiar fondo|Change background/, 1200], ['toca', /Cambiar fondo|Change background/, 1200], ['toca', /Cambiar fondo|Change background/, 1200], ['pasa', /^Descargar Principal$|^Download Primary$/, 800]] },
-  'mi-marca.2': { url: '/brand/visual', pasos: [['ve', 'Colores', 1200], ['toca', /^Copiar$|^Copy$/, 1400], ['baja', -2000, 1200], ['pasa', '#0097D6', 1200], ['pasa', 'Poppins', 800]] },
-  'mi-marca.3': { url: '/brand/visual', pasos: [['ve', 'Tipografía', 1400], ['ve', '↓ Descargar fuente', 1600]] },
+  'mi-marca.2': { url: '/brand/visual', pasos: [['ve', 'Colores', 1200], ['toca', /^Copiar$|^Copy$/, 1400], ['baja', -2000, 1200], ['pasa', /#0097D6/i, 1200], ['pasa', /Poppins/, 800]] },
+  'mi-marca.3': { url: '/brand/visual', pasos: [['ve', 'Tipografía', 1400], ['ve', /Descargar fuente|Download font/, 1600]] },
   'mi-marca.4': { url: '/brand', pasos: [['ve', 'Primal Branding', 1200], ['ve', 'Estrategia', 1200], ['ve', 'Voz', 1300]] },
   // ---------- Cerebro ----------
   'cerebro.1': { url: '/brand/brain', pasos: [['espera', 800], ['ve', /Cerebro\.|Brain\./, 3000]] },
   'cerebro.2': { url: '/brand/brain', pasos: [['ve', 'Así está creciendo', 1200], ['toca', 'Ver cómo creció', 3000]] },
-  'cerebro.3': { url: '/brand/brain', pasos: [['ve', 'Lo que aprendió', 1400], ['pasa', 'Campaña Tu Voz, Nuestra Evolución', 1200], ['pasa', 'Calendario de escritorio 2027', 1200]] },
+  'cerebro.3': { url: '/brand/brain', pasos: [['ve', 'Lo que aprendió', 1400], ['pasa', /Campaña Tu Voz, Nuestra Evolución/, 1200], ['pasa', /Calendario de escritorio 2027/, 1200]] },
   'cerebro.4': { url: '/brand/brain', pasos: [['ve', 'Reglas que nunca olvida', 1500], ['ve', 'Lo que aún no sabe', 1500]] },
   // ---------- Investigación ----------
   'investigacion.1': { url: '/research', pasos: [['espera', 700], ['ve', /Mi investigación|My research/, 2400]] },
@@ -79,10 +79,10 @@ export const ESCENAS = {
   'investigacion.3': { url: '/research', pasos: [['ve', /CAIC Quimiolab/, 1800], ['pasa', /Quimiolab Marketcap/, 1200]] },
   // ---------- Pedir ----------
   'pedir.1': { url: '/requests', pasos: [['espera', 600], ['ve', 'Nuevo pedido', 1200], ['toca', 'Nuevo pedido', 800]] },
-  'pedir.2': { url: '/requests', prep: (p, L, lang) => corre(p, panelPedido, L, lang), keep: true, pasos: [['ve', /Algo para redes|Something for social/, 1100], ['pasa', /Una pieza puntual|A single piece/, 900], ['pasa', /Algo para mi web|Something for my web/, 900], ['pasa', /Una campaña|A campaign/, 900], ['ve', /No sé, ayúdame|Help me choose/, 1500], ['toca', /Algo para redes|Something for social/, 800]] },
-  'pedir.3': { keep: true, pasos: [['escribe', /¿Necesitas algo\?|Need something\?/, ['Carrusel del nuevo kit para el congreso', 'Carousel for the new kit at the congress']], ['toca', 'Carrusel', 600], ['toca', 'Instagram', 600], ['toca', /^Esta semana|^This week/, 600]] },
+  'pedir.2': { url: '/requests', prep: (p, L, lang) => corre(p, panelPedido, L, lang), keep: true, pasos: [['ve', /Algo para redes|Something for social/, 1100], ['pasa', /Una pieza puntual|A one-off piece/, 900], ['pasa', /Algo para mi web|Something for my web/, 900], ['pasa', /Una campaña|A campaign/, 900], ['ve', /No sé, ayúdame|Not sure, help me/, 1500], ['toca', /Algo para redes|Something for social/, 800]] },
+  'pedir.3': { keep: true, pasos: [['escribe', /Necesitas algo\?|need something\?/i, ['Carrusel del nuevo kit para el congreso', 'Carousel for the new kit at the congress']], ['toca', 'Carrusel', 600], ['toca', /^Instagram$/, 600], ['toca', /^Esta semana|^This week/, 600]] },
   'pedir.4': { keep: true, pasos: [['ve', 'Nota de voz', 1400], ['ve', 'No tengo material: que lo propongan', 1600]] },
-  'pedir.5': { pasos: [['caja', /Tipo exacto de pieza|Exact piece type/, 1400], ['ve', /Así lo entendió|How NickMark read it/, 1600], ['pasa', /^Enviar|^Send/, 1500]] },
+  'pedir.5': { pasos: [['caja', /Tipo exacto de pieza|Exact type of piece/, 1400], ['ve', /Así lo entendió|how NickMark read it/i, 1600], ['pasa', /^Enviar|^Send/, 1500]] },
   // ---------- Revisar ----------
   'revisar.1': { url: REQ, pasos: [['espera', 600], ['ve', /Tu aprobación|Your approval/, 2200], ['baja', 120]] },
   'revisar.2': { url: REQ, pasos: [['toca', /^v3/, 900], ['toca', /^v4/, 900], ['toca', 'Comparar', 1000], ['toca', 'Lado a lado', 1200], ['toca', 'Solo cambios', 1200]] },
@@ -100,13 +100,13 @@ export const ESCENAS = {
   'apps-sitio.3': { url: '/apps', prep: (p, L, lang) => corre(p, sitio, L, lang), keep: true, pasos: [async (p) => { const it = p.locator('main li, [class*=sp-] li'); for (let i = 0; i < Math.min(3, await it.count()); i++) { await mueve(p, it.nth(i), 20); await wait(900); } }, ['toca', /^Entregado|^Delivered/, 1500]] },
   'apps-sitio.4': { pasos: [['toca', /^Comentar$|^Comment$/, 1000], clicSitio(0.4), ['escribe', /Escribe tu comentario|Write your comment/, ['Esta foto más grande', 'Make this photo bigger']]] },
   // ---------- Calendario ----------
-  'calendario.1': { url: '/calendar', pasos: [['espera', 600], ['ve', /de 2026|2026/, 1300], ['toca', '›', 1000], ['toca', '‹', 900], ['toca', 'Hoy', 800]] },
+  'calendario.1': { url: '/calendar', pasos: [['espera', 600], ['ve', /de 2026|2026/, 1300], ['toca', /^Mes siguiente$|^Next month$/, 1000], ['toca', /^Mes anterior$|^Previous month$/, 900], ['toca', /^Hoy$|^Today$/, 800]] },
   'calendario.2': { url: '/calendar', pasos: [['ve', /Publicada|Published/, 1300], ['toca', /IG Instagram/, 1100], ['toca', /in LinkedIn/, 1100], ['toca', /^Todas$|^All$/, 900]] },
   'calendario.3': { url: '/calendar', pasos: [['toca', /Programada|Scheduled/, 1800]] },
   // ---------- Resultados ----------
   'resultados.1': { url: '/report', pasos: [['espera', 700], ['ve', /^Resultados$|^Results$/, 2000], ['baja', 200]] },
   'resultados.2': { url: '/report', pasos: [['baja', 300, 1400], ['espera', 1200], ['baja', 300, 1400]] },
-  'resultados.3': { url: '/report', pasos: [['ve', /Lo que mejor funcionó|What worked best/, 1600], ['baja', 250]] },
+  'resultados.3': { url: '/report', pasos: [['ve', /Lo que mejor funcionó|Posts that worked best/, 1600], ['baja', 250]] },
   'resultados.4': { url: '/report', pasos: [['ve', /Ver las \d+ publicaciones|See all \d+ posts/, 1400]] },
   // ---------- Accesos ----------
   'accesos.1': { url: '/accesses', pasos: [['espera', 600], ['pasa', /^Mover Google Ads|^Move Google Ads/, 900], ['pasa', /^Mover Hosting|^Move Hosting/, 900], ['pasa', /^Mover Instagram|^Move Instagram/, 900]] },
