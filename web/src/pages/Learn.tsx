@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
-import { AREAS, embedUrl, useLessons, type Area } from '../criterio/useCriterio';
+import { AREAS, embedUrl, isVideoFile, useLessons, type Area } from '../criterio/useCriterio';
 import { LessonTile } from '../criterio/LessonCards';
 import { Prose } from '../criterio/Prose';
 import { AREA_ART, LearnStage, LessonCover, LessonStage, sectionsOf } from '../criterio/LessonArt';
@@ -64,7 +64,12 @@ export function LearnLesson() {
           stage={<LessonStage l={l} steps={sections} />}
           steps={sections.slice(0, 5).map((s, i) => [s, t('cr.part', { n: i + 1 })] as [string, string])} />
       )}
-      {embed ? (
+      {isVideoFile(l.videoUrl) ? (
+        <video controls playsInline preload="metadata" title={l.title[lang]} className="w-full rounded-[20px]" style={{ maxWidth: 960, background: '#05070D' }}>
+          {l.videoVertical && <source src={l.videoVertical} type="video/mp4" media="(max-width: 640px)" />}
+          <source src={l.videoUrl} type="video/mp4" />
+        </video>
+      ) : embed ? (
         <div className="overflow-hidden rounded-[20px]" style={{ aspectRatio: '16 / 9', maxWidth: 960, background: '#05070D' }}>
           <iframe src={embed} title={l.title[lang]} className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen style={{ border: 0 }} />
         </div>
