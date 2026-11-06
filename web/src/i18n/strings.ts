@@ -28,6 +28,7 @@ import { socialStatsEn, socialStatsEs } from './socialStatsStrings';
 import { webStatsEn, webStatsEs } from './webStatsStrings';
 import { searchStatsEn, searchStatsEs } from './searchStatsStrings';
 import { commentEditEn, commentEditEs } from './commentEditStrings';
+import { aiHealthEn, aiHealthEs } from './aiHealthStrings';
 import { outcomeEn, outcomeEs } from './outcomeStrings';
 import { requestFilterEn, requestFilterEs } from './requestFilterStrings';
 import { askPanelEn, askPanelEs } from './askPanelStrings';
@@ -213,7 +214,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...searchStatsEn, ...commentEditEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...viewerEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...viewerEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -397,4 +398,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...searchStatsEs, ...commentEditEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...viewerEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...viewerEs };

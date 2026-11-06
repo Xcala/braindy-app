@@ -264,6 +264,10 @@ describe('accesses (credentials)', () => {
     await assertFails(getDoc(doc(as(env, OWNER), 'brainTasks/t1')));
     await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/notices/n1`)));
     await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
+    // AI health log and alert flag: written and read by the API only.
+    await assertFails(getDoc(doc(as(env, OWNER), 'aiCalls/c1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'aiCalls/c2'), { ok: true }));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'ops/aiAlert'), { failed: 9 }));
   });
 
   it('encrypted values are unreachable from any client, admin included', async () => {

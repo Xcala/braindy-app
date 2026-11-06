@@ -36,6 +36,7 @@ import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
+import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
@@ -137,6 +138,7 @@ app.route('/v1', brains);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
+app.route('/v1/admin', adminAiHealth);
 app.route('/v1', criterio);
 
 const port = Number(process.env.PORT ?? 8787);

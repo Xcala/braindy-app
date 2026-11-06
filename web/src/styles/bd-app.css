@@ -733,3 +733,9 @@ html[data-theme="dark"] .trk-next{background:#22305A}
 .pf-pair.is-narrow{grid-template-columns:88px minmax(0,1fr) auto;padding-bottom:0;border-bottom:0}
 .pf-toggle{cursor:pointer;align-items:center}
 .sf-v strong{color:var(--ink);font-weight:700}
+
+/* Admin · AI health: calls per day, failed share on top (2px surface gap). */
+.aih-days{display:flex;align-items:flex-end;gap:6px;height:140px;overflow-x:auto;padding-bottom:2px}
+.aih-day{flex:1 0 18px;max-width:40px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+.aih-bar{width:100%;min-height:4px;border-radius:4px 4px 0 0;background:var(--azul,#2F4DE0);display:flex;flex-direction:column;overflow:hidden}
+.aih-bar i{display:block;background:#C0362C;border-bottom:2px solid var(--white,#fff)}

@@ -36,7 +36,12 @@ export async function runBrain<T>(o: {
     } else output = await o.fallback();
   } catch (e) {
     logError(e, { where: 'brain', brain: o.brain, kind: o.kind });
-    output = await o.fallback();
+    try { output = await o.fallback(); } catch (f) {
+      // Neither the Brain nor the fallback worked: the task ends as failed (never stuck on running).
+      await task.update({ status: 'failed', ai: false, finishedAt: now() });
+      await setStatus(o.brain);
+      throw f;
+    }
   }
   await task.update({ status: 'done', ai, finishedAt: now() });
   await setStatus(o.brain);
