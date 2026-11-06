@@ -48,7 +48,7 @@ async function tarjeta(e, file, d) {
   const [t1, t2] = e === 'abre' ? (lang === 'es' ? ['Tu marca,', 'en un solo lugar.'] : ['Your brand,', 'all in one place.']) : (lang === 'es' ? ['Todo en', 'app.braindy.co'] : ['All at', 'app.braindy.co']);
   await png(1920, 1080, `<div class="brains"></div><div class="w"><img src="${LOGO}" style="height:56px;align-self:flex-start"><div class="e">${TX.serie}</div><h1><b>${t1}</b><br><span>${t2}</span></h1><p>${TX.firma}</p></div>`,
     `body{background:radial-gradient(circle at 12% 0%,rgba(245,179,1,.28),transparent 40%),radial-gradient(circle at 90% 100%,rgba(139,92,246,.35),transparent 45%),linear-gradient(135deg,#0B1B3A,#1A1450 60%,#0E2A4F)}
-     .w{position:absolute;inset:0;padding:108px 132px;display:flex;flex-direction:column}.e{margin-top:auto;font-weight:700;font-size:24px;letter-spacing:.2em;text-transform:uppercase;opacity:.75}
+     .w{position:absolute;inset:0;padding:108px 132px 250px;display:flex;flex-direction:column}.e{margin-top:auto;font-weight:700;font-size:24px;letter-spacing:.2em;text-transform:uppercase;opacity:.75}
      h1{font-size:120px;line-height:1;letter-spacing:-.035em;margin:24px 0 0}h1 b{font-weight:900}h1 span{font-weight:300}p{font-size:36px;font-weight:300;margin:34px 0 0;opacity:.9}
      .brains{position:absolute;right:0;top:170px;width:1020px;height:260px;background:url(${BRAINS}) center/contain no-repeat;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}`, img, TINTA);
   ff(['-loop', '1', '-i', img, '-vf', `scale=2112:-2,zoompan=z='1+0.04*on/(${d}*30)':d=1:s=1920x1080:fps=30,format=yuv420p`, '-t', d.toFixed(3), '-c:v', 'libx264', '-crf', '17', file]);
@@ -56,7 +56,7 @@ async function tarjeta(e, file, d) {
 
 /** One scene with its subtitles burned in: wide = clip + bottom bar; tall = clip as a card, title above, subtitles below. */
 async function escena(v, i, e, alto) {
-  const ref = e.de ? e.de.replace('.', '-') : `${v.id}-${i + 1}`;
+  const ref = e.de ? e.de.replace('.', '-') : e.voz ?? `${v.id}-${i + 1}`;   // voz: a card that kept its voice file after the list changed
   const voz = `voz/${lang}/${ref}.mp3`;
   let clip = `clips/${lang}/${ref}.mp4`;
   const d = LEAD + dur(voz) + COLA;

@@ -212,13 +212,13 @@ export const NOVEDADES = [
 // The overview: an opening card, one clip from each section (same clip, same voice line), and a closing card.
 export const GENERAL = {
   id: 'braindy-en-90', kind: 'general', paths: [],
-  titulo: { es: 'Braindy en 90 segundos', en: 'Braindy in 90 seconds' },
+  titulo: { es: 'Braindy de un vistazo', en: 'Braindy at a glance' },
   resumen: { es: 'La app completa: tu marca, tus pedidos, las entregas y cómo apruebas.', en: 'The whole app: your brand, your requests, the deliveries and how you approve.' },
   escenas: [
     { zona: 'tarjeta', ui: 'Braindy', es: 'Esto es Braindy: tu marca, hecha por NicoMarca y sus cuatro Brains.', en: 'This is Braindy: your brand, made by NickMark and his four Brains.' },
     { de: 'inicio.1' }, { de: 'inicio.2' }, { de: 'pedir.3' }, { de: 'revisar.2' }, { de: 'revisar.4' },
     { de: 'mi-marca.1' }, { de: 'archivos.1' }, { de: 'apps-sitio.2' }, { de: 'accesos.3' },
-    { zona: 'tarjeta', ui: 'Aprende', es: 'Todo en app.braindy.co. Y si quieres ver una sección a fondo, está en Aprende.', en: 'All at app.braindy.co. And to see any section in depth, go to Learn.' },
+    { zona: 'tarjeta', ui: 'Aprende', voz: 'braindy-en-90-12', es: 'Todo en app.braindy.co. Y si quieres ver una sección a fondo, está en Aprende.', en: 'All at app.braindy.co. And to see any section in depth, go to Learn.' },
   ],
 };
 
