@@ -3,7 +3,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { NetBadge, netInfo } from '../calendar/PostBits';
 import type { DailyKey, NetStats } from './useSocialStats';
-import { change, followersAt, keysOf, postsIn, rangeOf, total, type Period } from './socialMath';
+import { change, combine, followersAt, keysOf, postsIn, rangeOf, total, type Period } from './socialMath';
 import { SocialChart } from './SocialChart';
 import { SocialPosts } from './SocialPosts';
 import { SocialAudience } from './SocialAudience';
@@ -12,13 +12,15 @@ const PERIODS: Period[] = ['30', '90', 'month', 'lastMonth', 'all'];
 /** The numbers on top, in this order; a network only shows the ones it has. */
 const KPIS: DailyKey[] = ['followers', 'views', 'reach', 'interactions', 'engaged', 'pageViews'];
 
-/** Results › Social media: what Metricool measures on each network, by period, with the posts that worked best and the audience. */
+/** Results › Social media: what Metricool measures, all networks added up first, then each network on its own tab; by period, with the posts that worked best and the audience. */
 export function SocialResults({ list }: { list: NetStats[] }) {
   const { t, lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
-  const [netId, setNetId] = useState(list[0]!.network);
+  const all = useMemo(() => (list.length > 1 ? combine(list) : null), [list]);
+  const tabs = all ? [all, ...list] : list;
+  const [netId, setNetId] = useState(tabs[0]!.network);
   const [period, setPeriod] = useState<Period>('30');
-  const net = list.find((n) => n.network === netId) ?? list[0]!;
+  const net = tabs.find((n) => n.network === netId) ?? tabs[0]!;
   const { cur, prev } = useMemo(() => rangeOf(period, net.daily), [period, net]);
   const keys = useMemo(() => keysOf(net.daily), [net]);
   const fmt = (v: number | null) => (v == null ? '—' : new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(v));
@@ -44,10 +46,10 @@ export function SocialResults({ list }: { list: NetStats[] }) {
 
       {list.length > 1 && (
         <div className="row g8 wrap" role="tablist" aria-label={t('cal.networks')}>
-          {list.map((n) => (
+          {tabs.map((n) => (
             <button key={n.network} role="tab" aria-selected={n.network === net.network} onClick={() => setNetId(n.network)}
               className={`btn btn-sm ${n.network === net.network ? 'btn-primary' : 'btn-secondary'}`}>
-              <NetBadge network={n.network} /> {netInfo(n.network).label}{n.handle && !/^\d|urn:/.test(n.handle) ? ` · @${n.handle}` : ''}
+              {n.network === 'all' ? t('soc.allNets') : <><NetBadge network={n.network} /> {netInfo(n.network).label}</>}{n.handle && !/^\d|urn:/.test(n.handle) ? ` · @${n.handle}` : ''}
             </button>
           ))}
         </div>

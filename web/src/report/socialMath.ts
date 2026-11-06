@@ -1,4 +1,4 @@
-import type { Day, DailyKey, StatPost } from './useSocialStats';
+import type { Day, DailyKey, NetStats, StatPost } from './useSocialStats';
 
 export type Period = '30' | '90' | 'month' | 'lastMonth' | 'all';
 export type Range = { from: string; to: string };
@@ -55,3 +55,27 @@ export function series(daily: Day[], key: DailyKey, r: Range) {
 export const postsIn = (posts: StatPost[], r: Range) => posts.filter((p) => inRange(p.date.slice(0, 10), r));
 /** Which daily keys a network has any value for (LinkedIn has no stories, YouTube no reach…). */
 export const keysOf = (daily: Day[]) => new Set(daily.flatMap((x) => Object.keys(x).filter((k) => k !== 'd' && x[k as DailyKey] != null)) as DailyKey[]);
+
+/** All networks added up, day by day: followers carry each network's last known count forward so a missing day doesn't dip;
+ *  everything else is summed where any network has it. Posts from every network, each tagged with its own. Audience stays per network. */
+export function combine(list: NetStats[]): NetStats {
+  const dates = [...new Set(list.flatMap((n) => n.daily.map((x) => x.d)))].sort();
+  const byNet = list.map((n) => new Map(n.daily.map((x) => [x.d, x])));
+  const lastF: Array<number | null> = list.map(() => null);
+  const daily: Day[] = dates.map((d) => {
+    const row: Day = { d };
+    byNet.forEach((m, i) => {
+      const x = m.get(d);
+      if (x?.followers != null) lastF[i] = x.followers;
+      for (const k of Object.keys(x ?? {}) as Array<DailyKey | 'd'>) {
+        if (k === 'd' || k === 'followers' || x![k] == null) continue;
+        row[k] = (row[k] ?? 0) + x![k]!;
+      }
+    });
+    const known = lastF.filter((v): v is number => v != null);
+    if (known.length) row.followers = known.reduce((a, b) => a + b, 0);
+    return row;
+  });
+  const posts = list.flatMap((n) => n.posts.map((p) => ({ ...p, network: n.network }))).sort((a, b) => b.date.localeCompare(a.date));
+  return { network: 'all', handle: '', daily, posts, audience: null, updatedAt: null };
+}

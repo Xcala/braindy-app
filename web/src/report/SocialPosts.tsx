@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import type { StatPost } from './useSocialStats';
+import { NetBadge, netInfo } from '../calendar/PostBits';
 
 type Sort = 'views' | 'interactions' | 'reach' | 'date';
 const SORTS: Sort[] = ['views', 'interactions', 'reach', 'date'];
@@ -34,7 +35,7 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
             <div style={{ aspectRatio: network === 'linkedin' || network === 'youtube' ? '16 / 9' : '4 / 5', borderRadius: 12, overflow: 'hidden', background: 'var(--hielo)' }}>
               {p.image && <img src={p.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </div>
-            <span className="t-xs t-mute">{type(p)} · {day(p.date)}</span>
+            <span className="t-xs t-mute row g4" style={{ alignItems: 'center' }}>{p.network && <NetBadge network={p.network} />}{type(p)} · {day(p.date)}</span>
             <span className="t-sm w7">{fmt(p.views)} {t('soc.k.views').toLowerCase()} · {fmt(p.interactions)} {t('soc.k.interactions').toLowerCase()}</span>
             {p.text && <span className="t-xs t-mute" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.text}</span>}
           </a>
@@ -53,7 +54,7 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
               {[...posts].sort(by).map((p) => (
                 <tr key={p.id} style={{ borderTop: '1px solid var(--line)' }}>
                   <td style={{ padding: '6px 8px', maxWidth: 260 }}>
-                    <a href={p.url || undefined} target="_blank" rel="noreferrer" className="w7">{type(p)} · {day(p.date)}</a>
+                    <a href={p.url || undefined} target="_blank" rel="noreferrer" className="w7">{p.network ? `${netInfo(p.network).label} · ` : ''}{type(p)} · {day(p.date)}</a>
                     {p.text && <div className="t-xs t-mute" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.text}</div>}
                   </td>
                   {[p.views, p.reach, p.likes, p.comments, p.saves, p.shares, p.interactions].map((v, i) => <td key={i} style={{ padding: '6px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmt(v)}</td>)}

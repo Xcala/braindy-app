@@ -8,6 +8,8 @@ export type StatPost = {
   id: string; date: string; type: string; text: string; image: string; url: string;
   views: number | null; reach: number | null; likes: number | null; comments: number | null; saves: number | null; shares: number | null;
   interactions: number | null; engagement: number | null; clicks: number | null; watchTime: number | null; follows: number | null;
+  /** Set on the all-networks view, so each post shows where it ran. */
+  network?: string;
 };
 type Share = Array<{ name: string; n: number }>;
 export type Audience = { countries: Share; cities: Share; ageGender: Array<{ age: string; gender: string; v: number }>; industry?: Share; seniority?: Share; function?: Share; companySize?: Share };

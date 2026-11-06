@@ -1,6 +1,6 @@
 /** Results › Social media: numbers from Metricool per network (view only). */
 export const socialStatsEn = {
-  'soc.title': 'Social media', 'soc.sub': 'From {from} to {to}', 'soc.updated': 'updated {d}',
+  'soc.allNets': 'All networks', 'soc.title': 'Social media', 'soc.sub': 'From {from} to {to}', 'soc.updated': 'updated {d}',
   'soc.period': 'Period', 'soc.p.30': 'Last 30 days', 'soc.p.90': 'Last 90 days', 'soc.p.month': 'This month', 'soc.p.lastMonth': 'Last month', 'soc.p.all': 'Since we started',
   'soc.k.followers': 'Followers', 'soc.k.views': 'Views', 'soc.k.reach': 'Reach', 'soc.k.interactions': 'Interactions', 'soc.k.engaged': 'Accounts that engaged', 'soc.k.pageViews': 'Page visits', 'soc.k.posts': 'Posts published',
   'soc.h.followers': 'People following the account', 'soc.h.views': 'Times your content was seen', 'soc.h.reach': 'Different people who saw it', 'soc.h.interactions': 'Likes, comments, saves and shares',
@@ -16,7 +16,7 @@ export const socialStatsEn = {
   'soc.note': 'Numbers measured by Metricool, the tool that publishes your posts. Networks report a day or two late.',
 };
 export const socialStatsEs: Record<keyof typeof socialStatsEn, string> = {
-  'soc.title': 'Redes sociales', 'soc.sub': 'Del {from} al {to}', 'soc.updated': 'actualizado el {d}',
+  'soc.allNets': 'Todas las redes', 'soc.title': 'Redes sociales', 'soc.sub': 'Del {from} al {to}', 'soc.updated': 'actualizado el {d}',
   'soc.period': 'Periodo', 'soc.p.30': 'Últimos 30 días', 'soc.p.90': 'Últimos 90 días', 'soc.p.month': 'Este mes', 'soc.p.lastMonth': 'Mes pasado', 'soc.p.all': 'Desde que empezamos',
   'soc.k.followers': 'Seguidores', 'soc.k.views': 'Visualizaciones', 'soc.k.reach': 'Alcance', 'soc.k.interactions': 'Interacciones', 'soc.k.engaged': 'Cuentas que interactuaron', 'soc.k.pageViews': 'Visitas a la página', 'soc.k.posts': 'Publicaciones',
   'soc.h.followers': 'Personas que siguen la cuenta', 'soc.h.views': 'Veces que se vio tu contenido', 'soc.h.reach': 'Personas distintas que lo vieron', 'soc.h.interactions': 'Me gusta, comentarios, guardados y compartidos',
