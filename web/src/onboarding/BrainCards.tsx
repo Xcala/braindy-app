@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import type { BrainDraft } from './api';
 import type { StringKey } from '../i18n/strings';
+import { Scan } from '../components/Scan';
 
 type TextKey = 'voice' | 'audiences' | 'lookAndFeel' | 'goals' | 'avoid' | 'position' | 'criterio';
 const CARDS: Array<{ key: TextKey; title: StringKey; source: StringKey; adminOnly?: boolean }> = [
@@ -28,7 +29,7 @@ export function BrainCards({ brain, onChange }: { brain: BrainDraft; onChange?: 
           <div className="row between g8"><h3 className="h3">{t(c.title)}</h3><span className="t-xs t-mute">{t(c.source)}</span></div>
           {edit
             ? <textarea className="input" rows={4} value={brain[c.key] ?? ''} onChange={(e) => onChange!({ ...brain, [c.key]: e.target.value })} aria-label={t(c.title)} style={{ height: 'auto', paddingTop: 10 }} />
-            : <p className="t-sm" style={{ whiteSpace: 'pre-wrap' }}>{brain[c.key] || <span className="t-mute">{t('ob.b.empty')}</span>}</p>}
+            : brain[c.key] ? <Scan text={brain[c.key]!} points list={c.key === 'avoid'} tone="ink" /> : <p className="t-sm t-mute">{t('ob.b.empty')}</p>}
         </div>
       ))}
       <div className="card col g8 md:col-span-2" style={{ padding: 22 }}>

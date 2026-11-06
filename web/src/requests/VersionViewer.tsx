@@ -1,22 +1,45 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
-import { useFileUrl, isImage, isVideo } from './useFileUrl';
-import { versionFileUrl } from './api';
+import { useFileUrl, viewKind, markFile } from './useFileUrl';
+import { downloadVersionZip, versionFileUrl } from './api';
+import { FileStrip } from './FileStrip';
+import { FileBody } from './FileBody';
+import { Popover } from './Popover';
 import type { Annotation, RequestComment, Version } from './types';
+import './viewer.css';
 
-/** Piece viewer with version tabs and "mark on piece": drag a box, then comment on it. */
-export function VersionViewer({ brandId, requestId, versions, current, onPick, comments, onMark, onCompare }: {
+/**
+ * Piece viewer with version tabs and "mark on piece": drag a box, then comment on it. A version with several files
+ * gets arrows (and ← →, and a swipe on phones), a "3 of 10" counter and a strip of tiles; marks belong to one file.
+ */
+export function VersionViewer({ brandId, requestId, versions, current, onPick, fileIndex, onFile, comments, onMark, onCompare }: {
   brandId: string; requestId: string; versions: Version[]; current?: Version; onPick: (id: string) => void;
+  fileIndex: number; onFile: (i: number) => void;
   comments: RequestComment[]; onMark: (a: Annotation) => void; onCompare: () => void;
 }) {
   const { t, lang } = useI18n();
-  const [fileIndex, setFileIndex] = useState(0);
   const [marking, setMarking] = useState(false);
   const [draft, setDraft] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
+  const swipe = useRef<number | null>(null);
+  const count = current?.files?.length ?? 0;
   const file = current?.files?.[fileIndex];
+  const kind = viewKind(file);
   const url = useFileUrl(brandId, requestId, current, fileIndex);
+  const go = (d: number) => { const i = fileIndex + d; if (i >= 0 && i < count) { onFile(i); setMarking(false); } };
+
+  useEffect(() => {
+    if (count < 2) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target;
+      if (marking || (el instanceof Element && el.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]'))) return;
+      if (e.key === 'ArrowLeft') go(-1);
+      if (e.key === 'ArrowRight') go(1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pos = (e: PointerEvent) => {
     const r = box.current!.getBoundingClientRect();
@@ -24,44 +47,55 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, c
   };
   const up = () => {
     if (draft && current) {
-      const a = { x: Math.min(draft.x0, draft.x), y: Math.min(draft.y0, draft.y), w: Math.abs(draft.x - draft.x0), h: Math.abs(draft.y - draft.y0), versionId: current.id };
+      const a = { x: Math.min(draft.x0, draft.x), y: Math.min(draft.y0, draft.y), w: Math.abs(draft.x - draft.x0), h: Math.abs(draft.y - draft.y0), versionId: current.id, fileIndex };
       onMark(a.w < 2 || a.h < 2 ? { ...a, w: 0, h: 0 } : a);
       setMarking(false);
     }
     setDraft(null);
   };
-  const pins = comments.filter((c) => c.annotation && c.annotation.versionId === current?.id);
+  const pins = comments.filter((c) => c.annotation && c.annotation.versionId === current?.id && markFile(c.annotation) === fileIndex);
   const date = (v: Version) => (v.publishedAt ?? v.createdAt)?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric' });
+  const getOne = async () => { if (current) window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true)); };
 
   return (
     <div className="col min-w-0" style={{ background: 'var(--niebla)' }}>
       <div className="row between g8 wrap" style={{ padding: '14px 20px', borderBottom: '1px solid var(--line)', background: '#fff' }}>
         <div className="seg" role="tablist" aria-label={t('req.versions')}>
-          {versions.map((v) => <button key={v.id} role="tab" aria-selected={v.id === current?.id} className={v.id === current?.id ? 'is-on' : ''} onClick={() => { onPick(v.id); setFileIndex(0); }}>v{v.n}{date(v) ? ` · ${date(v)}` : ''}</button>)}
+          {versions.map((v) => <button key={v.id} role="tab" aria-selected={v.id === current?.id} className={v.id === current?.id ? 'is-on' : ''} onClick={() => { onPick(v.id); onFile(0); }}>v{v.n}{date(v) ? ` · ${date(v)}` : ''}</button>)}
         </div>
         <div className="row g8 wrap">
-          {isImage(file?.contentType) && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
-          {versions.length > 1 && isImage(file?.contentType) && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
-          {current && file && <button className="btn btn-ghost btn-sm" onClick={async () => window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true))}><Icon name="download" />{t('common.download')}</button>}
+          {count > 1 && <span className="vw-count" aria-live="polite">{t('vw.counter', { i: fileIndex + 1, n: count })}</span>}
+          {kind === 'image' && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
+          {versions.length > 1 && kind === 'image' && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
+          {current && file && (count > 1 ? (
+            <Popover align="right" className="btn btn-ghost btn-sm" label={<><Icon name="download" />{t('common.download')}<Icon name="chevronDown" size={14} /></>}>
+              {(close) => (
+                <div className="col g8">
+                  <button className="btn btn-secondary btn-sm" onClick={() => { close(); void getOne(); }}>{t('vw.thisFile')}</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => { close(); void downloadVersionZip(brandId, requestId, current.id, `v${current.n}`); }}>{t('vw.all')}</button>
+                </div>
+              )}
+            </Popover>
+          ) : <button className="btn btn-ghost btn-sm" onClick={getOne}><Icon name="download" />{t('common.download')}</button>)}
         </div>
       </div>
-      <div className="flex min-h-[420px] flex-1 items-center justify-center p-4 sm:p-7">
-        {!url ? <div className="skel" style={{ width: '60%', height: 360 }} /> : isImage(file?.contentType) ? (
+      <div className="vw-stage flex min-h-[420px] flex-1 items-center justify-center p-4 sm:px-16 sm:py-7"
+        onTouchStart={(e) => { swipe.current = marking ? null : e.touches[0]!.clientX; }}
+        onTouchEnd={(e) => { if (swipe.current === null) return; const dx = e.changedTouches[0]!.clientX - swipe.current; swipe.current = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
+        {count > 1 && <button className="vw-arrow is-prev" aria-label={t('vw.prev')} disabled={fileIndex === 0} onClick={() => go(-1)}><Icon name="arrowLeft" size={18} /></button>}
+        {!url && kind !== 'text' ? <div className="skel" style={{ width: '60%', height: 360 }} /> : kind === 'image' ? (
           <div ref={box} className="relative select-none" style={{ cursor: marking ? 'crosshair' : 'default', touchAction: marking ? 'none' : 'auto' }}
             onPointerDown={(e) => { if (marking) { const p = pos(e); setDraft({ x0: p.x, y0: p.y, ...p }); } }}
             onPointerMove={(e) => draft && setDraft({ ...draft, ...pos(e) })} onPointerUp={up}>
-            <img src={url} alt={file?.name} draggable={false} className="block max-h-[70vh] max-w-full rounded-lg" style={{ boxShadow: 'var(--sh-2)' }} />
+            <img src={url ?? undefined} alt={file?.name} draggable={false} className="block max-h-[70vh] max-w-full rounded-lg" style={{ boxShadow: 'var(--sh-2)' }} />
             {pins.map((c, i) => <Pin key={c.id} a={c.annotation!} n={i + 1} resolved={c.resolved} />)}
             {draft && <span className="absolute" style={{ left: `${Math.min(draft.x0, draft.x)}%`, top: `${Math.min(draft.y0, draft.y)}%`, width: `${Math.abs(draft.x - draft.x0)}%`, height: `${Math.abs(draft.y - draft.y0)}%`, border: '2px dashed var(--azul)', borderRadius: 10, background: 'rgba(47,77,224,.08)' }} />}
           </div>
-        ) : isVideo(file?.contentType) ? <video src={url} controls className="max-h-[70vh] max-w-full rounded-lg" />
-          : <a className="btn btn-secondary" href={url} target="_blank" rel="noreferrer">{t('common.open')} {file?.name}</a>}
+        ) : kind === 'video' ? <video src={url ?? undefined} controls className="max-h-[70vh] max-w-full rounded-lg" />
+          : current && file && <FileBody brandId={brandId} requestId={requestId} versionId={current.id} index={fileIndex} file={file} kind={kind} url={url ?? ''} onDownload={getOne} />}
+        {count > 1 && <button className="vw-arrow is-next" aria-label={t('vw.next')} disabled={fileIndex === count - 1} onClick={() => go(1)}><Icon name="arrowRight" size={18} /></button>}
       </div>
-      {(current?.files?.length ?? 0) > 1 && (
-        <div className="row g8 wrap" style={{ padding: '0 20px 16px' }}>
-          {current!.files.map((f, i) => <button key={i} className={`btn btn-sm ${i === fileIndex ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setFileIndex(i)}>{f.name}</button>)}
-        </div>
-      )}
+      {count > 1 && current && <FileStrip brandId={brandId} requestId={requestId} v={current} index={fileIndex} onPick={(i) => { onFile(i); setMarking(false); }} />}
     </div>
   );
 }

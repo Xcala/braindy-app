@@ -38,6 +38,8 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
   .spanel { width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--line); }
 }
 .spanel-set { margin: 0 12px 10px; height: 28px; font-size: 11px; }
+/* Open with the state picker below: the picker already shows the state. */
+.spanel-pt[open]:has(> .spanel-set) > summary .sx-status { display: none; }
 
 /* On the app card: its adjustments and the way into the page with its triage. */
 .ladj { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--niebla); color: var(--ink); text-align: left; cursor: pointer; }

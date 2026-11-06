@@ -56,7 +56,8 @@ export interface Version {
   publishedAt?: Timestamp;
 }
 
-export interface Annotation { x: number; y: number; w: number; h: number; versionId: string }
+/** A box or point on a piece. `fileIndex` is the file of the version it was made on (older marks: the first). */
+export interface Annotation { x: number; y: number; w: number; h: number; versionId: string; fileIndex?: number }
 
 export interface RequestComment {
   id: string;

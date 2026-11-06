@@ -1,6 +1,8 @@
 import type { Brand } from '../brands/BrandProvider';
 
 export const UPLOADS = 'Uploads';
+/** Where approved deliveries land (server/src/approvedFiles.ts). */
+export const APPROVED = 'Entregas aprobadas';
 const top = (path: string) => path.split('/')[0];
 
 /** Mirrors firestore.rules fileAllowed: whether the client sees a folder path. The admin sees everything. */

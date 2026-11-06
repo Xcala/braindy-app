@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router';
+import { Navigate, useSearchParams } from 'react-router';
+import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { LangToggle } from '../i18n/LangToggle';
@@ -14,9 +15,13 @@ const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team
 /** Settings: WhatsApp and notices, team and approvers, language, billing. Per brand, in tabs like the other pages. */
 export function Settings() {
   const { current } = useBrands();
+  const isAdmin = useAuth().profile?.role === 'admin';
+  // NickMark manages people in Team (admin), the one place for it; clients keep it here.
+  const tabs = isAdmin ? TABS.filter(([k]) => k !== 'team') : TABS;
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
-  const tab = TABS.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
+  if (isAdmin && params.get('tab') === 'team') return <Navigate to="/team" replace />;
+  const tab = tabs.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   // Same pattern as the rest of the app: title on top, a row of tabs, one section at a time.
@@ -28,7 +33,7 @@ export function Settings() {
         <h1 className="h1">{t('nav.settings')}</h1>
       </div>
       <nav className="seg seg-scroll" aria-label={t('nav.settings')}>
-        {TABS.map(([k, label]) => (
+        {tabs.map(([k, label]) => (
           <button key={k} type="button" onClick={() => setParams({ tab: k }, { replace: true })} aria-pressed={tab === k} className={tab === k ? 'is-on' : ''}>{t(label)}</button>
         ))}
       </nav>

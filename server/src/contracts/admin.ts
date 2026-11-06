@@ -1,5 +1,5 @@
-// NickMark's side of the contract: draft from the template (+ accepted proposal + schedule preset), edit,
-// send to the legal representative, countersign and seal. A signed contract is never edited again.
+// NickMark's side of the contract, one step: draft from the template (+ accepted proposal + schedule preset),
+// fill the few fields, then sign and send to the legal representative. Their signature closes it (close.ts).
 import { Hono, type MiddlewareHandler } from 'hono';
 import type { DocumentData } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
@@ -7,9 +7,17 @@ import { brandAccess } from '../access.js';
 import { notify } from '../notify.js';
 import type { AuthEnv } from '../auth.js';
 import { TEMPLATE_VERSION } from './template.js';
-import { CONTRACTOR_KEYS, fill, missingTerms, pickRecord, pickTerms, type Contractor, type Terms } from './terms.js';
+import { CONTRACTOR_KEYS, completeTerms, fill, missingTerms, pickRecord, pickTerms, type Contractor, type Terms } from './terms.js';
 import { DEFAULT_CHECKLIST, PRESETS, cleanChecklist, cleanSchedule, mondayOf, type PresetKey } from './schedule.js';
-import { CONSENT, METHOD, bucket, contractRef, evidence, now, saveSignature, seal, sha256, signaturePng } from './store.js';
+import { CONSENT, METHOD, bucket, contractRef, evidence, now, saveSignature, sha256, signaturePng } from './store.js';
+import { atContractStep, brandRef } from './close.js';
+
+/** What each preset already says, so the form starts filled. */
+const PRESET_TERMS: Record<PresetKey, Partial<Terms>> = {
+  brand3m: { objeto: 'estrategia y diseño de marca', 'plazo.meses': '3' },
+  marketing6m: { objeto: 'marketing digital: estrategia, contenido, redes sociales y sitio web', 'plazo.meses': '6' },
+  empty: {},
+};
 
 export const adminContracts = new Hono<AuthEnv>();
 const adminOnly: MiddlewareHandler<AuthEnv> = async (c, next) => {
@@ -19,9 +27,6 @@ const adminOnly: MiddlewareHandler<AuthEnv> = async (c, next) => {
 for (const path of ['/brands/:brandId/contracts', '/brands/:brandId/contracts/*', '/brands/:brandId/signed-contracts', '/brands/:brandId/schedule']) adminContracts.use(path, adminOnly);
 
 const contractor = async () => pickRecord(CONTRACTOR_KEYS, (await db.doc('config/contractor').get()).data()) as Contractor;
-const brandRef = (id: string) => db.doc(`brands/${id}`);
-/** Brands that already started onboarding (e.g. in the brief) keep their step: the contract never moves them back. */
-const atContractStep = async (brandId: string) => [undefined, 'contract'].includes((await brandRef(brandId).get()).get('onboarding.step'));
 
 /** Terms from the accepted proposal converted into this brand, when there is one. */
 async function fromProposal(brandId: string): Promise<{ proposalId?: string; terms: Partial<Terms> }> {
@@ -48,7 +53,7 @@ adminContracts.post('/brands/:brandId/contracts', async (c) => {
   const { proposalId, terms } = await fromProposal(brandId);
   const ref = db.collection(`brands/${brandId}/contracts`).doc();
   await ref.set({
-    status: 'draft', templateVersion: TEMPLATE_VERSION, terms: pickTerms({}, terms), scope: '', proposalId: proposalId ?? null,
+    status: 'draft', templateVersion: TEMPLATE_VERSION, terms: pickTerms({}, { ...PRESET_TERMS[preset], ...terms }), scope: '', proposalId: proposalId ?? null,
     schedule: PRESETS[preset](mondayOf()), checklist: DEFAULT_CHECKLIST, signer: { email: '', name: '' },
     createdBy: c.get('user').uid, createdAt: now(), updatedAt: now(),
   });
@@ -87,13 +92,25 @@ adminContracts.post('/brands/:brandId/contracts/:id/send', async (c) => {
   const ref = contractRef(brandId, id);
   const snap = await ref.get();
   if (!snap.exists || snap.get('status') !== 'draft') return c.json({ error: 'not_draft' }, 409);
-  const terms = pickTerms(snap.get('terms'));
+  const user = c.get('user');
+  const terms = completeTerms(pickTerms(snap.get('terms')), String(snap.get('signer.name') ?? ''));
   const who = await contractor();
-  const missing = [...missingTerms(terms), ...CONTRACTOR_KEYS.filter((k) => !who[k]).map((k) => `contratista.${k}`)];
+  const missing: string[] = [...missingTerms(terms), ...CONTRACTOR_KEYS.filter((k) => !who[k]).map((k) => `contratista.${k}`)];
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(snap.get('signer.email')))) missing.push('signer.email');
   if (!(snap.get('schedule.groups') ?? []).length) missing.push('schedule');
+  const png = signaturePng((await c.req.json<{ signature?: string }>().catch(() => ({} as { signature?: string }))).signature);
+  if (!png) missing.push('signature');
   if (missing.length) return c.json({ error: 'missing', fields: missing }, 400);
-  await ref.update({ status: 'sent', sentText: fill(terms, who), sentAt: now(), sentBy: c.get('user').uid });
+  // NickMark signs here, when sending: the client's signature then closes the contract by itself.
+  const signature = {
+    name: who.nombre, tipoDoc: who.tipoDoc, doc: who.doc, cargo: 'Contratista, persona natural', email: String(user.email ?? who.correo),
+    uid: user.uid, signedAt: new Date().toISOString(), verifiedAt: new Date(user.auth_time * 1000).toISOString(),
+    method: METHOD, consent: CONSENT.contractor, imagePath: await saveSignature(brandId, id, 'contratista', png!), ...evidence(c),
+  };
+  const start = /^\d{4}-\d{2}-\d{2}$/.test(terms['plazo.inicio']) ? mondayOf(terms['plazo.inicio']) : snap.get('schedule.start');
+  await ref.update({
+    status: 'sent', terms, sentText: fill(terms, who), 'schedule.start': start, 'signatures.contractor': signature, sentAt: now(), sentBy: user.uid,
+  });
   await brandRef(brandId).set({ onboarding: (await atContractStep(brandId)) ? { step: 'contract', contractId: id } : { contractId: id } }, { merge: true });
   await notify(brandId, 'contract_ready');
   return c.json({ ok: true });
@@ -105,42 +122,10 @@ adminContracts.post('/brands/:brandId/contracts/:id/reopen', async (c) => {
   const ok = await db.runTransaction(async (tx) => {
     const s = await tx.get(ref);
     if (s.get('status') !== 'sent') return false;
-    tx.update(ref, { status: 'draft', sentText: null, updatedAt: now() });
+    tx.update(ref, { status: 'draft', sentText: null, 'signatures.contractor': null, updatedAt: now() });
     return true;
   });
   return ok ? c.json({ ok: true }) : c.json({ error: 'not_sent' }, 409);
-});
-
-adminContracts.post('/brands/:brandId/contracts/:id/countersign', async (c) => {
-  const { brandId, id } = c.req.param();
-  const user = c.get('user');
-  const ref = contractRef(brandId, id);
-  const snap = await ref.get();
-  if (!snap.exists || snap.get('status') !== 'clientSigned') return c.json({ error: 'not_ready' }, 409);
-  const png = signaturePng((await c.req.json<{ signature?: string }>()).signature);
-  if (!png) return c.json({ error: 'signature' }, 400);
-  const who = await contractor();
-  const signature = {
-    name: who.nombre, tipoDoc: who.tipoDoc, doc: who.doc, cargo: 'Contratista, persona natural', email: String(user.email ?? who.correo),
-    uid: user.uid, signedAt: new Date().toISOString(), verifiedAt: new Date(user.auth_time * 1000).toISOString(),
-    method: METHOD, consent: CONSENT.contractor, imagePath: await saveSignature(brandId, id, 'contratista', png), ...evidence(c),
-  };
-  const contract = { ...snap.data(), signatures: { ...snap.get('signatures'), contractor: signature } };
-  const pdf = await seal(brandId, id, contract);
-  const start = String(snap.get('schedule.start'));
-  const toKickoff = await atContractStep(brandId);
-  const ok = await db.runTransaction(async (tx) => {
-    if ((await tx.get(ref)).get('status') !== 'clientSigned') return false;
-    tx.update(ref, { status: 'signed', 'signatures.contractor': signature, pdf, signedAt: now() });
-    tx.set(db.doc(`brands/${brandId}/context/schedule`), { ...snap.get('schedule'), contractId: id, updatedAt: now() });
-    tx.set(db.doc(`brands/${brandId}/context/kickoff`), { start, items: snap.get('checklist'), contractId: id, updatedAt: now() });
-    tx.set(brandRef(brandId), { onboarding: { ...(toKickoff ? { step: 'kickoff' } : {}), contractId: id, contractSignedAt: now() } }, { merge: true });
-    tx.set(db.collection('audit').doc(), { type: 'contract_signed', brandId, contractId: id, by: user.uid, textHash: snap.get('textHash'), pdfSha256: pdf.sha256, at: now() });
-    return true;
-  });
-  if (!ok) return c.json({ error: 'not_ready' }, 409);
-  await notify(brandId, 'contract_signed');
-  return c.json({ ok: true, pdf });
 });
 
 /** The live schedule after signing (statuses and dates move; the signed Anexo 2 does not). */

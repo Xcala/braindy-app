@@ -25,7 +25,8 @@
 @keyframes bb-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
 @keyframes bb-flash { from { background: var(--hielo); } to { background: transparent; } }
 .bb-chip { flex: none; font: 800 10px/16px var(--f-text); letter-spacing: .08em; text-transform: uppercase; padding: 3px 8px; border-radius: var(--r-xs); color: var(--ink); background: color-mix(in srgb, var(--c) 28%, transparent); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); }
-.bb-txt { color: var(--ink); text-decoration: none; }
+.bb-txt { color: var(--ink); text-decoration: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.bb-gist { color: var(--graphite); }
 a.bb-txt:hover { color: var(--azul); }
 .bb-use { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .bb-stack { display: flex; gap: 2px; height: 12px; border-radius: 6px; overflow: hidden; }
@@ -38,6 +39,6 @@ a.bb-txt:hover { color: var(--azul); }
 .bb-pins li::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--azul); }
 .bb-gaps li { padding: 8px 12px; border: 1px dashed var(--line-strong); border-radius: var(--r-sm); }
 @media (max-width: 1100px) { .bb-grid { grid-template-columns: minmax(0, 1fr); } .bb-use { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .bb-use > :first-child { grid-column: 1 / -1; } }
-@media (max-width: 720px) { .bb-use { grid-template-columns: minmax(0, 1fr); } .bb-stage { aspect-ratio: 1 / 1; } .bb-rl { font-size: 10px; letter-spacing: .06em; } }
+@media (max-width: 720px) { .bb-use { grid-template-columns: minmax(0, 1fr); } .bb-list { max-height: none; overflow: visible; } .bb-stage { aspect-ratio: 1 / 1; } .bb-rl { font-size: 10px; letter-spacing: .06em; } }
 @media (prefers-reduced-motion: reduce) { .bb-item.is-new, .bb-live::before { animation: none; } .bb-toast { transition: none; } }
 html[data-theme="dark"] .bb-brain { background: #04080F; border: 1px solid var(--line); }

@@ -111,10 +111,12 @@ AUTH EXPIRED at ${brandId}/${f.relPath}. Run: gcloud auth application-default lo
 
 /** context/fileIndex: every folder path with its file count and size, for the file browser. */
 async function writeFolderIndex(brandId: string) {
-  const snap = await db.collection(`brands/${brandId}/assets`).where('source', '==', 'drive').select('folder', 'size').get();
+  // Every source but the old apps' records, and not Uploads (as the app keeps it): approved files and uploads count too.
+  const snap = await db.collection(`brands/${brandId}/assets`).select('folder', 'size', 'source').get();
   const folders: Record<string, { files: number; bytes: number }> = {};
   for (const d of snap.docs) {
     const folder = String(d.get('folder') ?? '');
+    if (d.get('source') === 'legacy' || folder.split('/')[0] === 'Uploads') continue;
     const parts = folder ? folder.split('/') : [];
     for (let i = 0; i <= parts.length; i++) {
       const key = parts.slice(0, i).join('/');

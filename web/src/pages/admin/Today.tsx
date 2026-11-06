@@ -7,6 +7,7 @@ import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
 import { useOpenWork, type WorkItem } from '../../team/useWork';
+import { GranolaInbox } from '../../team/GranolaInbox';
 import { dayLabel, daysFrom } from '../../lib/dates';
 
 type Pay = { brandId: string; kind: 'transfer' | 'past_due' };
@@ -72,6 +73,7 @@ export function AdminToday() {
           ))}
         </div>
       )}
+      <GranolaInbox />
     </div>
   );
 }

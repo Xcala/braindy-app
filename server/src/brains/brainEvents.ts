@@ -3,6 +3,7 @@
 // "Cerebro" page, which animates each new one. Text here is client-safe: never internal notes, meeting notes or credentials.
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
+import { folderFilter } from '../access.js';
 
 export type BrainKind = 'request' | 'approved' | 'changed' | 'identity' | 'file' | 'session' | 'meeting' | 'signed';
 export type BrainArea = 'identity' | 'voice' | 'strategy' | 'rules' | 'work' | 'talks';
@@ -34,6 +35,14 @@ export async function recordBrainEvent(brandId: string, e: BrainEventInput) {
       ...(e.requestId ? { requestId: e.requestId } : {}),
       at: e.at ?? FieldValue.serverTimestamp(),
     }, { merge: true });
+  } catch { /* best effort */ }
+}
+
+/** Records a file event only when the client sees that folder: files NickMark keeps to his team never reach the feed. */
+export async function recordFileEvent(brandId: string, folder: string, names: string[], id?: string) {
+  try {
+    if (!names.length || !(await folderFilter(brandId))(folder)) return;
+    await recordBrainEvent(brandId, { ...(id ? { id } : {}), kind: 'file', area: 'work', text: names.slice(0, 3).join(', '), count: names.length });
   } catch { /* best effort */ }
 }
 

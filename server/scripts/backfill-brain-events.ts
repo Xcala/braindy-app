@@ -2,6 +2,7 @@
 // approvals and change requests (context/learnings), files uploaded, Granola meetings and Mi marca as it stands today.
 // Idempotent (fixed ids, same ids the live hooks use); --dry-run counts without writing; --brand=<id> limits to one brand.
 import { db } from '../src/firebase.js';
+import { fileFilter } from '../src/access.js';
 import { identityEvents, recordBrainEvent, type BrainEventInput } from '../src/brains/brainEvents.js';
 
 const dry = process.argv.includes('--dry-run');
@@ -21,7 +22,7 @@ for (const brandId of ids) {
   const [requests, learnings, assets, meetings, identity, voice, brain, primal] = await Promise.all([
     db.collection(`brands/${brandId}/requests`).select('title', 'formatType', 'createdAt').get(),
     db.doc(`brands/${brandId}/context/learnings`).get(),
-    db.collection(`brands/${brandId}/assets`).where('source', '==', 'upload').select('title', 'uploadedAt', 'createdAt', 'status').get(),
+    db.collection(`brands/${brandId}/assets`).where('source', '==', 'upload').select('title', 'folder', 'source', 'uploadedAt', 'createdAt', 'status').get(),
     db.collection(`brands/${brandId}/meetings`).select('date').get(),
     db.doc(`brands/${brandId}/context/identity`).get(),
     db.doc(`brands/${brandId}/context/voice`).get(),
@@ -36,8 +37,9 @@ for (const brandId of ids) {
     const at = toDate(l.at);
     out.push({ id: `learn-${l.requestId ?? 'x'}-${at ? +at : l.text.length}`, kind: l.kind === 'liked' ? 'approved' : 'changed', area: 'work', text: l.text, requestId: l.requestId, at });
   }
+  const visible = await fileFilter(brandId); // files the client does not see stay out of the feed
   for (const a of assets.docs) {
-    if (a.get('status') !== 'published') continue;
+    if (a.get('status') !== 'published' || !visible(a)) continue;
     out.push({ id: `file-${a.id}`, kind: 'file', area: 'work', text: String(a.get('title') ?? ''), count: 1, at: toDate(a.get('uploadedAt') ?? a.get('createdAt')) });
   }
   for (const m of meetings.docs) {

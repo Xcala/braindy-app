@@ -96,7 +96,7 @@ export async function fileNote(note: Note, forcedBrand?: string, viaFolder = fal
   }
   await db.doc(`brands/${brandId}/meetings/granola-${note.id}`).set(doc, { merge: true });
   // The feed only says a meeting taught the Brain (and when): its title and notes stay internal.
-  await recordBrainEvent(brandId, { id: `meet-granola-${note.id}`, kind: 'meeting', area: 'talks', at: new Date(`${doc.date}T12:00:00Z`) });
+  await recordBrainEvent(brandId, { id: `meet-granola-${note.id}`, kind: 'meeting', area: 'talks', ...(/^\d{4}-\d{2}-\d{2}$/.test(doc.date) ? { at: new Date(`${doc.date}T12:00:00Z`) } : {}) });
   await map.set({ brandId, at: FieldValue.serverTimestamp(), ...(viaFolder ? { folder: true } : mapped.get('folder') ? { folder: true } : {}) });
   await db.doc(`granolaInbox/${note.id}`).delete().catch(() => undefined);
   return { status: 'filed' as const, brandId };

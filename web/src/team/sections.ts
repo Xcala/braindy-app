@@ -42,7 +42,7 @@ export const sectionOfPath = (path: string) => ROUTE_SECTION[`/${path.split('/')
 /** The signed-in person's sections on the current brand: the nearest membership (brand, then its groups) decides. */
 export function useMySections() {
   const { user, profile } = useAuth();
-  const { current, brands } = useBrands();
+  const { current, brands, loading } = useBrands();
   const isAdmin = profile?.role === 'admin';
   const chain: string[] = [];
   for (let b: typeof current | undefined = current; b && chain.length < 4; b = brands.find((x) => x.id === b!.groupId)) chain.push(b.id);
@@ -55,12 +55,15 @@ export function useMySections() {
       (s) => setDocs((d) => ({ ...d, [id]: s.exists() ? (s.data() as MemberLike) : null })), () => setDocs((d) => ({ ...d, [id]: null }))));
     return () => offs.forEach((off) => off());
   }, [isAdmin, user, key]);
-  if (isAdmin) return { ready: true, can: () => true };
+  // Results only exists for brands where it was switched on, for everyone (admin included).
+  const resultsOk = (s?: Section) => s !== 'results' || !!current?.resultsOn;
+  if (isAdmin) return { ready: !loading, can: resultsOk };
   const ids = key ? key.split('/') : [];
-  const ready = ids.every((id) => id in docs);
+  // Not ready until the brand is known: a reload on a deep link must not send the person home before it loads.
+  const ready = ids.length > 0 && ids.every((id) => id in docs);
   const nearest = ids.map((id) => docs[id]).find(Boolean);
   // The brand's own switches win over each person's sections.
   const off = current?.sectionsOff ?? [];
   const mine = new Set((nearest ? sectionsOf(nearest) : []).filter((s) => !off.includes(s)));
-  return { ready, can: (s?: Section) => !s || mine.has(s) };
+  return { ready, can: (s?: Section) => !s || (mine.has(s) && resultsOk(s)) };
 }

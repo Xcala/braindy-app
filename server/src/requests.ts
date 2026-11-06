@@ -13,9 +13,12 @@ import { proposePlan } from './brains/plan.js';
 import { recordLearning } from './brains/learn.js';
 import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
+import { fileApproved } from './approvedFiles.js';
+import { zipStream } from './zip.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 export const URL_TTL_MS = 15 * 60 * 1000;
+const TEXT_MAX_BYTES = 200 * 1024;
 export const bucket = () => getStorage().bucket(BUCKET);
 
 type Brain = 'researcher' | 'marketer' | 'creator' | 'builder';
@@ -134,7 +137,11 @@ export async function decide(brandId: string, requestId: string, versionId: stri
   batch.set(db.collection('audit').doc(), { type: 'approval', brandId, requestId, versionId, state, by: uid, at: now() });
   await batch.commit();
   await recordLearning(brandId, requestId, versionId, state, note);
-  if (state === 'approved') await noticeToBrand(brandId, 'approved', requestId);
+  if (state === 'approved') {
+    // What was approved goes to Files right away; a failure here must not undo the approval.
+    await fileApproved(brandId, requestId, versionId).catch((e) => console.error('fileApproved', brandId, requestId, e));
+    await noticeToBrand(brandId, 'approved', requestId);
+  }
   else await queueWork(brandId, requestId, 'changes');
   return 'ok';
 }
@@ -170,9 +177,33 @@ requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/files/:in
   if (!file) return c.json({ error: 'not_found' }, 404);
   if (file.url) return c.json({ url: file.url });
   if (!file.storagePath?.startsWith(`brands/${brandId}/`)) return c.json({ error: 'not_found' }, 404);
+  // A short text (the post copy, hashtags) is read here so the viewer can show it without a cross-site fetch.
+  if (c.req.query('text') === '1') {
+    const [buf] = await bucket().file(file.storagePath).download({ end: TEXT_MAX_BYTES - 1 });
+    return c.json({ text: buf.toString('utf8') });
+  }
   const disposition = c.req.query('download') === '1' ? 'attachment' : 'inline';
   const [url] = await bucket().file(file.storagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS, responseDisposition: disposition });
   return c.json({ url });
+});
+
+/** Every file of a version in one .zip, streamed from the bucket (members of the brand only). */
+requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/zip', async (c) => {
+  const { brandId, requestId, versionId } = c.req.param();
+  if (!(await brandAccess(c.get('user').uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
+  const ver = await db.doc(`brands/${brandId}/requests/${requestId}/versions/${versionId}`).get();
+  const files = ((ver.get('files') as Array<{ name?: string; storagePath?: string }>) ?? [])
+    .filter((f) => f.storagePath?.startsWith(`brands/${brandId}/`));
+  if (!files.length) return c.json({ error: 'not_found' }, 404);
+  const used = new Map<string, number>();
+  const entries = files.map((f, i) => {
+    const name = f.name || `file-${i + 1}`;
+    const n = used.get(name) ?? 0; used.set(name, n + 1);
+    return { name: n ? name.replace(/(\.[^.]*)?$/, (ext) => ` (${n + 1})${ext}`) : name, open: () => bucket().file(f.storagePath!).createReadStream() };
+  });
+  return new Response(zipStream(entries), {
+    headers: { 'Content-Type': 'application/zip', 'Content-Disposition': `attachment; filename="v${Number(ver.get('n') ?? 1)}.zip"` },
+  });
 });
 
 // ---------- admin (Nicolas) ----------

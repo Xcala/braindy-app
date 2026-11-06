@@ -10,6 +10,7 @@ import { BrandSections } from './BrandSections';
 import { profileOf } from './sections';
 import { sendAccessLink } from '../auth/emailLink';
 import { useBrands } from '../brands/BrandProvider';
+import { Scan } from '../components/Scan';
 
 type Member = { uid: string; email?: string; name?: string; role: 'client_owner' | 'client_member'; canApprove?: boolean; sections?: string[] | null };
 
@@ -107,7 +108,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         <button type="submit" className="btn btn-primary" disabled={!valid}>{t('team.invite')}</button>
       </form>
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
-      <p className="t-xs t-mute">{t('team.inviteHint')}</p>
+      <Scan text={t('team.inviteHint')} className="t-xs" />
       {removing && (
         <ConfirmDialog title={t('team.removeTitle', { email: removing.email ?? '' })} confirmLabel={t('team.remove')} danger
           onConfirm={async () => { await removeMember(brandId, removing.uid); setRemoving(null); }} onCancel={() => setRemoving(null)}>

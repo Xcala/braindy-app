@@ -20,6 +20,7 @@ export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
     features: [
       { b: ['Editas textos, fotos y botones', 'You edit texts, photos and buttons'], rest: [' haciendo clic sobre la misma página', ' by clicking on the page itself'] },
       { b: ['Agregas, ordenas y ocultas secciones', 'You add, sort and hide sections'], rest: [' con el diseño de tu marca', ' in your brand’s design'] },
+      { b: ['CMS:', 'CMS:'], rest: [' blog o catálogo, hasta 300 entradas', ' blog or catalog, up to 300 entries'], term: 'cms' },
       { b: ['Nada se ve en público', 'Nothing goes public'], rest: [' hasta que tocas Publicar', ' until you hit Publish'] },
       { b: ['Videos tutoriales', 'Video tutorials'], rest: [' del nivel básico', ', basic level'] },
     ],
@@ -57,7 +58,7 @@ export const COMPARE: Array<{ group: Tx; rows: Array<[Tx, Tx, Tx, Tx]> }> = [
     [['Textos, fotos y botones', 'Texts, photos and buttons'], ['✓', '✓'], ['✓', '✓'], ['✓', '✓']],
     [['Secciones con el diseño de tu marca', 'Sections in your brand’s design'], ['✓', '✓'], ['✓', '✓'], ['✓', '✓']],
     [['Páginas y landings propias', 'Your own pages and landings'], ['–', '–'], ['✓', '✓'], ['✓', '✓']],
-    [['CMS (blog, catálogo, colecciones)', 'CMS (blog, catalog, collections)'], ['–', '–'], ['1.000 entradas', '1,000 entries'], ['3.000 entradas', '3,000 entries']],
+    [['CMS (blog, catálogo, colecciones)', 'CMS (blog, catalog, collections)'], ['300 entradas', '300 entries'], ['1.000 entradas', '1,000 entries'], ['3.000 entradas', '3,000 entries']],
     [['Tienda en línea', 'Online store'], ['–', '–'], ['Complemento', 'Add-on'], ['Complemento', 'Add-on']],
     [['Edición desde Claude o ChatGPT (MCP)', 'Editing from Claude or ChatGPT (MCP)'], ['–', '–'], ['–', '–'], ['✓', '✓']],
     [['Edición desde WhatsApp', 'Editing from WhatsApp'], ['–', '–'], ['–', '–'], ['300 mensajes / mes', '300 messages / month']],
@@ -84,7 +85,7 @@ export const ADDONS: Array<{ name: Tx; for: string; price: Record<Cur, number>; 
   { name: ['Tienda en línea', 'Online store'], for: 'Pro · Ultra', price: { usd: 10, cop: 39900 },
     body: ['Hasta 100 productos con pago por Stripe, Mercado Pago o Wompi, o conexión con Shopify o Ecwid.', 'Up to 100 products paid with Stripe, Mercado Pago or Wompi, or a link to Shopify or Ecwid.'],
     note: ['La pasarela cobra su propia comisión por venta.', 'The payment gateway charges its own fee per sale.'] },
-  { name: ['CMS adicional', 'Extra CMS'], for: 'Pro · Ultra', price: { usd: 3, cop: 11900 },
+  { name: ['CMS adicional', 'Extra CMS'], for: 'Esencial · Pro · Ultra', price: { usd: 3, cop: 11900 },
     body: ['Cada 1.000 entradas más allá de las incluidas en tu plan. Te avisamos antes de llegar al límite.', 'Each 1,000 entries beyond your plan. We warn you before you reach the limit.'] },
 ];
 

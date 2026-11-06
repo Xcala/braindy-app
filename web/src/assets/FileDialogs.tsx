@@ -20,6 +20,29 @@ export function FileDialogs({ actions }: { actions: FileActions }) {
     );
   }
 
+  if (ask.kind === 'trashFolder') {
+    const name = ask.path.split('/').pop() ?? ask.path;
+    return (
+      <ConfirmDialog danger title={t('files.folderTrash')} confirmLabel={t('files.toTrash')} busy={actions.busy} onCancel={actions.closeAsk}
+        onConfirm={() => { actions.closeAsk(); actions.trashDir(ask.path); }}>
+        {t('files.folderTrashConfirm', { name })}
+      </ConfirmDialog>
+    );
+  }
+
+  if (ask.kind === 'renameFolder') {
+    const name = ask.path.split('/').pop() ?? ask.path;
+    const saveDir = (e?: FormEvent) => { e?.preventDefault(); actions.closeAsk(); actions.renameDir(ask.path, field.current?.value.trim() ?? ''); };
+    return (
+      <ConfirmDialog title={t('files.folderRename')} confirmLabel={t('files.rename')} onCancel={actions.closeAsk} onConfirm={saveDir}>
+        <form onSubmit={saveDir} className="col g8" style={{ marginTop: 4 }}>
+          <label className="t-sm w7" htmlFor="folder-rename" style={{ color: 'var(--ink)' }}>{t('files.renamePrompt')}</label>
+          <input id="folder-rename" ref={field} className="input" defaultValue={name} data-autofocus />
+        </form>
+      </ConfirmDialog>
+    );
+  }
+
   const f = ask.f;
   const save = (e?: FormEvent) => { e?.preventDefault(); actions.closeAsk(); actions.rename(f, field.current?.value.trim() ?? ''); };
   return (

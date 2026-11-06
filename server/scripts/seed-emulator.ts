@@ -47,7 +47,8 @@ console.log(`read ${docs.length} docs from ${offline ? 'synthetic seed' : 'produ
 // 2 · write to the emulators
 process.env.FIRESTORE_EMULATOR_HOST = emu.firestore;
 process.env.FIREBASE_AUTH_EMULATOR_HOST = emu.auth;
-const local = initializeApp({ projectId: 'braindy-brand-guideline' }, 'local');
+// SEED_PROJECT=demo-… seeds emulators started with a demo project (no real Google service can be reached).
+const local = initializeApp({ projectId: process.env.SEED_PROJECT ?? 'braindy-brand-guideline' }, 'local');
 const ldb = getFirestore(local, 'braindy-app');
 for (const d of docs) await ldb.doc(d.path).set(d.data);
 

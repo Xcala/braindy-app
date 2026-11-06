@@ -42,10 +42,16 @@ export async function brandAccess(uid: string, brandId: string): Promise<Access>
 type FileAccess = { mode?: string; folders?: string[] };
 /** Same rule as firestore.rules fileAllowed: which assets a client sees when NickMark picked the folders. */
 export async function fileFilter(brandId: string) {
+  const seen = await folderFilter(brandId);
+  return (asset: FirebaseFirestore.DocumentSnapshot) => asset.get('source') === 'legacy' || seen(String(asset.get('folder') ?? ''));
+}
+
+/** The same rule by folder path: whether a client sees what lands in it. */
+export async function folderFilter(brandId: string) {
   const fa = ((await db.doc(`brands/${brandId}`).get()).get('fileAccess') ?? {}) as FileAccess;
-  return (asset: FirebaseFirestore.DocumentSnapshot) => {
-    if (fa.mode !== 'selected' || asset.get('source') === 'legacy') return true;
-    const top = String(asset.get('folder') ?? '').split('/')[0];
+  return (folder: string) => {
+    if (fa.mode !== 'selected') return true;
+    const top = folder.split('/')[0] ?? '';
     return top === 'Uploads' || (fa.folders ?? []).includes(top);
   };
 }

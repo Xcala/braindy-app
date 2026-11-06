@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
+import { Scan } from '../../components/Scan';
 
 type Font = { id?: string; name?: string; fontFamily?: string; role?: string; description?: string; type?: string; downloadUrl?: string; url?: string };
 
@@ -44,7 +45,7 @@ export function Typography({ fonts }: { fonts: Font[] }) {
             <p className="text-5xl sm:text-[64px] sm:leading-[64px]" style={{ fontFamily: f.fontFamily, color: 'var(--ink)' }}>Aa</p>
             <div className="col g4">
               <span className="h3" style={{ fontFamily: f.fontFamily }}>{f.name ?? f.fontFamily}</span>
-              {f.description && <p className="t-sm t-mute">{f.description}</p>}
+              {f.description && <Scan text={f.description} points />}
             </div>
             <a href={link.href} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm self-start" style={{ textDecoration: 'none' }}>↓ {t(link.label)}</a>
           </div>

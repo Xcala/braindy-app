@@ -1,14 +1,13 @@
-// Client side of the contract: the legal representative signs (fresh email-link sign-in, data, drawn
-// signature, consent), both parties download the sealed PDF, and the brand ticks its kickoff checklist.
+// Client side of the contract: the legal representative signs (their verified session, data, drawn signature,
+// consent) and that closes it, both parties download the sealed PDF, and the brand ticks its kickoff checklist.
 import { Hono } from 'hono';
 import { db } from '../firebase.js';
+import { notify } from '../notify.js';
 import { brandAccess } from '../access.js';
 import type { AuthEnv } from '../auth.js';
 import { CLIENT_KEYS, pickRecord, withClient } from './terms.js';
 import { CONSENT, METHOD, contractRef, evidence, now, pdfUrl, saveSignature, sha256, signaturePng } from './store.js';
-
-/** The signer must have signed in with the emailed link in the last 15 minutes (identity check). */
-const FRESH_SECONDS = 15 * 60;
+import { close } from './close.js';
 
 export const contracts = new Hono<AuthEnv>();
 
@@ -21,9 +20,8 @@ contracts.post('/brands/:brandId/contracts/:id/sign', async (c) => {
 
   const ref = contractRef(brandId, id);
   const snap = await ref.get();
-  if (!snap.exists || snap.get('status') !== 'sent') return c.json({ error: 'not_signable' }, 409);
+  if (!snap.exists || snap.get('status') !== 'sent' || !snap.get('signatures.contractor.imagePath')) return c.json({ error: 'not_signable' }, 409);
   if (!email || !user.email_verified || email !== String(snap.get('signer.email') ?? '').toLowerCase()) return c.json({ error: 'not_signer' }, 403);
-  if (Date.now() / 1000 - user.auth_time > FRESH_SECONDS) return c.json({ error: 'verify_email' }, 401);
 
   const b = await c.req.json<{ client?: unknown; signature?: string; consent?: boolean; textHash?: string }>();
   const client = { ...pickRecord(CLIENT_KEYS, b.client), correo: email };
@@ -45,15 +43,13 @@ contracts.post('/brands/:brandId/contracts/:id/sign', async (c) => {
     uid: user.uid, signedAt: at, verifiedAt: new Date(user.auth_time * 1000).toISOString(),
     method: METHOD, consent: CONSENT.client, imagePath, ...evidence(c),
   };
-  const ok = await db.runTransaction(async (tx) => {
-    const cur = await tx.get(ref);
-    if (cur.get('status') !== 'sent') return false;
-    tx.update(ref, { status: 'clientSigned', client, text, textHash, 'signatures.client': signature, clientSignedAt: now() });
-    tx.set(db.collection('audit').doc(), { type: 'contract_client_signed', brandId, contractId: id, by: user.uid, textHash, at: now() });
-    return true;
-  });
-  if (!ok) return c.json({ error: 'not_signable' }, 409);
-  return c.json({ ok: true, textHash });
+  const patch = { client, text, textHash, 'signatures.client': signature, clientSignedAt: now() };
+  const contract = { ...snap.data(), client, text, textHash, signatures: { ...snap.get('signatures'), client: signature } };
+  const pdf = await close(brandId, id, contract, patch, user.uid);
+  if (!pdf) return c.json({ error: 'not_signable' }, 409);
+  await db.collection('audit').add({ type: 'contract_client_signed', brandId, contractId: id, by: user.uid, textHash, at: now() });
+  await notify(brandId, 'contract_signed');
+  return c.json({ ok: true, textHash, pdf });
 });
 
 /** Signed URL of the sealed PDF: admin, the signer, and people who see billing. */

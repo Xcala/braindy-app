@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { useToast } from '../components/Toaster';
-import { downloadZip, moveFile, removeFile, renameFile, restoreFile, shareLink } from './fileApi';
+import { downloadZip, moveFile, removeFile, renameFile, renameFolder, restoreFile, shareLink, trashFolder } from './fileApi';
 import type { FileItem } from './fileKinds';
 
 /** A few at a time: each change also updates the folder counts, which should not race too hard. */
@@ -14,8 +14,9 @@ async function inBatches(ids: string[], run: (id: string) => Promise<unknown>) {
   return failed;
 }
 
-/** What the Braindy dialog is asking: send files to the trash, or a new name for one file. */
-export type FileAsk = { kind: 'trash'; ids: string[]; name?: string } | { kind: 'rename'; f: FileItem } | null;
+/** What the Braindy dialog is asking: send files or a folder to the trash, or a new name for a file or a folder. */
+export type FileAsk = { kind: 'trash'; ids: string[]; name?: string } | { kind: 'rename'; f: FileItem }
+  | { kind: 'renameFolder'; path: string } | { kind: 'trashFolder'; path: string } | null;
 
 /**
  * Files ticked in the explorer and what can be done with them: everyone can download them as a .zip; NickMark can
@@ -75,8 +76,19 @@ export function useFileActions(brandId: string, zipName: string) {
     try { await navigator.clipboard.writeText((await shareLink(brandId, f.id)).url); toast({ text: t('files.shareDone'), ms: 4000 }); }
     catch { toast({ text: t('files.actionError'), tone: 'bad' }); }
   });
+  const renameDir = (path: string, name: string) => {
+    if (name && name !== path.split('/').pop()) run(async () => { done(await renameFolder(brandId, path, name).then(() => 0, () => 1), t('files.renamed')); });
+  };
+  // Undo puts every file back in its folder.
+  const trashDir = (path: string) => run(async () => {
+    const r = await trashFolder(brandId, path).catch(() => null);
+    if (!r) { done(1, ''); return; }
+    done(0, t('files.trashedN', { n: String(r.ids.length) }), () => run(async () => {
+      done(await inBatches(r.ids, (id) => restoreFile(brandId, id)), t('files.restoredN', { n: String(r.ids.length) }));
+    }));
+  });
   const closeAsk = useCallback(() => setAsk(null), []);
 
-  return { picked, setPicked, selIn, clear, busy, ask, setAsk, closeAsk, trash, move, zip, rename, share };
+  return { picked, setPicked, selIn, clear, busy, ask, setAsk, closeAsk, trash, move, zip, rename, share, renameDir, trashDir };
 }
 export type FileActions = ReturnType<typeof useFileActions>;
