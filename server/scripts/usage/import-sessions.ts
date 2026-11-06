@@ -15,7 +15,7 @@ const rootArg = process.argv.indexOf('--root');
 const ROOT = rootArg > 0 ? process.argv[rootArg + 1] : join(homedir(), '.claude', 'projects');
 
 /** Folder words that name a brand differently from its id. */
-const ALIASES: Record<string, string> = { level: 'revista-level', 'braindy-app': 'braindy' };
+const ALIASES: Record<string, string> = { level: 'revista-level', 'braindy-app': 'braindy', hacienda: 'hacienda-parrilla-bar', 'marco-polo': 'marco-polo-education' };
 
 type Row = Tokens & { brandId: string | null; project: string; sessionId: string; month: string; model: string; last: string };
 
