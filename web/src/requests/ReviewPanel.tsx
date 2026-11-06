@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
@@ -11,6 +11,7 @@ import { decide } from './api';
 import { markFile } from './useFileUrl';
 import { VersionNotes } from './VersionNotes';
 import { Scan } from '../components/Scan';
+import { CommentEdit } from '../components/CommentEdit';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
 
@@ -27,6 +28,8 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
   const [filter, setFilter] = useState<'open' | 'resolved'>('open');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState<string | null>(null);
+  const cRef = (c: RequestComment) => doc(db, 'brands', brandId, 'requests', r.id, 'comments', c.id);
 
   const isLatest = v && r.latestVersion === v.id;
   const pending = v?.published && v.approval?.state === 'pending';
@@ -96,8 +99,12 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
             <div key={c.id} className="row g12" style={{ alignItems: 'flex-start' }}>
               <span className="flex flex-none items-center justify-center" style={{ width: 28, height: 28, borderRadius: '50%', background: c.annotation ? 'var(--azul)' : 'var(--hielo)', color: c.annotation ? '#fff' : 'var(--azul-press)', font: '800 12px/1 var(--f-text)' }}>{c.annotation ? pinNumber(c) : '·'}</span>
               <div className="col g4 grow">
-                <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}</span></span>
-                <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>
+                <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}{c.editedAt ? ` · ${t('ce.edited')}` : ''}</span></span>
+                {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>}
+                {(c.author === user?.uid || profile?.role === 'admin') && (
+                  <CommentEdit text={c.text} max={5000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
+                    onSave={c.author === user?.uid ? (text) => updateDoc(cRef(c), { text, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(cRef(c))} />
+                )}
                 {markedOn(c) && <button className="t-xs t-mute truncate self-start" title={markedOn(c)!.name} style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0, maxWidth: '100%' }} onClick={() => onShowFile(markFile(c.annotation))}>{t('vw.onFile', { name: markedOn(c)!.name })}</button>}
                 {(c.author === user?.uid || canApprove) && <button className="t-xs w7 self-start" style={{ background: 'none', border: 0, color: 'var(--azul)', cursor: 'pointer', padding: 0 }} onClick={() => resolve(c)}>{c.resolved ? t('req.reopen') : t('req.resolve')}</button>}
               </div>

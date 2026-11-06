@@ -187,12 +187,18 @@ service cloud.firestore {
             && request.resource.data.text.size() > 0
             && request.resource.data.text.size() <= 5000
             && request.resource.data.createdAt == request.time;
-          // Resolving a comment: its author, anyone who can approve, or the admin. Text never changes.
+          // Resolving a comment: its author, anyone who can approve, or the admin. Only its author edits the text.
           allow update: if isAdmin()
             || ((resource.data.author == uid() || canApprove(brandId))
                 && onlyChanges(['resolved', 'resolvedBy', 'resolvedAt'])
                 && request.resource.data.resolved is bool
-                && request.resource.data.resolvedBy == uid());
+                && request.resource.data.resolvedBy == uid())
+            || (isMember(brandId) && resource.data.author == uid()
+                && onlyChanges(['text', 'editedAt'])
+                && request.resource.data.text is string
+                && request.resource.data.text.size() > 0
+                && request.resource.data.text.size() <= 5000
+                && request.resource.data.editedAt == request.time);
           allow delete: if isAdmin()
             || (isMember(brandId) && resource.data.author == uid());
         }
@@ -247,7 +253,11 @@ service cloud.firestore {
         allow update: if isAdmin()
           || ((resource.data.author == uid() || canApprove(brandId))
               && onlyChanges(['resolved', 'resolvedBy', 'resolvedAt'])
-              && request.resource.data.resolved is bool);
+              && request.resource.data.resolved is bool)
+          || (isMember(brandId) && resource.data.author == uid()
+              && onlyChanges(['text', 'editedAt'])
+              && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+              && request.resource.data.editedAt == request.time);
         allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
         match /replies/{replyId} {
           allow read: if canReadBrand(brandId);
@@ -256,7 +266,12 @@ service cloud.firestore {
             && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
             && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
             && request.resource.data.createdAt == request.time;
-          allow update: if false;
+          // Its author edits the text (NickMark too, as admin).
+          allow update: if isAdmin()
+            || (isMember(brandId) && resource.data.author == uid()
+                && onlyChanges(['text', 'editedAt'])
+                && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+                && request.resource.data.editedAt == request.time);
           allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
         }
       }

@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { addDoc, collection, deleteField, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc, type Timestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc, type Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
+import { CommentEdit } from '../components/CommentEdit';
 import { samePage, type SiteFrame } from './useSpot';
 
 /** A comment on the site (brands/{b}/siteComments), pinned on a part of it or general to a page. n: its number on the pins, oldest first. asPoint: key of the adjustment NickMark made from it. */
-export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp }
-type Reply = { id: string; author: string; authorName: string; text: string; createdAt?: Timestamp };
+export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp; editedAt?: Timestamp }
+type Reply = { id: string; author: string; authorName: string; text: string; createdAt?: Timestamp; editedAt?: Timestamp };
 
 const hostOf = (url?: string) => { try { return url ? new URL(url).host.replace(/^www\./, '') : ''; } catch { return ''; } };
 const pathOf = (url: string) => { try { return decodeURI(new URL(url).pathname); } catch { return url; } };
@@ -104,6 +105,7 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
   const ref = useRef<HTMLDetailsElement>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [text, setText] = useState('');
+  const [editing, setEditing] = useState<string | null>(null);
   const isAdmin = profile?.role === 'admin';
   const canResolve = isAdmin || c.author === user?.uid;
   const cref = doc(db, 'brands', brandId, 'siteComments', c.id);
@@ -135,10 +137,26 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
       }}>
       <summary>
         <span className="sc-n">{c.n}</span>
-        <span className="spanel-ptitle"><b>{c.authorName || t('sc.someone')}</b> {c.text}</span>
+        <span className="spanel-ptitle"><b>{c.authorName || t('sc.someone')}</b> {c.text}{c.editedAt ? <span className="t-mute"> · {t('ce.edited')}</span> : null}</span>
       </summary>
       <p className="t-xs t-mute">{pathOf(c.url)} · {when(c.createdAt)}{c.spot?.text ? ` · «${c.spot.text}»` : ''}{c.where ? ` · ${t('sc.whereIs')}: ${c.where}` : ''}</p>
-      {replies.map((r) => <p key={r.id} className="t-xs sc-reply"><b>{r.authorName || t('sc.someone')}</b> {r.text} <span className="t-mute">· {when(r.createdAt)}</span></p>)}
+      {(c.author === user?.uid || isAdmin) && (
+        <div style={{ margin: '0 12px 8px' }}>
+          {editing === c.id && <p className="t-xs t-mute">{t('ce.label')}</p>}
+          <CommentEdit text={c.text} max={2000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
+            onSave={c.author === user?.uid ? (v) => updateDoc(cref, { text: v, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(cref)} />
+        </div>
+      )}
+      {replies.map((r) => {
+        const rref = doc(cref, 'replies', r.id);
+        return (
+          <div key={r.id} className="sc-reply col g4">
+            {editing !== r.id && <p className="t-xs"><b>{r.authorName || t('sc.someone')}</b> {r.text} <span className="t-mute">· {when(r.createdAt)}{r.editedAt ? ` · ${t('ce.edited')}` : ''}</span></p>}
+            {(r.author === user?.uid || isAdmin) && <CommentEdit text={r.text} max={2000} editing={editing === r.id} setEditing={(on) => setEditing(on ? r.id : null)}
+              onSave={r.author === user?.uid ? (v) => updateDoc(rref, { text: v, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(rref)} />}
+          </div>
+        );
+      })}
       <form className="row g8" onSubmit={reply}>
         <input className="input" value={text} maxLength={2000} placeholder={t('sc.replyPh')} aria-label={t('sc.replyPh')} onChange={(e) => setText(e.target.value)} />
         <button type="submit" className="btn btn-secondary btn-sm" disabled={!text.trim()}>{t('sc.reply')}</button>

@@ -68,6 +68,7 @@ export interface RequestComment {
   kind?: string;
   resolved?: boolean;
   createdAt?: Timestamp;
+  editedAt?: Timestamp;
 }
 
 export const STATUS_CHIP: Record<RequestStatus, string> = {

@@ -182,13 +182,14 @@ describe('comments', () => {
     await assertFails(deleteDoc(doc(db, `brands/${BRAND_A}/requests/r1/comments/c1`)));
   });
 
-  it('authors and approvers resolve comments; plain members cannot resolve others, nobody edits text', async () => {
+  it('authors and approvers resolve comments; plain members cannot resolve others, only the author edits text', async () => {
     const resolve = (by: string) => ({ resolved: true, resolvedBy: by, resolvedAt: serverTimestamp() });
     await setDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), comment(MEMBER));
     await assertSucceeds(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), resolve(MEMBER)));
     await assertSucceeds(updateDoc(doc(as(env, APPROVER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(APPROVER)));
     await assertFails(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(MEMBER)));
     await assertFails(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), { text: 'edited' }));
+    await assertSucceeds(updateDoc(doc(as(env, MEMBER), `brands/${BRAND_A}/requests/r1/comments/mine`), { text: 'edited', editedAt: serverTimestamp() }));
     await assertFails(updateDoc(doc(as(env, APPROVER), `brands/${BRAND_A}/requests/r1/comments/c1`), resolve(OWNER)));
   });
 
