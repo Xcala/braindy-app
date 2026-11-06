@@ -1,50 +1,74 @@
-// The Braindy App tutorial videos in Learn: uploads the MP4s to Storage (learn/…, with a download token) and
-// writes the published lesson that plays them. Idempotent: a file already uploaded keeps its token. Prints a report.
-//   npx tsx scripts/learn/tutorial-videos.ts <folder with the MP4s> --dry-run
-//   npx tsx scripts/learn/tutorial-videos.ts <folder with the MP4s>
+// The Braindy App tutorial videos in Learn («Cómo usar Braindy»): one lesson per video of the catalog
+// (video/tutoriales/catalogo.mjs). Uploads out/<lang>/<id>.mp4 and <id>_9x16.mp4 to Storage (learn/<lang>/…, with a
+// download token) and writes the published lesson with its video per language. Idempotent: a file already uploaded
+// keeps its token unless --replace (a re-recorded video gets a new token, so browsers do not keep the old one).
+//   npx tsx scripts/learn/tutorial-videos.ts --dry-run [ids]
+//   npx tsx scripts/learn/tutorial-videos.ts [--replace] [ids]
 import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
+// @ts-expect-error plain JS catalog shared with the recording scripts
+import { TODOS } from '../../../video/tutoriales/catalogo.mjs';
+
+type L2 = { es: string; en: string };
+type Video = { id: string; kind: 'general' | 'section' | 'feature'; paths: string[]; titulo: L2; resumen: L2; escenas: ({ es?: string; en?: string; de?: string })[] };
 
 const BUCKET = 'braindy-brand-guideline.firebasestorage.app';
-const dir = process.argv[2];
-const dryRun = process.argv.includes('--dry-run');
+const OUT = resolve(import.meta.dirname, '../../../video/tutoriales/out');
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run'), replace = args.includes('--replace');
+const only = args.find((a) => !a.startsWith('--'))?.split(',');
 const app = initializeApp({ credential: applicationDefault(), projectId: 'braindy-brand-guideline', storageBucket: BUCKET });
 const db = getFirestore(app, 'braindy-app');
 const bucket = getStorage(app).bucket();
+const report = { uploaded: 0, kept: 0, lessons: 0, missing: [] as string[] };
 
-const FILES = { wide: 'Braindy_Tour_Clientes_v11.mp4', tall: 'Braindy_Tour_Clientes_v11_9x16.mp4' } as const;
+const seconds = (f: string) => Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString());
 
-async function upload(name: string) {
-  const local = join(dir, name);
-  if (!existsSync(local)) throw new Error(`Missing ${local}`);
-  const file = bucket.file(`learn/${name}`);
+async function upload(lang: 'es' | 'en', name: string) {
+  const local = join(OUT, lang, name), dest = `learn/${lang}/${name}`;
+  if (!existsSync(local)) { report.missing.push(`${lang}/${name}`); return undefined; }
+  const file = bucket.file(dest);
   const [there] = await file.exists();
-  let token = there ? String((await file.getMetadata())[0].metadata?.firebaseStorageDownloadTokens ?? '').split(',')[0] : '';
+  let token = there && !replace ? String((await file.getMetadata())[0].metadata?.firebaseStorageDownloadTokens ?? '').split(',')[0] : '';
   if (!token) {
     token = randomUUID();
-    if (!dryRun) await bucket.upload(local, { destination: `learn/${name}`, contentType: 'video/mp4', metadata: { cacheControl: 'public, max-age=86400', metadata: { firebaseStorageDownloadTokens: token } } });
-  }
-  console.log(`${name}: ${there ? 'already there (kept)' : dryRun ? 'would be uploaded' : 'uploaded'}`);
-  return `https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent(`learn/${name}`)}?alt=media&token=${token}`;
+    if (!dryRun) await bucket.upload(local, { destination: dest, contentType: 'video/mp4', metadata: { cacheControl: 'public, max-age=86400', metadata: { firebaseStorageDownloadTokens: token } } });
+    report.uploaded++;
+  } else report.kept++;
+  console.log(`  ${dest} (${(statSync(local).size / 1e6).toFixed(1)} MB): ${token && there && !replace ? 'kept' : dryRun ? 'would upload' : 'uploaded'}`);
+  return `https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o/${encodeURIComponent(dest)}?alt=media&token=${token}`;
 }
 
-const videoUrl = await upload(FILES.wide);
-const videoVertical = await upload(FILES.tall);
-const lesson = {
-  area: 'process', order: 0, status: 'published', minutes: 2, categories: [], stages: ['onboarding'], videoUrl, videoVertical,
-  title: { es: 'Cómo usar Braindy', en: 'How to use Braindy' },
-  summary: {
-    es: 'Un recorrido de minuto y medio por la app: tu marca, tus pedidos, las entregas y cómo apruebas.',
-    en: 'A minute-and-a-half tour of the app: your brand, your requests, the deliveries and how you approve.',
-  },
-  body: {
-    es: '## Tu marca en un solo lugar\nLogo, colores, tipografías, voz y estrategia, siempre a la mano y al día.\n\n## Pide lo que necesites\nTocas qué es, dónde va y para cuándo, y NicoMarca lo vuelve un plan.\n\n## Revisa y aprueba\nCada entrega llega con su versión. Marca el punto exacto si algo se ajusta, o apruébala.\n\n## Todo queda guardado\nLo aprobado queda en Archivos, listo para descargar y compartir.',
-    en: '## Your brand in one place\nLogo, colors, typefaces, voice and strategy, always at hand and up to date.\n\n## Ask for what you need\nTap what it is, where it goes and when, and NickMark turns it into a plan.\n\n## Review and approve\nEvery delivery comes with its version. Mark the exact spot if something needs a change, or approve it.\n\n## Everything stays saved\nWhat you approve stays in Files, ready to download and share.',
-  },
-};
-if (!dryRun) await db.doc('lessons/como-usar-braindy').set({ ...lesson, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
-console.log(`lesson como-usar-braindy: ${dryRun ? 'would be written' : 'written'} (published, Process, first)`);
+/** The lesson text: the voice lines, one scannable bullet each. */
+const body = (v: Video, lang: 'es' | 'en') => v.escenas.filter((e) => e[lang]).map((e) => `- ${e[lang]}`).join('\n');
+
+let order = 0;
+for (const v of (TODOS as Video[])) {
+  order++;
+  if (only && !only.includes(v.id)) continue;
+  console.log(v.id);
+  const videos: Record<string, { wide: string; tall?: string }> = {};
+  let secs = 0;
+  for (const lang of ['es', 'en'] as const) {
+    const wide = await upload(lang, `${v.id}.mp4`), tall = await upload(lang, `${v.id}_9x16.mp4`);
+    if (wide) { videos[lang] = tall ? { wide, tall } : { wide }; secs ||= seconds(join(OUT, lang, `${v.id}.mp4`)); }
+  }
+  if (!videos.es && !videos.en) continue;
+  // the overview keeps the lesson that already plays the tour, so links to it still work
+  const id = v.kind === 'general' ? 'como-usar-braindy' : `tut-${v.id}`;
+  const lesson = {
+    area: 'process', order: v.kind === 'general' ? 0 : v.kind === 'section' ? order : 100 + order, status: 'published',
+    minutes: Math.max(1, Math.round(secs / 60)), categories: [], stages: ['onboarding'], kind: v.kind, paths: v.paths, videos,
+    videoUrl: (videos.es ?? videos.en)!.wide, videoVertical: (videos.es ?? videos.en)!.tall ?? null,
+    title: v.titulo, summary: v.resumen, body: { es: body(v, 'es'), en: body(v, 'en') },
+  };
+  if (!dryRun) await db.doc(`lessons/${id}`).set({ ...lesson, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+  report.lessons++;
+  console.log(`  lesson ${id}: ${dryRun ? 'would be written' : 'written'} (${v.kind}, ${Object.keys(videos).join('+')}, ${secs.toFixed(0)} s)`);
+}
+console.log(`\n${dryRun ? 'DRY RUN · ' : ''}uploaded ${report.uploaded}, kept ${report.kept}, lessons ${report.lessons}, missing ${report.missing.length}${report.missing.length ? ': ' + report.missing.join(', ') : ''}`);

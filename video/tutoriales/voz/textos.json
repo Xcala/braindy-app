@@ -1,0 +1,418 @@
+[
+ {
+  "id": "braindy-en-90",
+  "lang": "es",
+  "n": [
+   1,
+   12
+  ],
+  "text": "Esto es Bréindi: tu marca, hecha por NicoMarca y sus cuatro Brains. <break time=\"2.0s\" /> Todo en app punto bréindi punto co. Y si quieres ver una sección a fondo, está en Aprende."
+ },
+ {
+  "id": "braindy-en-90",
+  "lang": "en",
+  "n": [
+   1,
+   12
+  ],
+  "text": "This is Braindy: your brand, made by NickMark and his four Brains. <break time=\"2.0s\" /> All at app dot braindy dot co. And to see any section in depth, go to Learn."
+ },
+ {
+  "id": "inicio",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "Entra a app punto bréindi punto co con Google o con un enlace que te llega al correo. Sin contraseñas que recordar. <break time=\"2.0s\" /> Inicio te dice qué te necesita hoy. Desde aquí le escribes a Nico o agendas treinta minutos con él. <break time=\"2.0s\" /> Lo que espera tu aprobación sale primero: tocas Revisar y entras. <break time=\"2.0s\" /> Abajo ves lo que está en producción y cuántas horas hábiles faltan para cada entrega. <break time=\"2.0s\" /> Y tu próxima reunión, con el botón para entrar a la llamada y el historial con sus notas."
+ },
+ {
+  "id": "inicio",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "Go to app dot braindy dot co and sign in with Google or with a link sent to your email. No passwords to remember. <break time=\"2.0s\" /> Home tells you what needs you today. From here you message Nick or book thirty minutes with him. <break time=\"2.0s\" /> Whatever is waiting for your approval comes first: tap Review and you are in. <break time=\"2.0s\" /> Below, you see what is in production and how many business hours are left for each delivery. <break time=\"2.0s\" /> And your next meeting, with a button to join the call and the history with its notes."
+ },
+ {
+  "id": "mi-marca",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "En Mi marca, Visual tiene tus logos. Cambia el fondo para verlos en blanco, en oscuro o a una tinta, y descárgalos. <break time=\"2.0s\" /> Toca un color para copiar su código. Copia rápida te da los tres principales y la fuente de una vez. <break time=\"2.0s\" /> En Tipografía descargas la fuente o la activas en Adobe Fonts. <break time=\"2.0s\" /> Esencia es el porqué de tu marca: su historia, la estrategia firmada por NicoMarca y su voz, cómo suena y cómo nunca suena."
+ },
+ {
+  "id": "mi-marca",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "In My brand, Visual holds your logos. Change the background to see them on white, on dark or in one color, and download them. <break time=\"2.0s\" /> Tap a color to copy its code. Quick copy gives you the top three and the typeface at once. <break time=\"2.0s\" /> In Typography you download the font or activate it in Adobe Fonts. <break time=\"2.0s\" /> Essence is the why of your brand: its story, the strategy signed by NickMark and its voice, how it sounds and how it never sounds."
+ },
+ {
+  "id": "cerebro",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "El Cerebro es lo que los Brains saben de tu marca: cuántas cosas sabe y qué aprendió esta semana. <break time=\"2.0s\" /> El mapa crece por áreas. Toca Ver cómo creció para repasar su historia. <break time=\"2.0s\" /> En Lo que aprendió ves de dónde salió cada dato: un pedido, una aprobación, una reunión. <break time=\"2.0s\" /> Abajo, las reglas que nunca olvida y lo que aún no sabe. Tus contraseñas nunca entran aquí."
+ },
+ {
+  "id": "cerebro",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "The Brain is what the Brains know about your brand: how much it knows and what it learned this week. <break time=\"2.0s\" /> The map grows by area. Tap See how it grew to replay its story. <break time=\"2.0s\" /> In What it learned you see where each fact came from: a request, an approval, a meeting. <break time=\"2.0s\" /> Below, the rules it never forgets and what it does not know yet. Your passwords never go in here."
+ },
+ {
+  "id": "investigacion",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3
+  ],
+  "text": "En Investigación está lo que estudiamos de tu marca y de tu mercado. <break time=\"2.0s\" /> Los market maps muestran dónde está tu marca frente a la competencia. <break time=\"2.0s\" /> Y cada estudio se abre con un toque."
+ },
+ {
+  "id": "investigacion",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3
+  ],
+  "text": "Research holds what we studied about your brand and your market. <break time=\"2.0s\" /> Market maps show where your brand stands against the competition. <break time=\"2.0s\" /> And every study opens with one tap."
+ },
+ {
+  "id": "pedir",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "Para pedir algo, ve a Pedidos y toca Nuevo pedido. <break time=\"2.0s\" /> Elige por dónde empezar: redes, una pieza puntual, tu web o una campaña. Si no sabes, toca No sé, ayúdame. <break time=\"2.0s\" /> Escríbelo corto y toca qué pieza es, dónde se publica y para cuándo. <break time=\"2.0s\" /> Adjunta material o una nota de voz. Si no tienes, pide que te lo propongan. <break time=\"2.0s\" /> La lista te dice qué falta y cómo lo entendió NicoMarca. Toca Enviar a NicoMarca."
+ },
+ {
+  "id": "pedir",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "To ask for something, go to Requests and tap New request. <break time=\"2.0s\" /> Pick where to start: social, a single piece, your website or a campaign. If you are not sure, tap Help me choose. <break time=\"2.0s\" /> Write it short, then tap what piece it is, where it goes and when you need it. <break time=\"2.0s\" /> Attach material or a voice note. If you have none, ask us to propose it. <break time=\"2.0s\" /> The checklist tells you what is missing and how NickMark read it. Tap Send to NickMark."
+ },
+ {
+  "id": "revisar",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "Cuando llega una entrega, ábrela. Arriba ves en qué paso va, de la solicitud a publicada. <break time=\"2.0s\" /> Cambia de versión y compara: con deslizador, lado a lado o solo los cambios. <break time=\"2.0s\" /> Para un ajuste, toca Marcar en la pieza, encierra el área y escribe qué cambiarías. <break time=\"2.0s\" /> Si está lista, Aprobar esta versión. Si no, Pedir cambios con tus comentarios. <break time=\"2.0s\" /> ¿Hay varias esperando? Con Aprobar de una vez las eliges y las apruebas juntas."
+ },
+ {
+  "id": "revisar",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "text": "When a delivery arrives, open it. At the top you see which step it is in, from request to published. <break time=\"2.0s\" /> Switch versions and compare them: with a slider, side by side or changes only. <break time=\"2.0s\" /> For a change, tap Mark on piece, draw around the area and write what you would change. <break time=\"2.0s\" /> If it is ready, Approve this version. If not, Request changes with your comments. <break time=\"2.0s\" /> Several waiting? With Approve at once you pick them and approve them together."
+ },
+ {
+  "id": "archivos",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Archivos guarda todo lo de tu marca. Lo que apruebas llega solo a Entregas aprobadas. <break time=\"2.0s\" /> Busca por nombre, filtra por tipo y ordena como prefieras. <break time=\"2.0s\" /> Selecciona varios y descárgalos juntos en un zip. <break time=\"2.0s\" /> Y con Subir compartes tus propios archivos con el equipo."
+ },
+ {
+  "id": "archivos",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Files keeps everything of your brand. What you approve lands by itself in Approved deliveries. <break time=\"2.0s\" /> Search by name, filter by type and sort the way you like. <break time=\"2.0s\" /> Select several and download them together as a zip. <break time=\"2.0s\" /> And with Upload you share your own files with the team."
+ },
+ {
+  "id": "apps-sitio",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "En Apps está tu sitio web dentro de Bréindi. Míralo como en computador, tableta o celular. <break time=\"2.0s\" /> Abre Ajustes del sitio para pedir un cambio: lo escribes y tocas Enviar. <break time=\"2.0s\" /> Cada punto muestra lo que pediste, lo que hicimos y un botón para verlo en la página. <break time=\"2.0s\" /> En Comentar, haz clic en una parte del sitio y deja tu comentario justo ahí."
+ },
+ {
+  "id": "apps-sitio",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Apps shows your website inside Braindy. See it as on a computer, a tablet or a phone. <break time=\"2.0s\" /> Open Website adjustments to ask for a change: write it and tap Send. <break time=\"2.0s\" /> Each point shows what you asked, what we did and a button to see it on the page. <break time=\"2.0s\" /> In Comment, click a part of the site and leave your comment right there."
+ },
+ {
+  "id": "calendario",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3
+  ],
+  "text": "Calendario muestra lo que publicamos y lo que viene en tus redes, mes a mes. <break time=\"2.0s\" /> Cada día, la hora, la red y si ya salió o está programada. Puedes filtrar por red. <break time=\"2.0s\" /> Para cambiar algo, pídelo en Pedidos."
+ },
+ {
+  "id": "calendario",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3
+  ],
+  "text": "Calendar shows what we published and what is coming on your social media, month by month. <break time=\"2.0s\" /> Each day shows the time, the network and whether it went out or is scheduled. You can filter by network. <break time=\"2.0s\" /> To change something, ask for it in Requests."
+ },
+ {
+  "id": "resultados",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Resultados es tu reporte del mes. Reportamos ventas, no likes. <break time=\"2.0s\" /> Ventas atribuidas, leads calificados, costo por lead y piezas entregadas. <break time=\"2.0s\" /> Luego, qué movió el número y qué viene el próximo mes. <break time=\"2.0s\" /> Descárgalo en PDF, compártelo por WhatsApp o agenda veinte minutos para revisarlo."
+ },
+ {
+  "id": "resultados",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Results is your monthly report. We report sales, not likes. <break time=\"2.0s\" /> Attributed sales, qualified leads, cost per lead and pieces delivered. <break time=\"2.0s\" /> Then, what moved the number and what comes next month. <break time=\"2.0s\" /> Download it as a PDF, share it on WhatsApp or book twenty minutes to go over it."
+ },
+ {
+  "id": "accesos",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Apps de terceros guarda los accesos de tu marca: redes, hosting, dominios. <break time=\"2.0s\" /> Al agregar una app, la contraseña se cifra antes de guardarse. <break time=\"2.0s\" /> Ver contraseña la muestra treinta segundos y luego se oculta sola. <break time=\"2.0s\" /> Cada vez que alguien la ve o la copia queda en el registro. Solo los dueños de la marca entran aquí."
+ },
+ {
+  "id": "accesos",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Third party apps keeps your brand’s logins: social media, hosting, domains. <break time=\"2.0s\" /> When you add an app, the password is encrypted before it is saved. <break time=\"2.0s\" /> Show password reveals it for thirty seconds, then it hides itself. <break time=\"2.0s\" /> Every view or copy is logged. Only the brand owners can open this page."
+ },
+ {
+  "id": "plan",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Mi plan resume tu contrato, lo que incluye y la lista de arranque. <break time=\"2.0s\" /> En Cronograma ves cada entrega semana a semana. <break time=\"2.0s\" /> Sitio y apps muestra tu plan de hosting y te deja cambiarlo. <break time=\"2.0s\" /> En Pagos pagas en línea, o por transferencia enviando la referencia."
+ },
+ {
+  "id": "plan",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "My plan sums up your contract, what it includes and the kickoff checklist. <break time=\"2.0s\" /> In Schedule you see every delivery week by week. <break time=\"2.0s\" /> Site and apps shows your hosting plan and lets you change it. <break time=\"2.0s\" /> In Payments you pay online, or by bank transfer sending the reference."
+ },
+ {
+  "id": "ajustes",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Toca tu foto para abrir tu cuenta: plan, facturación, equipo, idioma y apariencia. <break time=\"2.0s\" /> En Equipo invitas a alguien con su correo y eliges qué puede ver y si puede aprobar. <break time=\"2.0s\" /> En WhatsApp y avisos guardas tu número y eliges qué avisos te llegan. <break time=\"2.0s\" /> Y en Idioma cambias entre español e inglés."
+ },
+ {
+  "id": "ajustes",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Tap your photo to open your account: plan, billing, team, language and appearance. <break time=\"2.0s\" /> In Team you invite someone by email and choose what they can see and whether they can approve. <break time=\"2.0s\" /> In WhatsApp and notices you save your number and choose which notices you get. <break time=\"2.0s\" /> And in Language you switch between Spanish and English."
+ },
+ {
+  "id": "whatsapp",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "También puedes pedir por WhatsApp, escribiendo desde tu número registrado. <break time=\"2.0s\" /> Cada mensaje, con fotos, audios o documentos, se vuelve un pedido, y te llega el enlace para seguirlo. <break time=\"2.0s\" /> Cuando hay una entrega, apruebas o pides cambios con un botón. <break time=\"2.0s\" /> Escribe BAJA para dejar de recibir avisos, y ALTA para volver."
+ },
+ {
+  "id": "whatsapp",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "You can also ask on WhatsApp, writing from your registered number. <break time=\"2.0s\" /> Each message, with photos, audio or documents, becomes a request, and you get the link to follow it. <break time=\"2.0s\" /> When something is delivered, you approve it or request changes with one button. <break time=\"2.0s\" /> Write STOP to stop the notices, and START to get them back."
+ },
+ {
+  "id": "contrato-un-paso",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Antes de empezar, firmas el contrato dentro de Bréindi. NicoMarca ya lo firmó. <break time=\"2.0s\" /> Lees el contrato completo y sus anexos. <break time=\"2.0s\" /> Llenas los datos de la empresa, dibujas tu firma y aceptas. <break time=\"2.0s\" /> Listo: queda firmado y a los dos nos llega el PDF."
+ },
+ {
+  "id": "contrato-un-paso",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Before we start, you sign the contract inside Braindy. NickMark has already signed it. <break time=\"2.0s\" /> You read the full contract and its annexes. <break time=\"2.0s\" /> You fill in the company details, draw your signature and accept. <break time=\"2.0s\" /> Done: it is signed and we both get the PDF."
+ },
+ {
+  "id": "instalar-app",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Bréindi se instala como una app, con su ícono en tu pantalla. <break time=\"2.0s\" /> En Android o en el computador: toca tu foto y luego Instalar la app. <break time=\"2.0s\" /> En iPhone: en Safari toca Compartir y después Agregar a inicio. <break time=\"2.0s\" /> Cuando haya una versión nueva, toca Actualizar."
+ },
+ {
+  "id": "instalar-app",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Braindy installs like an app, with its icon on your screen. <break time=\"2.0s\" /> On Android or a computer: tap your photo, then Install the app. <break time=\"2.0s\" /> On iPhone: in Safari tap Share, then Add to Home Screen. <break time=\"2.0s\" /> When there is a new version, tap Update."
+ },
+ {
+  "id": "filtros-pedidos",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "En Pedidos encuentras cualquier cosa: busca por título o filtra por estado. <break time=\"2.0s\" /> En Filtros eliges quién pidió, las fechas y la campaña. <break time=\"2.0s\" /> Míralos como lista, como tablero o en el calendario de entregas. <break time=\"2.0s\" /> Y descárgalos en Excel o PDF, o copia el enlace de esta vista."
+ },
+ {
+  "id": "filtros-pedidos",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "In Requests you find anything: search by title or filter by status. <break time=\"2.0s\" /> In Filters you choose who asked, the dates and the campaign. <break time=\"2.0s\" /> See them as a list, a board or on the delivery calendar. <break time=\"2.0s\" /> And download them as Excel or PDF, or copy the link to this view."
+ },
+ {
+  "id": "comentar-sitio",
+  "lang": "es",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Ahora comentas directo sobre tu sitio. <break time=\"2.0s\" /> En Ajustes del sitio, abre Comentar y haz clic en la parte de la página. <break time=\"2.0s\" /> Escribe tu comentario: queda marcado en el sitio y te pueden responder ahí. <break time=\"2.0s\" /> Ver en la página te lleva justo a esa parte."
+ },
+ {
+  "id": "comentar-sitio",
+  "lang": "en",
+  "n": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "text": "Now you comment right on your site. <break time=\"2.0s\" /> In Website adjustments, open Comment and click the part of the page. <break time=\"2.0s\" /> Write your comment: it stays pinned on the site and we can reply right there. <break time=\"2.0s\" /> Show on the page takes you right to that spot."
+ }
+]

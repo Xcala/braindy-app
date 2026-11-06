@@ -42,6 +42,44 @@
         "estudio-sf/server.cjs"
       ],
       "port": 5190
+    },
+    {
+      "name": "api-tut",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--import",
+        "./video/tutoriales/tut-firma.mjs",
+        "server/src/index.ts"
+      ],
+      "port": 8789,
+      "env": {
+        "PORT": "8789",
+        "FIRESTORE_EMULATOR_HOST": "127.0.0.1:8281",
+        "FIREBASE_AUTH_EMULATOR_HOST": "127.0.0.1:9299",
+        "ALLOWED_ORIGINS": "http://localhost:5176"
+      }
+    },
+    {
+      "name": "web-tut",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "web",
+        "--",
+        "--port",
+        "5176",
+        "--strictPort"
+      ],
+      "port": 5176,
+      "env": {
+        "VITE_USE_EMULATORS": "true",
+        "VITE_API_URL": "http://localhost:8789",
+        "VITE_EMULATOR_AUTH_PORT": "9299",
+        "VITE_EMULATOR_FIRESTORE_PORT": "8281"
+      }
     }
   ]
 }
