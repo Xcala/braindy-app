@@ -1,10 +1,12 @@
 // The brief a free-action Claude Code session receives: the request, the client's comments and files, and the
 // rules (work only here, deliver through the connector, publish when the brand allows it, end with RESULTADO).
+import type { Step } from '../brains/steps.js';
 
 export type Job = {
   brandId: string; brandName: string; requestId: string; category: string; publish: boolean; folder: string; files: string[];
   cwd: string; workspaces: Record<string, string>;
   title: string; text: string; dueDate: string | null; reason: string;
+  steps: Step[];
   comments: Array<{ kind: string; text: string }>; versions: Array<{ n: number; state: string; note: string }>;
 };
 
@@ -33,6 +35,13 @@ ${j.files.length ? `\nArchivos que mandó el cliente (ya descargados):\n${j.file
 ## Carpetas de la marca
 ${Object.entries(j.workspaces).map(([k, p]) => `- ${k === 'default' ? 'todo lo demás (diseño, video, redes, contenido)' : k === 'web' ? 'sitio web' : k}: ${p}`).join('\n')}
 Empezaste en ${j.cwd} porque la solicitud se clasificó como «${j.category}». Si por el pedido y los comentarios es de otro tipo (por ejemplo, un ajuste del sitio), trabaja en la carpeta que corresponde.
+
+## El equipo, por turnos (el cliente lo ve en vivo)
+Trabajas como los cuatro Brains, uno después del otro. Cada turno lo abres y lo cierras con braindy_work_step (brandId ${j.brandId}, requestId ${j.requestId}):
+${j.steps.map((s, i) => `${i + 1}. ${s.brain}${s.task ? ` — ${s.task}` : ''}`).join('\n')}
+- Al empezar el turno: state "doing". Al terminarlo: state "done" con una nota de una línea para el cliente, en el idioma de la marca: qué encontró o qué hizo. Esa nota es también lo que le pasa al siguiente Brain: úsala.
+- Researcher: contexto, referentes y datos. Marketer: mensaje, textos y estrategia. Creator: diseño y dirección visual. Builder: construye, prepara archivos finales, publica si aplica y entrega.
+- Si un Brain no tiene nada que hacer aquí, márcalo "skip". Nunca pongas claves, rutas del PC ni datos internos en las notas.
 
 ## Cómo trabajar
 1. Lee el CLAUDE.md de esta carpeta (y los de las subcarpetas que uses) y sigue sus reglas y procedimientos.

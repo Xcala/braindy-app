@@ -13,6 +13,7 @@ import { db } from '../firebase.js';
 import { bucket } from '../requests.js';
 import { autopilotOf, workspaceFor, type Autopilot } from '../autopilot.js';
 import { buildPrompt, type Job } from './prompt.js';
+import { ensureSteps } from '../brains/steps.js';
 
 const HOME = process.env.BRAINDY_WORKER_DIR ?? join(homedir(), 'braindy-worker');
 const LOCK = join(HOME, 'worker.lock');
@@ -115,11 +116,13 @@ async function runNext(): Promise<Outcome> {
       ...((r.get('cards.product.files') as Array<{ assetId: string }> | undefined) ?? []).map((f) => f.assetId),
       ...comments.docs.flatMap((c) => ((c.get('files') as Array<{ assetId?: string }> | undefined) ?? []).map((f) => f.assetId ?? '')),
     ].filter(Boolean);
+    // A new round of work: the four Brains start again from the top (the client sees them move).
+    const steps = await ensureSteps(job.ref, true);
     const folder = join(cwd, '_braindy', requestId);
     const files = await download(job.brandId, assetIds, join(folder, 'archivos'));
     const jobData: Job = {
       brandId: job.brandId, brandName: job.brandName, requestId, category, publish: job.auto.publish, folder, files,
-      cwd, workspaces: job.auto.workspaces,
+      cwd, workspaces: job.auto.workspaces, steps,
       title: String(r.get('title') ?? ''), text: String(r.get('cards.product.text') ?? ''), dueDate: r.get('dueDate') ?? null,
       reason: String(r.get('work.reason') ?? 'new'),
       comments: comments.docs.map((c) => ({ kind: String(c.get('kind') ?? 'comment'), text: String(c.get('text') ?? '') })).filter((c) => c.text),
@@ -136,7 +139,10 @@ async function runNext(): Promise<Outcome> {
     }
     const result = /RESULTADO:\s*(listo|fallo)([^\n]*)/i.exec(tail);
     const ok = code === 0 && result?.[1]?.toLowerCase() === 'listo';
+    // Done: whoever was still on it finished. Failed: the steps stay where they stopped.
+    const left = ((await job.ref.get()).get('work.steps') as Array<{ state: string }> | undefined) ?? [];
     await job.ref.update({
+      ...(ok ? { 'work.steps': left.map((s) => (s.state === 'doing' ? { ...s, state: 'done' } : s)), 'work.current': null } : {}),
       'work.state': ok ? 'done' : 'failed', 'work.finishedAt': now(), 'work.log': logFile,
       'work.summary': (result?.[2] ?? tail.slice(-600)).replace(/^[\s:—-]+/, '').slice(0, 1000),
     });

@@ -22,6 +22,8 @@ export interface BrandRequest {
   leadBrain: BrainId;
   helperBrains: BrainId[];
   approvalLevel: 'self' | 'nicolas';
+  /** The team at work for real (server/brains/steps.ts): one step per Brain, moved by the session doing the request. */
+  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[] } | null;
   teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;
@@ -40,6 +42,8 @@ export interface BrandRequest {
   /** Shown to every client as a launch beside the studio (set by the API when NickMark marks it). */
   launch?: { versionId: string; title: string } | null;
 }
+
+export interface WorkStep { brain: BrainId; task: string; state: 'todo' | 'doing' | 'done' | 'skip'; note?: string; at?: number }
 
 export interface VersionFile { name: string; contentType: string; size: number; storagePath?: string; url?: string }
 
