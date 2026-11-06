@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { api } from '../lib/api';
 import { SitePanel } from './SitePanel';
 import { useSpot } from './useSpot';
+import { AddressBar } from './AddressBar';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
 
@@ -44,8 +45,9 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
       <div className="lview-bar">
         <div className="col" style={{ minWidth: 0 }}>
           <span className="w7 truncate">{link.title}</span>
-          <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>
+          {blocked && <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>}
         </div>
+        {!blocked && <AddressBar spot={spot} home={link.url} />}
         {!blocked && (
           <div className="seg lview-sizes" role="group" aria-label={t('lv.size')}>
             {(Object.keys(SIZES) as Size[]).map((s) => (

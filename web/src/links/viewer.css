@@ -1,7 +1,14 @@
 /* Site viewer: a bar on top (title, widths, new tab, close) and the site below, centred, at the chosen width. */
 .lview { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: var(--niebla); }
 .lview-bar { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: max(10px, env(safe-area-inset-top)) 16px 10px; background: #fff; border-bottom: 1px solid var(--line); }
-.lview-bar > .col { flex: 1; }
+.lview-bar > .col { flex: 0 1 220px; }
+/* Address box: the page the frame shows; type another and press Enter. */
+.lview-url { flex: 1 1 260px; min-width: 0; max-width: 640px; position: relative; display: flex; }
+.lview-url .input { height: 36px; width: 100%; padding: 0 40px 0 14px; font-size: 13px; border-radius: var(--r-pill); background: var(--niebla, #F4F5FA); }
+.lview-url .input:focus { background: #fff; }
+.lview-url-home { position: absolute; right: 4px; top: 4px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: none; cursor: pointer; color: var(--graphite); font-size: 15px; }
+.lview-url-home:hover { background: var(--line); }
+@media (max-width: 767px) { .lview-bar { flex-wrap: wrap; } .lview-url { order: 9; flex-basis: 100%; max-width: none; } }
 .lview-bar .btn-sm { height: 36px; }
 .lview-sizes button { height: 30px; }
 @media (max-width: 767px) { .lview-sizes { display: none; } }
