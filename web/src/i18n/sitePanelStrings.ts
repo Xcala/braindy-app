@@ -1,6 +1,6 @@
-/** The adjustments column beside a site in the viewer. */
+/** The adjustments column beside a site in the viewer: three tabs (Adjust, Comment, Delivered). */
 export const sitePanelEn = {
-  'sp.toggle': 'Adjustments', 'sp.empty': 'No adjustments yet. Ask for the first one above.',
+  'sp.toggle': 'Adjustments', 'sp.empty': 'Nothing in progress. Ask for an adjustment above.',
   'sp.open': '{n} in progress', 'sp.done': '{n} delivered',
   'sp.ask': 'Ask for an adjustment', 'sp.askPh': 'E.g. On the home page, change the main photo for one of the plant.',
   'sp.askHelp': 'Builder takes it with NickMark.', 'sp.send': 'Send', 'sp.sending': 'Sending',
@@ -8,9 +8,19 @@ export const sitePanelEn = {
   'sp.reqTitle': 'Site adjustment',
   'ladj.some': '{n} in progress · open it to see the page, review its adjustments and ask for more',
   'ladj.none': 'Open it to see the page and ask for adjustments',
+  // tabs
+  'sp.tAdjust': 'Adjust', 'sp.tComment': 'Comment', 'sp.tDone': 'Delivered',
+  'sp.nDone': '{n} delivered', 'sp.nTodo': '{n} to go',
+  'sp.askOpen': 'Ask for an adjustment', 'sp.askHint': 'For changes that need work. To talk about a part of the page, use Comment.',
+  'sp.received': 'Received · Builder is reviewing', 'sp.doneEmpty': 'Nothing delivered yet.',
+  'sp.kindAdjust': 'Adjustment', 'sp.kindComment': 'Comment',
+  // comment tab
+  'sc.hint': 'Write your comment, or click the part of the page you want to comment on.',
+  'sc.pickOn': 'Click the page to pin it there.', 'sc.pickAgain': 'Point at the page', 'sc.general': 'General comment on this page',
+  'sc.dropSpot': 'Remove spot', 'sc.toPoint': 'Turn into adjustment', 'sc.asPoint': 'Now adjustment {key}',
 };
 export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
-  'sp.toggle': 'Ajustes', 'sp.empty': 'Aún no hay ajustes. Pide el primero arriba.',
+  'sp.toggle': 'Ajustes', 'sp.empty': 'Nada en curso. Pide un ajuste arriba.',
   'sp.open': '{n} en curso', 'sp.done': '{n} entregados',
   'sp.ask': 'Pedir un ajuste', 'sp.askPh': 'Ej.: En el inicio, cambia la foto principal por una de la planta.',
   'sp.askHelp': 'Lo toma Builder con NicoMarca.', 'sp.send': 'Enviar', 'sp.sending': 'Enviando',
@@ -18,4 +28,12 @@ export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
   'sp.reqTitle': 'Ajuste del sitio',
   'ladj.some': '{n} en curso · ábrelo para ver la página, revisar sus ajustes y pedir más',
   'ladj.none': 'Ábrelo para ver la página y pedir ajustes',
+  'sp.tAdjust': 'Ajustar', 'sp.tComment': 'Comentar', 'sp.tDone': 'Entregado',
+  'sp.nDone': '{n} entregados', 'sp.nTodo': '{n} por resolver',
+  'sp.askOpen': 'Pedir un ajuste', 'sp.askHint': 'Para cambios que necesitan trabajo. Para hablar de una parte de la página, usa Comentar.',
+  'sp.received': 'Recibidos · Builder los revisa', 'sp.doneEmpty': 'Aún no hay entregas.',
+  'sp.kindAdjust': 'Ajuste', 'sp.kindComment': 'Comentario',
+  'sc.hint': 'Escribe tu comentario o haz clic en la parte de la página que quieres comentar.',
+  'sc.pickOn': 'Haz clic en la página para fijarlo ahí.', 'sc.pickAgain': 'Señalar en la página', 'sc.general': 'Comentario general sobre esta página',
+  'sc.dropSpot': 'Quitar el lugar', 'sc.toPoint': 'Pasar a ajuste', 'sc.asPoint': 'Ya es el ajuste {key}',
 };
