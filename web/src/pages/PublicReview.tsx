@@ -4,6 +4,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { LangToggle } from '../i18n/LangToggle';
 import { BrandMark } from '../brands/BrandMark';
 import { publicReviewApi, type PublicReview as Data } from '../review/api';
+import { VersionNotes } from '../requests/VersionNotes';
+import { Scan } from '../components/Scan';
 
 const BRAIN: Record<string, string> = { researcher: 'Researcher', marketer: 'Marketer', creator: 'Creator', builder: 'Builder' };
 const isImage = (t?: string) => !!t && t.startsWith('image/');
@@ -60,9 +62,9 @@ export function PublicReview() {
           ? <img key={i} src={f.url} alt={f.name} className="w-full rounded-2xl" style={{ background: '#fff' }} />
           : <a key={i} className="card row between g12" href={f.url ?? '#'} target="_blank" rel="noreferrer"><span className="w7 truncate">{f.name}</span><span className="t-sm">{t('rev.openFile')}</span></a>)}
       </div>
-      {data.version.notes && <p className="t-sm">{data.version.notes}</p>}
+      {data.version.notes && <VersionNotes text={data.version.notes} />}
       {data.version.reason && (
-        <div className="card col g4"><p className="label">{t('req.whyItWorks')}</p><p className="t-sm">{data.version.reason}</p></div>
+        <div className="card col g4"><p className="label">{t('req.whyItWorks')}</p><Scan text={data.version.reason} points tone="ink" /></div>
       )}
       {decided ? (
         <div className="card col g8" role="status">

@@ -1,6 +1,7 @@
 // What the Brand Brain knows, counted from what the Brains actually read (see server/src/brains/context.ts):
 // Mi marca (identity, voice, Primal), the Brand Brain (strategy, rules), learnings and the conversations held.
 import type { StringKey } from '../i18n/strings';
+import { boldLead, scanBlocks } from '../lib/scan';
 
 export const AREAS = ['identity', 'voice', 'strategy', 'work', 'rules', 'talks'] as const;
 export type Area = (typeof AREAS)[number];
@@ -10,10 +11,16 @@ type Doc = Record<string, unknown> | null | undefined;
 const arr = (v: unknown) => (Array.isArray(v) ? v : []);
 const has = (v: unknown) => (typeof v === 'string' ? v.trim().length > 0 : !!v);
 
-/** Lines of free text that read as separate rules ("Never…", "Always…"), for the avoid and criterio fields. */
+/**
+ * Each rule on its own, for the avoid and criterio fields: sentences and comma lists ("white on green, the logo
+ * gradient on color, 'Marco Polo Canadá'…") become one point each, the key in **bold**.
+ */
 export function ruleLines(brain: Doc): string[] {
   const text = [brain?.avoid, brain?.criterio].filter((x) => typeof x === 'string').join('\n');
-  return text.split(/\n+|;\s+|\.\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/).map((s) => s.replace(/^[-•*\s]+/, '').trim().replace(/\.$/, '')).filter((s) => s.length >= 8).map((s) => s[0]!.toUpperCase() + s.slice(1));
+  return scanBlocks(text, { list: true, points: true })
+    .flatMap((b) => (b.kind === 'list' ? b.items : b.kind === 'p' ? [boldLead(b.text)] : []))
+    .map((s) => s.trim().replace(/\.$/, '')).filter((s) => s.replace(/\*\*/g, '').length >= 3)
+    .map((s) => (s.startsWith('**') ? `**${s[2]!.toUpperCase()}${s.slice(3)}` : s[0]!.toUpperCase() + s.slice(1)));
 }
 
 export function countKnowledge(d: { identity: Doc; voice: Doc; brain: Doc; primal: Doc; learnings: Doc; talks: number }): Counts {

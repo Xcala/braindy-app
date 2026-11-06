@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { KIND_COLOR } from './BrainCanvas';
 import type { BrainEvent } from './useBrainEvents';
+import { plainLine } from '../lib/scan';
 
 type T = (key: StringKey, vars?: Record<string, string | number>) => string;
 
@@ -40,7 +41,7 @@ export function BrainFeed({ events, fresh }: { events: BrainEvent[]; fresh: Set<
             <li key={e.id} className={`bb-item${fresh.has(e.id) ? ' is-new' : ''}`}>
               <span className="bb-chip" style={{ ['--c' as string]: KIND_COLOR[e.kind] }}>{t(`bb.kind.${e.kind}` as StringKey)}</span>
               <div className="col g4 grow">
-                {e.requestId ? <Link to={`/requests/${e.requestId}`} className="t-sm bb-txt">{text}</Link> : <span className="t-sm bb-txt">{text}</span>}
+                {e.requestId ? <Link to={`/requests/${e.requestId}`} className="t-sm bb-txt"><FeedText text={text} /></Link> : <span className="t-sm bb-txt"><FeedText text={text} /></span>}
                 <span className="t-xs t-mute"><b className="w7">{t(`bb.area.${e.area}` as StringKey)}</b> · {day(e.at)}</span>
               </div>
             </li>
@@ -49,4 +50,10 @@ export function BrainFeed({ events, fresh }: { events: BrainEvent[]; fresh: Set<
       </ul>
     </section>
   );
+}
+/** An event in the feed: the request in bold, then the gist on up to three lines (no markdown, no line breaks). */
+function FeedText({ text }: { text: string }) {
+  const line = plainLine(text);
+  const m = /^(.{2,90}?):\s+(.+)$/.exec(line);
+  return m ? <><strong className="w7">{m[1]}</strong><span className="bb-gist"> · {m[2]}</span></> : <>{line}</>;
 }

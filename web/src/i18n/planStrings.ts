@@ -76,7 +76,7 @@ export const planEn = {
   'plan.a.removeConfirm': 'Delete this brand’s plan? The client stops seeing it.',
   'plan.a.saved': 'Saved:',
   'plan.a.badJson': 'The JSON is not valid:',
-  'plan.a.help': 'Fill in only what the client bought: no alternatives or internal notes. Claude can also load it: “carga el plan de esta propuesta en Braindy App”. The weekly schedule lives in the contract (Anexo 2).',
+  'plan.a.help': '- **Only what the client bought:** no alternatives or internal notes.\n- **Claude can load it:** “carga el plan de esta propuesta en Braindy App”.\n- **Weekly schedule:** it lives in the contract (Anexo 2).',
   'plan.meeting': 'Weekly meeting · {minutes} min',
   'plan.toneLabel': 'Bar color',
   'plan.toneAuto': 'Color by group',
@@ -116,7 +116,7 @@ export const planEn = {
   'plan.cat.design': 'Design',
   'plan.cat.other': 'Other',
   'plan.a.stackTitle': 'Load or edit the apps stack',
-  'plan.a.stackHelp': 'The paid apps this brand runs on. Claude can also load them: «carga el stack de apps de esta marca en Braindy App». No passwords here: they go in Accesos.',
+  'plan.a.stackHelp': '- **The paid apps** this brand runs on.\n- **Claude can load them:** «carga el stack de apps de esta marca en Braindy App».\n- **No passwords here:** they go in Accesos.',
   'plan.paymentsIn': 'Payments, invoices and payment method are in',
 };
 
@@ -197,7 +197,7 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.a.removeConfirm': '¿Borrar el plan de esta marca? El cliente deja de verlo.',
   'plan.a.saved': 'Guardado:',
   'plan.a.badJson': 'El JSON no es válido:',
-  'plan.a.help': 'Llena solo lo que el cliente compró: sin alternativas ni notas internas. Claude también lo carga: «carga el plan de esta propuesta en Braindy App». El cronograma semanal vive en el contrato (Anexo 2).',
+  'plan.a.help': '- **Solo lo que el cliente compró:** sin alternativas ni notas internas.\n- **Claude también lo carga:** «carga el plan de esta propuesta en Braindy App».\n- **Cronograma semanal:** vive en el contrato (Anexo 2).',
   'plan.meeting': 'Reunión semanal · {minutes} min',
   'plan.toneLabel': 'Color de la barra',
   'plan.toneAuto': 'Color por grupo',
@@ -237,6 +237,6 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.cat.design': 'Diseño',
   'plan.cat.other': 'Otra',
   'plan.a.stackTitle': 'Cargar o editar el stack de apps',
-  'plan.a.stackHelp': 'Las apps pagas con las que opera la marca. Claude también las carga: «carga el stack de apps de esta marca en Braindy App». Sin claves: esas van en Accesos.',
+  'plan.a.stackHelp': '- **Las apps pagas** con las que opera la marca.\n- **Claude también las carga:** «carga el stack de apps de esta marca en Braindy App».\n- **Sin claves:** esas van en Accesos.',
   'plan.paymentsIn': 'Los pagos, facturas y medio de pago están en',
 };

@@ -1,4 +1,4 @@
-import { api } from '../lib/api';
+import { api, apiResponse } from '../lib/api';
 import type { Notice } from '../review/api';
 
 export const createRequest = (brandId: string, body: Record<string, unknown>) =>
@@ -12,6 +12,20 @@ export const approveBatch = (brandId: string, items: Array<{ requestId: string; 
 
 export const versionFileUrl = (brandId: string, requestId: string, versionId: string, index: number, download = false) =>
   api<{ url: string }>(`/v1/brands/${brandId}/requests/${requestId}/versions/${versionId}/files/${index}${download ? '?download=1' : ''}`).then((r) => r.url);
+
+/** The text of a short text file of a version (post copy, hashtags), read by the server. */
+export const versionFileText = (brandId: string, requestId: string, versionId: string, index: number) =>
+  api<{ text: string }>(`/v1/brands/${brandId}/requests/${requestId}/versions/${versionId}/files/${index}?text=1`).then((r) => r.text);
+
+/** Every file of a version in one .zip, built on the server and saved by the browser. */
+export async function downloadVersionZip(brandId: string, requestId: string, versionId: string, name: string) {
+  const res = await apiResponse(`/v1/brands/${brandId}/requests/${requestId}/versions/${versionId}/zip`);
+  if (!res.ok) throw Object.assign(new Error(`API ${res.status}`), { status: res.status });
+  const href = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement('a'), { href, download: `${name}.zip` });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 60_000);
+}
 
 // ---------- admin ----------
 export const savePlan = (brandId: string, requestId: string, plan: { scope: string[]; firstDelivery: string; note: string; approve: boolean }) =>

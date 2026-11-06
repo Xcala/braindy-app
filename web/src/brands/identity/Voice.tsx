@@ -1,4 +1,5 @@
 import { useI18n } from '../../i18n/I18nProvider';
+import { Scan } from '../../components/Scan';
 
 export type VoiceDoc = {
   essence?: { title?: string; description?: string };
@@ -21,7 +22,7 @@ export function Voice({ voice }: { voice: VoiceDoc | null }) {
         <div className="card col g20">
           <p className="label">{t('brand.essence')}</p>
           {essence?.title && <p className="d-lg d-fit"><span className="w9">{essence.title}</span></p>}
-          {essence?.description && <p className="t-mute">{essence.description}</p>}
+          {essence?.description && <Scan text={essence.description} points className="" />}
           {example && <p className="t-lg w7">{example}</p>}
           {(howItSounds?.is?.length || howItSounds?.isNot?.length) ? (
             <>
@@ -58,7 +59,7 @@ export function Voice({ voice }: { voice: VoiceDoc | null }) {
             <div key={p.id ?? p.title} className="card col g8">
               <span className="sec-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="h3">{p.title}</span>
-              {p.description && <p className="t-sm t-mute">{p.description}</p>}
+              {p.description && <Scan text={p.description} points />}
             </div>
           ))}
         </div>

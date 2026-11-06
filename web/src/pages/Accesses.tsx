@@ -8,6 +8,7 @@ import { loadView, monthlyTotals, passes, saveView, type AppsView } from '../acc
 import { AccessForm } from '../accesses/AccessForm';
 import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses';
 import { BackToAccount } from './Account';
+import { Scan } from '../components/Scan';
 
 /** Third party apps (design 07): encrypted credentials, reveal on demand, search, groups, grid, read-only log. */
 export function Accesses() {
@@ -82,7 +83,7 @@ export function Accesses() {
             </div>
             <div className="card col g8">
               <h2 className="h3">{t('acc.howTitle')}</h2>
-              <p className="t-sm t-mute">{t('acc.howBody')}</p>
+              <Scan text={t('acc.howBody')} />
             </div>
           </aside>
         </div>

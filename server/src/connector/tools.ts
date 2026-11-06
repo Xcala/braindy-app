@@ -314,7 +314,9 @@ Ver: ${APP}/brand`;
       + (ctx.mode === 'local' ? 'Files are absolute paths.' : `Files go as base64 or https links (up to ${REMOTE_MAX_FILE / 1024 ** 2} MB each).`),
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
-      notes: z.string().max(4000).describe('What changed and why, in Spanish, for the client'),
+      notes: z.string().max(4000).describe('What it is and what changed, in Spanish, for the client, written to scan: short sections on their own line ending in ":" '
+        + '(e.g. "Qué es:", "Recorrido:", "Incluye:", "Para revisar:"), then one point per line starting with "- " and its keyword in **bold** '
+        + '("- **PDF** para LinkedIn."). One idea per line; no long paragraphs, no arrows chaining ideas.'),
       ...(ctx.mode === 'local' ? { paths: z.array(z.string()).min(1).max(20) } : { files: z.array(REMOTE_FILE).min(1).max(20) }),
     },
   }, run(async (a: { brandId: string; requestId: string; notes: string; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {

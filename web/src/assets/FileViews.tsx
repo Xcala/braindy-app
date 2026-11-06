@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes } from './fileApi';
+import { APPROVED } from './folderRules';
 import { extLabel, kindOf, thumbClass, type FileItem } from './fileKinds';
 
 const date = (ms?: number, lang = 'en') =>
@@ -121,7 +122,7 @@ export function FolderGrid({ folders, onOpen, menu }: { folders: Array<{ path: s
               <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
             </span>
             <span className="col grow" style={{ minWidth: 0 }}>
-              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
+              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path === APPROVED ? t('files.approvedName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
               <span className="t-sm t-mute truncate">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
             </span>
           </button>

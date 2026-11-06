@@ -3,6 +3,7 @@ import { api } from '../lib/api';
 import { TeamNotes } from '../brains/TeamNotes';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
+import { Scan } from '../components/Scan';
 import { BrainStack, brainName } from '../components/BrainStack';
 import { savePlan } from './api';
 import type { BrandRequest } from './types';
@@ -48,7 +49,7 @@ export function PlanCard({ brandId, r, isAdmin }: { brandId: string; r: BrandReq
           <span className={`chip ${approved ? 'c-approved' : 'c-approve'}`}>{approved ? t('req.planApproved') : t('req.planToApprove')}</span>
         </span>
       </div>
-      {isAdmin && !approved && r.plan?.note && <p className="t-sm" style={{ padding: '10px 14px', borderRadius: 12, background: 'var(--hielo)' }}>{r.plan.note}</p>}
+      {isAdmin && !approved && r.plan?.note && <div style={{ padding: '10px 14px', borderRadius: 12, background: 'var(--hielo)' }}><Scan text={r.plan.note} points tone="ink" /></div>}
       <div className="col g12">
         <p className="label">{t('req.scope')}</p>
         {scope.map((s, i) => (

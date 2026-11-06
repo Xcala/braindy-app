@@ -12,7 +12,7 @@ import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
-import { folderVisible, UPLOADS } from './folderRules';
+import { APPROVED, folderVisible, UPLOADS } from './folderRules';
 import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
@@ -174,7 +174,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
               </div>
             )}
             <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath}
-              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== 'Entregas aprobadas'} /> : undefined} />
+              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== APPROVED} /> : undefined} />
             {subfolders.length > FOLDERS_FIRST && (
               <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
                 {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}
