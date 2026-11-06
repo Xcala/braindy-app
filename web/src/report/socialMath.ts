@@ -1,6 +1,6 @@
 import type { Day, DailyKey, NetStats, StatPost } from './useSocialStats';
 
-export type Period = '30' | '90' | 'month' | 'lastMonth' | 'all';
+export type Period = '30' | '90' | '365' | 'month' | 'lastMonth' | 'all';
 export type Range = { from: string; to: string };
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

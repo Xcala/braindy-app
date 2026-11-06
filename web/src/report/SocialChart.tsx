@@ -7,11 +7,12 @@ import { series, type Range } from './socialMath';
 const METRICS: DailyKey[] = ['views', 'reach', 'interactions', 'followers', 'engaged', 'pageViews'];
 const H = 220, PAD = { l: 44, r: 8, t: 12, b: 26 };
 
-/** One measure over the period: bars for what adds up, a line for followers. One series, one axis; hover shows the value. */
-export function SocialChart({ net, range, keys }: { net: NetStats; range: Range; keys: Set<DailyKey> }) {
+/** One measure over the period: bars for what adds up, a line for followers. One series, one axis; hover shows the value.
+ *  The website section passes its own daily rows, measures and label prefix. */
+export function SocialChart({ net, range, keys, metrics = METRICS, prefix = 'soc.k' }: { net: Pick<NetStats, 'daily'>; range: Range; keys: Set<string>; metrics?: string[]; prefix?: string }) {
   const { t, lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
-  const options = METRICS.filter((m) => keys.has(m));
+  const options = metrics.filter((m) => keys.has(m)) as DailyKey[];
   const [pick, setPick] = useState<DailyKey>(options[0] ?? 'views');
   const metric = options.includes(pick) ? pick : options[0]!;
   const [hover, setHover] = useState<number | null>(null);
@@ -47,16 +48,16 @@ export function SocialChart({ net, range, keys }: { net: NetStats; range: Range;
   return (
     <div ref={box} className="card col g12">
       <div className="row between g8 wrap">
-        <h3 className="h3">{t(`soc.k.${metric}` as StringKey)} · {t(`soc.by.${unit}` as StringKey)}</h3>
+        <h3 className="h3">{t(`${prefix}.${metric}` as StringKey)} · {t(`soc.by.${unit}` as StringKey)}</h3>
         <div className="row g6 wrap print:hidden" role="group" aria-label={t('soc.metric')}>
           {options.map((m) => (
-            <button key={m} type="button" aria-pressed={m === metric} onClick={() => setPick(m)} className={`btn btn-sm ${m === metric ? 'btn-primary' : 'btn-secondary'}`}>{t(`soc.k.${m}` as StringKey)}</button>
+            <button key={m} type="button" aria-pressed={m === metric} onClick={() => setPick(m)} className={`btn btn-sm ${m === metric ? 'btn-primary' : 'btn-secondary'}`}>{t(`${prefix}.${m}` as StringKey)}</button>
           ))}
         </div>
       </div>
       {points.length === 0 ? <p className="t-sm t-mute">{t('soc.noData')}</p> : (
         <div style={{ position: 'relative' }}>
-          <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`${t(`soc.k.${metric}` as StringKey)}: ${points.map((p) => `${label(p.k)} ${fmt(p.v)}`).join(', ')}`} onMouseLeave={() => setHover(null)}>
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`${t(`${prefix}.${metric}` as StringKey)}: ${points.map((p) => `${label(p.k)} ${fmt(p.v)}`).join(', ')}`} onMouseLeave={() => setHover(null)}>
             {[0, 0.5, 1].map((f) => {
               const v = base + (top - base) * f;
               return <g key={f}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="var(--line)" strokeWidth={1} /><text x={PAD.l - 6} y={y(v) + 4} textAnchor="end" fontSize={11} fill="var(--graphite)">{fmt(v)}</text></g>;
@@ -72,7 +73,7 @@ export function SocialChart({ net, range, keys }: { net: NetStats; range: Range;
           {h && (
             <div className="card t-xs" style={{ position: 'absolute', top: 0, left: `min(calc(${((PAD.l + step * hover! + step / 2) / W) * 100}% + 8px), calc(100% - 140px))`, padding: '6px 10px', pointerEvents: 'none', boxShadow: '0 4px 14px rgba(0,0,0,.08)' }}>
               <div className="t-mute">{unit === 'week' ? t('soc.weekOf', { d: label(h.k) }) : label(h.k)}</div>
-              <div className="w7">{fmt(h.v)} {t(`soc.k.${metric}` as StringKey).toLowerCase()}</div>
+              <div className="w7">{fmt(h.v)} {t(`${prefix}.${metric}` as StringKey).toLowerCase()}</div>
             </div>
           )}
         </div>

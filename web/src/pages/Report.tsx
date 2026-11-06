@@ -6,6 +6,8 @@ import { useReports } from '../report/useReports';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { useSocialStats } from '../report/useSocialStats';
 import { SocialResults } from '../report/SocialResults';
+import { useWebStats } from '../report/useWebStats';
+import { WebResults } from '../report/WebResults';
 import { Scan } from '../components/Scan';
 
 /** Results: the social media numbers from Metricool (where Results is on) and the monthly report (design 19), signed by Nicolas. */
@@ -18,6 +20,7 @@ export function Report() {
   const list = useReports(current?.id, admin);
   const [month, setMonth] = useState<string | null>(null);
   const social = useSocialStats(current?.id, !!current?.resultsOn);
+  const web = useWebStats(current?.id, !!current?.resultsOn);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const shown = list.filter((r) => admin || r.published);
   const r = shown.find((x) => x.month === month) ?? shown[0];
@@ -46,7 +49,8 @@ export function Report() {
         )}
       </div>
       {social.list.length > 0 && <SocialResults key={current.id} list={social.list} />}
-      {!r ? (social.list.length > 0 || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
+      {web && <WebResults key={`web-${current.id}`} stats={web} />}
+      {!r ? (social.list.length > 0 || web || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
           {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

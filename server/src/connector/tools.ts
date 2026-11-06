@@ -10,6 +10,8 @@ import { deliverVersion, listRequests, newRequest, type FileWriter } from './del
 import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
 import { syncSocialStats } from './socialStats.js';
+import { syncAllWebStats, syncWebStats } from '../webStats.js';
+import { db } from '../firebase.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
@@ -174,6 +176,27 @@ Ver: ${APP}/plan`;
     const name = await requireBrand(brandId);
     const r = await syncSocialStats(brandId, network, input);
     return `${name} · ${network}: ${r.days} días (${r.from} a ${r.to}) · ${r.posts} publicaciones.\nVer: ${APP}/report`;
+  }));
+
+  server.registerTool('braindy_web_stats_refresh', {
+    title: 'Actualizar las visitas del sitio (Google Analytics) en Braindy App',
+    description: 'Reads Google Analytics 4 on the server (the braindy-api service account must be Viewer on the property) and refreshes Results › Website: '
+      + 'daily users, sessions, views, engagement and key events, 30/90/365-day totals and top pages, channels, sources, countries, cities and devices. '
+      + 'Pass brandId (and propertyId the first time, to link the property) for one brand, or nothing for every brand that has a property. '
+      + 'Only works from the remote connector (Cloud Run). Use when Nicolas says "actualiza Analytics", "conecta el Analytics de X", and in the daily refresh.',
+    inputSchema: {
+      brandId: z.string().optional(),
+      propertyId: z.string().regex(/^\d{6,12}$/).optional().describe('GA4 property id (numbers only), saved on the brand'),
+    },
+  }, run(async ({ brandId, propertyId }) => {
+    if (!brandId) {
+      const all = await syncAllWebStats();
+      return all.map((r) => `${r.ok ? '✓' : '✗'} ${r.brandId}: ${r.note}`).join('\n') || 'Ninguna marca tiene propiedad de Google Analytics.';
+    }
+    const name = await requireBrand(brandId);
+    if (propertyId) await db.doc(`brands/${brandId}`).set({ gaPropertyId: propertyId }, { merge: true });
+    const r = await syncWebStats(brandId);
+    return `${name} · Google Analytics: ${r.days} días (${r.from} a ${r.to}) · ${r.users30 ?? 0} usuarios en los últimos 30 días.\nVer: ${APP}/report`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {

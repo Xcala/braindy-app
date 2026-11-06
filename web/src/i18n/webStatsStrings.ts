@@ -1,0 +1,31 @@
+/** Results › Website: numbers from Google Analytics (view only). */
+export const webStatsEn = {
+  'web.title': 'Website', 'web.sub': 'From {from} to {to} · Google Analytics', 'web.p.365': 'Last 12 months',
+  'web.k.users': 'Visitors', 'web.k.newUsers': 'New visitors', 'web.k.sessions': 'Visits', 'web.k.views': 'Pages viewed',
+  'web.k.engRate': 'Engaged visits', 'web.k.engTime': 'Time per visitor', 'web.k.keyEvents': 'Key actions',
+  'web.h.users': 'Different people who came in', 'web.h.newUsers': 'First time on the site', 'web.h.sessions': 'Times someone came in',
+  'web.h.views': 'Pages opened in total', 'web.h.engRate': 'Stayed over 10 s, saw 2+ pages or took an action', 'web.h.engTime': 'Average time actively on the site',
+  'web.h.keyEvents': 'Forms, clicks to WhatsApp, purchases…',
+  'web.pages': 'Most viewed pages', 'web.channels': 'How they arrive', 'web.sources': 'Where from', 'web.countries': 'Countries', 'web.cities': 'Cities', 'web.devices': 'Device',
+  'web.listsSub': 'For the {p}.', 'web.views': '{n} views',
+  'web.ch.Direct': 'Direct (typed the address)', 'web.ch.Organic Search': 'Google and other search engines', 'web.ch.Organic Social': 'Social media', 'web.ch.Referral': 'Links from other sites',
+  'web.ch.Paid Search': 'Search ads', 'web.ch.Paid Social': 'Social media ads', 'web.ch.Email': 'Email', 'web.ch.Unassigned': 'Unidentified', 'web.ch.Organic Video': 'Video (YouTube…)',
+  'web.ch.Display': 'Banner ads', 'web.ch.Organic Shopping': 'Shopping', 'web.ch.Cross-network': 'Google Ads campaigns',
+  'web.dev.desktop': 'Computer', 'web.dev.mobile': 'Phone', 'web.dev.tablet': 'Tablet',
+  'web.note': 'Measured by Google Analytics on the website. Yesterday is the latest full day.',
+};
+export const webStatsEs: Record<keyof typeof webStatsEn, string> = {
+  'web.title': 'Sitio web', 'web.sub': 'Del {from} al {to} · Google Analytics', 'web.p.365': 'Últimos 12 meses',
+  'web.k.users': 'Visitantes', 'web.k.newUsers': 'Visitantes nuevos', 'web.k.sessions': 'Visitas', 'web.k.views': 'Páginas vistas',
+  'web.k.engRate': 'Visitas con interés', 'web.k.engTime': 'Tiempo por visitante', 'web.k.keyEvents': 'Acciones clave',
+  'web.h.users': 'Personas distintas que entraron', 'web.h.newUsers': 'Primera vez en el sitio', 'web.h.sessions': 'Veces que alguien entró',
+  'web.h.views': 'Páginas abiertas en total', 'web.h.engRate': 'Se quedaron más de 10 s, vieron 2+ páginas o hicieron algo', 'web.h.engTime': 'Tiempo promedio activo en el sitio',
+  'web.h.keyEvents': 'Formularios, clics a WhatsApp, compras…',
+  'web.pages': 'Páginas más vistas', 'web.channels': 'Cómo llegan', 'web.sources': 'Desde dónde', 'web.countries': 'Países', 'web.cities': 'Ciudades', 'web.devices': 'Dispositivo',
+  'web.listsSub': 'En los {p}.', 'web.views': '{n} vistas',
+  'web.ch.Direct': 'Directo (escribieron la dirección)', 'web.ch.Organic Search': 'Google y otros buscadores', 'web.ch.Organic Social': 'Redes sociales', 'web.ch.Referral': 'Enlaces de otros sitios',
+  'web.ch.Paid Search': 'Anuncios en buscadores', 'web.ch.Paid Social': 'Anuncios en redes', 'web.ch.Email': 'Correo', 'web.ch.Unassigned': 'Sin identificar', 'web.ch.Organic Video': 'Video (YouTube…)',
+  'web.ch.Display': 'Anuncios gráficos', 'web.ch.Organic Shopping': 'Compras', 'web.ch.Cross-network': 'Campañas de Google Ads',
+  'web.dev.desktop': 'Computador', 'web.dev.mobile': 'Celular', 'web.dev.tablet': 'Tableta',
+  'web.note': 'Medido por Google Analytics en el sitio. Ayer es el último día completo.',
+};

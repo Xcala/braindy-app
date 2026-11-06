@@ -220,6 +220,11 @@ service cloud.firestore {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
         allow write: if false;
       }
+      // Website results from Google Analytics (one doc, ga4): same switch as the social numbers. Backend writes.
+      match /webStats/{source} {
+        allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+        allow write: if false;
+      }
       match /siteChanges/{changeId} {
         allow read: if canReadBrand(brandId);
         allow create, update: if isAdmin()

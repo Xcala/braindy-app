@@ -36,6 +36,18 @@ describe('Social results', () => {
     await assertFails(getDoc(doc(as(env, OWNER), 'brands/brand-a/socialStats/instagram')));
   });
 
+  it('website results (Google Analytics) follow the same switch', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore() as unknown as Firestore, 'brands/brand-a/webStats/ga4'), { propertyId: '1', daily: [] });
+    });
+    await assertFails(getDoc(doc(as(env, OWNER), 'brands/brand-a/webStats/ga4')));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), 'brands/brand-a/webStats/ga4')));
+    await brand({ resultsOn: true });
+    await assertSucceeds(getDoc(doc(as(env, MEMBER), 'brands/brand-a/webStats/ga4')));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), 'brands/brand-a/webStats/ga4')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'brands/brand-a/webStats/ga4'), { daily: [] }));
+  });
+
   it('nobody writes from the browser, not even the admin', async () => {
     await brand({ resultsOn: true });
     for (const who of [ADMIN, OWNER, MEMBER]) await assertFails(setDoc(doc(as(env, who), 'brands/brand-a/socialStats/facebook'), stats));
