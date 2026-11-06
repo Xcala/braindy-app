@@ -215,6 +215,11 @@ service cloud.firestore {
         allow read: if canReadBrand(brandId);
         allow write: if false;
       }
+      // Social results from Metricool (one doc per network): Results section, only where NickMark switched it on. Backend writes.
+      match /socialStats/{network} {
+        allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+        allow write: if false;
+      }
       match /siteChanges/{changeId} {
         allow read: if canReadBrand(brandId);
         allow create, update: if isAdmin()

@@ -1,18 +1,17 @@
 import { NavLink, useLocation } from 'react-router';
-import { groupOfPath, NAV, SHOW_RESULTS } from './navGroups';
+import { groupOfPath, NAV } from './navGroups';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { NAV_ICON } from './navIcons';
 
-const ALL_ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
+const ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
   { to: '/home', label: 'nav.homeShort', icon: NAV_ICON['/home'] },
   { to: '/brand/visual', label: 'nav.brandShort', icon: NAV_ICON['/brand'] },
   { to: '/requests', label: 'nav.askShort', fab: true, icon: NAV_ICON['/requests'] },
   { to: '/assets', label: 'nav.deliveriesShort', icon: NAV_ICON['/assets'] },
   { to: '/report', label: 'nav.reportShort', icon: NAV_ICON['/report'] },
 ];
-const ITEMS = ALL_ITEMS.filter((i) => SHOW_RESULTS || i.to !== '/report');
 
 /** Mobile bottom navigation: the same five tabs as on desktop (Home · Brand · Ask, also the requests list · Deliveries · Results). */
 export function BottomNav() {

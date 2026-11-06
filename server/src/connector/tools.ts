@@ -9,6 +9,7 @@ import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand,
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
+import { syncSocialStats } from './socialStats.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
@@ -144,6 +145,35 @@ Ver: ${APP}/plan`;
     const name = await requireBrand(brandId);
     const r = await syncSocialPosts(brandId, posts, { from, to }, metricoolBrand);
     return `${name}: ${r.total} publicaciones · ${r.created} nuevas · ${r.updated} actualizadas · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} quitadas` : ''}.\nVer: ${APP}/calendar`;
+  }));
+
+  server.registerTool('braindy_social_stats_sync', {
+    title: 'Subir los resultados de redes a Braindy App',
+    description: 'Mirrors one network\'s analytics from Metricool (getAnalyticsDataByMetrics) into Braindy App, section "Resultados": daily evolution, every post with its numbers, and audience. '
+      + 'Days merge with what is stored, so a short recent range is enough for a daily refresh; posts are upserted by id. One call per network. '
+      + 'Use when Nicolas says "trae los resultados de Metricool", "actualiza resultados de X".',
+    inputSchema: {
+      brandId: z.string(),
+      network: z.string().describe('instagram, facebook, linkedin, youtube, tiktok…'),
+      handle: z.string().optional(),
+      daily: z.array(z.record(z.string(), z.union([z.number(), z.string(), z.null()]))).max(1100)
+        .describe('{ d: "YYYY-MM-DD", followers, views, reach, interactions, posts, stories, engaged, gained, lost, clicks, likes, comments, shares, saves, watchMinutes }'),
+      posts: z.array(z.record(z.string(), z.union([z.number(), z.string(), z.null()]))).max(600).optional()
+        .describe('{ id, date, type, text, image, url, views, reach, likes, comments, saves, shares, interactions, engagement, clicks, watchTime, follows }'),
+      audience: z.object({
+        countries: z.array(z.object({ name: z.string(), n: z.number() })).optional(),
+        cities: z.array(z.object({ name: z.string(), n: z.number() })).optional(),
+        industry: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        seniority: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        function: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        companySize: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        ageGender: z.array(z.object({ age: z.string(), gender: z.string(), v: z.number() })).optional(),
+      }).optional(),
+    },
+  }, run(async ({ brandId, network, ...input }) => {
+    const name = await requireBrand(brandId);
+    const r = await syncSocialStats(brandId, network, input);
+    return `${name} · ${network}: ${r.days} días (${r.from} a ${r.to}) · ${r.posts} publicaciones.\nVer: ${APP}/report`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {

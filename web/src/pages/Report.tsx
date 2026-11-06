@@ -5,9 +5,11 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
 import { ReportEditor } from '../report/ReportEditor';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
+import { useSocialStats } from '../report/useSocialStats';
+import { SocialResults } from '../report/SocialResults';
 import { Scan } from '../components/Scan';
 
-/** Monthly report (design 19): sales, not likes. Made by the four Brains, signed by Nicolas. */
+/** Results: the social media numbers from Metricool (where Results is on) and the monthly report (design 19), signed by Nicolas. */
 export function Report() {
   const wa = useNicoWhatsApp();
   const { current } = useBrands();
@@ -16,6 +18,7 @@ export function Report() {
   const admin = profile?.role === 'admin';
   const list = useReports(current?.id, admin);
   const [month, setMonth] = useState<string | null>(null);
+  const social = useSocialStats(current?.id, !!current?.resultsOn);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const shown = list.filter((r) => admin || r.published);
   const r = shown.find((x) => x.month === month) ?? shown[0];
@@ -27,9 +30,9 @@ export function Report() {
     <div className="col g32">
       <div className="row between g16 wrap">
         <div className="col g8">
-          <p className="label">{t('rep.kicker')}{r ? ` · ${monthName(r.month)}` : ''}</p>
+          {r && <p className="label">{t('rep.kicker')} · {monthName(r.month)}</p>}
           <h1 className="h1">{t('rep.title')}</h1>
-          <p className="t-mute">{t('rep.tagline')}</p>
+          {r && <p className="t-mute">{t('rep.tagline')}</p>}
         </div>
         {r && (
           <div className="row g8 wrap print:hidden">
@@ -43,7 +46,8 @@ export function Report() {
           </div>
         )}
       </div>
-      {!r ? <div className="card t-mute">{t('rep.none')}</div> : (
+      {social.list.length > 0 && <SocialResults key={current.id} list={social.list} />}
+      {!r ? (social.list.length > 0 || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
           {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
