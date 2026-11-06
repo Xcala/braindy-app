@@ -5,12 +5,11 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import { useSocialStats } from '../report/useSocialStats';
-import { SocialResults } from '../report/SocialResults';
 import { useWebStats } from '../report/useWebStats';
-import { WebResults } from '../report/WebResults';
+import { ResultsView } from '../report/ResultsView';
 import { Scan } from '../components/Scan';
 
-/** Results: the social media numbers from Metricool (where Results is on) and the monthly report (design 19), signed by Nicolas. */
+/** Results: the website (Google Analytics) and social media (Metricool) numbers (where Results is on) and the monthly report (design 19), signed by Nicolas. */
 export function Report() {
   const wa = useNicoWhatsApp();
   const { current } = useBrands();
@@ -48,8 +47,7 @@ export function Report() {
           </div>
         )}
       </div>
-      {social.list.length > 0 && <SocialResults key={current.id} list={social.list} />}
-      {web && <WebResults key={`web-${current.id}`} stats={web} />}
+      {(social.list.length > 0 || web) && <ResultsView key={current.id} social={social.list} web={web} />}
       {!r ? (social.list.length > 0 || web || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
           {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}

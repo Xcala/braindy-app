@@ -1,6 +1,6 @@
 /** Results › Website: numbers from Google Analytics (view only). */
 export const webStatsEn = {
-  'web.title': 'Website', 'web.sub': 'From {from} to {to} · Google Analytics', 'web.p.365': 'Last 12 months',
+  'res.sum': 'Overview', 'web.title': 'Website', 'web.sub': 'From {from} to {to} · Google Analytics', 'web.p.365': 'Last 12 months',
   'web.k.users': 'Visitors', 'web.k.newUsers': 'New visitors', 'web.k.sessions': 'Visits', 'web.k.views': 'Pages viewed',
   'web.k.engRate': 'Engaged visits', 'web.k.engTime': 'Time per visitor', 'web.k.keyEvents': 'Key actions',
   'web.h.users': 'Different people who came in', 'web.h.newUsers': 'First time on the site', 'web.h.sessions': 'Times someone came in',
@@ -15,7 +15,7 @@ export const webStatsEn = {
   'web.note': 'Measured by Google Analytics on the website. Yesterday is the latest full day.',
 };
 export const webStatsEs: Record<keyof typeof webStatsEn, string> = {
-  'web.title': 'Sitio web', 'web.sub': 'Del {from} al {to} · Google Analytics', 'web.p.365': 'Últimos 12 meses',
+  'res.sum': 'Resumen', 'web.title': 'Sitio web', 'web.sub': 'Del {from} al {to} · Google Analytics', 'web.p.365': 'Últimos 12 meses',
   'web.k.users': 'Visitantes', 'web.k.newUsers': 'Visitantes nuevos', 'web.k.sessions': 'Visitas', 'web.k.views': 'Páginas vistas',
   'web.k.engRate': 'Visitas con interés', 'web.k.engTime': 'Tiempo por visitante', 'web.k.keyEvents': 'Acciones clave',
   'web.h.users': 'Personas distintas que entraron', 'web.h.newUsers': 'Primera vez en el sitio', 'web.h.sessions': 'Veces que alguien entró',
