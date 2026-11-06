@@ -2,7 +2,8 @@
    pills everywhere, 16 px corners on bars and menus (tiles and lists keep the 20 / 24 px card corners). */
 
 /* Toolbar: two rows, 16 px apart, 24 px side padding (16 on phones). */
-.fx-bar { display: grid; gap: 14px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
+/* minmax(0, 1fr): a row that scrolls sideways (status tabs) never widens the card or the page. */
+.fx-bar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 18px 24px; border-bottom: 1px solid var(--line); }
 @media (max-width: 639px) { .fx-bar { padding: 14px 16px; } }
 .fx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
 .fx-find { display: flex; align-items: center; gap: 8px; width: 100%; }
@@ -79,7 +80,7 @@ html[data-theme="dark"] .fx .lrow.is-picked { background: #141C36; }
 @media (max-width: 639px) {
   .fx-find { flex-wrap: wrap; }
   .fx-find .search { flex: 1 1 100%; }
-  .fx .seg.fseg { flex: 1 1 100%; max-width: 100%; overflow-x: auto; }
+  .fx .seg.fseg, .fx .seg.seg-scroll { flex: 1 1 100% !important; max-width: 100%; overflow-x: auto; }
   .fx-actions { margin-left: 0; }
   .selbar .fx-end { margin-left: 0; }
 }

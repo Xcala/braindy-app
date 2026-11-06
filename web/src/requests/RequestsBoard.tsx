@@ -43,7 +43,7 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
   return (
     <div className="col g8">
       {isAdmin && <p className="t-xs t-mute">{t(moveError ? 'req.moveError' : 'req.dragHint')}</p>}
-      <div className={`grid items-start gap-5 md:grid-cols-2 ${columns.length > 2 ? 'xl:grid-cols-4' : ''}`}>
+      <div className={`grid grid-cols-1 items-start gap-5 md:grid-cols-2 ${columns.length > 2 ? 'xl:grid-cols-4' : ''}`}>
         {columns.map(({ status, bg }) => {
           const all = shown.filter((r) => r.status === status);
           const items = openCols.includes(status) ? all : all.slice(0, COL_FIRST);
