@@ -7,11 +7,12 @@ import type { FileActions } from './useFileActions';
 
 type Item = [IconName, string, () => void, boolean?];
 
-/** NickMark only: the ⋯ menu of one file (rename, copy a 7-day link, move, trash). */
-export function FileMenu({ f, actions, style }: { f: FileItem; actions: FileActions; style?: CSSProperties }) {
+/** The ⋯ menu of one file: NickMark renames, copies a 7-day link, moves and trashes; a client only renames. */
+export function FileMenu({ f, actions, style, admin = true }: { f: FileItem; actions: FileActions; style?: CSSProperties; admin?: boolean }) {
   const { t } = useI18n();
-  return <MoreMenu label={f.title} style={style} items={[
-    ['pencil', t('files.rename'), () => actions.setAsk({ kind: 'rename', f })],
+  const rename: Item = ['pencil', t('files.rename'), () => actions.setAsk({ kind: 'rename', f })];
+  return <MoreMenu label={f.title} style={style} items={!admin ? [rename] : [
+    rename,
     ['link', t('files.share'), () => actions.share(f)],
     ['folder', t('files.move'), () => actions.setPicked(new Set([f.id]))],
     ['trash', t('files.toTrash'), () => actions.setAsk({ kind: 'trash', ids: [f.id], name: f.title }), true],

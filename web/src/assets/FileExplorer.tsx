@@ -85,7 +85,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
   } : undefined;
   const actions = useFileActions(brandId, brandName);
-  const menu = isAdmin ? (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} /> : undefined;
+  const menu = (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} admin={isAdmin} />;
   const dropUp = useUploader(brandId);
   const closeHide = useCallback(() => setHideAsk(false), []);
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
