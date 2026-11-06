@@ -12,6 +12,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { SubNav } from './SubNav';
+import { HowItWorks } from '../learn/tutorials';
 import { Sidebar } from './Sidebar';
 import { useEffect, useRef } from 'react';
 
@@ -79,7 +80,7 @@ export function AppShell() {
           </nav></div>
         )}
         <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
-          <SectionGate>{!adminSpace && <SubNav />}<Outlet /></SectionGate>
+          <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
         {!adminSpace && <BottomNav />}
       </div>

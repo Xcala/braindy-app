@@ -15,6 +15,9 @@ export type Lesson = {
   id: string; area: Area; order: number; status: 'draft' | 'published'; minutes: number;
   title: L2; summary: L2; body: L2; script?: L2; videoUrl?: string; videoVertical?: string; deckUrl?: string;
   categories: string[]; stages: Stage[]; updatedAt?: Timestamp;
+  /** App tutorials ("How to use Braindy"): which kind, the pages it explains, and the video per language. */
+  kind?: 'general' | 'section' | 'feature'; paths?: string[];
+  videos?: Partial<Record<'es' | 'en', { wide: string; tall?: string }>>;
 };
 export type Objection = {
   id: string; area: Area; order: number; status: 'draft' | 'published';

@@ -7,19 +7,23 @@ import { LessonTile } from '../criterio/LessonCards';
 import { Prose } from '../criterio/Prose';
 import { AREA_ART, LearnStage, LessonCover, LessonStage, sectionsOf } from '../criterio/LessonArt';
 import { Explainer } from '../plan/Explainer';
+import { TutorialShelf, isTutorial, videoOf } from '../learn/tutorials';
 
-/** Learn: "El Criterio de NicoMarca" / "NickMark Taste", every lesson by area. */
+/** Learn: first "How to use Braindy" (the app videos), then "El Criterio de NicoMarca" / "NickMark Taste", every lesson by area. */
 export function Learn() {
   const { t } = useI18n();
-  const { list, loading } = useLessons();
+  const { list: all, loading } = useLessons();
+  const list = all.filter((l) => !isTutorial(l));
   const [area, setArea] = useState<Area | ''>('');
   const present = AREAS.filter((a) => list.some((l) => l.area === a));
   const shown = list.filter((l) => !area || l.area === area);
   return (
     <div className="col g24">
+      <h1 className="h1"><span className="w9">{t('cr.nav')}.</span></h1>
+      <TutorialShelf list={all} />
       <div className="col g8">
-        <p className="label">{t('cr.name')}</p>
-        <h1 className="h1"><span className="w9">{t('cr.nav')}.</span> {t('cr.sub')}</h1>
+        <h2 className="h2"><span className="w9">{t('cr.taste')}</span></h2>
+        <p className="t-sm t-mute">{t('cr.sub')}</p>
       </div>
       <Explainer label={t('cr.howLabel')} title={t('cr.howTitle')} strong={t('cr.howStrong')} lead={t('cr.howLead')}
         stage={<LearnStage label={{ topic: t('cr.anTopic'), tip: t('cr.anTip'), ok: t('cr.anOk') }} />}
@@ -47,13 +51,14 @@ export function LearnLesson() {
   if (loading) return <div className="skel" style={{ height: 320 }} />;
   if (!l) return <div className="card col g12"><p className="t-mute">{t('cr.empty')}</p><Link to="/learn" className="t-sm w7">{t('cr.back')}</Link></div>;
   const embed = embedUrl(l.videoUrl);
-  const related = list.filter((x) => x.area === l.area && x.id !== l.id).slice(0, 3);
+  const video = videoOf(l, lang);
+  const related = list.filter((x) => (l.kind ? x.kind === l.kind : x.area === l.area && !x.kind) && x.id !== l.id).slice(0, 3);
   const sections = sectionsOf(l.body[lang]);
   const accent = AREA_ART[l.area].color;
   return (
     <div className="col g24">
-      <nav className="crumbs" aria-label="Breadcrumb"><Link to="/learn">{t('cr.nav')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{t(`cr.area.${l.area}`)}</span></nav>
-      <LessonCover l={l} big label={`${t(`cr.area.${l.area}`)} · ${t('cr.minutes', { n: l.minutes })}`} />
+      <nav className="crumbs" aria-label="Breadcrumb"><Link to="/learn">{t('cr.nav')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{l.kind ? t('tut.title') : t(`cr.area.${l.area}`)}</span></nav>
+      <LessonCover l={l} big label={`${l.kind ? t(`tut.kind.${l.kind}`) : t(`cr.area.${l.area}`)} · ${t('cr.minutes', { n: l.minutes })}`} />
       <div className="col g8" style={{ maxWidth: 820 }}>
         {l.status === 'draft' && <span className="chip c-draft self-start">{t('cr.draft')}</span>}
         <h1 className="h1"><span className="w9">{l.title[lang]}</span></h1>
@@ -64,10 +69,10 @@ export function LearnLesson() {
           stage={<LessonStage l={l} steps={sections} />}
           steps={sections.slice(0, 5).map((s, i) => [s, t('cr.part', { n: i + 1 })] as [string, string])} />
       )}
-      {isVideoFile(l.videoUrl) ? (
-        <video controls playsInline preload="metadata" title={l.title[lang]} className="w-full rounded-[20px]" style={{ maxWidth: 960, background: '#05070D' }}>
-          {l.videoVertical && <source src={l.videoVertical} type="video/mp4" media="(max-width: 640px)" />}
-          <source src={l.videoUrl} type="video/mp4" />
+      {video && isVideoFile(video.wide) ? (
+        <video key={video.wide} controls playsInline preload="metadata" title={l.title[lang]} className="w-full rounded-[20px]" style={{ maxWidth: 960, background: '#05070D' }}>
+          {video.tall && <source src={video.tall} type="video/mp4" media="(max-width: 640px)" />}
+          <source src={video.wide} type="video/mp4" />
         </video>
       ) : embed ? (
         <div className="overflow-hidden rounded-[20px]" style={{ aspectRatio: '16 / 9', maxWidth: 960, background: '#05070D' }}>
