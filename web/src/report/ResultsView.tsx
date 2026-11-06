@@ -4,32 +4,35 @@ import type { StringKey } from '../i18n/strings';
 import { NetBadge, netInfo } from '../calendar/PostBits';
 import type { NetStats } from './useSocialStats';
 import type { WebStats } from './useWebStats';
+import type { SearchStats } from './useSearchStats';
 import { combine, rangeOf, type Period } from './socialMath';
 import { NetBody } from './SocialResults';
 import { WebBody, WebKpis } from './WebResults';
+import { SearchBody, SearchKpis } from './SearchResults';
 
 const PERIODS: Period[] = ['30', '90', 'month', 'lastMonth', '365', 'all'];
 /** Page ids, YouTube channel ids and LinkedIn urns are not handles people recognise. */
 const realHandle = (h?: string | null) => !!h && !/^\d|urn:|^UC[\w-]{20,}$/.test(h);
 
-/** Results: one row of tabs — the summary of website and social media first, then the website, then each network — and one period for all of them. */
-export function ResultsView({ social, web }: { social: NetStats[]; web: WebStats | null }) {
+/** Results: one row of tabs — the summary of website and social media first, then the website (Analytics + Google search), then each network — and one period for all of them. */
+export function ResultsView({ social, web, search }: { social: NetStats[]; web: WebStats | null; search: SearchStats | null }) {
+  const site = !!(web || search);
   const { t, lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
   const all = useMemo(() => (social.length > 1 ? combine(social) : social[0] ?? null), [social]);
   const tabs = [
-    ...((web && social.length) || social.length > 1 ? ['sum'] : []),
-    ...(web ? ['web'] : []),
+    ...((site && social.length) || social.length > 1 ? ['sum'] : []),
+    ...(site ? ['web'] : []),
     ...social.map((n) => n.network),
   ];
   const [tab, setTab] = useState(tabs[0]!);
   const [period, setPeriod] = useState<Period>('30');
   const cur = tabs.includes(tab) ? tab : tabs[0]!;
   const net = social.find((n) => n.network === cur);
-  const base = cur === 'web' || !all ? web!.daily : (net ?? all).daily;
+  const base = cur === 'web' || !all ? (web ?? search)!.daily : (net ?? all).daily;
   const range = useMemo(() => rangeOf(period, base as NetStats['daily']).cur, [period, base]);
   const day = (s: string) => new Date(`${s.slice(0, 10)}T12:00:00`).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: range.from.slice(0, 4) !== range.to.slice(0, 4) ? 'numeric' : undefined });
-  const updated = [...social.map((n) => n.updatedAt), web?.updatedAt].filter(Boolean).sort((a, b) => +b! - +a!)[0];
+  const updated = [...social.map((n) => n.updatedAt), web?.updatedAt, search?.updatedAt].filter(Boolean).sort((a, b) => +b! - +a!)[0];
   const label = (p: Period) => t(`${p === '365' ? 'web' : 'soc'}.p.${p}` as StringKey);
 
   return (
@@ -58,14 +61,15 @@ export function ResultsView({ social, web }: { social: NetStats[]; web: WebStats
 
       {cur === 'sum' ? (
         <>
-          {web && <h2 className="h3">{t('web.title')}</h2>}
+          {site && <h2 className="h3">{t('web.title')}</h2>}
           {web && <WebKpis stats={web} period={period} short />}
+          {search && <SearchKpis stats={search} period={period} short />}
           {all && <h2 className="h3">{t('soc.title')}</h2>}
           {all && <NetBody key={`sum-${period}`} net={all} period={period} chart={false} />}
         </>
-      ) : cur === 'web' ? <WebBody stats={web!} period={period} /> : net && <NetBody key={net.network} net={net} period={period} />}
+      ) : cur === 'web' ? <>{web && <WebBody stats={web} period={period} />}{search && <SearchBody stats={search} period={period} />}</> : net && <NetBody key={net.network} net={net} period={period} />}
 
-      <p className="t-xs t-mute">{cur === 'web' ? t('web.note') : cur === 'sum' && web ? `${t('web.note')} ${t('soc.note')}` : t('soc.note')}</p>
+      <p className="t-xs t-mute">{[cur !== 'sum' && cur !== 'web' ? '' : web ? t('web.note') : '', cur !== 'sum' && cur !== 'web' ? '' : search ? t('gsc.note') : '', cur === 'web' ? '' : social.length ? t('soc.note') : ''].filter(Boolean).join(' ')}</p>
     </section>
   );
 }

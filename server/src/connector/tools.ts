@@ -11,6 +11,7 @@ import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
 import { syncSocialStats } from './socialStats.js';
 import { syncAllWebStats, syncWebStats } from '../webStats.js';
+import { syncAllSearchStats, syncSearchStats } from '../searchStats.js';
 import { db } from '../firebase.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
@@ -179,24 +180,28 @@ Ver: ${APP}/plan`;
   }));
 
   server.registerTool('braindy_web_stats_refresh', {
-    title: 'Actualizar las visitas del sitio (Google Analytics) en Braindy App',
+    title: 'Actualizar las visitas y búsquedas del sitio (Google Analytics + Search Console) en Braindy App',
     description: 'Reads Google Analytics 4 on the server (the braindy-api service account must be Viewer on the property) and refreshes Results › Website: '
-      + 'daily users, sessions, views, engagement and key events, 30/90/365-day totals and top pages, channels, sources, countries, cities and devices. '
-      + 'Pass brandId (and propertyId the first time, to link the property) for one brand, or nothing for every brand that has a property. '
+      + 'daily users, sessions, views, engagement and key events, 30/90/365-day totals and top pages, channels, sources, countries, cities and devices; '
+      + 'also Search Console (braindy-api as Restricted user): Google clicks, impressions, position, top searches and pages. '
+      + 'Pass brandId (and propertyId / gscSite the first time, to link them) for one brand, or nothing for every brand that has one. '
       + 'Only works from the remote connector (Cloud Run). Use when Nicolas says "actualiza Analytics", "conecta el Analytics de X", and in the daily refresh.',
     inputSchema: {
       brandId: z.string().optional(),
       propertyId: z.string().regex(/^\d{6,12}$/).optional().describe('GA4 property id (numbers only), saved on the brand'),
+      gscSite: z.string().regex(/^(sc-domain:|https?:\/\/)/).optional().describe('Search Console property, e.g. sc-domain:example.com'),
     },
-  }, run(async ({ brandId, propertyId }) => {
+  }, run(async ({ brandId, propertyId, gscSite }) => {
+    const line = (src: string) => (r: { ok: boolean; brandId: string; note: string }) => `${r.ok ? '✓' : '✗'} ${r.brandId} · ${src}: ${r.note}`;
     if (!brandId) {
-      const all = await syncAllWebStats();
-      return all.map((r) => `${r.ok ? '✓' : '✗'} ${r.brandId}: ${r.note}`).join('\n') || 'Ninguna marca tiene propiedad de Google Analytics.';
+      const all = [...(await syncAllWebStats()).map(line('GA')), ...(await syncAllSearchStats()).map(line('Search Console'))];
+      return all.join('\n') || 'Ninguna marca tiene Google Analytics ni Search Console.';
     }
     const name = await requireBrand(brandId);
-    if (propertyId) await db.doc(`brands/${brandId}`).set({ gaPropertyId: propertyId }, { merge: true });
-    const r = await syncWebStats(brandId);
-    return `${name} · Google Analytics: ${r.days} días (${r.from} a ${r.to}) · ${r.users30 ?? 0} usuarios en los últimos 30 días.\nVer: ${APP}/report`;
+    if (propertyId || gscSite) await db.doc(`brands/${brandId}`).set({ ...(propertyId && { gaPropertyId: propertyId }), ...(gscSite && { gscSite }) }, { merge: true });
+    const ga = await syncWebStats(brandId).then((r) => `${r.days} días · ${r.users30 ?? 0} usuarios en 30 días`, (e: Error) => e.message);
+    const sc = await syncSearchStats(brandId).then((r) => `${r.days} días · ${r.clicks30} clics en 30 días`, (e: Error) => e.message);
+    return `${name}\nGoogle Analytics: ${ga}\nSearch Console: ${sc}\nVer: ${APP}/report`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {
