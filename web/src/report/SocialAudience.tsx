@@ -1,19 +1,23 @@
+import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import type { Audience } from './useSocialStats';
 
-/** A labelled horizontal bar per row; n is the row's share of all followers per ten thousand (as the server stores it), unless fmt says how to show it. */
-export function Bars({ title, rows, fmt, sub }: { title: string; rows: Array<{ name: string; n: number }>; fmt?: (n: number) => string; sub?: string }) {
-  const { lang } = useI18n();
+/** A labelled horizontal bar per row; n is the row's share of all followers per ten thousand (as the server stores it), unless fmt says how to show it. With top, only the first rows show and the rest open on demand; card makes the block its own card. */
+export function Bars({ title, rows, fmt, sub, top, card }: { title: string; rows: Array<{ name: string; n: number }>; fmt?: (n: number) => string; sub?: string; top?: number; card?: boolean }) {
+  const { t, lang } = useI18n();
+  const [open, setOpen] = useState(false);
+  const more = top != null && rows.length > top;
   const max = Math.max(1, ...rows.map((r) => r.n));
   return (
-    <div className="col g8">
+    <div className={card ? 'card col g8' : 'col g8'}>
       <div className="col g4"><p className="label">{title}</p>{sub && <p className="t-xs t-mute">{sub}</p>}</div>
-      {rows.map((r) => (
+      {(more && !open ? rows.slice(0, top) : rows).map((r) => (
         <div key={r.name} className="col g4">
           <div className="row between t-sm"><span style={{ overflowWrap: 'anywhere' }}>{r.name}</span><span className="t-mute" style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt ? fmt(r.n) : new Intl.NumberFormat(lang === 'es' ? 'es-CO' : 'en-US', { style: 'percent', maximumFractionDigits: 1 }).format(r.n / 10000)}</span></div>
           <div style={{ height: 6, borderRadius: 999, background: 'var(--hielo)' }}><div style={{ width: `${(r.n / max) * 100}%`, height: '100%', borderRadius: 999, background: '#2F4DE0' }} /></div>
         </div>
       ))}
+      {more && <button className="btn btn-ghost btn-sm print:hidden" style={{ alignSelf: 'flex-start' }} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? t('common.showLess') : t('common.showAll', { n: rows.length })}</button>}
     </div>
   );
 }

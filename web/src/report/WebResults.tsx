@@ -73,15 +73,13 @@ export function WebBody({ stats, period }: { stats: WebStats; period: Period }) 
     <>
       <WebKpis stats={stats} period={period} />
       <SocialChart key={`web-${period}`} net={{ daily: asNet(stats) }} range={cur} keys={keys} metrics={CHART} prefix="web.k" />
-      <div className="card col g16">
-        <div className="grid gap-6 md:grid-cols-2">
-          {(lists.pages?.length ?? 0) > 0 && <Bars title={t('web.pages')} sub={sub} rows={lists.pages!.slice(0, 8)} fmt={(n) => t('web.views', { n: int(n) })} />}
-          {(lists.channels?.length ?? 0) > 0 && <Bars title={t('web.channels')} sub={sub} rows={named('web.ch', lists.channels).slice(0, 8)} fmt={int} />}
-          {(lists.sources?.length ?? 0) > 0 && <Bars title={t('web.sources')} rows={lists.sources!.slice(0, 8)} fmt={int} />}
-          {(lists.countries?.length ?? 0) > 0 && <Bars title={t('web.countries')} rows={lists.countries!.slice(0, 6)} fmt={int} />}
-          {(lists.cities?.length ?? 0) > 0 && <Bars title={t('web.cities')} rows={lists.cities!.slice(0, 6)} fmt={int} />}
-          {(lists.devices?.length ?? 0) > 0 && <Bars title={t('web.devices')} rows={named('web.dev', lists.devices)} fmt={int} />}
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 items-start">
+        {(lists.pages?.length ?? 0) > 0 && <Bars card top={3} title={t('web.pages')} sub={sub} rows={lists.pages!} fmt={(n) => t('web.views', { n: int(n) })} />}
+        {(lists.channels?.length ?? 0) > 0 && <Bars card top={3} title={t('web.channels')} sub={sub} rows={named('web.ch', lists.channels)} fmt={int} />}
+        {(lists.sources?.length ?? 0) > 0 && <Bars card top={3} title={t('web.sources')} rows={lists.sources!} fmt={int} />}
+        {(lists.countries?.length ?? 0) > 0 && <Bars card top={3} title={t('web.countries')} rows={lists.countries!} fmt={int} />}
+        {(lists.cities?.length ?? 0) > 0 && <Bars card top={3} title={t('web.cities')} rows={lists.cities!} fmt={int} />}
+        {(lists.devices?.length ?? 0) > 0 && <Bars card top={3} title={t('web.devices')} rows={named('web.dev', lists.devices)} fmt={int} />}
       </div>
     </>
   );
