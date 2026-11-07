@@ -108,12 +108,12 @@ export const SECCIONES = [
   {
     id: 'resultados', kind: 'section', paths: ['/report'], nav: 'Resultados', navEn: 'Results',
     titulo: { es: 'Resultados', en: 'Results' },
-    resumen: { es: 'Tu reporte del mes: ventas, no likes.', en: 'Your monthly report: sales, not likes.' },
+    resumen: { es: 'Cómo van tus redes, medido por Metricool.', en: 'How your social media is doing, measured by Metricool.' },
     escenas: [
-      { zona: 'hero', ui: 'Reportamos ventas, no likes', es: 'Resultados es tu reporte del mes. Reportamos ventas, no likes.', en: 'Results is your monthly report. We report sales, not likes.' },
-      { zona: 'rejilla', ui: 'Ventas · Leads · Costo por lead', es: 'Ventas atribuidas, leads calificados, costo por lead y piezas entregadas.', en: 'Attributed sales, qualified leads, cost per lead and pieces delivered.' },
-      { zona: 'tarjeta', ui: 'Qué movió el número · El próximo mes', es: 'Luego, qué movió el número y qué viene el próximo mes.', en: 'Then, what moved the number and what comes next month.' },
-      { zona: 'hero', ui: 'PDF · WhatsApp · Agendar', es: 'Descárgalo en PDF, compártelo por WhatsApp o agenda veinte minutos para revisarlo.', en: 'Download it as a PDF, share it on WhatsApp or book twenty minutes to go over it.' },
+      { zona: 'hero', ui: 'Resultados · Redes sociales', es: 'Resultados muestra cómo van tus redes, medido por Metricool, la herramienta que publica tus contenidos.', en: 'Results shows how your social media is doing, measured by Metricool, the tool that publishes your posts.' },
+      { zona: 'rejilla', ui: 'Seguidores · Alcance · Interacciones', es: 'Seguidores, visualizaciones, alcance e interacciones, por red y por periodo, frente al periodo anterior.', en: 'Followers, views, reach and interactions, by network and by period, compared with the period before.' },
+      { zona: 'tarjeta', ui: 'Lo que mejor funcionó', es: 'Luego, lo que mejor funcionó: ordénalo por vistas, interacciones o alcance.', en: 'Then, the posts that worked best: sort them by views, interactions or reach.' },
+      { zona: 'lista', ui: 'Ver las publicaciones', es: 'Y abre la lista completa del periodo, con sus me gusta, comentarios y compartidos.', en: 'And open the full list for the period, with their likes, comments and shares.' },
     ],
   },
   {
@@ -217,7 +217,7 @@ export const GENERAL = {
   escenas: [
     { zona: 'tarjeta', ui: 'Braindy', es: 'Esto es Braindy: tu marca, hecha por NicoMarca y sus cuatro Brains.', en: 'This is Braindy: your brand, made by NickMark and his four Brains.' },
     { de: 'inicio.1' }, { de: 'inicio.2' }, { de: 'pedir.3' }, { de: 'revisar.2' }, { de: 'revisar.4' },
-    { de: 'mi-marca.1' }, { de: 'archivos.1' }, { de: 'apps-sitio.2' }, { de: 'accesos.3' },
+    { de: 'mi-marca.1' }, { de: 'archivos.1' }, { de: 'apps-sitio.2' }, { de: 'resultados.1' }, { de: 'accesos.3' },
     { zona: 'tarjeta', ui: 'Aprende', voz: 'braindy-en-90-12', es: 'Todo en app.braindy.co. Y si quieres ver una sección a fondo, está en Aprende.', en: 'All at app.braindy.co. And to see any section in depth, go to Learn.' },
   ],
 };
