@@ -3,6 +3,11 @@
 .lview-bar { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: max(10px, env(safe-area-inset-top)) 16px 10px; background: #fff; border-bottom: 1px solid var(--line); }
 .lview-bar > .col { flex: 0 1 220px; }
 /* Address box: the page the frame shows; type another and press Enter. */
+.lview-back { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px 0 10px; border: 1px solid var(--line); border-radius: var(--r-pill); background: #fff; color: var(--ink); font: 700 13px/1 var(--f-text); cursor: pointer; transition: border-color .15s, color .15s, background .15s; }
+.lview-back:hover { border-color: var(--azul); color: var(--azul); }
+.lview-back svg { transition: transform .2s; }
+.lview-back:hover svg { transform: translateX(-3px); }
+.lview-back:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 .lview-url { flex: 1 1 260px; min-width: 0; max-width: 640px; position: relative; display: flex; }
 .lview-url .input { height: 36px; width: 100%; padding: 0 40px 0 14px; font-size: 13px; border-radius: var(--r-pill); background: var(--niebla, #F4F5FA); }
 .lview-url .input:focus { background: #fff; }

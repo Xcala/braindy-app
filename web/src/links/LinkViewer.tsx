@@ -43,6 +43,10 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
   return (
     <div className="lview" role="dialog" aria-modal="true" aria-label={link.title}>
       <div className="lview-bar">
+        <button type="button" className="lview-back" onClick={onClose} aria-label={t('lv.backTo')} title={t('lv.backTo')}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <span>{t('lv.back')}</span>
+        </button>
         <div className="col" style={{ minWidth: 0 }}>
           <span className="w7 truncate">{link.title}</span>
           {blocked && <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>}
