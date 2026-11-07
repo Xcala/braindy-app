@@ -90,7 +90,10 @@ export function Requests() {
         : view === 'calendar' ? <DueCalendar shown={shown} />
         : <RequestsList brandId={current.id} shown={shown} isAdmin={isAdmin} archived={f.archived} tags={tags} />}
 
-      {asking && <AskPanel brandId={current.id} list={list} onClose={() => setParam('new', null)} />}
+      {asking && <AskPanel brandId={current.id} list={list} initial={params.get('text') ? {
+        intent: '', answers: {}, text: params.get('text')!.slice(0, 2000), category: params.get('cat') ?? undefined, sub: params.get('sub') ?? undefined,
+        links: params.get('link') ? [params.get('link')!] : [],
+      } : null} onClose={() => { const p = new URLSearchParams(params); ['new', 'text', 'link', 'cat', 'sub'].forEach((k) => p.delete(k)); setParams(p); }} />}
     </div>
   );
 }

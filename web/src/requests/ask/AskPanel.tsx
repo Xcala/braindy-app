@@ -10,9 +10,9 @@ import './ask.css';
  * "New request" as a side panel (full screen on phones): first what you want to achieve, then the details.
  * Escape or the scrim closes it; focus goes into the panel and comes back to the button that opened it.
  */
-export function AskPanel({ brandId, list, onClose }: { brandId: string; list: BrandRequest[]; onClose: () => void }) {
+export function AskPanel({ brandId, list, onClose, initial }: { brandId: string; list: BrandRequest[]; onClose: () => void; initial?: Seed | null }) {
   const { t } = useI18n();
-  const [seed, setSeed] = useState<Seed | null>(null);
+  const [seed, setSeed] = useState<Seed | null>(initial ?? null);
   const panel = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   close.current = onClose;

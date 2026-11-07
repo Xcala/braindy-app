@@ -3,6 +3,8 @@ import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { NetBadge, netInfo, PostThumb } from '../calendar/PostBits';
 import { PostDetail } from '../calendar/PostDetail';
+import { useSocialStats } from '../report/useSocialStats';
+import { statFor } from '../report/askMore';
 import { useSocialPosts, type SocialPost } from '../calendar/useSocialPosts';
 import '../calendar/calendar.css';
 
@@ -21,6 +23,8 @@ export function Calendar() {
   const start = useMemo(() => { const d = new Date(month); d.setDate(1 - ((d.getDay() + 6) % 7)); return d; }, [month]);
   const end = useMemo(() => { const d = new Date(month.getFullYear(), month.getMonth() + 1, 1); d.setDate(d.getDate() + ((8 - d.getDay()) % 7)); return d; }, [month]);
   const { posts, loading } = useSocialPosts(current?.id, start, end);
+  // Numbers next to each published post where Results is on (the rules keep them closed otherwise).
+  const stats = useSocialStats(current?.id, !!current?.resultsOn);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const nets = [...new Set(posts.flatMap((p) => p.networks.map((n) => n.network)))];
@@ -104,7 +108,7 @@ export function Calendar() {
       </div>
       {inMonth.length === 0 && !loading && <p className="t-sm t-mute cal-empty-desk">{t('cal.empty')}</p>}
       <p className="t-xs t-mute">{t('cal.note')}</p>
-      {open && <PostDetail post={open} onClose={() => setOpen(null)} />}
+      {open && <PostDetail post={open} stat={statFor(stats.list, open)} onClose={() => setOpen(null)} />}
     </div>
   );
 }

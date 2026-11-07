@@ -39,3 +39,7 @@
   .cal-agenda { display: flex; flex-direction: column; gap: 20px; }
   .cal-detail { grid-template-columns: 1fr; }
 }
+/* A published post's numbers (Metricool) in its detail. */
+.cal-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; margin: 0; }
+.cal-nums > div { padding: 8px 10px; border-radius: 10px; background: var(--niebla); }
+.cal-nums dd { margin: 2px 0 0; font-variant-numeric: tabular-nums; }
