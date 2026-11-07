@@ -522,6 +522,10 @@ p{margin:0}
 /* Admin · AI costs: thin share bar under each brand's percentage */
 .costbar{display:block;height:4px;border-radius:99px;background:var(--line);overflow:hidden;width:100%}
 .costbar i{display:block;height:100%;background:var(--azul,#2F4DE0);border-radius:99px}
+.table.cost-table{overflow-x:auto}
+.cost-name{position:sticky;left:0;margin-left:-24px;padding-left:24px;background:#fff;z-index:1;align-self:stretch;display:flex;align-items:center}
+.cost-name>b{font-weight:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow.head .cost-name{background:var(--niebla)}
 
 /* Account (tap on your photo): grouped list like ChatGPT settings */
 .acct{gap:28px}
