@@ -23,6 +23,8 @@ import { AdminTeam } from '../pages/admin/Team';
 import { AdminWhatsapp } from '../pages/admin/Whatsapp';
 import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
+import { PublicUpload } from '../pages/PublicUpload';
+import { PublicShowcase } from '../pages/PublicShowcase';
 import { Settings } from '../pages/Settings';
 import { Onboarding } from '../pages/Onboarding';
 import { Report } from '../pages/Report';
@@ -43,6 +45,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
   { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
   { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
+  { path: '/u/:token', element: <PublicUpload />, errorElement: <RouteError /> },
+  { path: '/s/:token', element: <PublicShowcase />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
     errorElement: <RouteError />,

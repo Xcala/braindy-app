@@ -380,6 +380,13 @@ service cloud.firestore {
     match /reviewLinks/{token} {
       allow read, write: if false;
     }
+    // ---------- upload links and showcases of a brand (no login): backend only ----------
+    match /uploadLinks/{token} {
+      allow read, write: if false;
+    }
+    match /showcaseLinks/{token} {
+      allow read, write: if false;
+    }
 
     // ---------- onboarding sessions with Nicolas (slot bookings): admin reads, backend writes ----------
     match /sessions/{slotId} {

@@ -11,6 +11,8 @@ export const reuseEn = {
   'vs.review': 'In review',
   'vs.current': 'Current',
   // upload link
+  'ul.btn': 'Receive files',
+  'sh.btn': 'Showcase',
   'ul.title': 'Link to send files',
   'ul.lead': 'Anyone with the link can send files to this brand, without an account. They land in «Received».',
   'ul.create': 'Create link',
@@ -86,6 +88,8 @@ export const reuseEs: Record<keyof typeof reuseEn, string> = {
   'vs.changes': 'Necesita cambios',
   'vs.review': 'En revisión',
   'vs.current': 'Actual',
+  'ul.btn': 'Recibir archivos',
+  'sh.btn': 'Vitrina',
   'ul.title': 'Enlace para recibir archivos',
   'ul.lead': 'Quien tenga el enlace puede mandar archivos a esta marca, sin cuenta. Llegan a «Recibidos».',
   'ul.create': 'Crear enlace',

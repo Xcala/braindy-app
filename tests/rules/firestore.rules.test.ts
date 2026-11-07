@@ -228,6 +228,11 @@ describe('accesses (credentials)', () => {
     for (const who of [OWNER, ADMIN, OUTSIDER]) {
       await assertFails(getDoc(doc(as(env, who), 'reviewLinks/abc')));
       await assertFails(setDoc(doc(as(env, who), 'reviewLinks/abc'), { brandId: BRAND_A }));
+      // Upload links and showcases: tokens only the backend reads.
+      for (const col of ['uploadLinks', 'showcaseLinks']) {
+        await assertFails(getDoc(doc(as(env, who), `${col}/abc`)));
+        await assertFails(setDoc(doc(as(env, who), `${col}/abc`), { brandId: BRAND_A, active: true }));
+      }
     }
   });
 
