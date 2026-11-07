@@ -38,11 +38,37 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
 .spanel-pt > p, .spanel-pt > a { margin: 0 12px 10px; }
 .spanel-pt[open] { border-color: color-mix(in srgb, var(--c) 40%, var(--line)); }
 .spanel-done > summary { cursor: pointer; padding: 6px 0; }
-.lview-panel-btn[aria-pressed='true'] { background: var(--azul); color: #fff; border-color: var(--azul); }
-@media (max-width: 1023px) { .spanel { width: 300px; } }
+.lview-side { --w: 340px; position: relative; flex: none; display: flex; width: 48px; overflow: hidden; background: var(--white); border-left: 1px solid var(--line); transition: width .32s cubic-bezier(.2,.8,.2,1); }
+.lview-side.is-open { width: var(--w); }
+.lview-side-in { flex: none; display: flex; width: var(--w); min-height: 0; opacity: 0; transform: translateX(24px); transition: opacity .2s ease, transform .32s cubic-bezier(.2,.8,.2,1); }
+.lview-side.is-open .lview-side-in { opacity: 1; transform: none; transition-delay: .08s; }
+.lview-side-in .spanel { width: 100%; border-left: 0; }
+.lview-side:not(.is-open) .lview-side-in { position: absolute; top: 0; bottom: 0; left: 48px; pointer-events: none; }
+/* Folded: the whole rail is the button, label upright. Open: a round button in the panel's top corner. */
+.lview-side-tog { position: absolute; z-index: 3; top: 0; right: 0; bottom: 0; width: 48px; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 0; border: 0; background: var(--niebla); color: var(--azul); cursor: pointer; transition: background .2s, box-shadow .2s; }
+.lview-side-tog svg { flex: none; transform: rotate(180deg); transition: transform .32s cubic-bezier(.2,.8,.2,1); }
+.lview-side-tog:hover { background: color-mix(in srgb, var(--azul) 12%, var(--niebla)); }
+.lview-side-tog:focus-visible { outline: 2px solid var(--azul); outline-offset: -2px; }
+.lview-side-label { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 13px/1 var(--f-text); letter-spacing: .02em; }
+.lview-side.is-open .lview-side-tog { top: 14px; right: 12px; bottom: auto; width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 999px; background: var(--white); box-shadow: 0 0 0 1px var(--line), 0 2px 8px rgba(20,20,31,.08); }
+.lview-side.is-open .lview-side-tog:hover { box-shadow: 0 0 0 1px var(--azul), 0 2px 8px rgba(20,20,31,.12); }
+.lview-side.is-open .lview-side-tog svg { transform: none; }
+.lview-side.is-open .lview-side-label { display: none; }
+.lview-side .spanel .sx-by { padding-right: 44px; }
+@media (prefers-reduced-motion: reduce) { .lview-side, .lview-side-in, .lview-side-tog svg { transition: none; } }
+@media (max-width: 1023px) { .lview-side { --w: 300px; } }
 @media (max-width: 767px) {
   .lview-body { flex-direction: column; }
-  .spanel { width: auto; max-height: 55%; border-left: 0; border-top: 1px solid var(--line); }
+  /* On phones the panel sits under the page: a bar that unfolds it upward. */
+  .lview-side { width: auto; height: 48px; flex-direction: column; border-left: 0; border-top: 1px solid var(--line); transition: height .32s cubic-bezier(.2,.8,.2,1); }
+  .lview-side.is-open { width: auto; height: 55%; }
+  .lview-side-in { width: auto; flex: 1; transform: translateY(24px); }
+  .lview-side:not(.is-open) .lview-side-in { top: 48px; left: 0; right: 0; }
+  .lview-side-tog { left: 0; width: auto; height: 48px; bottom: auto; flex-direction: row; justify-content: center; padding: 0 16px; }
+  .lview-side-tog svg { transform: rotate(-90deg); }
+  .lview-side-label { writing-mode: horizontal-tb; transform: none; }
+  .lview-side.is-open .lview-side-tog { left: auto; }
+  .lview-side.is-open .lview-side-tog svg { transform: rotate(90deg); }
 }
 .spanel-set { margin: 0 12px 10px; height: 28px; font-size: 11px; }
 /* Open with the state picker below: the picker already shows the state. */
