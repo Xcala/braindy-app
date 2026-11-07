@@ -8,6 +8,10 @@ export interface FileItem {
   ext?: string;
   mtimeMs?: number;
   folder?: string;
+  /** What the AI saw in it (scripts/describe-files.ts): search matches it too. */
+  ai?: { summary?: string; tags?: string[]; text?: string };
+  /** The search found it by what it shows, not by its name. */
+  why?: 'ai';
 }
 
 const DESIGN = /^(ai|psd|indd|eps|fig|sketch|xd|afdesign|aep|prproj)$/i;

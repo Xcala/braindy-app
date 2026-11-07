@@ -88,3 +88,4 @@ html[data-theme="dark"] .fx .lrow.is-picked { background: #141C36; }
 /* The client switch sits under the folder name, so long names and the label both fit. */
 .folder.fcard.has-switch { flex-direction: column; align-items: stretch; }
 .folder.fcard.has-switch > [role="switch"] { align-self: flex-start; }
+.fx-why { display: inline-flex; align-items: center; gap: 4px; color: var(--marketer, #8B5CF6); font-weight: 700; }

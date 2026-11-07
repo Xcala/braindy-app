@@ -35,7 +35,7 @@ function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProper
 type Menu = (f: FileItem, style?: CSSProperties) => ReactNode;
 
 export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel }) {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {files.map((f) => {
@@ -54,6 +54,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: Fil
             </div>
             <div className="tile-meta w-full">
               <span className="tile-name">{f.title}</span>
+              {f.why === 'ai' && <span className="t-xs fx-why" title={f.ai?.summary}><Icon name="spark" size={12} />{t('ss.why')}</span>}
               <span className="t-sm t-mute">{formatBytes(f.size)}{f.mtimeMs ? ` · ${date(f.mtimeMs, lang)}` : ''}</span>
             </div>
           </button>
@@ -76,6 +77,7 @@ export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }
       {files.map((f) => (
         <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}${sel?.on(f.id) ? ' is-picked' : ''}`}>
           <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<span className="col" style={{ minWidth: 0 }}><button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+            {f.why === 'ai' && <span className="t-xs fx-why" title={f.ai?.summary}><Icon name="spark" size={12} />{t('ss.why')}</span>}
             {onFolder && <button type="button" className="t-xs t-mute truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }} onClick={() => onFolder(f.folder ?? '')}><Icon name="folder" size={12} /> {f.folder || t('files.rootFolder')}</button>}</span></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
