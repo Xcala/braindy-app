@@ -103,8 +103,13 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
   const attachments = (list?: InFile[]) => (list ?? []).slice(0, 20)
     .map((x) => ({ assetId: str(x.assetId, 80), name: str(x.name, 200), size: Number(x.size) || 0, contentType: str(x.contentType, 120) }))
     .filter((x) => x.assetId.startsWith('upl-'));
+  // «Adapt to every format» and «Ask for more like this» point at the approved piece they start from (same brand only).
+  const fromIn = (b.from ?? {}) as { requestId?: unknown; versionId?: unknown };
+  const fromReq = str(fromIn.requestId, 80), fromVer = str(fromIn.versionId, 80);
+  const from = fromReq && fromVer && (await db.doc(`brands/${brandId}/requests/${fromReq}/versions/${fromVer}`).get()).exists ? { requestId: fromReq, versionId: fromVer } : null;
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
+    ...(from ? { from } : {}),
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
     cards: { product: { ...card('product'), files: attachments(cards.product?.files) }, application: card('application'), scene: card('scene') },

@@ -9,6 +9,8 @@ import { ObjectionHint, useObjectionMatch } from '../criterio/LessonCards';
 import { logObjection } from '../criterio/useCriterio';
 import { decide } from './api';
 import { markFile } from './useFileUrl';
+import { clock } from './VideoMarks';
+import { AdaptDialog } from './AdaptDialog';
 import { VersionNotes } from './VersionNotes';
 import { Scan } from '../components/Scan';
 import { CommentEdit } from '../components/CommentEdit';
@@ -16,9 +18,9 @@ import type { Annotation, BrandRequest, RequestComment, Version } from './types'
 import { useToast } from '../components/Toaster';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
-export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile }: {
+export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
   brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; canApprove: boolean;
-  pendingMark: Annotation | null; clearMark: () => void; onShowFile: (i: number) => void;
+  pendingMark: Annotation | null; clearMark: () => void; onShowFile: (i: number) => void; onSeek: (fileIndex: number, t: number) => void;
 }) {
   const { t, lang } = useI18n();
   const { user, profile } = useAuth();
@@ -29,6 +31,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
+  const [adapting, setAdapting] = useState(false);
   const cRef = (c: RequestComment) => doc(db, 'brands', brandId, 'requests', r.id, 'comments', c.id);
 
   const isLatest = v && r.latestVersion === v.id;
@@ -74,7 +77,13 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           </span>
           {v.notes && <VersionNotes text={v.notes} />}
           {v.reason && <div className="col" style={{ gap: 6, padding: '14px 16px', borderRadius: 14, background: 'var(--hielo)' }}><span className="t-sm w7">{t('req.whyItWorks')}</span><Scan text={v.reason} points tone="ink" /><span className="t-xs t-mute">{t('req.everyPieceReason')}</span></div>}
-          {v.approval?.state === 'approved' && <span className="chip c-approved self-start">{t('req.approvedChip', { n: v.n })}</span>}
+          {v.approval?.state === 'approved' && (
+            <div className="row g8 wrap">
+              <span className="chip c-approved">{t('req.approvedChip', { n: v.n })}</span>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAdapting(true)}><Icon name="plus" size={16} />{t('ad.btn')}</button>
+            </div>
+          )}
+          {adapting && <AdaptDialog brandId={brandId} r={r} v={v} onClose={() => setAdapting(false)} />}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
           {canApprove && pending && isLatest && (
             <div className="row g8" data-tour="review-decide">
@@ -100,6 +109,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
               <span className="flex flex-none items-center justify-center" style={{ width: 28, height: 28, borderRadius: '50%', background: c.annotation ? 'var(--azul)' : 'var(--hielo)', color: c.annotation ? '#fff' : 'var(--azul-press)', font: '800 12px/1 var(--f-text)' }}>{c.annotation ? pinNumber(c) : '·'}</span>
               <div className="col g4 grow">
                 <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}{c.editedAt ? ` · ${t('ce.edited')}` : ''}</span></span>
+                {typeof c.annotation?.t === 'number' && <button type="button" className="vm-at self-start" onClick={() => onSeek(markFile(c.annotation), c.annotation!.t!)} aria-label={t('vm.goTo', { t: clock(c.annotation.t) })}>▶ {clock(c.annotation.t)}</button>}
                 {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>}
                 {(c.author === user?.uid || profile?.role === 'admin') && (
                   <CommentEdit text={c.text} max={5000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
@@ -112,7 +122,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           ))}
         </div>
         <div className="col g8" style={{ marginTop: 'auto' }}>
-          <label htmlFor="cmt" className="t-sm w7">{pendingMark ? t('req.commentOnMark') : t('req.addComment')}</label>
+          <label htmlFor="cmt" className="t-sm w7">{typeof pendingMark?.t === 'number' ? t('vm.onMoment', { t: clock(pendingMark.t) }) : pendingMark ? t('req.commentOnMark') : t('req.addComment')}</label>
           <div className="row g8">
             <input className="input" id="cmt" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('req.commentPh')} />
             <button className="btn btn-primary btn-icon" aria-label={t('req.sendComment')} onClick={send} disabled={!text.trim()}><Icon name="arrowLeft" className="rotate-180" /></button>

@@ -41,6 +41,7 @@ export function RequestDetail() {
   const [mark, setMark] = useState<Annotation | null>(null);
   const [comparing, setComparing] = useState(false);
   const [fileIndex, setFileIndex] = useState(0);
+  const [seek, setSeek] = useState<{ t: number; n: number } | null>(null);
 
   useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); setFileIndex(0); },[r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -70,9 +71,10 @@ export function RequestDetail() {
         <div className="card grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
             fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
-            comments={comments} onMark={setMark} onCompare={() => setComparing(true)} />
+            comments={comments} onMark={setMark} onCompare={() => setComparing(true)} seek={seek} />
           <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
-            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex} />
+            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex}
+            onSeek={(i, t) => { setFileIndex(i); setSeek((s) => ({ t, n: (s?.n ?? 0) + 1 })); }} />
         </div>
         </SafeBoundary>
       )}
@@ -90,7 +92,7 @@ export function RequestDetail() {
       </div>
 
       {isAdmin && <AdminVersionPanel brandId={current.id} r={r} />}
-      {comparing && <CompareView brandId={current.id} requestId={r.id} versions={versions} onClose={() => setComparing(false)} />}
+      {comparing && <CompareView brandId={current.id} requestId={r.id} versions={versions} fileIndex={fileIndex} onClose={() => setComparing(false)} />}
     </div>
   );
 }

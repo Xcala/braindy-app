@@ -4,6 +4,8 @@ import type { Step } from '../brains/steps.js';
 
 export type Job = {
   brandId: string; brandName: string; requestId: string; category: string; publish: boolean; folder: string; files: string[];
+  /** Files of the approved piece this request adapts or builds on. */
+  source?: string[];
   cwd: string; workspaces: Record<string, string>;
   title: string; text: string; dueDate: string | null; reason: string;
   steps: Step[];
@@ -31,6 +33,7 @@ ${quote(j.text || '(sin texto)')}
 ${j.comments.length ? `\nComentarios y respuestas, en orden:\n${j.comments.map((c) => `- [${c.kind}] ${c.text.replace(/\n/g, ' ')}`).join('\n')}` : ''}
 ${j.versions.length ? `\nVersiones anteriores: ${j.versions.map((v) => `v${v.n} ${v.state}${v.note ? ` («${v.note}»)` : ''}`).join(' · ')}` : ''}
 ${j.files.length ? `\nArchivos que mandó el cliente (ya descargados):\n${j.files.map((f) => `- ${f}`).join('\n')}` : ''}
+${j.source?.length ? `\nLa pieza aprobada de la que parte este pedido (ya descargada; respeta su diseño y su mensaje, cambia solo lo que cada formato exige):\n${j.source.map((f) => `- ${f}`).join('\n')}` : ''}
 
 ## Carpetas de la marca
 ${Object.entries(j.workspaces).map(([k, p]) => `- ${k === 'default' ? 'todo lo demás (diseño, video, redes, contenido)' : k === 'web' ? 'sitio web' : k}: ${p}`).join('\n')}
