@@ -94,7 +94,7 @@ export function PublicUpload() {
           </div>
           {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
           <button className="btn btn-primary self-start" disabled={!files.length || !!step} onClick={send}>
-            {step ? t('ul.sending', { i: step.i + 1, n: files.length }) : t('ul.send', { n: files.length })}
+            {step ? t('ul.sending', { i: step.i + 1, n: files.length }) : files.length ? t('ul.send', { n: files.length }) : t('ul.sendEmpty')}
           </button>
         </>
       )}
