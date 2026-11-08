@@ -9,11 +9,12 @@ import { accessToken, eventsCache } from './meetings.js';
 import type { AuthEnv } from './auth.js';
 
 const SLOT_MIN = 30;
-const DAY_START = 9, DAY_END = 17;      // Bogotá time (UTC-5): first slot 9:00, last one 16:30
+// Nicolas's hours, in his own time zone (IANA, so daylight saving moves with it): first slot 9:00, last one 16:30.
+export const HOST_TZ = 'America/Bogota';
+const DAY_START = 9, DAY_END = 17;
 const DAYS_AHEAD = 10;                  // calendar days shown
 const LEAD_MS = 2 * 3600_000;           // not sooner than 2 hours from now
 const MAX_UPCOMING = 2;                 // a person can hold at most this many future bookings
-const OFFSET = 5 * 3600_000;
 const CAL = 'https://www.googleapis.com/calendar/v3';
 
 let busyCache: { at: number; busy: Array<[number, number]> } | null = null;
@@ -29,16 +30,23 @@ async function busy(token: string, from: number, to: number): Promise<Array<[num
   return list;
 }
 
-/** Every 30-minute start on weekdays between DAY_START and DAY_END (Bogotá), from now + lead time. */
+/** How far HOST_TZ's wall clock is ahead of UTC at instant t (negative west of Greenwich). */
+const wall = new Intl.DateTimeFormat('en-US', { timeZone: HOST_TZ, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+function offsetAt(t: number): number {
+  const p = Object.fromEntries(wall.formatToParts(t).map((x) => [x.type, Number(x.value)]));
+  return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - Math.floor(t / 60_000) * 60_000;
+}
+
+/** Every 30-minute start on weekdays between DAY_START and DAY_END in HOST_TZ, from now + lead time. */
 function candidates(now: number): number[] {
   const out: number[] = [];
-  const d0 = new Date(now - OFFSET);
+  const d0 = new Date(now + offsetAt(now));
   for (let i = 0; i <= DAYS_AHEAD; i++) {
     const day = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), d0.getUTCDate() + i);
     const dow = new Date(day).getUTCDay();
     if (dow === 0 || dow === 6) continue;
     for (let m = DAY_START * 60; m + SLOT_MIN <= DAY_END * 60; m += SLOT_MIN) {
-      const t = day + m * 60_000 + OFFSET;
+      const local = day + m * 60_000, t = local - offsetAt(local - offsetAt(local));
       if (t >= now + LEAD_MS) out.push(t);
     }
   }
@@ -59,7 +67,7 @@ booking.get('/brands/:brandId/meetings/slots', async (c) => {
   if (!all.length) return c.json({ connected: true, slots: [] });
   const b = await busy(token, all[0], all[all.length - 1] + SLOT_MIN * 60_000);
   if (!b) return c.json({ connected: false, slots: [] });
-  return c.json({ connected: true, minutes: SLOT_MIN, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
+  return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
 });
 
 /** Members: book one slot. Rechecks it is still free, creates the event with a Meet link and invites the booker. */
@@ -113,10 +121,10 @@ publicBooking.get('/booking/slots', async (c) => {
   const token = await accessToken();
   if (!token) return c.json({ connected: false, slots: [] });
   const all = candidates(Date.now());
-  if (!all.length) return c.json({ connected: true, minutes: SLOT_MIN, slots: [] });
+  if (!all.length) return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: [] });
   const b = await busy(token, all[0], all[all.length - 1] + SLOT_MIN * 60_000);
   if (!b) return c.json({ connected: false, slots: [] });
-  return c.json({ connected: true, minutes: SLOT_MIN, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
+  return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
 });
 
 publicBooking.post('/booking/book', async (c) => {
