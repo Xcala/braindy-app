@@ -14,7 +14,7 @@ import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { adminLaunches, launches } from './launches.js';
 import { adminCalendar, calendarCallback, meetings } from './meetings.js';
-import { booking } from './booking.js';
+import { booking, publicBooking } from './booking.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
@@ -58,18 +58,22 @@ app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 
 app.get('/health', (c) => c.json({ ok: true }));
 
 // Public proposal pages: no login, tracked per send.
-app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+// braindy.co books meetings here too (the site's /book page), so the public routes also answer the site.
+const siteOrigins = ['https://braindy.co', 'https://www.braindy.co'];
+app.use('/public/*', cors({ origin: [...allowedOrigins, ...siteOrigins], allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
 // Abuse protection on login-free routes: tokens cannot be brute-forced and tracking cannot be flooded.
 app.use('/public/p/:token/accept', rateLimit('accept', 10, 10 * 60_000));
 app.use('/public/p/:token/pay', rateLimit('pay', 10, 10 * 60_000));
 app.use('/public/r/:token/decision', rateLimit('decision', 20, 10 * 60_000));
 app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_000));
+app.use('/public/booking/book', rateLimit('web-booking', 5, 60 * 60_000));
 // Upload links take files from strangers: a few hundred per sender per hour at most.
 app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
+app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
 app.route('/public', publicShare);
 
