@@ -30,3 +30,10 @@ export const NAV_ICON: Record<string, ReactNode> = {
 };
 // My brand opens on Visual.
 NAV_ICON['/brand/visual'] = NAV_ICON['/brand'];
+// Phones: «More» opens every page.
+NAV_ICON.more = svg(<><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></>);
+// The pages inside a tab, for the «More» list.
+NAV_ICON['/brand/brain'] = svg(<><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 0V7a3 3 0 0 0-3-3z" /><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 0" /></>);
+NAV_ICON['/research'] = svg(<><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>);
+NAV_ICON['/apps'] = svg(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
+NAV_ICON['/calendar'] = svg(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);

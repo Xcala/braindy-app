@@ -17,7 +17,7 @@ const KEY = 'braindy.sidebar';
 const savedSlim = () => { try { return localStorage.getItem(KEY) === 'slim'; } catch { return false; } };
 
 /** Below the main sections: learning, accesses, plan and settings, each only when this person may use it. */
-const FOOT: Item[] = [
+export const FOOT: Item[] = [
   { to: '/learn', label: 'cr.nav' }, { to: '/accesses', label: 'nav.accesses' },
   { to: '/plan', label: 'nav.plan' }, { to: '/settings', label: 'nav.settings' },
 ];
