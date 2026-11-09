@@ -1,7 +1,8 @@
 // Storyboard of "Cómo usar Braindy" from catalogo.mjs: one card per scene (vignette of the screen + where the eye goes,
 // the ES and EN voice lines, timing), grouped by video. The same scene list drives the voice and the recordings.
 //   node video/tutoriales/storyboard.mjs <out.html> [version]
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { TODOS, escenasDe } from './catalogo.mjs';
 
 const out = process.argv[2] ?? 'storyboard.html';
@@ -10,6 +11,14 @@ const words = (s) => s.trim().split(/\s+/).length;
 const secs = (e) => Math.max(words(e.es), words(e.en)) / 2.3 + 1.2; // voice + lead/tail
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+/** Length of the assembled video (out/<lang>/<id>.mp4), or null before it is recorded. */
+const real = (id, lang) => { const f = new URL(`./out/${lang}/${id}.mp4`, import.meta.url); return existsSync(f) ? Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f.pathname.slice(process.platform === 'win32' ? 1 : 0)]).toString()) : null; };
+/** The finished video with its language and format switches (files published next to the page under v/<lang>/). */
+const player = (v, es, en) => es == null ? '' : `<div class="player" data-id="${v.id}">
+      <div class="sw" role="group" aria-label="Idioma"><button type="button" data-lang="es" aria-pressed="true">Español · ${mmss(es)}</button><button type="button" data-lang="en" aria-pressed="false">English · ${mmss(en ?? es)}</button></div>
+      <div class="sw" role="group" aria-label="Formato"><button type="button" data-fmt="" aria-pressed="true">16:9</button><button type="button" data-fmt="_9x16" aria-pressed="false">9:16 celular</button></div>
+      <video controls playsinline preload="metadata" src="v/es/${v.id}.mp4#t=0.5"></video></div>`;
+let realTotal = { es: 0, en: 0 };
 const NAV = ['Inicio', 'Mi marca', 'Pedidos', 'Entregas', 'Resultados'];
 
 /** The screen as a wireframe (320×180) with the zone the scene points at lit in blue, plus its UI label and the cursor. */
@@ -61,9 +70,12 @@ const videos = TODOS.map((v, vi) => {
       <dt>Voice · EN</dt><dd class="vo en">“${esc(e.en)}”</dd>
       <dt>Ritmo</dt><dd class="meta">${words(e.es)} palabras ES · ${words(e.en)} EN · ${wps} pal/s</dd></dl></div></article>`;
   }).join('');
+  const rEs = real(v.id, 'es'), rEn = real(v.id, 'en');
+  if (v.kind !== 'general') { realTotal.es += rEs ?? 0; realTotal.en += rEn ?? 0; }
   const strip = d.map((x, i) => `<span style="flex:${x.toFixed(1)}">${i + 1}</span>`).join('');
-  return `<section class="video" id="${v.id}"><header class="vh"><p class="eyebrow" style="--c:${colorDe[v.kind]}">${tipo[v.kind]}${v.fecha ? ` · ${v.fecha}` : ''} · ${es.length} escenas · ${mmss(dur)}</p>
+  return `<section class="video" id="${v.id}"><header class="vh"><p class="eyebrow" style="--c:${colorDe[v.kind]}">${tipo[v.kind]}${v.fecha ? ` · ${v.fecha}` : ''} · ${es.length} escenas · ${rEs != null ? `ES ${mmss(rEs)} · EN ${mmss(rEn ?? rEs)}` : `≈ ${mmss(dur)}`}${rEs != null ? ' · <span class="ok">En Aprende</span>' : ''}</p>
     <h2>${String(vi).padStart(2, '0')} · ${esc(v.titulo.es)} <small>/ ${esc(v.titulo.en)}</small></h2><p class="lead">${esc(v.resumen.es)}</p>
+    ${player(v, rEs, rEn)}
     ${v.paths?.length ? `<p class="meta">Botón «▶ Cómo funciona» en: ${v.paths.map((p) => `<code>${p}</code>`).join(' ')}</p>` : ''}
     <div class="strip" style="--c:${colorDe[v.kind]}">${strip}</div></header>${cards}</section>`;
 }).join('');
@@ -114,23 +126,44 @@ dl{display:grid;grid-template-columns:88px minmax(0,1fr);gap:6px 12px;margin:0}
 dt{font:500 11px/1.6 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
 dd{margin:0;min-width:0}.vo{font-weight:500}.vo.en{color:var(--ink-soft)}
 footer{color:var(--mute);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+.player{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.player video{flex:1 0 100%;width:100%;max-width:880px;aspect-ratio:16/9;background:#000;border-radius:12px;display:block}
+.player.tall video{max-width:min(100%,360px);aspect-ratio:9/16}
+.sw{display:inline-flex;border:1px solid var(--line);border-radius:99px;background:var(--paper);padding:2px}
+.sw button{font:500 12px/1 var(--mono);color:var(--ink-soft);background:none;border:0;border-radius:99px;padding:8px 12px;cursor:pointer}
+.sw button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.sw button:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+.ok{color:var(--ink);background:var(--hl-soft);padding:3px 8px;border-radius:99px;letter-spacing:.04em}
 @media (max-width:820px){.frame{grid-template-columns:1fr}dl{grid-template-columns:1fr}dt{margin-top:4px}}
 </style>
 <div class="wrap">
 <header style="display:flex;flex-direction:column;gap:16px">
-  <p class="eyebrow">Braindy App · Aprende › Cómo usar Braindy · Storyboard v${version} · 2026-11-06</p>
+  <p class="eyebrow">Braindy App · Aprende › Cómo usar Braindy · Storyboard v${version} · 2026-11-08 · grabados y publicados</p>
   <h1>Un video por sección. <em>Si algo cambia, se graba otra vez solo ese pedacito.</em></h1>
-  <p class="lead">${TODOS.length} videos en español e inglés: uno general armado con los mismos clips de las secciones, ${TODOS.filter((v) => v.kind === 'section').length} de secciones y ${TODOS.filter((v) => v.kind === 'feature').length} de novedades. Se graban navegando la app de verdad, con la copia de Quimiolab, y cada sección lleva su botón «▶ Cómo funciona».</p>
-  <ul class="specs"><li>${n} escenas</li><li>≈ ${mmss(total)} de video por idioma</li><li>16:9 1920×1080 + 9:16 en celular</li><li>Voz ES: Marisol Valverde · EN: por elegir</li><li>Música de fondo baja</li></ul>
+  <p class="lead">${TODOS.length} videos en español e inglés: uno general armado con los mismos clips de las secciones, ${TODOS.filter((v) => v.kind === 'section').length} de secciones y ${TODOS.filter((v) => v.kind === 'feature').length} de novedades. Ya están grabados navegando la app de verdad, con la copia de Quimiolab, y publicados en Aprende › Cómo usar Braindy. Cada sección lleva su botón «▶ Cómo funciona». Dale play a cualquiera aquí abajo, en español o inglés, horizontal o vertical.</p>
+  <ul class="specs"><li>${n} escenas</li><li>${mmss(realTotal.es)} en español · ${mmss(realTotal.en)} en inglés (sin el general)</li><li>16:9 1920×1080 + 9:16 en celular</li><li>Voz ES: Marisol Valverde · EN: voz en inglés</li><li>Música de fondo baja</li></ul>
 </header>
 <div class="rules">
   <div><b>Cómo se graba</b>La app real en movimiento: scroll, clics y escritura, con cursor visible y la barra de app.braindy.co arriba. Nada de pantallazos fijos.</div>
   <div><b>Inglés</b>Mismo recorrido con la app en inglés y voz en inglés. Los datos de Quimiolab quedan como están.</div>
   <div><b>Cuando algo cambia</b>Se regraba solo la escena afectada y se vuelve a montar ese video. El general se rearma solo con los clips nuevos.</div>
-  <div><b>Novedades</b>Cada feature nuevo suma un video corto al catálogo, con su fecha, y aparece en Aprende › Novedades.</div>
+  <div><b>Novedades</b>Cada feature nuevo suma un video corto al catálogo, con su fecha, y aparece en Aprende › Cómo usar Braindy.</div>
 </div>
 <nav class="indice" aria-label="Videos">${indice}</nav>
 ${videos}
 <footer>Fuente única: <code>video/tutoriales/catalogo.mjs</code>. Colores: Researcher #F5B301 (general), Builder #2A7FFF (secciones), Creator #06B6D4 (novedades). Tipografía Red Hat Display.</footer>
-</div>`);
+</div>
+<script>
+document.querySelectorAll('.player').forEach((p) => {
+  const v = p.querySelector('video'); const st = { lang: 'es', fmt: '' };
+  p.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.lang) st.lang = b.dataset.lang; else st.fmt = b.dataset.fmt;
+    b.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    p.classList.toggle('tall', st.fmt === '_9x16');
+    const playing = !v.paused; v.src = 'v/' + st.lang + '/' + p.dataset.id + st.fmt + '.mp4#t=0.5'; if (playing) v.play().catch(() => {});
+  });
+  v.addEventListener('play', () => document.querySelectorAll('.player video').forEach((o) => { if (o !== v) o.pause(); }));
+});
+</script>`);
 console.log(`${out}: ${TODOS.length} videos, ${n} escenas, ≈${mmss(total)} por idioma`);
