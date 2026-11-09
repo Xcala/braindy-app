@@ -11,6 +11,7 @@ import { useToast } from '../../components/Toaster';
 import { useOpenWork } from '../../team/useWork';
 import { daysFrom } from '../../lib/dates';
 import { CityInput } from '../../brands/CityInput';
+import { BrandCards } from './BrandCards';
 
 type Health = { open: number; late: number; last: number };
 
@@ -93,7 +94,8 @@ export function AdminBrands() {
         <span className="t-sm t-mute">{t('admin.brands.count', { n: rows.length })}</span>
       </div>
 
-      <div className="table overflow-x-auto">
+      <BrandCards rows={rows} health={health} onToggle={toggle} />
+      <div className="hidden md:block"><div className="table overflow-x-auto">
         <div className="trow head label min-w-[920px]" style={{ gridTemplateColumns: COLS }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
         </div>
@@ -101,7 +103,7 @@ export function AdminBrands() {
           <Row key={brand.id} brand={brand} depth={depth} health={health.get(brand.id)} collapsed={collapsed.has(brand.id)}
             onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} />
         ))}
-      </div>
+      </div></div>
 
     </section>
   );

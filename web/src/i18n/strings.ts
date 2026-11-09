@@ -20,6 +20,7 @@ import { linksEn, linksEs } from './linksStrings';
 import { brandEditEn, brandEditEs } from './brandEditStrings';
 import { whatsappEn, whatsappEs } from './whatsappStrings';
 import { pwaEn, pwaEs } from './pwaStrings';
+import { adminNavEn, adminNavEs } from './adminNavStrings';
 import { viewerEn, viewerEs } from './viewerStrings';
 import { appsViewEn, appsViewEs } from './appsViewStrings';
 import { sitePanelEn, sitePanelEs } from './sitePanelStrings';
@@ -213,7 +214,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...searchStatsEn, ...commentEditEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...viewerEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...searchStatsEn, ...commentEditEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...viewerEn, ...adminNavEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -397,4 +398,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...searchStatsEs, ...commentEditEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...viewerEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...searchStatsEs, ...commentEditEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...viewerEs, ...adminNavEs };
