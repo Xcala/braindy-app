@@ -1,0 +1,31 @@
+/** Admin · AI health: every AI call, its failures, retries, speed and cost. */
+export const aiHealthEn = {
+  'aih.nav': 'AI health', 'aih.sub': 'Every AI call the app makes: what failed, what was retried, how fast and how much.',
+  'aih.period': 'Period', 'aih.d1': 'Last 24 hours', 'aih.d7': 'Last 7 days', 'aih.d30': 'Last 30 days',
+  'aih.off': 'AI is not connected. The Brains are using their backup (no AI) until the key is set.',
+  'aih.alert': '{n} AI calls failed in the last hour.', 'aih.alertLink': 'See AI health',
+  'aih.calls': 'Calls', 'aih.failed': 'Failed', 'aih.failedSub': '{pct} of calls', 'aih.retried': 'Saved by a retry', 'aih.retriedSub': 'took more than one try',
+  'aih.speed': 'Typical time', 'aih.speedSub': '95% under {s}', 'aih.cost': 'Cost', 'aih.costSub': 'API price, USD',
+  'aih.byDay': 'By day', 'aih.byKind': 'By kind of work', 'aih.byBrand': 'By brand', 'aih.errors': 'Latest failures', 'aih.none': 'No failures in this period.',
+  'aih.empty': 'No AI calls in this period yet.',
+  'aih.c.what': 'What', 'aih.c.calls': 'Calls', 'aih.c.failed': 'Failed', 'aih.c.retried': 'Retried', 'aih.c.time': 'Time', 'aih.c.cost': 'Cost',
+  'aih.tasks': 'Brain tasks', 'aih.tasksSub': '{n} tasks in the period · {f} used the backup instead of AI', 'aih.stuck': 'Stuck for more than 15 minutes', 'aih.noStuck': 'None stuck.',
+  'aih.error': 'Could not load AI health. Try again.', 'aih.tries': '{n} tries', 'aih.noBrand': 'No brand',
+  'aih.e.429': 'Usage limit reached', 'aih.e.overload': 'AI overloaded', 'aih.e.server': 'Provider error', 'aih.e.key': 'Invalid key',
+  'aih.e.bad': 'Rejected request', 'aih.e.timeout': 'Took too long', 'aih.e.network': 'No connection', 'aih.e.json': 'Answer not readable', 'aih.e.other': 'Other error',
+};
+export const aiHealthEs: Record<keyof typeof aiHealthEn, string> = {
+  'aih.nav': 'Salud de la IA', 'aih.sub': 'Cada llamada a la IA que hace la app: qué falló, qué se reintentó, qué tan rápido y cuánto costó.',
+  'aih.period': 'Periodo', 'aih.d1': 'Últimas 24 horas', 'aih.d7': 'Últimos 7 días', 'aih.d30': 'Últimos 30 días',
+  'aih.off': 'La IA no está conectada. Los Brains usan su plan B (sin IA) hasta que se ponga la clave.',
+  'aih.alert': '{n} llamadas a la IA fallaron en la última hora.', 'aih.alertLink': 'Ver salud de la IA',
+  'aih.calls': 'Llamadas', 'aih.failed': 'Fallaron', 'aih.failedSub': '{pct} de las llamadas', 'aih.retried': 'Salvadas por reintento', 'aih.retriedSub': 'necesitaron más de un intento',
+  'aih.speed': 'Tiempo típico', 'aih.speedSub': 'el 95% en menos de {s}', 'aih.cost': 'Costo', 'aih.costSub': 'precio de la API, USD',
+  'aih.byDay': 'Por día', 'aih.byKind': 'Por tipo de trabajo', 'aih.byBrand': 'Por marca', 'aih.errors': 'Últimas fallas', 'aih.none': 'Sin fallas en este periodo.',
+  'aih.empty': 'Aún no hay llamadas a la IA en este periodo.',
+  'aih.c.what': 'Qué', 'aih.c.calls': 'Llamadas', 'aih.c.failed': 'Fallaron', 'aih.c.retried': 'Reintento', 'aih.c.time': 'Tiempo', 'aih.c.cost': 'Costo',
+  'aih.tasks': 'Tareas de los Brains', 'aih.tasksSub': '{n} tareas en el periodo · {f} usaron el plan B en vez de la IA', 'aih.stuck': 'Trabadas por más de 15 minutos', 'aih.noStuck': 'Ninguna trabada.',
+  'aih.error': 'No se pudo cargar la salud de la IA. Intenta de nuevo.', 'aih.tries': '{n} intentos', 'aih.noBrand': 'Sin marca',
+  'aih.e.429': 'Límite de uso alcanzado', 'aih.e.overload': 'IA saturada', 'aih.e.server': 'Error del proveedor', 'aih.e.key': 'Clave inválida',
+  'aih.e.bad': 'Pedido rechazado', 'aih.e.timeout': 'Tardó demasiado', 'aih.e.network': 'Sin conexión', 'aih.e.json': 'Respuesta ilegible', 'aih.e.other': 'Otro error',
+};

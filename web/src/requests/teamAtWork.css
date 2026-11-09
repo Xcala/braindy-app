@@ -26,3 +26,7 @@
   .tw-log *, .tw-log span, .tw-mini .t-xs { animation: none !important; }
   .tw-step { opacity: 1; }
 }
+
+/* Live steps (work.steps): skipped Brains fade out, the chip says it is real. */
+.tw-step.skip { opacity: .35; }
+.tw-live { height: 22px; font-size: 11px; background: #EAF7EF; color: #0E5A3A; }

@@ -7,7 +7,7 @@ import type { Plan } from '../billing/useBilling';
 export const MAX_USD = 200;
 
 type Usage = {
-  brandId: string | null; project?: string; source: 'api' | 'claude-code'; model: string; usd: number;
+  brandId: string | null; project?: string; source: 'api' | 'claude-code'; model: string; usd: number; month: string;
   input: number; output: number; cacheWrite5m: number; cacheWrite1h: number; cacheRead: number;
 };
 export type BrandCost = {
@@ -15,28 +15,31 @@ export type BrandCost = {
   tokens: number; pieces: number | null; perPiece: number | null; plan: Plan | null;
 };
 export type ModelCost = { key: string; model: string; source: Usage['source']; input: number; output: number; cacheW: number; cacheR: number; usd: number; share: number };
-export type Costs = { brands: BrandCost[]; models: ModelCost[]; real: number; eq: number; api: number; tokens: number; cachePct: number };
+export type Costs = { brands: BrandCost[]; models: ModelCost[]; real: number; eq: number; api: number; tokens: number; cachePct: number; months: number };
 
 const tokensOf = (u: Usage) => u.input + u.output + u.cacheWrite5m + u.cacheWrite1h + u.cacheRead;
 
-/** Pieces approved in the month: what "cost per piece" divides by. */
-async function piecesIn(brandId: string, month: string) {
-  const [y, m] = month.split('-').map(Number);
+/** Pieces approved in the period (whole months, oldest to newest): what "cost per piece" divides by. */
+async function piecesIn(brandId: string, months: string[]) {
+  const [y0, m0] = months[0].split('-').map(Number);
+  const [y1, m1] = months[months.length - 1].split('-').map(Number);
   const s = await getDocs(query(collection(db, 'brands', brandId, 'requests'),
-    where('approvedAt', '>=', Timestamp.fromDate(new Date(Date.UTC(y, m - 1, 1)))), where('approvedAt', '<', Timestamp.fromDate(new Date(Date.UTC(y, m, 1))))));
+    where('approvedAt', '>=', Timestamp.fromDate(new Date(Date.UTC(y0, m0 - 1, 1)))), where('approvedAt', '<', Timestamp.fromDate(new Date(Date.UTC(y1, m1, 1))))));
   return s.size;
 }
 
-/** Admin only: every AI cost of a month, per brand and per model. Rules let only the admin read usage. */
-export function useCosts(month: string): Costs | null {
+/** Admin only: every AI cost of a period (whole months, up to 30), per brand and per model. Rules let only the admin read usage. */
+export function useCosts(period: string[]): Costs | null {
+  const key = [...period].sort().join(',');
   const [costs, setCosts] = useState<Costs | null>(null);
   useEffect(() => {
     let live = true;
     setCosts(null);
+    const months = key.split(',');
     (async () => {
       const [owned, loose, plans] = await Promise.all([
-        getDocs(query(collectionGroup(db, 'usage'), where('month', '==', month))),
-        getDocs(query(collection(db, 'usageUnassigned'), where('month', '==', month))),
+        getDocs(query(collectionGroup(db, 'usage'), where('month', 'in', months))),
+        getDocs(query(collection(db, 'usageUnassigned'), where('month', 'in', months))),
         getDocs(collectionGroup(db, 'billing')),
       ]);
       const rows: Usage[] = [
@@ -44,14 +47,17 @@ export function useCosts(month: string): Costs | null {
         ...loose.docs.map((d) => ({ ...(d.data() as Usage), brandId: null })),
       ];
       const planOf = new Map(plans.docs.filter((d) => d.id === 'plan').map((d) => [d.ref.parent.parent!.id, d.data() as Plan]));
-      const sessionsEq = rows.filter((r) => r.source === 'claude-code').reduce((n, r) => n + r.usd, 0);
+      // Claude Max is prorated month by month: each month's US$200 split by that month's session spend.
+      const eqByMonth = new Map<string, number>();
+      for (const r of rows) if (r.source === 'claude-code') eqByMonth.set(r.month, (eqByMonth.get(r.month) ?? 0) + r.usd);
+      const sessionsEq = [...eqByMonth.values()].reduce((n, v) => n + v, 0);
 
       const byBrand = new Map<string, BrandCost>();
       const byModel = new Map<string, ModelCost>();
       for (const r of rows) {
         const key = r.brandId ?? `_${r.project}`;
         const b = byBrand.get(key) ?? { key, brandId: r.brandId, project: r.project, eq: 0, api: 0, max: 0, real: 0, share: 0, tokens: 0, pieces: null, perPiece: null, plan: r.brandId ? planOf.get(r.brandId) ?? null : null };
-        if (r.source === 'claude-code') { b.eq += r.usd; b.max += sessionsEq ? (MAX_USD * r.usd) / sessionsEq : 0; } else b.api += r.usd;
+        if (r.source === 'claude-code') { b.eq += r.usd; const eqM = eqByMonth.get(r.month) ?? 0; b.max += eqM ? (MAX_USD * r.usd) / eqM : 0; } else b.api += r.usd;
         b.tokens += tokensOf(r);
         byBrand.set(key, b);
         const mk = `${r.source}|${r.model}`;
@@ -63,7 +69,7 @@ export function useCosts(month: string): Costs | null {
       for (const b of brands) b.real = b.max + b.api;
       const real = brands.reduce((n, b) => n + b.real, 0);
       await Promise.all(brands.filter((b) => b.brandId).map(async (b) => {
-        b.pieces = await piecesIn(b.brandId!, month).catch(() => null);
+        b.pieces = await piecesIn(b.brandId!, months).catch(() => null);
         b.perPiece = b.pieces ? b.real / b.pieces : null;
       }));
       for (const b of brands) b.share = real ? b.real / real : 0;
@@ -74,10 +80,10 @@ export function useCosts(month: string): Costs | null {
       const cacheR = rows.reduce((n, r) => n + r.cacheRead, 0);
       if (live) setCosts({
         brands: brands.sort((a, b) => b.real - a.real), models: models.sort((a, b) => b.usd - a.usd),
-        real, eq: sessionsEq, api: brands.reduce((n, b) => n + b.api, 0), tokens, cachePct: tokens ? Math.round((cacheR / tokens) * 100) : 0,
+        real, eq: sessionsEq, api: brands.reduce((n, b) => n + b.api, 0), tokens, cachePct: tokens ? Math.round((cacheR / tokens) * 100) : 0, months: months.length,
       });
-    })().catch(() => live && setCosts({ brands: [], models: [], real: 0, eq: 0, api: 0, tokens: 0, cachePct: 0 }));
+    })().catch(() => live && setCosts({ brands: [], models: [], real: 0, eq: 0, api: 0, tokens: 0, cachePct: 0, months: months.length }));
     return () => { live = false; };
-  }, [month]);
+  }, [key]);
   return costs;
 }

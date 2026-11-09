@@ -3,6 +3,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import type { StatPost } from './useSocialStats';
 import { NetBadge, netInfo } from '../calendar/PostBits';
+import { Link } from 'react-router';
+import { askMoreHref } from './askMore';
 
 type Sort = 'views' | 'interactions' | 'reach' | 'date';
 const SORTS: Sort[] = ['views', 'interactions', 'reach', 'date'];
@@ -31,7 +33,8 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
       </div>
       <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
         {feed.slice(0, 6).map((p) => (
-          <a key={p.id} href={p.url || undefined} target="_blank" rel="noreferrer" className="col g6" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div key={p.id} className="col g6">
+          <a href={p.url || undefined} target="_blank" rel="noreferrer" className="col g6" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div style={{ aspectRatio: network === 'linkedin' || network === 'youtube' ? '16 / 9' : '4 / 5', borderRadius: 12, overflow: 'hidden', background: 'var(--hielo)' }}>
               {p.image && <img src={p.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </div>
@@ -39,6 +42,8 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
             <span className="t-sm w7">{fmt(p.views)} {t('soc.k.views').toLowerCase()} · {fmt(p.interactions)} {t('soc.k.interactions').toLowerCase()}</span>
             {p.text && <span className="t-xs t-mute" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.text}</span>}
           </a>
+          <Link className="t-xs w7 print:hidden self-start" style={{ color: 'var(--azul)' }} to={askMoreHref(t('rp.moreText', { title: (p.text || type(p)).slice(0, 120) }), p.url)}>{t('rp.more')} →</Link>
+          </div>
         ))}
       </div>
       <button type="button" className="btn btn-secondary btn-sm print:hidden" style={{ alignSelf: 'flex-start' }} aria-expanded={all} onClick={() => setAll(!all)}>

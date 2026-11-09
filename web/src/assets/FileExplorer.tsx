@@ -115,7 +115,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const hits = useSearchAll(brandId, q.trim(), everywhere || !path, Number(actions.busy));
   const searchingAll = hits !== null;
   const source = searchingAll ? hits : files;
-  const shown = source.filter((f) => (filter === 'all' || kindOf(f) === filter) && (searchingAll || !needle || normalizeSearch(f.title).includes(needle)))
+  // In a folder the name is matched here, and what the AI saw in the file too (the server does both across folders).
+  const seen = (f: FileItem) => normalizeSearch([f.ai?.summary, ...(f.ai?.tags ?? []), f.ai?.text].filter(Boolean).join(' '));
+  const local = (f: FileItem): FileItem | null => (!needle || normalizeSearch(f.title).includes(needle) ? f : needle.split(/s+/).every((w) => seen(f).includes(w)) ? { ...f, why: 'ai' } : null);
+  const shown = (searchingAll ? source : source.map(local).filter((f): f is FileItem => !!f)).filter((f) => filter === 'all' || kindOf(f) === filter)
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));

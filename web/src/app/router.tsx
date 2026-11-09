@@ -23,12 +23,15 @@ import { AdminTeam } from '../pages/admin/Team';
 import { AdminWhatsapp } from '../pages/admin/Whatsapp';
 import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
+import { PublicUpload } from '../pages/PublicUpload';
+import { PublicShowcase } from '../pages/PublicShowcase';
 import { Settings } from '../pages/Settings';
 import { Onboarding } from '../pages/Onboarding';
 import { Report } from '../pages/Report';
 import { AdminOnboarding } from '../pages/admin/Onboarding';
 import { AdminBilling } from '../pages/admin/Billing';
 import { AdminCosts } from '../pages/admin/Costs';
+import { AdminAiHealth } from '../pages/admin/AiHealth';
 import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
@@ -42,6 +45,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
   { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
   { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
+  { path: '/u/:token', element: <PublicUpload />, errorElement: <RouteError /> },
+  { path: '/s/:token', element: <PublicShowcase />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
     errorElement: <RouteError />,
@@ -90,6 +95,7 @@ export const router = createBrowserRouter([
               { path: 'admin/onboarding', element: <AdminOnboarding /> },
               { path: 'admin/billing', element: <AdminBilling /> },
               { path: 'admin/costs', element: <AdminCosts /> },
+              { path: 'admin/ai', element: <AdminAiHealth /> },
             ],
           },
         ],

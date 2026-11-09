@@ -16,6 +16,8 @@ import { db } from '../firebase.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
+import { registerStepTools } from '../brains/steps.js';
+import { registerQualityTools } from '../brains/quality.js';
 import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
@@ -35,6 +37,8 @@ const REMOTE_FILE = z.object({
 
 export function registerTools(server: McpServer, ctx: ToolContext) {
   registerSiteCommentTools(server, ctx.uid);
+  registerStepTools(server);
+  registerQualityTools(server);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',

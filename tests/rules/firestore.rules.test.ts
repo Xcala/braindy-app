@@ -228,6 +228,11 @@ describe('accesses (credentials)', () => {
     for (const who of [OWNER, ADMIN, OUTSIDER]) {
       await assertFails(getDoc(doc(as(env, who), 'reviewLinks/abc')));
       await assertFails(setDoc(doc(as(env, who), 'reviewLinks/abc'), { brandId: BRAND_A }));
+      // Upload links and showcases: tokens only the backend reads.
+      for (const col of ['uploadLinks', 'showcaseLinks']) {
+        await assertFails(getDoc(doc(as(env, who), `${col}/abc`)));
+        await assertFails(setDoc(doc(as(env, who), `${col}/abc`), { brandId: BRAND_A, active: true }));
+      }
     }
   });
 
@@ -264,6 +269,10 @@ describe('accesses (credentials)', () => {
     await assertFails(getDoc(doc(as(env, OWNER), 'brainTasks/t1')));
     await assertFails(getDoc(doc(as(env, OWNER), `brands/${BRAND_A}/notices/n1`)));
     await assertFails(setDoc(doc(as(env, ADMIN), 'stripeEvents/evt_1'), { type: 'x' }));
+    // AI health log and alert flag: written and read by the API only.
+    await assertFails(getDoc(doc(as(env, OWNER), 'aiCalls/c1')));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'aiCalls/c2'), { ok: true }));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'ops/aiAlert'), { failed: 9 }));
   });
 
   it('encrypted values are unreachable from any client, admin included', async () => {

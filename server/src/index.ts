@@ -36,7 +36,9 @@ import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
+import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
+import { publicShare, shareLinks } from './shareLinks.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -62,11 +64,14 @@ app.use('/public/p/:token/accept', rateLimit('accept', 10, 10 * 60_000));
 app.use('/public/p/:token/pay', rateLimit('pay', 10, 10 * 60_000));
 app.use('/public/r/:token/decision', rateLimit('decision', 20, 10 * 60_000));
 app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_000));
+// Upload links take files from strangers: a few hundred per sender per hour at most.
+app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
 app.route('/public', hostingCheckout);
+app.route('/public', publicShare);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -137,7 +142,9 @@ app.route('/v1', brains);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
+app.route('/v1/admin', adminAiHealth);
 app.route('/v1', criterio);
+app.route('/v1', shareLinks);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

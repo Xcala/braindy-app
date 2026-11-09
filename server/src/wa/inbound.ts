@@ -1,6 +1,6 @@
 // Incoming WhatsApp messages. A known client number creates a request in its brand (the same createRequest the
 // app and the connector use); a follow-up within 15 minutes, or a reply to one of our notices, becomes a comment;
-// Approve / Ask for changes buttons decide through the review link. Unknown numbers get a polite reply and land
+// Approve / Ask for changes buttons decide through the review link. Unknown numbers get no reply and land
 // in the admin-only inbox, never in a brand. Never log bodies or phone numbers.
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
@@ -25,7 +25,6 @@ export type WaMsg = {
 
 const COPY = {
   es: {
-    unknown: 'Hola, este es el WhatsApp de Braindy. No encontramos tu número en ninguna marca todavía. NicoMarca lo revisa y te escribe pronto.',
     received: (t: string, url: string) => `Recibido. NicoMarca y su equipo ya tienen tu solicitud «${t}».\nSíguela aquí: ${url}`,
     which: 'Recibido. ¿Para qué marca es?',
     askNote: 'Cuéntame en un mensaje qué cambiarías.',
@@ -38,7 +37,6 @@ const COPY = {
     files: 'Archivos enviados por WhatsApp',
   },
   en: {
-    unknown: "Hi, this is Braindy's WhatsApp. We can't find your number in any brand yet. NickMark will check and write to you soon.",
     received: (t: string, url: string) => `Got it. NickMark and his team have your request "${t}".\nFollow it here: ${url}`,
     which: 'Got it. Which brand is it for?',
     askNote: 'Tell me in one message what you would change.',
@@ -152,12 +150,8 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   const uid = contact?.uid ?? null;
   const brands = uid ? await brandsOf(uid) : [];
   if (!uid || brands.length === 0) {
+    // No automatic reply (Nicolas, 2026-11-07): unknown numbers only land in the inbox and he answers himself.
     await toInbox(m, profileName, text, media);
-    const polite = contact?.politeAt?.toMillis() ?? 0;
-    if (Date.now() - polite > 864e5) {
-      await contactRef(phone).set({ politeAt: now() }, { merge: true });
-      await say(phone, COPY[lang].unknown);
-    }
     return;
   }
   if (!text && media.length === 0 && !choice) return; // stickers, reactions, locations: nothing to file

@@ -146,4 +146,13 @@
     else if (d.type === 'braindy:pins') setPins(d.pins);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
+  // Single-page sites change page without reloading: say "ready" again with the new address so the viewer's bar follows.
+  var lastHref = location.href;
+  function moved() { setTimeout(function () { if (location.href !== lastHref) { lastHref = location.href; ready(); } }, 0); }
+  ['pushState', 'replaceState'].forEach(function (k) {
+    var orig = history[k];
+    history[k] = function () { var r = orig.apply(this, arguments); moved(); return r; };
+  });
+  window.addEventListener('popstate', moved);
+  window.addEventListener('hashchange', moved);
 })();

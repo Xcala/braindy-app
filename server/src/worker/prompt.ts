@@ -1,10 +1,14 @@
 // The brief a free-action Claude Code session receives: the request, the client's comments and files, and the
 // rules (work only here, deliver through the connector, publish when the brand allows it, end with RESULTADO).
+import type { Step } from '../brains/steps.js';
 
 export type Job = {
   brandId: string; brandName: string; requestId: string; category: string; publish: boolean; folder: string; files: string[];
+  /** Files of the approved piece this request adapts or builds on. */
+  source?: string[];
   cwd: string; workspaces: Record<string, string>;
   title: string; text: string; dueDate: string | null; reason: string;
+  steps: Step[];
   comments: Array<{ kind: string; text: string }>; versions: Array<{ n: number; state: string; note: string }>;
 };
 
@@ -29,10 +33,18 @@ ${quote(j.text || '(sin texto)')}
 ${j.comments.length ? `\nComentarios y respuestas, en orden:\n${j.comments.map((c) => `- [${c.kind}] ${c.text.replace(/\n/g, ' ')}`).join('\n')}` : ''}
 ${j.versions.length ? `\nVersiones anteriores: ${j.versions.map((v) => `v${v.n} ${v.state}${v.note ? ` («${v.note}»)` : ''}`).join(' · ')}` : ''}
 ${j.files.length ? `\nArchivos que mandó el cliente (ya descargados):\n${j.files.map((f) => `- ${f}`).join('\n')}` : ''}
+${j.source?.length ? `\nLa pieza aprobada de la que parte este pedido (ya descargada; respeta su diseño y su mensaje, cambia solo lo que cada formato exige):\n${j.source.map((f) => `- ${f}`).join('\n')}` : ''}
 
 ## Carpetas de la marca
 ${Object.entries(j.workspaces).map(([k, p]) => `- ${k === 'default' ? 'todo lo demás (diseño, video, redes, contenido)' : k === 'web' ? 'sitio web' : k}: ${p}`).join('\n')}
 Empezaste en ${j.cwd} porque la solicitud se clasificó como «${j.category}». Si por el pedido y los comentarios es de otro tipo (por ejemplo, un ajuste del sitio), trabaja en la carpeta que corresponde.
+
+## El equipo, por turnos (el cliente lo ve en vivo)
+Trabajas como los cuatro Brains, uno después del otro. Cada turno lo abres y lo cierras con braindy_work_step (brandId ${j.brandId}, requestId ${j.requestId}):
+${j.steps.map((s, i) => `${i + 1}. ${s.brain}${s.task ? ` — ${s.task}` : ''}`).join('\n')}
+- Al empezar el turno: state "doing". Al terminarlo: state "done" con una nota de una línea para el cliente, en el idioma de la marca: qué encontró o qué hizo. Esa nota es también lo que le pasa al siguiente Brain: úsala.
+- Researcher: contexto, referentes y datos. Marketer: mensaje, textos y estrategia. Creator: diseño y dirección visual. Builder: construye, prepara archivos finales, publica si aplica y entrega.
+- Si un Brain no tiene nada que hacer aquí, márcalo "skip". Nunca pongas claves, rutas del PC ni datos internos en las notas.
 
 ## Cómo trabajar
 1. Lee el CLAUDE.md de esta carpeta (y los de las subcarpetas que uses) y sigue sus reglas y procedimientos.
@@ -44,9 +56,10 @@ Empezaste en ${j.cwd} porque la solicitud se clasificó como «${j.category}». 
 ${j.publish
     ? '7. Publicación: esta marca tiene acción libre. Si la solicitud es del sitio web, publícalo en producción siguiendo el procedimiento del proyecto y verifica que quedó en línea. Si pide publicar o programar en redes, hazlo con la herramienta del proyecto (por ejemplo la skill de publicar contenido de Level / Metricool). Si no pide publicar, solo entrega.'
     : '7. No publiques nada al aire: solo entrega la versión.'}
-8. Entrega con braindy_deliver_version (brandId ${j.brandId}, requestId ${j.requestId}): los archivos finales (imágenes, PDF, video; para la web, capturas de pantalla) y unas notas en español, cortas y claras para el cliente, con el enlace si quedó publicado. Esta entrega está autorizada.
-9. Si es un sitio web, lee antes los comentarios que dejaron sobre las páginas con braindy_site_comments_get y atiende los que tocan este pedido; al terminar, respóndelos y resuélvelos con braindy_site_comment_reply. Regístralo también en el triage con braindy_site_changes_sync (lee antes las keys con braindy_site_changes_get y reutilízalas), con link = la página exacta donde quedó y spot = un texto corto que se ve en esa parte (o un selector CSS), para que el cliente lo vea resaltado.
-10. Registra la sesión con braindy_log_session (marca ${j.brandId}, resumen de lo hecho).
+8. Revisión de marca antes de entregar: pide la lista con braindy_quality_checklist (brandId ${j.brandId}), abre y mira cada archivo final, revisa punto por punto y repórtalo con braindy_quality_report (requestId ${j.requestId}). Si no pasa, corrige y revisa otra vez (máximo 2 rondas). Si después de 2 rondas no pasa, no entregues: termina con RESULTADO: fallo y lo que no pasó.
+9. Entrega con braindy_deliver_version (brandId ${j.brandId}, requestId ${j.requestId}): los archivos finales (imágenes, PDF, video; para la web, capturas de pantalla) y unas notas en español, cortas y claras para el cliente, con el enlace si quedó publicado. Esta entrega está autorizada.
+10. Si es un sitio web, lee antes los comentarios que dejaron sobre las páginas con braindy_site_comments_get y atiende los que tocan este pedido; al terminar, respóndelos y resuélvelos con braindy_site_comment_reply. Regístralo también en el triage con braindy_site_changes_sync (lee antes las keys con braindy_site_changes_get y reutilízalas), con link = la página exacta donde quedó y spot = un texto corto que se ve en esa parte (o un selector CSS), para que el cliente lo vea resaltado.
+11. Registra la sesión con braindy_log_session (marca ${j.brandId}, resumen de lo hecho).
 
 ## Al final
 Tu última línea debe ser exactamente una de estas:

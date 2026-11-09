@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
-import { useFileUrl } from './useFileUrl';
+import { useFileUrl, viewKind } from './useFileUrl';
 import { useComments } from './useRequests';
 import type { Version } from './types';
 import { Scan } from '../components/Scan';
 
-/** Compare two versions (design 14/27): slider, side by side, or only what changed. */
-export function CompareView({ brandId, requestId, versions, onClose }: { brandId: string; requestId: string; versions: Version[]; onClose: () => void }) {
+/** Compare two versions (design 14/27): slider, side by side, or only what changed. Same file of each version; videos side by side. */
+export function CompareView({ brandId, requestId, versions, fileIndex = 0, onClose }: { brandId: string; requestId: string; versions: Version[]; fileIndex?: number; onClose: () => void }) {
   const { t } = useI18n();
   const [aId, setA] = useState(versions[versions.length - 2]?.id);
   const [bId, setB] = useState(versions[versions.length - 1]?.id);
@@ -16,8 +16,12 @@ export function CompareView({ brandId, requestId, versions, onClose }: { brandId
   const comments = useComments(brandId, requestId);
   const a = versions.find((v) => v.id === aId);
   const b = versions.find((v) => v.id === bId);
-  const ua = useFileUrl(brandId, requestId, a);
-  const ub = useFileUrl(brandId, requestId, b);
+  const fa = Math.min(fileIndex, Math.max(0, (a?.files?.length ?? 1) - 1));
+  const fb = Math.min(fileIndex, Math.max(0, (b?.files?.length ?? 1) - 1));
+  const ua = useFileUrl(brandId, requestId, a, fa);
+  const ub = useFileUrl(brandId, requestId, b, fb);
+  const video = viewKind(b?.files?.[fb]) === 'video' || viewKind(a?.files?.[fa]) === 'video';
+  useEffect(() => { if (video && mode === 'slider') setMode('side'); }, [video, mode]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -36,7 +40,7 @@ export function CompareView({ brandId, requestId, versions, onClose }: { brandId
       <div className="row between g12 wrap" style={{ color: '#fff', paddingBottom: 12 }}>
         <div className="row g12 wrap">{pick(aId, setA, t('req.left'))}<span>↔</span>{pick(bId, setB, t('req.right'))}
           <div className="seg" role="group" aria-label={t('req.compareMode')}>
-            {(['slider', 'side', 'changes'] as const).map((m) => <button key={m} className={mode === m ? 'is-on' : ''} aria-pressed={mode === m} onClick={() => setMode(m)}>{t(`req.mode.${m}`)}</button>)}
+            {(video ? (['side', 'changes'] as const) : (['slider', 'side', 'changes'] as const)).map((m) => <button key={m} className={mode === m ? 'is-on' : ''} aria-pressed={mode === m} onClick={() => setMode(m)}>{t(`req.mode.${m}`)}</button>)}
           </div></div>
         <button className="btn btn-outline-light btn-sm" onClick={onClose}><Icon name="x" />{t('common.cancel')}</button>
       </div>
@@ -45,7 +49,8 @@ export function CompareView({ brandId, requestId, versions, onClose }: { brandId
           <div className="grid w-full gap-4 md:grid-cols-2">
             {[[a, ua], [b, ub]].map(([v, u]) => (
               <figure key={(v as Version).id} className="relative m-0 flex items-center justify-center">
-                <img src={u as string} alt={`v${(v as Version).n}`} className="block max-h-[74vh] max-w-full" />
+                {video ? <video src={u as string} controls className="block max-h-[74vh] max-w-full" />
+                  : <img src={u as string} alt={`v${(v as Version).n}`} className="block max-h-[74vh] max-w-full" />}
                 <span className="chip absolute left-3 top-3" style={{ background: '#fff' }}>v{(v as Version).n}</span>
               </figure>
             ))}

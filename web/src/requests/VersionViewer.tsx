@@ -6,6 +6,7 @@ import { downloadVersionZip, versionFileUrl } from './api';
 import { FileStrip } from './FileStrip';
 import { FileBody } from './FileBody';
 import { Popover } from './Popover';
+import { VideoMarks } from './VideoMarks';
 import type { Annotation, RequestComment, Version } from './types';
 import './viewer.css';
 
@@ -13,16 +14,20 @@ import './viewer.css';
  * Piece viewer with version tabs and "mark on piece": drag a box, then comment on it. A version with several files
  * gets arrows (and ← →, and a swipe on phones), a "3 of 10" counter and a strip of tiles; marks belong to one file.
  */
-export function VersionViewer({ brandId, requestId, versions, current, onPick, fileIndex, onFile, comments, onMark, onCompare }: {
+export function VersionViewer({ brandId, requestId, versions, current, onPick, fileIndex, onFile, comments, onMark, onCompare, seek }: {
   brandId: string; requestId: string; versions: Version[]; current?: Version; onPick: (id: string) => void;
   fileIndex: number; onFile: (i: number) => void;
   comments: RequestComment[]; onMark: (a: Annotation) => void; onCompare: () => void;
+  /** A comment asked to see its moment of the video (n changes on every ask, so the same moment can be asked twice). */
+  seek?: { t: number; n: number } | null;
 }) {
   const { t, lang } = useI18n();
   const [marking, setMarking] = useState(false);
   const [draft, setDraft] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const swipe = useRef<number | null>(null);
+  const player = useRef<HTMLVideoElement>(null);
+  const [duration, setDuration] = useState(0);
   const count = current?.files?.length ?? 0;
   const file = current?.files?.[fileIndex];
   const kind = viewKind(file);
@@ -41,6 +46,14 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
     return () => window.removeEventListener('keydown', onKey);
   }); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const seekTo = (t: number) => { const p = player.current; if (p) { p.currentTime = t; p.pause(); } };
+  useEffect(() => { if (seek) seekTo(seek.t); }, [seek?.n]); // eslint-disable-line react-hooks/exhaustive-deps
+  const markMoment = () => {
+    const p = player.current;
+    if (!p || !current) return;
+    p.pause();
+    onMark({ x: 0, y: 0, w: 0, h: 0, versionId: current.id, fileIndex, t: Math.round(p.currentTime * 10) / 10 });
+  };
   const pos = (e: PointerEvent) => {
     const r = box.current!.getBoundingClientRect();
     return { x: Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)), y: Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)) };
@@ -53,7 +66,9 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
     }
     setDraft(null);
   };
-  const pins = comments.filter((c) => c.annotation && c.annotation.versionId === current?.id && markFile(c.annotation) === fileIndex);
+  const onThis = comments.filter((c) => c.annotation && c.annotation.versionId === current?.id && markFile(c.annotation) === fileIndex);
+  const pins = onThis.filter((c) => typeof c.annotation!.t !== 'number');
+  const state = (v: Version): 'approved' | 'changes' | 'review' | null => (v.approval?.state === 'approved' ? 'approved' : v.approval?.state === 'changes_requested' ? 'changes' : v.published ? 'review' : null);
   const date = (v: Version) => (v.publishedAt ?? v.createdAt)?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric' });
   const getOne = async () => { if (current) window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true)); };
 
@@ -61,12 +76,21 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
     <div className="col min-w-0" style={{ background: 'var(--niebla)' }}>
       <div className="row between g8 wrap" style={{ padding: '14px 20px', borderBottom: '1px solid var(--line)', background: '#fff' }}>
         <div className="seg" role="tablist" aria-label={t('req.versions')}>
-          {versions.map((v) => <button key={v.id} role="tab" aria-selected={v.id === current?.id} className={v.id === current?.id ? 'is-on' : ''} onClick={() => { onPick(v.id); onFile(0); }}>v{v.n}{date(v) ? ` · ${date(v)}` : ''}</button>)}
+          {versions.map((v) => {
+            const st = state(v);
+            const label = st ? t(`vs.${st}`) : undefined;
+            return (
+              <button key={v.id} role="tab" aria-selected={v.id === current?.id} className={v.id === current?.id ? 'is-on' : ''} onClick={() => { onPick(v.id); onFile(0); }} title={label}>
+                v{v.n}{date(v) ? ` · ${date(v)}` : ''}{st && <span className={`vs-dot is-${st}`} role="img" aria-label={label} />}
+              </button>
+            );
+          })}
         </div>
         <div className="row g8 wrap">
           {count > 1 && <span className="vw-count" aria-live="polite">{t('vw.counter', { i: fileIndex + 1, n: count })}</span>}
           {kind === 'image' && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
-          {versions.length > 1 && kind === 'image' && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
+          {kind === 'video' && <button className="btn btn-ghost btn-sm" onClick={markMoment}>{t('vm.commentHere')}</button>}
+          {versions.length > 1 && (kind === 'image' || kind === 'video') && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
           {current && file && (count > 1 ? (
             <Popover align="right" className="btn btn-ghost btn-sm" label={<><Icon name="download" />{t('common.download')}<Icon name="chevronDown" size={14} /></>}>
               {(close) => (
@@ -91,7 +115,12 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
             {pins.map((c, i) => <Pin key={c.id} a={c.annotation!} n={i + 1} resolved={c.resolved} />)}
             {draft && <span className="absolute" style={{ left: `${Math.min(draft.x0, draft.x)}%`, top: `${Math.min(draft.y0, draft.y)}%`, width: `${Math.abs(draft.x - draft.x0)}%`, height: `${Math.abs(draft.y - draft.y0)}%`, border: '2px dashed var(--azul)', borderRadius: 10, background: 'rgba(47,77,224,.08)' }} />}
           </div>
-        ) : kind === 'video' ? <video src={url ?? undefined} controls className="max-h-[70vh] max-w-full rounded-lg" />
+        ) : kind === 'video' ? (
+          <div className="vm-wrap">
+            <video ref={player} src={url ?? undefined} controls className="mx-auto max-h-[70vh] max-w-full rounded-lg" onLoadedMetadata={(e) => setDuration(e.currentTarget.duration || 0)} />
+            <VideoMarks comments={onThis} duration={duration} onSeek={seekTo} />
+          </div>
+        )
           : current && file && <FileBody brandId={brandId} requestId={requestId} versionId={current.id} index={fileIndex} file={file} kind={kind} url={url ?? ''} onDownload={getOne} />}
         {count > 1 && <button className="vw-arrow is-next" aria-label={t('vw.next')} disabled={fileIndex === count - 1} onClick={() => go(1)}><Icon name="arrowRight" size={18} /></button>}
       </div>

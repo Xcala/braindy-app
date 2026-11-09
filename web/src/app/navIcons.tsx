@@ -20,6 +20,7 @@ export const NAV_ICON: Record<string, ReactNode> = {
   '/admin/proposals': svg(<><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></>),
   '/admin/onboarding': svg(<><path d="M5 12l4 4L19 6" /></>),
   '/admin/billing': svg(<><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></>),
+  '/admin/ai': svg(<><path d="M3 12h4l2-5 4 10 2-5h6" /></>),
   '/admin/costs': svg(<><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 5-6" /></>),
   '/team': svg(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6" /></>),
   '/admin/whatsapp': svg(<><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z" /><path d="M9 9.5c.3 2.2 2.3 4.2 4.5 4.5l1.2-1.2 2 .8v1.4c-3.9.6-8.6-4.1-8-8h1.4l.8 2z" /></>),
@@ -29,3 +30,10 @@ export const NAV_ICON: Record<string, ReactNode> = {
 };
 // My brand opens on Visual.
 NAV_ICON['/brand/visual'] = NAV_ICON['/brand'];
+// Phones: «More» opens every page.
+NAV_ICON.more = svg(<><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></>);
+// The pages inside a tab, for the «More» list.
+NAV_ICON['/brand/brain'] = svg(<><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 0V7a3 3 0 0 0-3-3z" /><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 0" /></>);
+NAV_ICON['/research'] = svg(<><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>);
+NAV_ICON['/apps'] = svg(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
+NAV_ICON['/calendar'] = svg(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);

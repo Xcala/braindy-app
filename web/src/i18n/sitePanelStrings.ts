@@ -1,6 +1,6 @@
 /** The adjustments column beside a site in the viewer: three tabs (Adjust, Comment, Delivered). */
 export const sitePanelEn = {
-  'sp.toggle': 'Adjustments', 'sp.empty': 'Nothing in progress. Ask for an adjustment above.',
+  'sp.toggle': 'Adjustments', 'sp.show': 'Show adjustments', 'sp.hide': 'Hide adjustments', 'sp.empty': 'Nothing in progress. Ask for an adjustment above.',
   'sp.open': '{n} in progress', 'sp.done': '{n} delivered',
   'sp.ask': 'Ask for an adjustment', 'sp.askPh': 'E.g. On the home page, change the main photo for one of the plant.',
   'sp.askHelp': 'Builder takes it with NickMark.', 'sp.send': 'Send', 'sp.sending': 'Sending',
@@ -22,7 +22,7 @@ export const sitePanelEn = {
   'sc.dropSpot': 'Remove spot', 'sc.toPoint': 'Turn into adjustment', 'sc.asPoint': 'Now adjustment {key}',
 };
 export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
-  'sp.toggle': 'Ajustes', 'sp.empty': 'Nada en curso. Pide un ajuste arriba.',
+  'sp.toggle': 'Ajustes', 'sp.show': 'Ver ajustes', 'sp.hide': 'Ocultar ajustes', 'sp.empty': 'Nada en curso. Pide un ajuste arriba.',
   'sp.open': '{n} en curso', 'sp.done': '{n} entregados',
   'sp.ask': 'Pedir un ajuste', 'sp.askPh': 'Ej.: En el inicio, cambia la foto principal por una de la planta.',
   'sp.askHelp': 'Lo toma Builder con NicoMarca.', 'sp.send': 'Enviar', 'sp.sending': 'Enviando',

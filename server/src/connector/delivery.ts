@@ -32,6 +32,9 @@ export async function deliverVersion(brandId: string, requestId: string, uid: st
   if (files.length > 20) throw new Error('Máximo 20 archivos por versión.');
   await assertOwnBrand(brandId, files.map((f) => f.name));
   const reqRef = db.doc(`brands/${brandId}/requests/${requestId}`);
+  // A brand check that ran and did not pass blocks the delivery (no check at all: Nicolas delivering by hand).
+  const q = (await reqRef.get()).get('quality') as { passed?: boolean; score?: number } | undefined;
+  if (q && q.passed === false) throw new Error(`La revisión de marca no pasó (${q.score}/100). Corrige y vuelve a revisar con braindy_quality_report antes de entregar.`);
   const n = await db.runTransaction(async (tx) => {
     const r = await tx.get(reqRef);
     if (!r.exists) throw new Error(`No existe la solicitud ${requestId} en esta marca.`);

@@ -14,30 +14,34 @@ export const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/onboarding', label: 'nav.onboarding' },
   { to: '/admin/billing', label: 'nav.billing' },
   { to: '/admin/costs', label: 'cost.nav' },
+  { to: '/admin/ai', label: 'aih.nav' },
   { to: '/team', label: 'nav.team' },
   { to: '/admin/whatsapp', label: 'waa.nav' },
   { to: '/admin/criterio', label: 'cra.nav' },
 ];
 const FIXED = 4;
 
-const dots = <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="19" cy="12" r="1.2" /></svg>;
-
-/** Admin on a phone: Today · Studio · Brands · Proposals · More, the same bar the client has. */
+/** Admin on a phone: Today · Studio · Brands · Proposals · More, the same bar and the same «More» sheet the client has. */
 export function AdminBottomNav() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const moreBtn = useRef<HTMLButtonElement>(null);
+  const closeBtn = useRef<HTMLButtonElement>(null);
   const rest = ADMIN_TABS.slice(FIXED);
   const inRest = rest.some((r) => pathname === r.to || pathname.startsWith(`${r.to}/`));
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
     if (!open) return;
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); moreBtn.current?.focus(); } };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeBtn.current?.focus();
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') close(); };
     window.addEventListener('keydown', key);
-    return () => window.removeEventListener('keydown', key);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', key); };
   }, [open]);
+  function close() { setOpen(false); moreBtn.current?.focus(); }
 
   return (
     <>
@@ -45,19 +49,25 @@ export function AdminBottomNav() {
         {ADMIN_TABS.slice(0, FIXED).map((i) => (
           <NavLink key={i.to} to={i.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>{NAV_ICON[i.to]}{t(i.label)}</NavLink>
         ))}
-        <button ref={moreBtn} type="button" className={`bnav-more${inRest || open ? ' is-active' : ''}`} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen((o) => !o)}>
-          {dots}{t('anav.more')}
+        <button ref={moreBtn} type="button" className={inRest || open ? 'is-active' : ''} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}>
+          {NAV_ICON.more}{t('nav.more')}
         </button>
       </nav></div>
       {open && createPortal(
-        <div className="amore" role="dialog" aria-modal="true" aria-label={t('anav.moreTitle')} onClick={() => setOpen(false)}>
-          <div className="amore-panel" onClick={(e) => e.stopPropagation()}>
-            <p className="label" style={{ padding: '4px 8px 8px' }}>{t('anav.moreTitle')}</p>
-            {rest.map((i) => (
-              <NavLink key={i.to} to={i.to} className={({ isActive }) => `amore-item${isActive ? ' is-on' : ''}`}>
-                <span className="amore-ico">{NAV_ICON[i.to]}</span>{t(i.label)}
+        <div className="acct-sheet" role="dialog" aria-modal="true" aria-label={t('nav.moreTitle')}>
+          <div className="acct-sheet-bar">
+            <img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" />
+            <button ref={closeBtn} type="button" className="acct-x" onClick={close} aria-label={t('lb.close')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+          </div>
+          <div className="acct-sheet-body col g20">
+            <h2 className="h2" style={{ margin: 0 }}>{t('nav.moreTitle')}</h2>
+            <div className="more-card">{rest.map((i) => (
+              <NavLink key={i.to} to={i.to} end className={({ isActive }) => `more-link${isActive ? ' is-on' : ''}`}>
+                <span className="more-ico">{NAV_ICON[i.to]}</span><span className="grow">{t(i.label)}</span>
               </NavLink>
-            ))}
+            ))}</div>
           </div>
         </div>,
         document.body,

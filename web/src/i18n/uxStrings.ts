@@ -1,7 +1,7 @@
 /** Strings for wave H (workspace switch, mobile nav, undo, home blocks, search). */
 export const uxEn = {
   'nav.backToAdmin': 'Back to admin',
-  'nav.homeShort': 'Home', 'nav.brandShort': 'Brand', 'nav.askShort': 'Ask', 'nav.requestsShort': 'Requests', 'nav.assetsShort': 'Assets',
+  'nav.more': 'More', 'nav.moreTitle': 'Everything in your Braindy', 'nav.homeShort': 'Home', 'nav.brandShort': 'Brand', 'nav.askShort': 'Ask', 'nav.requestsShort': 'Requests', 'nav.assetsShort': 'Assets',
   'common.undo': 'Undo',
   'sig.card': 'Nicolas · NickMark',
   'tour.skip': 'Skip', 'tour.back': 'Back', 'tour.next': 'Next', 'tour.start': 'Start the tour', 'tour.done': 'Done', 'tour.of': 'of',
@@ -23,7 +23,7 @@ export const uxEn = {
 
 export const uxEs: Record<keyof typeof uxEn, string> = {
   'nav.backToAdmin': 'Volver a admin',
-  'nav.homeShort': 'Inicio', 'nav.brandShort': 'Marca', 'nav.askShort': 'Pedir', 'nav.requestsShort': 'Solicitudes', 'nav.assetsShort': 'Archivos',
+  'nav.more': 'Más', 'nav.moreTitle': 'Todo en tu Braindy', 'nav.homeShort': 'Inicio', 'nav.brandShort': 'Marca', 'nav.askShort': 'Pedir', 'nav.requestsShort': 'Solicitudes', 'nav.assetsShort': 'Archivos',
   'common.undo': 'Deshacer',
   'sig.card': 'Nicolas · NicoMarca',
   'tour.skip': 'Saltar', 'tour.back': 'Atrás', 'tour.next': 'Siguiente', 'tour.start': 'Empezar el recorrido', 'tour.done': 'Listo', 'tour.of': 'de',

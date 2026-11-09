@@ -8,6 +8,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from '../firebase.js';
 import { contentTypeOf as lookup } from '../lib/mime.js';
+import { bumpIndex } from '../fileOps.js';
 
 const bucket = () => getStorage().bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
 const MAX_FILE = 500 * 1024 ** 2;
@@ -138,9 +139,13 @@ async function storeUpload(brandId: string, name: string, size: number, folder: 
   const storagePath = `brands/${brandId}/uploads/${id}/${name}`;
   const contentType = lookup(name);
   await write(bucket().file(storagePath), contentType);
-  await db.doc(`brands/${brandId}/assets/${id}`).set({
-    type: 'file', source: 'upload', title: name, folder, storagePath, size, contentType,
-    status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
+  // Same transaction as the asset, so a folder outside Uploads shows up in Files right away (bumpIndex skips Uploads).
+  await db.runTransaction(async (tx) => {
+    await bumpIndex(tx, brandId, [folder, 1, size]);
+    tx.set(db.doc(`brands/${brandId}/assets/${id}`), {
+      type: 'file', source: 'upload', title: name, folder, storagePath, size, contentType,
+      status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
+    });
   });
   return id;
 }

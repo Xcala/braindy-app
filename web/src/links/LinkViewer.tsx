@@ -43,6 +43,10 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
   return (
     <div className="lview" role="dialog" aria-modal="true" aria-label={link.title}>
       <div className="lview-bar">
+        <button type="button" className="lview-back" onClick={onClose} aria-label={t('lv.backTo')} title={t('lv.backTo')}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <span>{t('lv.back')}</span>
+        </button>
         <div className="col" style={{ minWidth: 0 }}>
           <span className="w7 truncate">{link.title}</span>
           {blocked && <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>}
@@ -55,7 +59,6 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
             ))}
           </div>
         )}
-        {hasPanel && <button type="button" className="btn btn-secondary btn-sm lview-panel-btn" aria-pressed={panel} aria-controls="site-panel" onClick={() => setPanel((p) => !p)}>{t('sp.toggle')}</button>}
         <a href={link.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">{t('lv.newTab')} ↗</a>
         <button ref={close} type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('lb.close')}>✕</button>
       </div>
@@ -77,7 +80,17 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
             </>
           )}
         </div>
-        {hasPanel && panel && <SitePanel brandId={brandId} link={link} links={links} frame={blocked ? undefined : spot} />}
+        {hasPanel && (
+          <div className={`lview-side${panel ? ' is-open' : ''}`}>
+            {/* One clear handle: a rail with the label when folded, a round button in the corner when open. */}
+            <button type="button" className="lview-side-tog" aria-expanded={panel} aria-controls="site-panel" onClick={() => setPanel((p) => !p)}
+              aria-label={t(panel ? 'sp.hide' : 'sp.show')} title={t(panel ? 'sp.hide' : 'sp.show')}>
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <span className="lview-side-label">{t('sp.toggle')}</span>
+            </button>
+            <div className="lview-side-in" inert={!panel}><SitePanel brandId={brandId} link={link} links={links} frame={blocked ? undefined : spot} /></div>
+          </div>
+        )}
       </div>
     </div>
   );
