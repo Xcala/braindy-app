@@ -1,4 +1,4 @@
-/** Strings for brand versions (rebranding): the version bar in Mi marca, the new-version dialog and the Files filter. */
+/** Strings for brand versions (rebranding): the version bar in Mi marca and in Deliveries (Files, Apps), and the new-version dialog. */
 export const versionEn = {
   'ver.before': 'formerly {name}',
   'ver.bar': 'Brand versions',
@@ -6,6 +6,7 @@ export const versionEn = {
   'ver.until': 'until {date}',
   'ver.range': '{from} to {to}',
   'ver.viewing': 'You are looking at an earlier version of the brand ({name}). It is kept for reference: the Brains work with the current one.',
+  'ver.viewingWork': 'You are looking at the work made for {name}, the earlier version of the brand.',
   'ver.backToCurrent': 'Back to the current version',
   'ver.new': 'New brand version',
   'ver.newTitle': 'Open a new version of the brand',
@@ -18,8 +19,6 @@ export const versionEn = {
   'ver.restartHint': 'Logos, colors, typography and what the Brains learned always start fresh. What you leave unticked carries on.',
   'ver.create': 'Open new version',
   'ver.failed': 'The new version could not be opened. Try again.',
-  'ver.files': 'Version',
-  'ver.allFiles': 'All versions',
 };
 export const versionEs: Record<keyof typeof versionEn, string> = {
   'ver.before': 'antes {name}',
@@ -28,6 +27,7 @@ export const versionEs: Record<keyof typeof versionEn, string> = {
   'ver.until': 'hasta {date}',
   'ver.range': '{from} a {to}',
   'ver.viewing': 'Estás viendo una versión anterior de la marca ({name}). Queda para consulta: los Brains trabajan con la actual.',
+  'ver.viewingWork': 'Estás viendo lo que se hizo para {name}, la versión anterior de la marca.',
   'ver.backToCurrent': 'Volver a la versión actual',
   'ver.new': 'Nueva versión de marca',
   'ver.newTitle': 'Abrir una nueva versión de la marca',
@@ -40,6 +40,4 @@ export const versionEs: Record<keyof typeof versionEn, string> = {
   'ver.restartHint': 'Logos, colores, tipografía y lo que aprendieron los Brains siempre empiezan de cero. Lo que no marques sigue igual.',
   'ver.create': 'Abrir nueva versión',
   'ver.failed': 'No se pudo abrir la nueva versión. Intenta otra vez.',
-  'ver.files': 'Versión',
-  'ver.allFiles': 'Todas las versiones',
 };

@@ -18,6 +18,7 @@ import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
 import { useFileActions } from './useFileActions';
 import { useBrandVersions, versionAt } from '../brands/versions/useBrandVersions';
+import { useVersionView } from '../brands/versions/versionView';
 import { FileMenu, FolderMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
 import { FileDialogs } from './FileDialogs';
@@ -58,7 +59,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [filter, setFilter] = useState<Filter>('all');
   // Rebranded brands: files by the version they belong to, by when they entered Braindy ('current' = after the last rebrand).
   const versions = useBrandVersions(brandId).list;
-  const [era, setEra] = useState('all');
+  const [era] = useVersionView(brandId, versions.map((v) => v.id));
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSortState] = useState<Sort>(savedSort);
   const setSort = (s: Sort) => { setSortState(s); try { localStorage.setItem(SORT_KEY, s); } catch { /* private mode */ } };
@@ -124,7 +125,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const seen = (f: FileItem) => normalizeSearch([f.ai?.summary, ...(f.ai?.tags ?? []), f.ai?.text].filter(Boolean).join(' '));
   const local = (f: FileItem): FileItem | null => (!needle || normalizeSearch(f.title).includes(needle) ? f : needle.split(/s+/).every((w) => seen(f).includes(w)) ? { ...f, why: 'ai' } : null);
   const shown = (searchingAll ? source : source.map(local).filter((f): f is FileItem => !!f)).filter((f) => filter === 'all' || kindOf(f) === filter)
-    .filter((f) => era === 'all' || (versionAt(versions, f.addedMs ?? f.mtimeMs)?.id ?? 'current') === era)
+    .filter((f) => !versions.length || (versionAt(versions, f.addedMs ?? f.mtimeMs)?.id ?? null) === era)
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
@@ -150,7 +151,6 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'clip', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
       <ExplorerToolbar path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
         filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView}
-        eras={versions.length ? { value: era, set: setEra, options: [['all', t('ver.allFiles')], ['current', brand?.name ?? brandName], ...versions.map((v): [string, string] => [v.id, v.name])] } : undefined}
         actions={canDrop ? <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary /> : undefined} />
       {dragging && <div className="fdrop" aria-hidden="true"><Icon name="upload" size={28} />{t('files.dropHere', { name: path.split('/').pop() ?? '' })}</div>}
       <div className="col g24 p-4 sm:p-6">

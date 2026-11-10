@@ -24,6 +24,7 @@ import { BrandEditor, type EditableIdentity } from '../brands/edit/BrandEditor';
 import type { StringKey } from '../i18n/strings';
 import { useBrandVersions } from '../brands/versions/useBrandVersions';
 import { VersionBar } from '../brands/versions/VersionBar';
+import { useVersionView } from '../brands/versions/versionView';
 
 type Identity = {
   logos?: { primary?: string; secondary?: string; icon?: string; variations?: string[] };
@@ -48,8 +49,7 @@ export function MyBrand() {
   const [editing, setEditing] = useState(false);
   // Rebranded brands: an earlier version opens read-only in place of the live Mi marca.
   const versions = useBrandVersions(current?.id).list;
-  const [ver, setVer] = useState<string | null>(null);
-  useEffect(() => setVer(null), [current?.id]);
+  const [ver, setVer] = useVersionView(current?.id, versions.map((v) => v.id));
   const old = versions.find((v) => v.id === ver) ?? null;
   // My brand is split in views (see SubNav): essence (the default), visual and documents. Research is its own page.
   const { view = 'essence' } = useParams<{ view?: string }>();

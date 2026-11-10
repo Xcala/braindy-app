@@ -7,9 +7,10 @@ import { NewVersionDialog } from './NewVersionDialog';
 /**
  * Top of Mi marca on a rebranded brand: the current version and the earlier ones as chips; an earlier one opens
  * read-only. The admin also gets «New brand version» here (for brands never rebranded, only that button shows).
+ * In Deliveries (Files, Apps) the same bar shows the work of each version; there it never opens a new one.
  */
-export function VersionBar({ brand, versions, viewing, onView, isAdmin }: {
-  brand: Brand; versions: BrandVersion[]; viewing: string | null; onView: (id: string | null) => void; isAdmin: boolean;
+export function VersionBar({ brand, versions, viewing, onView, isAdmin = false, work = false }: {
+  brand: Brand; versions: BrandVersion[]; viewing: string | null; onView: (id: string | null) => void; isAdmin?: boolean; work?: boolean;
 }) {
   const { t, lang } = useI18n();
   const [asking, setAsking] = useState(false);
@@ -35,7 +36,7 @@ export function VersionBar({ brand, versions, viewing, onView, isAdmin }: {
       </div>
       {old && (
         <div className="card row g12 wrap between" role="status" style={{ padding: '12px 16px' }}>
-          <span className="t-sm">{t('ver.viewing', { name: old.name })}</span>
+          <span className="t-sm">{t(work ? 'ver.viewingWork' : 'ver.viewing', { name: old.name })}</span>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => onView(null)}>{t('ver.backToCurrent')}</button>
         </div>
       )}

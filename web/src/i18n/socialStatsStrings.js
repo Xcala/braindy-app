@@ -1,0 +1,33 @@
+/** Results › Social media: numbers from Metricool per network (view only). */
+export const socialStatsEn = {
+    'soc.allNets': 'All networks', 'soc.title': 'Social media', 'soc.sub': 'From {from} to {to}', 'soc.updated': 'updated {d}',
+    'soc.period': 'Period', 'soc.p.30': 'Last 30 days', 'soc.p.90': 'Last 90 days', 'soc.p.month': 'This month', 'soc.p.lastMonth': 'Last month', 'soc.p.all': 'Since we started',
+    'soc.k.followers': 'Followers', 'soc.k.views': 'Views', 'soc.k.reach': 'Reach', 'soc.k.interactions': 'Interactions', 'soc.k.engaged': 'Accounts that engaged', 'soc.k.pageViews': 'Page visits', 'soc.k.posts': 'Posts published',
+    'soc.h.followers': 'People following the account', 'soc.h.views': 'Times your content was seen', 'soc.h.reach': 'Different people who saw it', 'soc.h.interactions': 'Likes, comments, saves and shares',
+    'soc.h.engaged': 'Different people who interacted', 'soc.h.pageViews': 'Visits to the page', 'soc.h.posts': 'Feed posts, reels and videos',
+    'soc.fDiff': '{n} in the period', 'soc.vsPrev': '{n} vs the period before', 'soc.plusStories': 'plus {n} stories',
+    'soc.metric': 'Measure', 'soc.by.day': 'by day', 'soc.by.week': 'by week', 'soc.by.month': 'by month', 'soc.weekOf': 'Week of {d}', 'soc.noData': 'No data for this period.',
+    'soc.best': 'Posts that worked best', 'soc.sortBy': 'Sort by', 'soc.s.views': 'Most views', 'soc.s.interactions': 'Most interactions', 'soc.s.reach': 'Most reach', 'soc.s.date': 'Newest',
+    'soc.noPosts': 'Nothing was published in this period.', 'soc.seeAll': 'See all {n} posts', 'soc.hideAll': 'Hide the list',
+    'soc.t.post': 'Post', 'soc.t.likes': 'Likes', 'soc.t.comments': 'Comments', 'soc.t.saves': 'Saves', 'soc.t.shares': 'Shares',
+    'soc.audience': 'Who follows you', 'soc.audienceSub': 'Latest picture of the followers, not by period.', 'soc.countries': 'Countries', 'soc.cities': 'Cities', 'soc.ages': 'Age', 'soc.gender': 'Gender',
+    'soc.a.industry': 'Industry', 'soc.a.function': 'Job function', 'soc.a.seniority': 'Seniority', 'soc.a.companySize': 'Company size',
+    'soc.women': 'Women', 'soc.men': 'Men', 'soc.otherG': 'Not stated',
+    'soc.note': 'Numbers measured by Metricool, the tool that publishes your posts. Networks report a day or two late.',
+};
+export const socialStatsEs = {
+    'soc.allNets': 'Todas las redes', 'soc.title': 'Redes sociales', 'soc.sub': 'Del {from} al {to}', 'soc.updated': 'actualizado el {d}',
+    'soc.period': 'Periodo', 'soc.p.30': 'Últimos 30 días', 'soc.p.90': 'Últimos 90 días', 'soc.p.month': 'Este mes', 'soc.p.lastMonth': 'Mes pasado', 'soc.p.all': 'Desde que empezamos',
+    'soc.k.followers': 'Seguidores', 'soc.k.views': 'Visualizaciones', 'soc.k.reach': 'Alcance', 'soc.k.interactions': 'Interacciones', 'soc.k.engaged': 'Cuentas que interactuaron', 'soc.k.pageViews': 'Visitas a la página', 'soc.k.posts': 'Publicaciones',
+    'soc.h.followers': 'Personas que siguen la cuenta', 'soc.h.views': 'Veces que se vio tu contenido', 'soc.h.reach': 'Personas distintas que lo vieron', 'soc.h.interactions': 'Me gusta, comentarios, guardados y compartidos',
+    'soc.h.engaged': 'Personas distintas que interactuaron', 'soc.h.pageViews': 'Visitas a la página', 'soc.h.posts': 'Publicaciones, reels y videos',
+    'soc.fDiff': '{n} en el periodo', 'soc.vsPrev': '{n} frente al periodo anterior', 'soc.plusStories': 'y {n} historias',
+    'soc.metric': 'Medida', 'soc.by.day': 'por día', 'soc.by.week': 'por semana', 'soc.by.month': 'por mes', 'soc.weekOf': 'Semana del {d}', 'soc.noData': 'No hay datos en este periodo.',
+    'soc.best': 'Lo que mejor funcionó', 'soc.sortBy': 'Ordenar por', 'soc.s.views': 'Más vistas', 'soc.s.interactions': 'Más interacciones', 'soc.s.reach': 'Más alcance', 'soc.s.date': 'Más recientes',
+    'soc.noPosts': 'No se publicó nada en este periodo.', 'soc.seeAll': 'Ver las {n} publicaciones', 'soc.hideAll': 'Ocultar la lista',
+    'soc.t.post': 'Publicación', 'soc.t.likes': 'Me gusta', 'soc.t.comments': 'Comentarios', 'soc.t.saves': 'Guardados', 'soc.t.shares': 'Compartidos',
+    'soc.audience': 'Quién te sigue', 'soc.audienceSub': 'Foto más reciente de los seguidores, no por periodo.', 'soc.countries': 'Países', 'soc.cities': 'Ciudades', 'soc.ages': 'Edad', 'soc.gender': 'Género',
+    'soc.a.industry': 'Industria', 'soc.a.function': 'Área de trabajo', 'soc.a.seniority': 'Cargo', 'soc.a.companySize': 'Tamaño de empresa',
+    'soc.women': 'Mujeres', 'soc.men': 'Hombres', 'soc.otherG': 'Sin dato',
+    'soc.note': 'Cifras medidas por Metricool, la herramienta que publica tus contenidos. Las redes reportan con uno o dos días de retraso.',
+};

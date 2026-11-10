@@ -1,0 +1,29 @@
+import { initializeApp } from 'firebase/app';
+import { connectAuthEmulator, getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+const env = import.meta.env;
+export const app = initializeApp({
+    apiKey: env.VITE_FIREBASE_API_KEY,
+    authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: env.VITE_FIREBASE_APP_ID,
+});
+export const auth = getAuth(app);
+// Always the new database. The old ones ((default), ai-studio-*) are never opened from this app.
+export const db = getFirestore(app, env.VITE_FIRESTORE_DATABASE_ID || 'braindy-app');
+export const googleProvider = new GoogleAuthProvider();
+if (env.VITE_USE_EMULATORS === 'true') {
+    // Other ports when another session already runs its own emulators.
+    connectAuthEmulator(auth, `http://127.0.0.1:${env.VITE_EMULATOR_AUTH_PORT || 9099}`, { disableWarnings: true });
+    connectFirestoreEmulator(db, '127.0.0.1', Number(env.VITE_EMULATOR_FIRESTORE_PORT || 8081));
+}
+// App Check (reCAPTCHA Enterprise): only when a site key is configured. The backend enforces it
+// only with APP_CHECK_ENFORCE=1, so turning it on is two separate, reversible steps.
+export const appCheck = env.VITE_APPCHECK_SITE_KEY && env.VITE_USE_EMULATORS !== 'true'
+    ? (await import('firebase/app-check')).initializeAppCheck(app, {
+        provider: new (await import('firebase/app-check')).ReCaptchaEnterpriseProvider(env.VITE_APPCHECK_SITE_KEY),
+        isTokenAutoRefreshEnabled: true,
+    })
+    : null;

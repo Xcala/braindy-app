@@ -14,7 +14,6 @@ type Props = {
   filter: Filter; setFilter: (f: Filter) => void; sort: Sort; setSort: (s: Sort) => void;
   view: 'grid' | 'list'; setView: (v: 'grid' | 'list') => void;
   /** Rebranded brands only: which version's files to show (all, the current one or an earlier one). */
-  eras?: { value: string; set: (v: string) => void; options: Array<[string, string]> };
   /** Right end of the second row (upload into this folder). */
   actions?: ReactNode;
 };
@@ -58,15 +57,6 @@ export function ExplorerToolbar(p: Props) {
             <button key={k} className={p.filter === k ? 'is-on' : ''} aria-pressed={p.filter === k} onClick={() => p.setFilter(k)}>{t(`files.kind.${k}`)}</button>
           ))}
         </div>
-        {p.eras && (
-          <label className="fx-select">
-            <span className="sr">{t('ver.files')}</span>
-            <select value={p.eras.value} onChange={(e) => p.eras!.set(e.target.value)}>
-              {p.eras.options.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-            </select>
-            <Icon name="chevronDown" size={16} />
-          </label>
-        )}
         <label className="fx-select">
           <span className="sr">{t('files.sort')}</span>
           <select value={p.sort} onChange={(e) => p.setSort(e.target.value as Sort)}>

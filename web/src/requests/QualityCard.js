@@ -1,0 +1,8 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useI18n } from '../i18n/I18nProvider';
+/** Admin: the brand check the team ran on its own work before delivering (server/brains/quality.ts). */
+export function QualityCard({ q }) {
+    const { t } = useI18n();
+    const failed = q.checks.filter((c) => !c.ok);
+    return (_jsxs("details", { className: "card col g8", open: !q.passed, children: [_jsxs("summary", { className: "row between g8 wrap", style: { cursor: 'pointer', listStyle: 'none' }, children: [_jsx("span", { className: "w7", children: t('qc.title') }), _jsxs("span", { className: "row g8", children: [_jsx("span", { className: `chip ${q.passed ? 'c-approved' : 'c-approve'}`, children: q.passed ? t('qc.passed') : t('qc.failed') }), _jsxs("span", { className: "w7", children: [q.score, "/100"] })] })] }), _jsx("p", { className: "t-xs t-mute", children: t('qc.sub', { n: q.round }) }), _jsx("ul", { className: "col g4", style: { margin: 0, paddingLeft: 0, listStyle: 'none' }, children: [...failed, ...q.checks.filter((c) => c.ok)].map((c) => (_jsxs("li", { className: "row g8 t-sm", style: { alignItems: 'flex-start' }, children: [_jsx("span", { "aria-hidden": "true", style: { color: c.ok ? '#1F7A4D' : '#C0362C', fontWeight: 900 }, children: c.ok ? '✓' : '✕' }), _jsxs("span", { className: "col min-w-0", children: [_jsxs("span", { children: [c.text, c.critical && !c.ok ? _jsxs("b", { children: [" \u00B7 ", t('qc.critical')] }) : null] }), c.note ? _jsx("span", { className: "t-xs t-mute", children: c.note }) : null] }), _jsx("span", { className: "sr-only", children: c.ok ? t('qc.passed') : t('qc.failed') })] }, c.id))) })] }));
+}
