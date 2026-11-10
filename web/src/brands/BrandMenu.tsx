@@ -32,7 +32,7 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
   const tree = useMemo(() => asTree(brands), [brands]);
   const childCount = (id: string) => brands.filter((b) => b.groupId === id).length;
   const needle = normalizeSearch(q);
-  const found = needle ? brands.filter((b) => normalizeSearch(b.name).includes(needle)) : null;
+  const found = needle ? brands.filter((b) => [b.name, ...b.previousNames].some((n) => normalizeSearch(n).includes(needle))) : null;
   const recent = readRecent().map((id) => brands.find((b) => b.id === id)).filter((b): b is Brand => !!b);
 
   const choose = (id: string) => { select(id); pushRecent(id); setOpen(false); setQ(''); onPicked?.(); };
@@ -47,7 +47,10 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
       className={`menu-item w-full text-left ${b.id === current.id ? 'is-on' : ''} ${depth === 1 ? 'tree-1' : depth >= 2 ? 'tree-2' : ''}`}
       style={{ border: 0, background: undefined, cursor: 'pointer' }}>
       <BrandMark brand={b} />
-      <span className="grow truncate" style={{ opacity: b.status === 'archived' ? 0.55 : 1 }}>{b.name}</span>
+      <span className="grow col min-w-0" style={{ opacity: b.status === 'archived' ? 0.55 : 1 }}>
+        <span className="truncate">{b.name}</span>
+        {b.previousNames.length > 0 && <span className="t-xs t-mute truncate">{t('ver.before', { name: b.previousNames.join(', ') })}</span>}
+      </span>
       {b.kind === 'group' && <span className="chip c-group">{t('brand.group')} · {childCount(b.id)}</span>}
       {b.status === 'archived' && b.kind !== 'group' && <span className="chip c-archived">{t('status.archived')}</span>}
       {b.id === current.id && <Icon name="check" size={16} />}

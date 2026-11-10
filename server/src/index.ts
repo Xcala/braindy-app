@@ -38,6 +38,7 @@ import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
 import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
+import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
@@ -129,6 +130,7 @@ app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
 app.route('/v1', connectorAuth);
 app.route('/v1/admin', adminIdentity);
+app.route('/v1/admin', adminBrandVersions);
 app.route('/v1/admin', adminGeo);
 app.route('/v1', onboarding);
 app.route('/v1', contracts);

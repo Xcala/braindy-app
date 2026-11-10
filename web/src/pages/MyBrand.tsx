@@ -22,6 +22,8 @@ import { SectionHead } from '../components/SectionHead';
 import { useI18n } from '../i18n/I18nProvider';
 import { BrandEditor, type EditableIdentity } from '../brands/edit/BrandEditor';
 import type { StringKey } from '../i18n/strings';
+import { useBrandVersions } from '../brands/versions/useBrandVersions';
+import { VersionBar } from '../brands/versions/VersionBar';
 
 type Identity = {
   logos?: { primary?: string; secondary?: string; icon?: string; variations?: string[] };
@@ -44,6 +46,11 @@ export function MyBrand() {
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
   const [editing, setEditing] = useState(false);
+  // Rebranded brands: an earlier version opens read-only in place of the live Mi marca.
+  const versions = useBrandVersions(current?.id).list;
+  const [ver, setVer] = useState<string | null>(null);
+  useEffect(() => setVer(null), [current?.id]);
+  const old = versions.find((v) => v.id === ver) ?? null;
   // My brand is split in views (see SubNav): essence (the default), visual and documents. Research is its own page.
   const { view = 'essence' } = useParams<{ view?: string }>();
   const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id, view]);
@@ -55,15 +62,17 @@ export function MyBrand() {
   }, [active]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
-  const id = (identity.data ?? {}) as Identity;
-  // Concept images sent by the Braindy connector replace the ones rescued from the old LogoDeck.
-  const shots = id.concept?.length ? id.concept : legacyShots;
-  const voice = voiceDoc.data as (VoiceDoc & { archetype?: string[] }) | null;
+  const id = ((old ? old.identity : identity.data) ?? {}) as Identity;
+  // Concept images sent by the Braindy connector replace the ones rescued from the old LogoDeck, which belong to the first version only.
+  const firstVersion = !versions.length || old?.id === versions[versions.length - 1]!.id;
+  const shots = id.concept?.length ? id.concept : firstVersion ? legacyShots : [];
+  const voice = (old ? old.voice : voiceDoc.data) as (VoiceDoc & { archetype?: string[] }) | null;
   const colors = brandColors(id.colors ?? []);
   const children = brands.filter((b) => b.groupId === current.id);
   const loading = identity.loading || voiceDoc.loading;
-  const brain = brainDoc.data as BrainDoc | null;
-  const primal = primalDoc.data as PrimalDoc | null;
+  const brain = (old ? old.brain : brainDoc.data) as BrainDoc | null;
+  const primal = (old ? old.primal : primalDoc.data) as PrimalDoc | null;
+  const shown = old ? { ...current, name: old.name, logoUrl: old.logoUrl } : current;
 
   const sections: Array<{ id: string; label: StringKey; show: boolean; view: 'essence' | 'visual' | 'docs' }> = [
     { id: 'family', label: 'brand.children', show: children.length > 0, view: 'essence' },
@@ -84,9 +93,10 @@ export function MyBrand() {
 
   return (
     <div className="col g48 brandpage">
-      {view === 'essence' && <BrandHero brand={current} logo={id.logos?.primary ?? current.logoUrl ?? undefined}
+      <VersionBar brand={current} versions={versions} viewing={ver} onView={setVer} isAdmin={isAdmin} />
+      {view === 'essence' && <BrandHero brand={shown} logo={id.logos?.primary ?? shown.logoUrl ?? undefined}
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />}
-      {isAdmin && (
+      {isAdmin && !old && (
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: view === 'essence' ? -32 : 0 }}>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('be.open')}</button>
         </div>
@@ -143,7 +153,7 @@ export function MyBrand() {
       {on('docs') && (
         <section className="col g24" id="docs" aria-labelledby="h-docs">
           <SectionHead id="docs" num={num('docs')} title={t('bf.title')} subtitle={t('bf.sub')} />
-          <BrandFiles brandId={current.id} files={id.documents ?? []} isAdmin={isAdmin} />
+          <BrandFiles brandId={current.id} files={id.documents ?? []} isAdmin={isAdmin && !old} />
         </section>
       )}
       {on('concept') && (
@@ -176,7 +186,7 @@ export function MyBrand() {
           <Voice voice={voice} />
         </section>
       )}
-      {view === 'essence' && <LearningsSection brandId={current.id} />}
+      {view === 'essence' && !old && <LearningsSection brandId={current.id} />}
     </div>
   );
 }

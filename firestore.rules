@@ -134,6 +134,12 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Earlier versions of the brand (rebranding): Mi marca frozen as it was. The brand reads them; only the backend writes.
+      match /versions/{versionId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
+
       // Drive folders the client may see: brands/{id}.fileAccess = { mode: 'all' | 'selected', folders: [top-level names] }.
       // The Uploads folder and legacy documents are always visible to the brand; '' stands for files at the root.
       match /assets/{assetId} {

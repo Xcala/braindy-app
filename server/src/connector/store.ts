@@ -21,8 +21,9 @@ export async function findBrands(query: string) {
   const q = query.trim().toLowerCase();
   const snap = await db.collection('brands').get();
   return snap.docs
-    .map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id), kind: d.get('kind') ?? 'brand', status: d.get('status') ?? 'active', groupId: d.get('groupId') ?? null }))
-    .filter((b) => !q || b.id.includes(q) || b.name.toLowerCase().includes(q))
+    .map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id), kind: d.get('kind') ?? 'brand', status: d.get('status') ?? 'active', groupId: d.get('groupId') ?? null, previousNames: (d.get('previousNames') as string[] | undefined) ?? [] }))
+    // A rebranded brand is found by its old names too (iPark → Muvify).
+    .filter((b) => !q || b.id.includes(q) || [b.name, ...b.previousNames].some((n) => n.toLowerCase().includes(q)))
     .sort((a, b) => (a.status === b.status ? a.name.localeCompare(b.name) : a.status === 'active' ? -1 : 1))
     .slice(0, 25);
 }

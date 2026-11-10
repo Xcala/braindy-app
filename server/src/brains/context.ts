@@ -17,6 +17,9 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
     db.collection(`brands/${brandId}/insights`).orderBy('at', 'desc').limit(3).get(),
   ]);
   const name = String(brand.get('name') ?? brandId);
+  // After a rebrand the old name and identity live in brands/{id}/versions: history, never a reference for new work.
+  const before = (brand.get('previousNames') as string[] | undefined) ?? [];
+  const since = (brand.get('rebrandedAt') as { toDate?: () => Date } | undefined)?.toDate?.()?.toISOString().slice(0, 10);
   // Meetings held with the group(s) above this brand (e.g. Grupo Berrío for iPark) are team memory too.
   const ancestors = ((brand.get('ancestors') as string[]) ?? []).slice(0, 3);
   const groupMeetings = (await Promise.all(ancestors.map(async (g) => {
@@ -33,6 +36,7 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
   const learned = ((learnings.get('items') as Array<{ kind: string; text: string }>) ?? []).slice(-15);
   const lines = [
     `Brand: ${name}${b.status === 'signed' ? ' (Brand Brain signed by Nicolas)' : b.status ? ' (Brand Brain draft)' : ''}`,
+    before.length && `Rebranded: formerly ${before.join(', ')}${since ? ` (new identity since ${since})` : ''}. Work before that used the old identity: never reuse its name, logos or colors.`,
     b.position && `Position to own: ${cut(b.position)}`,
     b.voice && `Voice: ${cut(b.voice)}`,
     !b.voice && (v.essence?.title || v.tone) && `Voice: ${cut(v.essence?.title ?? v.tone)}`,
