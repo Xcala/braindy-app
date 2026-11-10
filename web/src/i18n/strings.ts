@@ -39,7 +39,7 @@ import { brainLoopEn, brainLoopEs } from './brainLoopStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
-  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps',
+  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps / Web',
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
   'nav.requests': 'Requests',
@@ -223,7 +223,7 @@ export type StringKey = keyof typeof en;
 
 const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.brand': 'Mi marca',
-  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps',
+  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps / Web',
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
   'nav.requests': 'Pedidos',
