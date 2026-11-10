@@ -23,7 +23,8 @@ export async function openBrandVersion(brandId: string, newName: string, restart
   if (!b.exists) throw new Error('not_found');
   const oldName = String(b.get('name') ?? brandId);
   const now = Timestamp.now();
-  const from = (last.docs[0]?.get('to') as Timestamp | undefined) ?? (b.get('createdAt') as Timestamp | undefined) ?? null;
+  // The first version has no start date: when the brand entered Braindy is not when the brand was born.
+  const from = (last.docs[0]?.get('to') as Timestamp | undefined) ?? null;
   const ref = db.collection(`brands/${brandId}/versions`).doc();
   const batch = db.batch();
   batch.set(ref, {
