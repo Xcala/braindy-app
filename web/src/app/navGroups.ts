@@ -8,9 +8,10 @@ export type NavGroup = { label: StringKey; short: StringKey; pages: Array<{ to: 
 
 const ALL: NavGroup[] = [
   { label: 'nav.home', short: 'nav.homeShort', pages: [{ to: '/home', label: 'nav.home' }] },
+  // Requests above My brand (Nicolas, 2026-11-10).
+  { label: 'nav.orders', short: 'nav.askShort', pages: [{ to: '/requests', label: 'nav.orders' }] },
   { label: 'nav.brand', short: 'nav.brandShort', // Visual first (2026-11-02). Brain: what the Brains know about the brand, live (2026-11-04). Brand documents left My brand: the files already live in Deliveries.
     pages: [{ to: '/brand/visual', label: 'sub.visual' }, { to: '/brand', label: 'sub.essence' }, { to: '/brand/brain', label: 'sub.brain' }, { to: '/research', label: 'sub.research' }] },
-  { label: 'nav.orders', short: 'nav.askShort', pages: [{ to: '/requests', label: 'nav.orders' }] },
   { label: 'nav.deliveries', short: 'nav.deliveriesShort', pages: [{ to: '/assets', label: 'sub.files' }, { to: '/apps', label: 'sub.apps' }, { to: '/calendar', label: 'sub.calendar' }] },
   { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'nav.report' }] },
 ];

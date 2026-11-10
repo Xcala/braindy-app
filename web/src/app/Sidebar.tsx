@@ -75,8 +75,8 @@ function ClientSections({ slim }: { slim: boolean }) {
     const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
     if (!pages.length) return null;
     const on = g.pages.some((p) => pathname === p.to || pathname.startsWith(`${p.to}/`));
-    // The group's pages open under it while you are in it; a page with nothing in it stays out for the client.
-    const subs = on && !slim ? pages.filter((p) => isAdmin || pathname === p.to || filled(p.to)) : [];
+    // Every group shows its pages open, so the client sees them all at a glance (Nicolas, 2026-11-10); a page with nothing in it stays out for the client.
+    const subs = !slim ? pages.filter((p) => isAdmin || pathname === p.to || filled(p.to)) : [];
     return (
       <div key={g.label} className="col">
         <Link item={{ to: pages[0]!.to, label: g.label }} slim={slim} on={on} badge={pages[0]!.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
