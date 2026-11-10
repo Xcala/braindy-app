@@ -8,6 +8,7 @@ export function useBrandVersions(brandId) {
         from: d.from?.toDate?.() ?? null, to: d.to?.toDate?.() ?? null,
         identity: d.identity ?? null, voice: d.voice ?? null,
         brain: d.brain ?? null, primal: d.primal ?? null,
+        folders: d.folders ?? [],
     })).sort((a, b) => +(b.to ?? 0) - +(a.to ?? 0)), [docs]);
     return { list, loading };
 }

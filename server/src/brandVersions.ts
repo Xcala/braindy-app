@@ -8,16 +8,19 @@ import { brandAccess } from './access.js';
 import type { AuthEnv } from './auth.js';
 import { recordBrainEvent } from './brains/brainEvents.js';
 import { db } from './firebase.js';
+import { APPROVED_FOLDER } from './approvedFiles.js';
 
 type Restart = { voice?: boolean; strategy?: boolean; primal?: boolean };
 /** Strategy fields that belong to the old brand; the Criterio and the signature stay with the client. */
 const STRATEGY = ['position', 'audiences', 'goals', 'avoid', 'competitors', 'voice', 'status'] as const;
+/** Folders every version shares: approved deliveries and NickMark's internal folder never belong to one version. */
+const SHARED = [APPROVED_FOLDER, 'Interno Braindy'];
 
 export async function openBrandVersion(brandId: string, newName: string, restart: Restart, by: string) {
   const brand = db.doc(`brands/${brandId}`);
   const ctx = (id: string) => db.doc(`brands/${brandId}/context/${id}`);
-  const [b, identity, voice, brain, primal, learnings, last] = await Promise.all([
-    brand.get(), ctx('identity').get(), ctx('voice').get(), ctx('brain').get(), ctx('primal').get(), ctx('learnings').get(),
+  const [b, identity, voice, brain, primal, learnings, index, last] = await Promise.all([
+    brand.get(), ctx('identity').get(), ctx('voice').get(), ctx('brain').get(), ctx('primal').get(), ctx('learnings').get(), ctx('fileIndex').get(),
     db.collection(`brands/${brandId}/versions`).orderBy('to', 'desc').limit(1).get(),
   ]);
   if (!b.exists) throw new Error('not_found');
@@ -25,12 +28,15 @@ export async function openBrandVersion(brandId: string, newName: string, restart
   const now = Timestamp.now();
   // The first version has no start date: when the brand entered Braindy is not when the brand was born.
   const from = (last.docs[0]?.get('to') as Timestamp | undefined) ?? null;
+  // The top-level folders in Files today belong to this version: Files shows them under it, not under the new one.
+  const folders = ((index.get('folders') as Array<{ path: string }> | undefined) ?? []).map((f) => f.path)
+    .filter((p) => p && !p.includes('/') && !SHARED.includes(p) && !(last.docs[0]?.get('folders') as string[] | undefined)?.includes(p));
   const ref = db.collection(`brands/${brandId}/versions`).doc();
   const batch = db.batch();
   batch.set(ref, {
     name: oldName, logoUrl: b.get('logoUrl') ?? null, from, to: now,
     identity: identity.data() ?? null, voice: voice.data() ?? null, brain: brain.data() ?? null,
-    primal: primal.data() ?? null, learnings: learnings.data() ?? null, createdBy: by,
+    primal: primal.data() ?? null, learnings: learnings.data() ?? null, folders, createdBy: by,
   });
   // The new chapter starts clean where the old identity would mislead the Brains.
   batch.delete(ctx('identity'));

@@ -7,6 +7,7 @@ export interface BrandVersion {
   id: string; name: string; logoUrl: string | null; from: Date | null; to: Date | null;
   identity: Record<string, unknown> | null; voice: Record<string, unknown> | null;
   brain: Record<string, unknown> | null; primal: Record<string, unknown> | null;
+  /** Top-level folders of Files that belong to this version. */ folders: string[];
 }
 
 /** Earlier versions of the brand, newest first (empty for a brand never rebranded). */
@@ -17,6 +18,7 @@ export function useBrandVersions(brandId: string | undefined) {
     from: (d.from as Stamp)?.toDate?.() ?? null, to: (d.to as Stamp)?.toDate?.() ?? null,
     identity: (d.identity as BrandVersion['identity']) ?? null, voice: (d.voice as BrandVersion['voice']) ?? null,
     brain: (d.brain as BrandVersion['brain']) ?? null, primal: (d.primal as BrandVersion['primal']) ?? null,
+    folders: (d.folders as string[] | undefined) ?? [],
   })).sort((a, b) => +(b.to ?? 0) - +(a.to ?? 0)), [docs]);
   return { list, loading };
 }
