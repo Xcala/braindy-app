@@ -56,7 +56,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [q, setQ] = useState('');
   const [everywhere, setEverywhere] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
-  // Rebranded brands: files by the version they belong to, by their date ('current' = after the last rebrand).
+  // Rebranded brands: files by the version they belong to, by when they entered Braindy ('current' = after the last rebrand).
   const versions = useBrandVersions(brandId).list;
   const [era, setEra] = useState('all');
   const [view, setView] = useState<'grid' | 'list'>('grid');
@@ -102,7 +102,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
     return onSnapshot(qy, (s) => setFiles(
       s.docs.filter((d) => d.get('status') !== 'uploading')
-        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) })),
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')),
+          addedMs: ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) ?? ms(d.get('migratedAt')) })),
     ), () => setFiles([]));
   }, [brandId, path, pathShared]);
 
@@ -123,7 +124,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const seen = (f: FileItem) => normalizeSearch([f.ai?.summary, ...(f.ai?.tags ?? []), f.ai?.text].filter(Boolean).join(' '));
   const local = (f: FileItem): FileItem | null => (!needle || normalizeSearch(f.title).includes(needle) ? f : needle.split(/s+/).every((w) => seen(f).includes(w)) ? { ...f, why: 'ai' } : null);
   const shown = (searchingAll ? source : source.map(local).filter((f): f is FileItem => !!f)).filter((f) => filter === 'all' || kindOf(f) === filter)
-    .filter((f) => era === 'all' || (versionAt(versions, f.mtimeMs)?.id ?? 'current') === era)
+    .filter((f) => era === 'all' || (versionAt(versions, f.addedMs ?? f.mtimeMs)?.id ?? 'current') === era)
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
