@@ -2,18 +2,19 @@ import { useState, type CSSProperties } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toaster';
+import { LogoDownload } from './LogoDownload';
 
 // Grounds a viewer cycles through to check a logo: light gray, transparent (checkerboard), dark and white.
 const CHECKER = 'repeating-conic-gradient(#D9DDE5 0% 25%, #FFFFFF 0% 50%) 50% / 20px 20px';
-const GROUNDS: Array<{ key: 'fog' | 'checker' | 'dark' | 'white'; bg: string; dark?: boolean }> = [
-  { key: 'fog', bg: '#CDD1D9' },
-  { key: 'checker', bg: CHECKER },
-  { key: 'dark', bg: '#111318', dark: true },
-  { key: 'white', bg: '#FFFFFF' },
+const GROUNDS: Array<{ key: 'fog' | 'checker' | 'dark' | 'white'; bg: string; fill: string | null; dark?: boolean }> = [
+  { key: 'fog', bg: '#CDD1D9', fill: '#CDD1D9' },
+  { key: 'checker', bg: CHECKER, fill: null },
+  { key: 'dark', bg: '#111318', fill: '#111318', dark: true },
+  { key: 'white', bg: '#FFFFFF', fill: '#FFFFFF' },
 ];
 
-/** One logo version: change its ground, copy the image (or its link) and download it. */
-export function LogoTile({ url, label }: { url: string; label: string }) {
+/** One logo version: change its ground, copy the image (or its link) and download it with that ground or without one. */
+export function LogoTile({ url, label, file }: { url: string; label: string; file: string }) {
   const { t } = useI18n();
   const toast = useToast();
   const [g, setG] = useState(0);
@@ -41,7 +42,7 @@ export function LogoTile({ url, label }: { url: string; label: string }) {
       </button>
       <span className="vt-actions row g4">
         <button type="button" className="btn btn-ghost btn-icon btn-sm" style={btn} onClick={copy} aria-label={`${t('common.copy')} ${label}`} title={t('common.copy')}><Icon name="copy" size={16} /></button>
-        <a className="btn btn-ghost btn-icon btn-sm" style={btn} href={url} target="_blank" rel="noreferrer" download aria-label={`${t('common.download')} ${label}`} title={t('common.download')}><Icon name="download" size={16} /></a>
+        <LogoDownload url={url} tone="none" ground={ground.fill} name={file} label={label} style={btn} />
       </span>
     </div>
   );

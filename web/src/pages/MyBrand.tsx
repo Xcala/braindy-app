@@ -147,7 +147,7 @@ export function MyBrand() {
       {on('logos') && id.logos && (
         <section className="col g24" id="logos" aria-labelledby="h-logos">
           <SectionHead id="logos" num={num('logos')} title={t('brand.logos')} subtitle={t('brand.logosSub')} />
-          <Logos logos={id.logos} />
+          <Logos logos={id.logos} name={shown.name} />
         </section>
       )}
       {on('docs') && (
