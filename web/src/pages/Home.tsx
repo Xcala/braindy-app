@@ -8,7 +8,7 @@ import { useBrandsRequests } from '../requests/useBrandsRequests';
 import { HomeHero } from '../home/HomeHero';
 import { HomeDelivered } from '../home/HomeDelivered';
 import { HomeProduction } from '../home/HomeProduction';
-import { HomeMeetingsRow } from '../home/HomeMeetingsRow';
+import { HomeMeetingsRow, NextMeetingTop } from '../home/HomeMeetingsRow';
 import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
@@ -42,6 +42,7 @@ export function Home() {
         </Link>
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
+      <NextMeetingTop brandId={current.id} brandName={current.name} />
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
       {current.kind === 'brand' && <HomeBrainLoop brandId={current.id} />}
       <HomeThisMonth brandId={current.id} requests={all} />

@@ -18,6 +18,13 @@ export const helpEn = {
   'help.s1': 'How do I download my logo?',
   'help.s2': 'How do I approve a delivery?',
   'help.s3': 'How do I ask for something new?',
+  'nm.menu': 'Next meeting options',
+  'nm.small': 'Make it small',
+  'nm.big': 'Show it full',
+  'nm.top': 'Move to the top of Home',
+  'nm.back': 'Put it back in its place',
+  'nm.close': 'Close (it comes back for the next meeting)',
+  'nm.show': 'Show next meeting',
 } as const;
 
 export const helpEs: Record<keyof typeof helpEn, string> = {
@@ -39,4 +46,11 @@ export const helpEs: Record<keyof typeof helpEn, string> = {
   'help.s1': '¿Cómo descargo mi logo?',
   'help.s2': '¿Cómo apruebo una entrega?',
   'help.s3': '¿Cómo pido algo nuevo?',
+  'nm.menu': 'Opciones de la siguiente reunión',
+  'nm.small': 'Hacerla pequeña',
+  'nm.big': 'Verla completa',
+  'nm.top': 'Subirla al inicio',
+  'nm.back': 'Volverla a su lugar',
+  'nm.close': 'Cerrar (vuelve con la próxima reunión)',
+  'nm.show': 'Ver siguiente reunión',
 };

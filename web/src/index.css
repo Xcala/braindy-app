@@ -71,3 +71,4 @@ img[src$="nicolas.jpg"] { object-position: 50% 18%; }
 
 /* Home › next meeting: in a narrow card the button labels wrap inside the pill instead of spilling out */
 .hg-next .btn{white-space:normal;height:auto;min-height:36px;padding-block:8px;text-align:center;line-height:18px}
+.nm-more{width:36px;padding:0;font-size:20px;line-height:20px}
