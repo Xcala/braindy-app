@@ -18,7 +18,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <h1 className="d-xl" style={{ color: '#fff', fontSize: 56, lineHeight: '58px' }}>
             <span className="w9">{t('login.hero1')}</span> {t('login.hero2')}
           </h1>
-          <p className="t-lg muted" style={{ maxWidth: 430 }}>{t('login.heroBody')}</p>
+          <p className="t-lg muted" style={{ maxWidth: 430 }}>{t('login.heroBody2')}</p>
         </div>
         <div className="col g16">
           <div className="rule-line" />

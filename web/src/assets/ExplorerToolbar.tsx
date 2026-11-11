@@ -13,6 +13,7 @@ type Props = {
   q: string; setQ: (q: string) => void; everywhere: boolean; setEverywhere: (on: boolean) => void;
   filter: Filter; setFilter: (f: Filter) => void; sort: Sort; setSort: (s: Sort) => void;
   view: 'grid' | 'list'; setView: (v: 'grid' | 'list') => void;
+  /** Rebranded brands only: which version's files to show (all, the current one or an earlier one). */
   /** Right end of the second row (upload into this folder). */
   actions?: ReactNode;
 };

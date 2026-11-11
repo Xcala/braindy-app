@@ -13,10 +13,13 @@ import { useThumbs } from './useThumbs';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { APPROVED, folderVisible, UPLOADS } from './folderRules';
+
 import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
 import { useFileActions } from './useFileActions';
+import { useBrandVersions, versionAt } from '../brands/versions/useBrandVersions';
+import { useVersionView } from '../brands/versions/versionView';
 import { FileMenu, FolderMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
 import { FileDialogs } from './FileDialogs';
@@ -26,6 +29,9 @@ import { UploadButton, UploadStatus } from './UploadButton';
 import { useUploader } from './useUploader';
 import { useSearchAll } from './useSearchAll';
 import './files.css';
+
+/** Top folders every brand version shares (server/src/brandVersions.ts SHARED). */
+const SHARED_TOPS = new Set([APPROVED, 'Interno Braindy']);
 
 type Folder = { path: string; files: number; bytes: number };
 const SORT_KEY = 'braindy.files.sort';
@@ -55,6 +61,9 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   const [q, setQ] = useState('');
   const [everywhere, setEverywhere] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
+  // Rebranded brands: files by the version they belong to, by when they entered Braindy ('current' = after the last rebrand).
+  const versions = useBrandVersions(brandId).list;
+  const [era] = useVersionView(brandId, versions.map((v) => v.id));
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSortState] = useState<Sort>(savedSort);
   const setSort = (s: Sort) => { setSortState(s); try { localStorage.setItem(SORT_KEY, s); } catch { /* private mode */ } };
@@ -98,17 +107,21 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
     return onSnapshot(qy, (s) => setFiles(
       s.docs.filter((d) => d.get('status') !== 'uploading')
-        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) })),
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')),
+          addedMs: ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) ?? ms(d.get('migratedAt')) })),
     ), () => setFiles([]));
   }, [brandId, path, pathShared]);
 
   const subfolders = useMemo(() => {
-    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path))
+    // Rebranded brands: at the root, each version shows its own folders (the current one, those of no earlier version).
+    const old = versions.find((v) => v.id === era);
+    const ofEra = (p: string) => path || !versions.length || (old ? old.folders.includes(p) : !versions.some((v) => v.folders.includes(p)));
+    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path) && ofEra(f.path))
       .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path), toggle: isAdmin && !path ? () => toggle(f.path) : undefined }));
     if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false, toggle: undefined });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folders, path, isAdmin, brand?.fileAccess, tops]);
+  }, [folders, path, isAdmin, brand?.fileAccess, tops, versions, era]);
   const moveTargets = useMemo(() => ['', UPLOADS, ...folders.map((f) => f.path).filter((p) => p && p !== path)].filter((p, i, a) => a.indexOf(p) === i), [folders, path]);
 
   const needle = normalizeSearch(q);
@@ -118,7 +131,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
   // In a folder the name is matched here, and what the AI saw in the file too (the server does both across folders).
   const seen = (f: FileItem) => normalizeSearch([f.ai?.summary, ...(f.ai?.tags ?? []), f.ai?.text].filter(Boolean).join(' '));
   const local = (f: FileItem): FileItem | null => (!needle || normalizeSearch(f.title).includes(needle) ? f : needle.split(/s+/).every((w) => seen(f).includes(w)) ? { ...f, why: 'ai' } : null);
+  // A file belongs to the version of its top folder; in shared ones (Uploads, approved, internal) to when it came in.
+  const eraOf = (f: FileItem) => { const top = (f.folder ?? '').split('/')[0]!; return !top || top === UPLOADS || SHARED_TOPS.has(top) ? versionAt(versions, f.addedMs ?? f.mtimeMs)?.id ?? null : versions.find((v) => v.folders.includes(top))?.id ?? null; };
   const shown = (searchingAll ? source : source.map(local).filter((f): f is FileItem => !!f)).filter((f) => filter === 'all' || kindOf(f) === filter)
+    .filter((f) => !versions.length || eraOf(f) === era)
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));

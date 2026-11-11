@@ -23,7 +23,17 @@
 .cal-more { align-self: flex-start; padding: 2px 4px; border: 0; background: none; color: var(--azul); font: 700 12px/1 var(--f-text); cursor: pointer; }
 .cal-thumb { display: block; flex: none; object-fit: cover; background: var(--line); }
 .cal-thumb.is-text { display: grid; place-items: center; color: var(--graphite); font: 800 12px/1 var(--f-display); }
-.cal-agenda { display: none; }
+.cal-agenda, .cal-mini-wrap { display: none; }
+.cal-mini { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 10px; border: 1px solid var(--line); border-radius: 20px; background: var(--white); }
+.cal-mini-wd { padding: 4px 0 6px; text-align: center; font: 700 11px/1 var(--f-text); color: var(--graphite); }
+.cal-mini-day { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; padding: 6px 0; border: 0; border-radius: 12px; background: none; color: var(--ink); cursor: pointer; }
+.cal-mini-day:disabled { cursor: default; }
+.cal-mini-day.is-out { opacity: .4; }
+.cal-mini-num { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font: 700 14px/1 var(--f-text); }
+.cal-mini-day.is-today .cal-mini-num { background: var(--azul); color: #fff; }
+.cal-mini-day.is-sel { background: var(--hielo); }
+.cal-mini-dots { display: flex; gap: 3px; height: 6px; }
+.cal-mini-dots i { width: 6px; height: 6px; border-radius: 50%; }
 .cal-row { display: flex; align-items: center; gap: 12px; padding: 10px; border-left: 4px solid var(--c); text-align: left; cursor: pointer; }
 .cal-row .cal-thumb { width: 56px; height: 56px; border-radius: 10px; }
 .cal-detail { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; max-height: 88vh; overflow: auto; }
@@ -37,6 +47,7 @@
 @media (max-width: 767px) {
   .cal-grid, .cal-empty-desk { display: none; }
   .cal-agenda { display: flex; flex-direction: column; gap: 20px; }
+  .cal-mini-wrap { display: flex; flex-direction: column; gap: 8px; }
   .cal-detail { grid-template-columns: 1fr; }
 }
 /* A published post's numbers (Metricool) in its detail. */

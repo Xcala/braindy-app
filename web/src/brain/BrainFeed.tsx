@@ -9,6 +9,7 @@ type T = (key: StringKey, vars?: Record<string, string | number>) => string;
 
 /** One line for an event, in the reader's language (the Mi marca, meeting and session texts are composed here). */
 export function eventText(e: BrainEvent, t: T) {
+  if (e.kind === 'identity' && e.parts?.includes('version')) return t('bb.txt.version', { text: e.text ?? '' });
   if (e.kind === 'identity') return t('bb.txt.identity', { parts: (e.parts ?? []).map((p) => t(`bb.part.${p}` as StringKey)).join(', ') });
   if (e.kind === 'meeting') return t('bb.txt.meeting');
   if (e.kind === 'session') return e.text ? t('bb.txt.sessionOn', { text: e.text }) : t('bb.txt.session');

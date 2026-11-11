@@ -53,3 +53,23 @@ describe('Social results', () => {
     for (const who of [ADMIN, OWNER, MEMBER]) await assertFails(setDoc(doc(as(env, who), 'brands/brand-a/socialStats/facebook'), stats));
   });
 });
+
+describe('Ads and sales results', () => {
+  it('follow the Results switch and nobody writes from the browser', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const f = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(f, 'brands/brand-a/adStats/meta'), { daily: [] });
+      await setDoc(doc(f, 'brands/brand-a/salesStats/doordash'), { months: [] });
+    });
+    for (const p of ['brands/brand-a/adStats/meta', 'brands/brand-a/salesStats/doordash']) {
+      await assertFails(getDoc(doc(as(env, OWNER), p)));
+      await assertSucceeds(getDoc(doc(as(env, ADMIN), p)));
+    }
+    await brand({ resultsOn: true });
+    for (const p of ['brands/brand-a/adStats/meta', 'brands/brand-a/salesStats/doordash']) {
+      await assertSucceeds(getDoc(doc(as(env, MEMBER), p)));
+      await assertFails(getDoc(doc(as(env, OUTSIDER), p)));
+      await assertFails(setDoc(doc(as(env, ADMIN), p), { daily: [] }));
+    }
+  });
+});

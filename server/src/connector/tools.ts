@@ -10,6 +10,7 @@ import { deliverVersion, listRequests, newRequest, type FileWriter } from './del
 import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
 import { syncSocialStats } from './socialStats.js';
+import { registerAdTools } from './adStats.js';
 import { syncAllWebStats, syncWebStats } from '../webStats.js';
 import { syncAllSearchStats, syncSearchStats } from '../searchStats.js';
 import { db } from '../firebase.js';
@@ -37,6 +38,7 @@ const REMOTE_FILE = z.object({
 
 export function registerTools(server: McpServer, ctx: ToolContext) {
   registerSiteCommentTools(server, ctx.uid);
+  registerAdTools(server, APP);
   registerStepTools(server);
   registerQualityTools(server);
   server.registerTool('braindy_find_brand', {
