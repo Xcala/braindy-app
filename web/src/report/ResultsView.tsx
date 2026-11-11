@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { NetBadge, netInfo } from '../calendar/PostBits';
@@ -69,13 +69,13 @@ export function ResultsView({ social, web, search, ads = [], sales = [] }: { soc
 
       {cur === 'sum' ? (
         <>
-          {site && <h2 className="h3">{t('web.title')}</h2>}
-          {web && <WebKpis stats={web} period={period} short />}
-          {search && <SearchKpis stats={search} period={period} short />}
-          {all && <h2 className="h3">{t('soc.title')}</h2>}
-          {all && <NetBody key={`sum-${period}`} net={all} period={period} chart={false} />}
-          {ad && <h2 className="h3">{t('ads.tab')}</h2>}
-          {ad && <AdKpis stats={ad} period={period} short />}
+          {/* One column per source, so the whole summary fits the first screen (Nicolas 2026-11-10). */}
+          <div className="res-cols grid gap-6 items-start" style={{ '--cols': [site, all, ad].filter(Boolean).length } as CSSProperties}>
+            {site && <div className="col g12"><h2 className="h3">{t('web.title')}</h2>{web && <WebKpis stats={web} period={period} short />}{search && <SearchKpis stats={search} period={period} short />}</div>}
+            {all && <div className="col g12"><h2 className="h3">{t('soc.title')}</h2><NetBody key={`sum-${period}`} net={all} period={period} chart={false} part="kpis" /></div>}
+            {ad && <div className="col g12"><h2 className="h3">{t('ads.tab')}</h2><AdKpis stats={ad} period={period} short /></div>}
+          </div>
+          {all && <NetBody key={`sum-rest-${period}`} net={all} period={period} chart={false} part="rest" />}
         </>
       ) : cur === 'ads' && ad ? <AdsBody stats={ad} period={period} />
       : sale ? <SalesBody key={sale.source} stats={sale} />
