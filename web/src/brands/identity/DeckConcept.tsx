@@ -5,7 +5,7 @@ import type { LegacyAsset } from '../../assets/BrandDocs';
 
 type Shot = { url: string; kind: 'hero' | 'design-concept'; caption?: string };
 
-const PLACEHOLDER = /^https?:\/\/(picsum\.photos|placehold|via\.placeholder|images\.unsplash\.com|source\.unsplash)/i;
+const PLACEHOLDER = /^https?:\/\/(picsum\.photos|placehold|via\.placeholder)/i;
 
 /** The images that only lived in the LogoDeck (brand cover and design concept), without duplicates. */
 export function deckShots(assets: LegacyAsset[]): Shot[] {
