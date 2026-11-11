@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
 import { money } from '../../billing/useBilling';
@@ -28,7 +29,7 @@ export function AdminCosts() {
   return (
     <div className="col g24">
       <div className="row between g12 wrap">
-        <div className="col g8"><p className="label">{t('bill.a.only')}</p><h1 className="h1">{t('cost.nav')}</h1><p className="t-mute">{t('cost.sub')}</p></div>
+        <div className="col g8"><p className="label">{t('anav.allBrands')} · {t('bill.a.only')}</p><h1 className="h1">{t('cost.nav')}</h1><p className="t-mute">{t('cost.sub')}</p></div>
         <div className="field" style={{ minWidth: 200 }}>
           <label htmlFor="cost-month">{t('cost.period')}</label>
           <select id="cost-month" className="input" value={period} onChange={(e) => setPeriod(e.target.value)}>
@@ -63,7 +64,7 @@ export function AdminCosts() {
                     const paysUsd = b.plan?.currency === 'usd' && b.plan.monthly ? b.plan.monthly * c.months : null;
                     return (
                       <div key={b.key} className="trow min-w-[1150px] t-sm" style={{ gridTemplateColumns: BRAND_COLS }}>
-                        <span className="w7 cost-name" title={name(b.brandId, b.project)}><b>{name(b.brandId, b.project)}</b></span>
+                        <span className="w7 cost-name" title={name(b.brandId, b.project)}>{b.brandId ? <Link to={`/admin/brands?manage=${b.brandId}`} style={{ color: 'inherit' }}><b>{name(b.brandId, b.project)}</b></Link> : <b>{name(b.brandId, b.project)}</b>}</span>
                         <span className="w7">{usd(b.real)}</span>
                         <span className="col g4"><span>{pct(b.share)}</span><span className="costbar" aria-hidden="true"><i style={{ width: pct(b.share) }} /></span></span>
                         <span>{usd(b.max)}</span><span>{usd(b.api)}</span><span className="t-mute">{usd(b.eq)}</span>

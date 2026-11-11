@@ -12,8 +12,8 @@ const pushRecent = (id: string) => {
   try { localStorage.setItem(RECENT_KEY, JSON.stringify([id, ...readRecent().filter((x) => x !== id)].slice(0, 3))); } catch { /* storage unavailable */ }
 };
 
-/** Brand selector from the design: search, recent, groups as a tree, admin entry. */
-export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: () => void }) {
+/** Brand selector from the design: search, recent, groups as a tree, admin entry. With `enter` (the admin space) it is a door into a brand, not a filter: no brand shows as picked. */
+export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPicked?: () => void; enter?: boolean }) {
   const { brands, current, select } = useBrands();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -43,19 +43,26 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
   }
 
   const item = (b: Brand, depth = 0) => (
-    <button key={b.id} type="button" role="option" aria-selected={b.id === current.id} onClick={() => choose(b.id)}
-      className={`menu-item w-full text-left ${b.id === current.id ? 'is-on' : ''} ${depth === 1 ? 'tree-1' : depth >= 2 ? 'tree-2' : ''}`}
+    <button key={b.id} type="button" role="option" aria-selected={!enter && b.id === current.id} onClick={() => choose(b.id)}
+      className={`menu-item w-full text-left ${!enter && b.id === current.id ? 'is-on' : ''} ${depth === 1 ? 'tree-1' : depth >= 2 ? 'tree-2' : ''}`}
       style={{ border: 0, background: undefined, cursor: 'pointer' }}>
       <BrandMark brand={b} />
       <span className="grow truncate" style={{ opacity: b.status === 'archived' ? 0.55 : 1 }}>{b.name}</span>
       {b.kind === 'group' && <span className="chip c-group">{t('brand.group')} · {childCount(b.id)}</span>}
       {b.status === 'archived' && b.kind !== 'group' && <span className="chip c-archived">{t('status.archived')}</span>}
-      {b.id === current.id && <Icon name="check" size={16} />}
+      {!enter && b.id === current.id && <Icon name="check" size={16} />}
     </button>
   );
 
   return (
     <div ref={box} className="relative">
+      {enter ? (
+        <button type="button" className="sel" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)} title={t('anav.enterHint')}>
+          <span className="mark" style={{ background: 'var(--niebla)', color: 'var(--azul)' }}><Icon name="grid" size={16} /></span>
+          <span className="w7 truncate"><span className="sm:hidden">{t('nav.brands')}</span><span className="hidden sm:inline">{t('anav.enter')}</span></span>
+          <Icon name="chevronDown" size={16} />
+        </button>
+      ) : (
       <button type="button" className="sel" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
         <BrandMark brand={current} />
         <span className="flex flex-col items-start" style={{ lineHeight: '16px' }}>
@@ -64,6 +71,7 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
         </span>
         <Icon name="chevronDown" size={16} />
       </button>
+      )}
       {open && (
         <div className="menu absolute left-0 top-[56px] z-40 flex max-h-[70vh] w-[min(380px,calc(100vw-32px))] flex-col gap-0.5 overflow-y-auto" role="listbox" aria-label={t('brand.choose')}>
           <div className="search" style={{ margin: '4px 4px 8px' }}>
@@ -71,7 +79,7 @@ export function BrandMenu({ isAdmin, onPicked }: { isAdmin: boolean; onPicked?: 
             <input className="input" autoFocus placeholder={t('brand.searchN', { n: brands.length })} aria-label={t('brand.search')}
               value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
-          {isAdmin && !found && (
+          {isAdmin && !enter && !found && (
             <Link to="/admin/brands" onClick={() => setOpen(false)} className="menu-item" style={{ background: 'var(--ink)', color: '#fff' }}>
               <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: 20, height: 20 }} /></span>
               <span className="grow">{t('brand.admin')}</span>

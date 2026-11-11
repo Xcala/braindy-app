@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { asTree, useBrands, type Brand } from '../../brands/BrandProvider';
@@ -12,11 +12,12 @@ import { useOpenWork } from '../../team/useWork';
 import { daysFrom } from '../../lib/dates';
 import { CityInput } from '../../brands/CityInput';
 import { BrandCards } from './BrandCards';
+import { BrandManage } from './BrandManage';
 
 type Health = { open: number; late: number; last: number };
 
 type Status = 'all' | 'active' | 'archived';
-const COLS = 'minmax(0,1fr) 110px 200px 170px 170px';
+const COLS = 'minmax(0,1fr) 110px 200px 170px 240px';
 
 export function AdminBrands() {
   const { brands } = useBrands();
@@ -26,6 +27,10 @@ export function AdminBrands() {
   const [groupsOnly, setGroupsOnly] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toast = useToast();
+  // The brand being managed lives in the URL (?manage=id), so other pages can link straight to it.
+  const [params, setParams] = useSearchParams();
+  const managing = brands.find((b) => b.id === params.get('manage'));
+  const manage = (id: string | null) => setParams(id ? { manage: id } : {}, { replace: true });
   const { items } = useOpenWork();
   const health = useMemo(() => {
     const m = new Map<string, Health>();
@@ -94,30 +99,30 @@ export function AdminBrands() {
         <span className="t-sm t-mute">{t('admin.brands.count', { n: rows.length })}</span>
       </div>
 
-      <BrandCards rows={rows} health={health} onToggle={toggle} />
+      <BrandCards rows={rows} health={health} onManage={manage} />
       <div className="hidden md:block"><div className="table overflow-x-auto">
-        <div className="trow head label min-w-[920px]" style={{ gridTemplateColumns: COLS }}>
+        <div className="trow head label min-w-[990px]" style={{ gridTemplateColumns: COLS }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
         </div>
         {rows.map(({ brand, depth }) => (
           <Row key={brand.id} brand={brand} depth={depth} health={health.get(brand.id)} collapsed={collapsed.has(brand.id)}
-            onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} />
+            onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} onManage={() => manage(brand.id)} />
         ))}
       </div></div>
-
+      {managing && <BrandManage brand={managing} onToggle={() => toggle(managing)} onClose={() => manage(null)} />}
     </section>
   );
 }
 
-function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
-  brand: Brand; depth: number; health?: Health; collapsed: boolean; onCollapse: () => void; onToggle: () => void;
+function Row({ brand, depth, health, collapsed, onCollapse, onToggle, onManage }: {
+  brand: Brand; depth: number; health?: Health; collapsed: boolean; onCollapse: () => void; onToggle: () => void; onManage: () => void;
 }) {
   const { t } = useI18n();
   const { select } = useBrands();
   const navigate = useNavigate();
   const on = brand.status === 'active';
   return (
-    <div className={`trow min-w-[920px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
+    <div className={`trow min-w-[990px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
       <span className="row g12" style={{ paddingLeft: depth * 44 }}>
         {brand.kind === 'group' ? (
           <button className="btn btn-ghost btn-icon btn-sm" onClick={onCollapse} aria-expanded={!collapsed}
@@ -141,7 +146,8 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle }: {
       </span>
       <span className="row g12">
         <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />
-        <span className="t-sm w7" style={{ color: on ? 'var(--success)' : 'var(--graphite)' }}>{t(`status.${brand.status}`)}</span>
+        <span className="t-sm w7 grow" style={{ color: on ? 'var(--success)' : 'var(--graphite)' }}>{t(`status.${brand.status}`)}</span>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={onManage}>{t('anav.manage')}</button>
       </span>
     </div>
   );

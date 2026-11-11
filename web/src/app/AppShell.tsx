@@ -32,7 +32,7 @@ export function AppShell() {
     return () => ro.disconnect();
   }, []);
   // Admin is its own space (design 24): never mixed with the client tabs.
-  const adminSpace = isAdmin && (pathname.startsWith('/admin') || pathname === '/team');
+  const adminSpace = isAdmin && pathname.startsWith('/admin');
 
   return (
     <BrandProvider>
@@ -47,7 +47,7 @@ export function AppShell() {
             <>
               <Link to="/admin/today" className="ws" aria-label="Braindy admin" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span><span className="hidden sm:inline">Braindy admin</span></Link>
               {/* Picking a brand enters it, on phones too: the way into the client view. */}
-              <span className="min-w-0 shrink"><BrandMenu isAdmin onPicked={() => navigate('/home')} /></span>
+              <span className="min-w-0 shrink"><BrandMenu isAdmin enter onPicked={() => navigate('/home')} /></span>
             </>
           ) : (
             <>

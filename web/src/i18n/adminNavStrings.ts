@@ -6,6 +6,9 @@ export const adminNavEn = {
   'anav.openBrand': 'Open brand',
   'anav.people': 'People and permissions',
   'anav.status': 'Status',
+  'anav.enter': 'Enter a brand',
+  'anav.enterHint': 'Opens the client view',
+  'anav.allBrands': 'All brands',
 };
 export const adminNavEs: Record<keyof typeof adminNavEn, string> = {
   'anav.admin': 'Admin',
@@ -14,4 +17,7 @@ export const adminNavEs: Record<keyof typeof adminNavEn, string> = {
   'anav.openBrand': 'Abrir marca',
   'anav.people': 'Personas y permisos',
   'anav.status': 'Estado',
+  'anav.enter': 'Entrar a una marca',
+  'anav.enterHint': 'Abre la vista del cliente',
+  'anav.allBrands': 'Todas las marcas',
 };
