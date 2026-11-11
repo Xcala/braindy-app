@@ -83,8 +83,8 @@ export function HelpChat() {
             <div className="col" style={{ minWidth: 0 }}>
               <h2 id="help-title" className="help-title">{t('help.title')}</h2>
               <p className="t-xs t-mute">{t('help.sub')}</p>
+              {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
             </div>
-            {s.msgs.length > 0 && <button type="button" className="btn btn-ghost btn-sm" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
             <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
           </header>
           <div className="help-body" aria-live="polite">
