@@ -11,7 +11,8 @@ import { SocialAudience } from './SocialAudience';
 const KPIS: DailyKey[] = ['followers', 'views', 'reach', 'interactions', 'engaged', 'pageViews'];
 
 /** One network (or all of them added up) for the period: numbers vs the period before, a chart, the posts that worked best and the audience. */
-export function NetBody({ net, period, chart = true }: { net: NetStats; period: Period; chart?: boolean }) {
+/** part: the numbers alone (a column of the summary), what comes after them (posts, audience), or both. */
+export function NetBody({ net, period, chart = true, part = 'all' }: { net: NetStats; period: Period; chart?: boolean; part?: 'all' | 'kpis' | 'rest' }) {
   const { t, lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
   const { cur, prev } = useMemo(() => rangeOf(period, net.daily), [period, net]);
@@ -24,7 +25,7 @@ export function NetBody({ net, period, chart = true }: { net: NetStats; period: 
 
   return (
     <>
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      {part !== 'rest' && <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {KPIS.filter((k) => keys.has(k)).map((k) => {
           const now = total(net.daily, k, cur);
           const before = k === 'followers' ? startF : prev ? total(net.daily, k, prev) : null;
@@ -45,10 +46,10 @@ export function NetBody({ net, period, chart = true }: { net: NetStats; period: 
           <span className="h1">{fmt(published)}</span>
           <span className="t-xs t-mute">{stories ? t('soc.plusStories', { n: fmt(stories) }) : t('soc.h.posts')}</span>
         </div>
-      </div>
-      {chart && <SocialChart key={net.network} net={net} range={cur} keys={keys} />}
-      <SocialPosts posts={posts} network={net.network} />
-      {net.audience && <SocialAudience audience={net.audience} />}
+      </div>}
+      {part !== 'kpis' && chart && <SocialChart key={net.network} net={net} range={cur} keys={keys} />}
+      {part !== 'kpis' && <SocialPosts posts={posts} network={net.network} />}
+      {part !== 'kpis' && net.audience && <SocialAudience audience={net.audience} />}
     </>
   );
 }

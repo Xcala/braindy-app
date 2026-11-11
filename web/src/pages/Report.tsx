@@ -8,6 +8,7 @@ import { useSocialStats } from '../report/useSocialStats';
 import { useWebStats } from '../report/useWebStats';
 import { useSearchStats } from '../report/useSearchStats';
 import { ResultsView } from '../report/ResultsView';
+import { useAdStats } from '../report/useAdStats';
 import { Scan } from '../components/Scan';
 
 /** Results: the website (Google Analytics) and social media (Metricool) numbers (where Results is on) and the monthly report (design 19), signed by Nicolas. */
@@ -22,6 +23,8 @@ export function Report() {
   const social = useSocialStats(current?.id, !!current?.resultsOn);
   const web = useWebStats(current?.id, !!current?.resultsOn);
   const search = useSearchStats(current?.id, !!current?.resultsOn);
+  const paid = useAdStats(current?.id, !!current?.resultsOn);
+  const any = social.list.length > 0 || !!web || !!search || paid.ads.length > 0 || paid.sales.length > 0;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const shown = list.filter((r) => admin || r.published);
   const r = shown.find((x) => x.month === month) ?? shown[0];
@@ -49,8 +52,8 @@ export function Report() {
           </div>
         )}
       </div>
-      {(social.list.length > 0 || web || search) && <ResultsView key={current.id} social={social.list} web={web} search={search} />}
-      {!r ? (social.list.length > 0 || web || search || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
+      {any && <ResultsView key={current.id} social={social.list} web={web} search={search} ads={paid.ads} sales={paid.sales} />}
+      {!r ? (any || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
           {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

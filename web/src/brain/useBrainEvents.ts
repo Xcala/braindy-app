@@ -43,6 +43,17 @@ function toEvent(id: string, d: Record<string, unknown>): BrainEvent {
   };
 }
 
+/** The newest thing the brand's Brain learned, live (Home's loop strip). */
+export function useLastBrainEvent(brandId: string | undefined) {
+  const [last, setLast] = useState<BrainEvent | null>(null);
+  useEffect(() => {
+    if (!brandId) return;
+    return onSnapshot(query(collection(db, 'brands', brandId, 'brainEvents'), orderBy('at', 'desc'), limit(1)),
+      (s) => setLast(s.docs[0] ? toEvent(s.docs[0].id, s.docs[0].data()) : null), () => setLast(null));
+  }, [brandId]);
+  return last;
+}
+
 /** True for a few seconds each time the brand's Brain learns something new (for the pulse on My brand in the menu). */
 export function useBrainPulse(brandId: string | undefined) {
   const [on, setOn] = useState(false);

@@ -16,6 +16,7 @@ import { Scan } from '../components/Scan';
 import { CommentEdit } from '../components/CommentEdit';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
+import { LearnedMoment } from '../brain/BrainLearned';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
 export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
@@ -32,6 +33,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
   const [error, setError] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [adapting, setAdapting] = useState(false);
+  const [learned, setLearned] = useState<{ kind: 'approved' | 'changed'; text: string } | null>(null);
   const cRef = (c: RequestComment) => doc(db, 'brands', brandId, 'requests', r.id, 'comments', c.id);
 
   const isLatest = v && r.latestVersion === v.id;
@@ -56,7 +58,14 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
     const openOnVersion = comments.some((c) => !c.resolved && c.versionId === v.id);
     if (state === 'changes_requested' && !text.trim() && !openOnVersion) { setError(t('req.changesNeedComment')); return; }
     setBusy(true);
-    try { await decide(brandId, r.id, v.id, state, state === 'changes_requested' ? text.trim() || t('req.seeComments') : ''); if (state === 'changes_requested') sentAnyway(); setText(''); clearMark(); }
+    const note = state === 'changes_requested' ? text.trim() || t('req.seeComments') : '';
+    try {
+      await decide(brandId, r.id, v.id, state, note);
+      if (state === 'changes_requested') sentAnyway();
+      // The same thing the Brand Brain records on the server (brains/learn.ts): what was liked, or what to change.
+      setLearned(state === 'approved' ? { kind: 'approved', text: v.reason || v.notes || '' } : { kind: 'changed', text: note });
+      setText(''); clearMark();
+    }
     catch { setError(t('req.decisionError')); } finally { setBusy(false); }
   }
   const toast = useToast();
@@ -93,6 +102,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           )}
           {!canApprove && pending && isLatest && profile?.role !== 'admin' && <p className="t-xs t-mute">{t('req.cannotApprove')}</p>}
           {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
+          {learned && <LearnedMoment kind={learned.kind} text={learned.text} />}
         </div>
       )}
       <div className="col g16 min-h-0 flex-1" style={{ padding: 20 }} data-tour="review-comments">

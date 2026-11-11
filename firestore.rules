@@ -134,6 +134,12 @@ service cloud.firestore {
         allow write: if isAdmin();
       }
 
+      // Earlier versions of the brand (rebranding): Mi marca frozen as it was. The brand reads them; only the backend writes.
+      match /versions/{versionId} {
+        allow read: if canReadBrand(brandId);
+        allow write: if false;
+      }
+
       // Drive folders the client may see: brands/{id}.fileAccess = { mode: 'all' | 'selected', folders: [top-level names] }.
       // The Uploads folder and legacy documents are always visible to the brand; '' stands for files at the root.
       match /assets/{assetId} {
@@ -228,6 +234,15 @@ service cloud.firestore {
       }
       // Website results from Google Analytics (one doc, ga4): same switch as the social numbers. Backend writes.
       match /webStats/{source} {
+        allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+        allow write: if false;
+      }
+      // Ads (Metricool) and sales (DoorDash…) results: same switch as the social numbers. Backend writes.
+      match /adStats/{platform} {
+        allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+        allow write: if false;
+      }
+      match /salesStats/{source} {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
         allow write: if false;
       }
