@@ -9,9 +9,9 @@ import { accessToken, eventsCache } from './meetings.js';
 import type { AuthEnv } from './auth.js';
 
 const SLOT_MIN = 30;
-// Nicolas's hours, in his own time zone (IANA, so daylight saving moves with it): first slot 9:00, last one 16:30.
-export const HOST_TZ = 'America/Bogota';
-const DAY_START = 9, DAY_END = 17;
+// Nicolas's hours, in his own time zone (IANA, so daylight saving moves with it): first slot 7:00, last one 16:30.
+export const HOST_TZ = 'America/Los_Angeles';
+const DAY_START = 7, DAY_END = 17;
 const DAYS_AHEAD = 10;                  // calendar days shown
 const LEAD_MS = 2 * 3600_000;           // not sooner than 2 hours from now
 const MAX_UPCOMING = 2;                 // a person can hold at most this many future bookings
