@@ -68,3 +68,6 @@ img[src$="nicolas.jpg"] { object-position: 50% 18%; }
 .res-cols .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .res-cols .card { padding: 16px; }
 .res-cols .h1 { font-size: 28px; line-height: 1.15; }
+
+/* Home › next meeting: in a narrow card the button labels wrap inside the pill instead of spilling out */
+.hg-next .btn{white-space:normal;height:auto;min-height:36px;padding-block:8px;text-align:center;line-height:18px}
