@@ -1,0 +1,28 @@
+/* In-app help: a small round button in the corner and a chat panel. On phones it sits above the bottom bar. */
+.help-fab{position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:35;width:48px;height:48px;border-radius:50%;border:0;background:var(--azul);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 24px -10px rgba(47,77,224,.7)}
+.help-fab:hover{background:var(--azul-hover)}
+.help-fab:focus-visible{outline:3px solid var(--azul-on-dark);outline-offset:2px}
+.help-panel{position:fixed;inset:auto 0 0 0;z-index:45;height:min(78vh,620px);background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -12px 40px -16px rgba(6,13,30,.35);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+@media (min-width:768px){
+  .help-fab{right:24px;bottom:24px}
+  .help-panel{inset:auto 24px 24px auto;width:380px;height:min(70vh,600px);border-radius:20px;border:1px solid var(--line)}
+}
+.help-head{display:flex;align-items:flex-start;gap:8px;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.help-head .col{flex:1}
+.help-title{font:800 17px/22px var(--f-display);margin:0}
+.help-x{border:0;background:none;font-size:26px;line-height:26px;width:36px;height:36px;border-radius:50%;cursor:pointer;color:var(--graphite)}
+.help-x:hover{background:var(--fog,#F4F6FB)}
+.help-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.help-msg{max-width:88%;padding:10px 14px;border-radius:16px;font:400 14px/20px var(--f-text);display:flex;flex-direction:column;gap:6px}
+.help-msg p{margin:0}
+.help-msg ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.help-msg a:not(.btn){color:var(--azul);font-weight:700}
+.help-msg.is-bot{align-self:flex-start;background:var(--fog,#F4F6FB)}
+.help-msg.is-me{align-self:flex-end;background:var(--azul);color:#fff}
+.help-next{align-self:flex-start;margin-top:4px;white-space:normal;height:auto;min-height:36px;padding-block:8px}
+.help-sugs{display:flex;flex-wrap:wrap;gap:6px}
+.help-sugs .chip{cursor:pointer}
+.help-form{display:flex;gap:8px;align-items:flex-end;padding:10px 12px 12px;border-top:1px solid var(--line)}
+.help-input{flex:1;min-height:40px;max-height:120px;resize:none;padding:9px 12px;font-size:15px}
+@media (prefers-reduced-motion:no-preference){.help-panel{animation:help-in .18s var(--ease,ease-out)}}
+@keyframes help-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}

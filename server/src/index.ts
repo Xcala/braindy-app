@@ -34,6 +34,7 @@ import { meWhatsapp } from './wa/contacts.js';
 import { adminWhatsapp } from './wa/admin.js';
 import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
+import { help } from './help/route.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
 import { adminAiHealth } from './aiLog.js';
@@ -151,6 +152,8 @@ app.route('/v1/admin', adminRequests);
 app.route('/v1/admin', adminAiHealth);
 app.route('/v1', criterio);
 app.route('/v1', shareLinks);
+app.use('/v1/help/chat', rateLimit('help', 20, 60_000));
+app.route('/v1', help);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

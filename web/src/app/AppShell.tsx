@@ -15,6 +15,7 @@ import { HowItWorks } from '../learn/tutorials';
 import { Sidebar } from './Sidebar';
 import { useEffect, useRef } from 'react';
 import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
+import { HelpChat } from '../help/HelpChat';
 
 export function AppShell() {
   const { profile } = useAuth();
@@ -65,6 +66,7 @@ export function AppShell() {
           <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}
+        {!adminSpace && <HelpChat />}
       </div>
       </div>
       </Toaster>
