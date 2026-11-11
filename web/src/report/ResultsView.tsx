@@ -81,7 +81,7 @@ export function ResultsView({ social, web, search, ads = [], sales = [] }: { soc
       : sale ? <SalesBody key={sale.source} stats={sale} />
       : cur === 'web' ? <>{web && <WebBody stats={web} period={period} />}{search && <SearchBody stats={search} period={period} />}</> : net && <NetBody key={net.network} net={net} period={period} />}
 
-      <p className="t-xs t-mute">{sale ? t('sales.note', { src: sourceName(sale.source) }) : cur === 'ads' ? t('ads.note') : [cur !== 'sum' && cur !== 'web' ? '' : web ? t('web.note') : '', cur !== 'sum' && cur !== 'web' ? '' : search ? t('gsc.note') : '', cur === 'web' ? '' : social.length ? t('soc.note') : ''].filter(Boolean).join(' ')}{sale?.note ? ` ${sale.note}` : ''}</p>
+      <p className="t-xs t-mute">{sale ? t('sales.note', { src: sourceName(sale.source) }) : cur === 'ads' ? t('ads.note') : [cur !== 'sum' && cur !== 'web' ? '' : web ? t('web.note') : '', cur !== 'sum' && cur !== 'web' ? '' : search ? t('gsc.note') : '', cur === 'web' ? '' : social.length ? t('soc.note') : ''].filter(Boolean).join(' ')}</p>
     </section>
   );
 }

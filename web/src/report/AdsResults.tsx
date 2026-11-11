@@ -50,7 +50,9 @@ export function AdKpis({ stats, period, short }: { stats: AdStats; period: Perio
   // Meta gives results per campaign, not per day: the period's campaigns stand in when the days carry none.
   const camps = stats.campaigns[campaignPeriod(period)];
   if (now && !now.results && camps) now.results = camps.reduce((n, c) => n + (c.results ?? 0), 0);
-  const kpis = (short ? SHORT : KPIS).filter((k) => value(k, now) != null && (k !== 'results' || (now?.results ?? 0) > 0));
+  // A campaign that spent without a result Meta can count would make the cost per result lie: then results stay per campaign.
+  const partial = !!camps?.some((c) => (c.spend ?? 0) > 0 && c.results == null);
+  const kpis = (short ? SHORT : KPIS).filter((k) => value(k, now) != null && (k !== 'results' || (now?.results ?? 0) > 0) && !(partial && (k === 'results' || k === 'cpr')));
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
       {kpis.map((k) => {

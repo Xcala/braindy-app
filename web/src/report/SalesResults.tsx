@@ -26,7 +26,7 @@ export function SalesBody({ stats }: { stats: SalesStats }) {
     { k: 'adSales', v: money(m.adSales), sub: pct(m.adSales, m.sales) ? t('sales.h.adSales', { pct: pct(m.adSales, m.sales)! }) : '' },
     { k: 'adOrders', v: int(m.adOrders), sub: '' },
     { k: 'adSpend', v: money(m.adSpend), sub: m.credits ? t('sales.h.adSpend', { src }) : '' },
-    { k: 'roas', v: m.adSales != null && m.adSpend ? `${(m.adSales / m.adSpend).toFixed(1)}×` : '—', sub: t('sales.h.roas') },
+    { k: 'roas', v: m.adSales != null && m.adSpend ? `${new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(m.adSales / m.adSpend)}×` : '—', sub: t('sales.h.roas') },
   ].filter((c) => c.v !== '—');
   const cards = (list: Card[]) => (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
