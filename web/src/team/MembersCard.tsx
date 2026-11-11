@@ -85,11 +85,19 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         );
       })}
       {invites.map((i) => (
-        <div key={i.id} className="row g12">
-          <span className="avatar-txt">?</span>
-          <div className="col grow"><span className="w7 truncate">{i.email}</span><span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span></div>
-          <button className="btn btn-ghost btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
+        // Laid out like a member: who on top (the email gets the whole width), the actions on their own line below.
+        <div key={i.id} className="col g8" style={{ paddingBottom: 12, borderBottom: '1px solid var(--line)' }}>
+          <div className="row g12">
+            <span className="avatar-txt">{i.email.slice(0, 2).toUpperCase()}</span>
+            <div className="col grow" style={{ minWidth: 0 }}>
+              <span className="w7" style={{ overflowWrap: 'anywhere' }}>{i.email}</span>
+              <span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span>
+            </div>
+          </div>
+          <div className="row g8 wrap" style={{ paddingLeft: 52 }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
+          </div>
         </div>
       ))}
       <form className="row g8 wrap" onSubmit={(e) => { e.preventDefault(); if (valid) invite(); }}>
