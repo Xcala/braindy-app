@@ -30,6 +30,12 @@
 .help-msg p{margin:0}
 .help-msg ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 .help-msg a:not(.btn){color:var(--azul);font-weight:700}
+/* Links read as links: underlined, with an arrow (↗ when it opens outside Braindy). */
+.help-link{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;text-decoration-color:rgba(47,77,224,.35)}
+.help-link::after{content:" →";text-decoration:none;display:inline-block;margin-left:2px;transition:transform .15s}
+.help-link.is-ext::after{content:" ↗"}
+.help-link:hover{text-decoration-color:currentColor}
+.help-link:hover::after{transform:translateX(2px)}
 .help-msg.is-bot{align-self:flex-start;background:var(--fog,#F4F6FB)}
 .help-msg.is-me{align-self:flex-end;background:var(--azul);color:#fff}
 .help-next{align-self:flex-start;margin-top:4px;white-space:normal;height:auto;min-height:36px;padding-block:8px}

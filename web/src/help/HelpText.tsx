@@ -9,8 +9,8 @@ function inline(text: string, onNavigate: () => void): ReactNode[] {
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index));
     if (m[1]) out.push(<b key={k++}>{m[1]}</b>);
-    else if (m[3]!.startsWith('/') && !m[3]!.startsWith('//')) out.push(<Link key={k++} to={m[3]!} onClick={onNavigate}>{m[2]}</Link>);
-    else if (m[3]!.startsWith('https://')) out.push(<a key={k++} href={m[3]} target="_blank" rel="noreferrer">{m[2]}</a>);
+    else if (m[3]!.startsWith('/') && !m[3]!.startsWith('//')) out.push(<Link key={k++} className="help-link" to={m[3]!} onClick={onNavigate}>{m[2]}</Link>);
+    else if (m[3]!.startsWith('https://')) out.push(<a key={k++} className="help-link is-ext" href={m[3]} target="_blank" rel="noreferrer">{m[2]}</a>);
     else out.push(m[2]);
     last = re.lastIndex;
   }
