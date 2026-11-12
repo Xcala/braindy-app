@@ -100,9 +100,9 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
           {adapting && <AdaptDialog brandId={brandId} r={r} v={v} onClose={() => setAdapting(false)} />}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
           {canApprove && pending && isLatest && (
-            <div className="row g8" data-tour="review-decide">
-              <button className="btn btn-primary grow" disabled={busy} onClick={() => decision('approved')}><Icon name="check" />{t('req.approveV', { n: v.n })}</button>
-              <button className="btn btn-secondary grow" disabled={busy} onClick={() => decision('changes_requested')}>{t('req.requestChanges')}</button>
+            <div className="col g8" data-tour="review-decide">
+              <button className="btn btn-primary w-full" disabled={busy} onClick={() => decision('approved')}><Icon name="check" />{t('req.approveV', { n: v.n })}</button>
+              <button className="btn btn-secondary w-full" disabled={busy} onClick={() => decision('changes_requested')}>{t('req.requestChanges')}</button>
             </div>
           )}
           {canApprove && pending && isLatest && (
