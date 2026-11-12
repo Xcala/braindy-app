@@ -1,0 +1,19 @@
+/* Free resources: grid of cards or a list of rows. */
+.res-grid{list-style:none;margin:0;padding:0;display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.res-card{min-height:240px}
+.res-list{list-style:none;margin:0;padding:4px 0;display:flex;flex-direction:column}
+.res-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid var(--line)}
+.res-row:first-child{border-top:0}
+.res-kind{display:grid;place-items:center;border-radius:12px;flex:none}
+.res-title{all:unset;cursor:pointer;font:800 17px/22px var(--f-display);color:var(--ink,#0B1220)}
+.res-title:hover{color:var(--azul)}
+.res-title:focus-visible{outline:3px solid var(--azul);outline-offset:2px;border-radius:4px}
+.res-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.res-tag{font:600 12px/16px var(--f-text);color:var(--graphite);background:var(--fog,#F4F6FB);border-radius:99px;padding:3px 9px}
+.res-body{margin:0;max-height:320px;overflow:auto;padding:14px 16px;border-radius:14px;background:#0B1220;color:#E6EAF5;font:13px/20px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.res-mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px}
+.res-detail,.res-editor{max-height:calc(100vh - 32px);overflow-y:auto}
+@media (max-width:640px){
+  .res-row{flex-wrap:wrap}
+  .res-row-actions{width:100%;padding-left:50px}
+}

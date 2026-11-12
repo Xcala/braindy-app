@@ -510,6 +510,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---------- Free resources (skills, scripts, prompts, templates): signed-in users read published ones; admin edits.
+    // Download and copy counters are written by the API only.
+    match /resources/{resourceId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.status == 'published');
+      allow write: if isAdmin();
+    }
+
     // ---------- NickMark Taste: lessons and objection answers. Signed-in users read published ones; admin edits ----------
     match /lessons/{lessonId} {
       allow read: if isAdmin() || (signedIn() && resource.data.status == 'published');

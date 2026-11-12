@@ -18,7 +18,7 @@ const savedSlim = () => { try { return localStorage.getItem(KEY) === 'slim'; } c
 
 /** Below the main sections: learning, accesses, plan and settings, each only when this person may use it. */
 export const FOOT: Item[] = [
-  { to: '/learn', label: 'cr.nav' }, { to: '/accesses', label: 'nav.accesses' },
+  { to: '/learn', label: 'cr.nav' }, { to: '/resources', label: 'res.nav' }, { to: '/accesses', label: 'nav.accesses' },
   { to: '/plan', label: 'nav.plan' }, { to: '/settings', label: 'nav.settings' },
 ];
 
