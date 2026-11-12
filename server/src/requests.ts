@@ -173,6 +173,33 @@ requests.post('/brands/:brandId/approvals/batch', async (c) => {
   return c.json({ approved: results.filter((r) => r === 'ok').length, total: list.length });
 });
 
+/**
+ * «Already done»: the piece was approved by voice or finished together outside the app. It leaves every pending list
+ * (status approved + archived) without a formal approval on the version, and it can be undone.
+ */
+requests.post('/brands/:brandId/requests/:requestId/done', async (c) => {
+  const { brandId, requestId } = c.req.param();
+  const uid = c.get('user').uid;
+  if (!(await canApprove(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const { undo } = await c.req.json<{ undo?: boolean }>().catch(() => ({ undo: false }));
+  const ref = db.doc(`brands/${brandId}/requests/${requestId}`);
+  const snap = await ref.get();
+  if (!snap.exists) return c.json({ error: 'not_found' }, 404);
+  const prev = snap.get('doneOutside') as { prevStatus?: string; prevStage?: string } | undefined;
+  if (undo) {
+    if (!prev) return c.json({ ok: true });
+    await ref.update({ status: prev.prevStatus ?? 'to_approve', stage: prev.prevStage ?? 'clientApproval', archived: false, doneOutside: FieldValue.delete(), updatedAt: now() });
+  } else {
+    if (prev) return c.json({ ok: true });
+    await ref.update({
+      status: 'approved', stage: 'approved', archived: true, approvedAt: now(), updatedAt: now(),
+      doneOutside: { by: uid, at: now(), prevStatus: snap.get('status') ?? null, prevStage: snap.get('stage') ?? null },
+    });
+  }
+  await db.collection('audit').doc().set({ type: undo ? 'request_done_outside_undo' : 'request_done_outside', brandId, requestId, by: uid, at: now() });
+  return c.json({ ok: true });
+});
+
 /** Signed URL for a file of a version (members of the brand only). */
 requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/files/:index', async (c) => {
   const { brandId, requestId, versionId, index } = c.req.param();

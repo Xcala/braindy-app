@@ -18,6 +18,7 @@ export interface BrandRequest {
   format?: string;
   language?: string;
   status: RequestStatus;
+  doneOutside?: { by: string; at?: Timestamp; prevStatus?: string | null };
   stage: Stage;
   leadBrain: BrainId;
   helperBrains: BrainId[];
