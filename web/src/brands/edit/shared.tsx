@@ -61,7 +61,7 @@ export function PickImages({ multiple, onPick, children, onError }: { multiple?:
 export function Thumb({ img, onRemove, children }: { img: Img; onRemove: () => void; children?: ReactNode }) {
   const { t } = useI18n();
   return (
-    <div className="col g8" style={{ border: '1px solid var(--line)', borderRadius: '0.875rem', padding: '0.625rem', background: '#fff' }}>
+    <div className="col g8" style={{ border: '1px solid var(--line)', borderRadius: '0.875rem', padding: '0.625rem', background: 'var(--white)' }}>
       <div style={{ height: '6.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-conic-gradient(#EEF0F4 0% 25%, #fff 0% 50%) 50% / 1rem 1rem', borderRadius: '0.625rem' }}>
         <img src={img.preview} alt="" style={{ maxWidth: '90%', maxHeight: '6rem', objectFit: 'contain' }} />
       </div>

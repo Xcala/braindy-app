@@ -38,7 +38,7 @@ export function MemberAccess({ member, onChange, disabled }: { member: MemberLik
           return (
             <button key={s} type="button" aria-pressed={on} disabled={disabled} onClick={() => toggle(s)} className="t-xs w7"
               style={{ borderRadius: '62.4375rem', padding: '0.3125rem 0.625rem', cursor: 'pointer', border: `1px solid ${on ? 'var(--azul)' : 'var(--line)'}`,
-                background: on ? '#EAF0FF' : '#fff', color: on ? 'var(--azul)' : 'var(--graphite, #6B7280)', textDecoration: on ? 'none' : 'line-through' }}>
+                background: on ? 'var(--hielo)' : 'var(--white)', color: on ? 'var(--azul)' : 'var(--graphite, #6B7280)', textDecoration: on ? 'none' : 'line-through' }}>
               {on ? '✓ ' : ''}{t(SECTION_LABEL[s])}
             </button>
           );

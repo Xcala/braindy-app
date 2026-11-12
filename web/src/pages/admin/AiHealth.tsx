@@ -23,7 +23,7 @@ export function AdminAiHealth() {
       {rows.map((g) => (
         <div key={g.key} className="trow min-w-[35rem] t-sm" style={{ gridTemplateColumns: COLS }}>
           <span className="w7 truncate" title={label(g.key)}>{label(g.key)}</span><span>{g.calls}</span>
-          <span style={{ color: g.failed ? '#C0362C' : undefined, fontWeight: g.failed ? 700 : 400 }}>{g.failed}</span>
+          <span style={{ color: g.failed ? 'var(--danger)' : undefined, fontWeight: g.failed ? 700 : 400 }}>{g.failed}</span>
           <span>{g.retried}</span><span>{g.p50 ? secs(g.p50) : '—'}</span><span>{usd(g.usd)}</span>
         </div>
       ))}
@@ -47,10 +47,10 @@ export function AdminAiHealth() {
       {!h && !error && <div className="skel" style={{ height: '15rem' }} />}
       {h && (
         <>
-          {!h.configured && <div className="card" role="status" style={{ background: '#FFF7E3', border: 0 }}>⚠ {t('aih.off')}</div>}
+          {!h.configured && <div className="card" role="status" style={{ background: 'var(--warning-bg)', border: 0 }}>⚠ {t('aih.off')}</div>}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
             <div className="card col g4"><span className="t-sm t-mute w7">{t('aih.calls')}</span><span className="h1">{h.totals.calls}</span></div>
-            <div className="card col g4"><span className="t-sm t-mute w7">{t('aih.failed')}</span><span className="h1" style={{ color: h.totals.failed ? '#C0362C' : undefined }}>{h.totals.failed}</span>
+            <div className="card col g4"><span className="t-sm t-mute w7">{t('aih.failed')}</span><span className="h1" style={{ color: h.totals.failed ? 'var(--danger)' : undefined }}>{h.totals.failed}</span>
               <span className="t-xs t-mute">{t('aih.failedSub', { pct: `${h.totals.calls ? Math.round((h.totals.failed / h.totals.calls) * 100) : 0}%` })}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('aih.retried')}</span><span className="h1">{h.totals.retried}</span><span className="t-xs t-mute">{t('aih.retriedSub')}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('aih.speed')}</span><span className="h1">{h.totals.p50 ? secs(h.totals.p50) : '—'}</span>

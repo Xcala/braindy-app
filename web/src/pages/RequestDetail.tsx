@@ -68,7 +68,7 @@ export function RequestDetail() {
 
       {versions.length > 0 && (
         <SafeBoundary>
-        <div className="card grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
+        <div className="card rv-split grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
             fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
             comments={comments} onMark={setMark} onCompare={() => setComparing(true)} seek={seek} />

@@ -25,7 +25,7 @@ function Training() {
       <p className="t-sm t-mute">{t('ctr.trSub')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {TRAINING.map((x, i) => (
-          <Link key={x.title} to={x.to} className="card col g4" style={{ padding: '1rem', textDecoration: 'none', color: 'var(--ink)', background: '#F7F8FB', border: 0 }}>
+          <Link key={x.title} to={x.to} className="card col g4" style={{ padding: '1rem', textDecoration: 'none', color: 'var(--ink)', background: 'var(--niebla)', border: 0 }}>
             <span className="sec-num">0{i + 1}</span><span className="w7">{t(x.title)}</span><span className="t-xs t-mute">{t(x.sub)}</span>
           </Link>
         ))}
@@ -93,7 +93,7 @@ export function StrategyStep({ brand }: { brand: Brand }) {
       )}
       <BrainCards brain={brain} />
       <Training />
-      <div className="card t-sm" style={{ background: '#EAF0FF', border: 0 }}><b>{t('ob.aiNoteBold')}</b> {t('ob.aiNote')}</div>
+      <div className="card t-sm" style={{ background: 'var(--hielo)', border: 0 }}><b>{t('ob.aiNoteBold')}</b> {t('ob.aiNote')}</div>
       <OnboardingLessons />
     </section>
   );

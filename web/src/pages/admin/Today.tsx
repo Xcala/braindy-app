@@ -42,13 +42,13 @@ export function AdminToday() {
     <Link key={`${i.brandId}/${i.id}`} to={`/requests/${i.id}`} onClick={() => select(i.brandId)} className="trow today-row" style={{ gridTemplateColumns: '2rem minmax(0,1fr) auto', textDecoration: 'none', color: 'var(--ink)' }}>
       {byId.get(i.brandId) ? <BrandMark brand={byId.get(i.brandId)!} /> : <span />}
       <span className="col" style={{ minWidth: 0 }}><span className="w7 truncate">{i.title}</span><span className="t-xs t-mute truncate">{byId.get(i.brandId)?.name ?? i.brandId}</span></span>
-      <span className="t-xs whitespace-nowrap today-note" style={{ color: tone === 'danger' ? '#C0362C' : 'var(--graphite)', fontWeight: tone ? 700 : 400 }}>{note}</span>
+      <span className="t-xs whitespace-nowrap today-note" style={{ color: tone === 'danger' ? 'var(--danger)' : 'var(--graphite)', fontWeight: tone ? 700 : 400 }}>{note}</span>
     </Link>
   );
 
   const blocks: Array<{ key: StringKey; n: number; body: React.ReactNode; tone?: string }> = [
     { key: 'today.late', n: late.length, tone: '#FDECEA', body: late.sort(byDue).map((i) => row(i, t('home.late', { day: dayLabel(i.dueDate, lang) }), 'danger')) },
-    { key: 'today.toReview', n: review.length, tone: '#FFF7E3', body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
+    { key: 'today.toReview', n: review.length, tone: 'var(--warning-bg)', body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
     { key: 'today.dueSoon', n: soon.length, body: soon.sort(byDue).map((i) => row(i, t('home.dueDay', { day: dayLabel(i.dueDate, lang) }))) },
     { key: 'today.waitingClient', n: waiting.length, body: waiting.map((i) => row(i, t('today.daysWaiting', { n: daysSince(i.updatedAt?.toMillis()) }))) },
     { key: 'today.billing', n: pays.length, body: pays.map((p) => (

@@ -36,7 +36,7 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
       </div>
 
       {schedule.groups.map((g, gi) => (
-        <div key={g.id} className="col g8" style={{ background: '#F7F8FB', borderRadius: '0.875rem', padding: '0.875rem' }}>
+        <div key={g.id} className="col g8" style={{ background: 'var(--niebla)', borderRadius: '0.875rem', padding: '0.875rem' }}>
           <div className="row g8">
             <input className="input w7" value={g.title} placeholder={t('ctr.g.stage')} aria-label={t('ctr.g.stage')} onChange={(e) => setGroup(gi, { ...g, title: e.target.value })} />
             <button className="btn btn-ghost btn-sm" onClick={() => onChange({ ...schedule, groups: schedule.groups.filter((_, i) => i !== gi) })}>{t('ctr.g.removeStage')}</button>

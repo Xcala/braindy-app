@@ -1,9 +1,9 @@
 /* Site viewer: a bar on top (title, widths, new tab, close) and the site below, centred, at the chosen width. */
 .lview { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; background: var(--niebla); }
-.lview-bar { display: flex; align-items: center; gap: 0.75rem; min-height: 4rem; padding: max(0.625rem, env(safe-area-inset-top)) 1rem 0.625rem; background: #fff; border-bottom: 1px solid var(--line); }
+.lview-bar { display: flex; align-items: center; gap: 0.75rem; min-height: 4rem; padding: max(0.625rem, env(safe-area-inset-top)) 1rem 0.625rem; background: var(--white); border-bottom: 1px solid var(--line); }
 .lview-bar > .col { flex: 0 1 13.75rem; }
 /* Address box: the page the frame shows; type another and press Enter. */
-.lview-back { flex: none; display: inline-flex; align-items: center; gap: 0.375rem; height: 2.25rem; padding: 0 0.875rem 0 0.625rem; border: 1px solid var(--line); border-radius: var(--r-pill); background: #fff; color: var(--ink); font: 700 0.8125rem/1 var(--f-text); cursor: pointer; transition: border-color .15s, color .15s, background .15s; }
+.lview-back { flex: none; display: inline-flex; align-items: center; gap: 0.375rem; height: 2.25rem; padding: 0 0.875rem 0 0.625rem; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--white); color: var(--ink); font: 700 0.8125rem/1 var(--f-text); cursor: pointer; transition: border-color .15s, color .15s, background .15s; }
 .lview-back:hover { border-color: var(--azul); color: var(--azul); }
 .lview-back svg { transition: transform .2s; }
 .lview-back:hover svg { transform: translateX(-0.1875rem); }
@@ -32,7 +32,7 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
 .spanel-pct { font: 300 0.875rem/1 var(--f-display); color: var(--graphite); }
 .spanel-pct b { font-weight: 900; font-size: 1.625rem; color: var(--ink); }
 .spanel-ask { padding: 0.75rem; border-radius: 0.875rem; background: var(--niebla); }
-.spanel-ask textarea { height: auto; min-height: 5.25rem; padding-top: 0.625rem; resize: vertical; background: #fff; }
+.spanel-ask textarea { height: auto; min-height: 5.25rem; padding-top: 0.625rem; resize: vertical; background: var(--white); }
 .spanel-ask .btn-sm { height: 2.125rem; }
 .spanel-pt { border: 1px solid var(--line); border-radius: 0.75rem; background: var(--white); }
 .spanel-pt > summary { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.375rem 0.5rem; align-items: center; padding: 0.625rem 0.75rem; cursor: pointer; list-style: none; }

@@ -3,9 +3,9 @@ import { money } from '../billing/useBilling';
 import type { BrandPlan, PackStatus } from './types';
 
 const STATUS_STYLE: Record<PackStatus, { color: string; background: string }> = {
-  pending: { color: '#5C6375', background: '#F4F6FB' },
-  in_progress: { color: '#2F4DE0', background: '#EAF0FF' },
-  delivered: { color: '#0E8A5F', background: '#E6F7F0' },
+  pending: { color: 'var(--graphite)', background: 'var(--niebla)' },
+  in_progress: { color: 'var(--azul)', background: 'var(--hielo)' },
+  delivered: { color: 'var(--success)', background: 'var(--success-bg)' },
 };
 const CHECK = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10B981" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flex: 'none', marginTop: '0.1875rem' }}><path d="m5 12 5 5 9-10" /></svg>;
 const CROSS = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#9AA1B2" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true" style={{ flex: 'none', marginTop: '0.1875rem' }}><path d="M7 7l10 10M17 7 7 17" /></svg>;
@@ -52,7 +52,7 @@ export function Packs({ c, onStatus }: { c: BrandPlan; onStatus?: (i: number, s:
             {c.total && (
               <div className="col g4">
                 <span className="label">{c.total.label || t('plan.total')}</span>
-                <span className="w9" style={{ fontSize: '2.125rem', lineHeight: '38px', color: '#0E8A5F', letterSpacing: '-.03em' }}>{money(c.total.amount, c.currency, lang)}</span>
+                <span className="w9" style={{ fontSize: '2.125rem', lineHeight: '38px', color: 'var(--success)', letterSpacing: '-.03em' }}>{money(c.total.amount, c.currency, lang)}</span>
               </div>
             )}
             {c.payment.length > 0 && <ul className="col g4 t-sm" style={{ margin: 0, paddingLeft: '1.125rem' }}>{c.payment.map((x, i) => <li key={i}>{x}</li>)}</ul>}

@@ -24,7 +24,7 @@ export function BrandCards({ rows, health, onManage }: { rows: Array<{ brand: Br
                 <span className="w7 truncate">{brand.name}</span>
                 <span className="t-xs t-mute">{brand.kind === 'group' ? t('brand.group') : t(`status.${brand.status}`)}{h?.open ? ` · ${h.open} ${t('brands.open').toLowerCase()}` : ''}</span>
               </span>
-              {h?.late && on ? <span className="chip" style={{ background: '#FDECEA', color: '#C0362C' }}>{t('brands.lateN', { n: h.late })}</span> : null}
+              {h?.late && on ? <span className="chip" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>{t('brands.lateN', { n: h.late })}</span> : null}
             </button>
             <div className="row g8">
               <button type="button" className="btn btn-secondary btn-sm grow" onClick={() => open(brand)}>{t('anav.openBrand')}</button>

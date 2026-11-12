@@ -19,7 +19,7 @@ export function GroupWork({ group, all }: { group: Brand; all: Brand[] }) {
     <div className="col g16">
       <div className="grid grid-cols-3 gap-4">
         <div className="card card-tight col"><span className="h2">{total.prod}</span><span className="t-xs t-mute">{t('req.status.in_production')}</span></div>
-        <div className="card card-tight col" style={total.approve ? { borderColor: '#F5D98A', background: '#FFFBF0' } : undefined}><span className="h2">{total.approve}</span><span className="t-xs t-mute">{t('req.status.to_approve')}</span></div>
+        <div className="card card-tight col" style={total.approve ? { borderColor: '#F5D98A', background: 'var(--warning-bg)' } : undefined}><span className="h2">{total.approve}</span><span className="t-xs t-mute">{t('req.status.to_approve')}</span></div>
         <div className="card card-tight col"><span className="h2">{total.done}</span><span className="t-xs t-mute">{t('group.delivered')}</span></div>
       </div>
       <div className="table overflow-x-auto">

@@ -55,7 +55,7 @@ export function RequestsList({ brandId, shown, isAdmin, archived, tags }: Props)
                 </span>
               </span>
               <span className="t-sm truncate">{pieceLabel(r, lang)}</span>
-              <span className="t-sm" style={{ color: d.late ? '#C0362C' : undefined }}>{d.text}</span>
+              <span className="t-sm" style={{ color: d.late ? 'var(--danger)' : undefined }}>{d.text}</span>
               <span><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span></span>
             </div>
           );

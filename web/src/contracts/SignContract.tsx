@@ -63,7 +63,7 @@ export function SignContract({ brandId, contract }: { brandId: string; contract:
       )}
 
       {!isSigner ? (
-        <div className="card t-sm" role="status" style={{ background: '#EAF0FF', border: 0 }}>{t('ctr.notSigner', { email: contract.signer.email })}</div>
+        <div className="card t-sm" role="status" style={{ background: 'var(--hielo)', border: 0 }}>{t('ctr.notSigner', { email: contract.signer.email })}</div>
       ) : (
         <div className="card col g16" style={{ padding: '1.375rem' }}>
           <h2 className="h3">{t('ctr.signTitle')}</h2>

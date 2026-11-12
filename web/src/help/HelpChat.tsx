@@ -80,7 +80,8 @@ export function HelpChat() {
 
   return (
     <>
-      {!open && intro && (
+      {/* Never over a piece being reviewed: the intro would cover «Approve» and «Request changes». */}
+      {!open && intro && !/^\/requests\/[^/]+/.test(pathname) && (
         <aside className="help-intro" aria-labelledby="help-intro-t">
           <span className="help-ai ai-tag">{t('help.introTag')}</span>
           <b id="help-intro-t">{t('help.introTitle')}</b>

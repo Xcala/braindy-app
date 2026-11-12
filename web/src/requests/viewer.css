@@ -31,7 +31,7 @@ html[data-theme="dark"] .vw-arrow, html[data-theme="dark"] .vw-strip, html[data-
 /* Video: a timeline under the player with a numbered dot per comment, and the version tabs' state dot. */
 .vm-wrap { display: flex; flex-direction: column; gap: 0.625rem; align-items: stretch; width: min(100%, 60rem); }
 .vm-line { position: relative; height: 1.75rem; margin: 0 0.875rem; border-radius: 999px; background: linear-gradient(var(--line), var(--line)) center / 100% 0.25rem no-repeat; }
-.vm-dot { position: absolute; top: 0; width: 1.75rem; height: 1.75rem; margin-left: -0.875rem; border: 0; border-radius: 50% 50% 50% 0.25rem; background: var(--azul); color: #fff; font: 800 0.75rem/1.75rem var(--f-text); cursor: pointer; box-shadow: 0 0 0 3px #fff, var(--sh-2); transition: transform .15s; }
+.vm-dot { position: absolute; top: 0; width: 1.75rem; height: 1.75rem; margin-left: -0.875rem; border: 0; border-radius: 50% 50% 50% 0.25rem; background: var(--azul-fill); color: #fff; font: 800 0.75rem/1.75rem var(--f-text); cursor: pointer; box-shadow: 0 0 0 3px #fff, var(--sh-2); transition: transform .15s; }
 .vm-dot:hover, .vm-dot:focus-visible { transform: scale(1.12); }
 .vm-dot.is-done { background: var(--success); }
 .vm-at { display: inline-flex; align-items: center; gap: 0.25rem; padding: 2px 0.5rem; border: 0; border-radius: 999px; background: var(--hielo); color: var(--azul-press); font: 700 0.75rem/1.4 var(--f-text); cursor: pointer; }
@@ -44,3 +44,12 @@ html[data-theme="dark"] .vw-arrow, html[data-theme="dark"] .vw-strip, html[data-
 .ad-opt:hover { border-color: var(--azul); }
 .ad-opt.is-on { border-color: var(--azul); background: var(--hielo); }
 .ad-opt input { width: 1.125rem; height: 1.125rem; accent-color: var(--azul); }
+
+/* Review stage (2026-11-12, dark audit): the piece sits on a neutral gray so its colors read true in both modes; a line
+   separates it from the review panel; the bar above it follows the card tone. */
+.vw-stage { background: #E9EAEC; }
+.vw-bar { background: var(--white); }
+.rv-split > :last-child { border-top: 1px solid var(--line); }
+@media (min-width: 1024px) { .rv-split > :last-child { border-top: 0; border-left: 1px solid var(--line); } }
+html[data-theme="dark"] .vw-stage { background: #2B2D31; }
+html[data-theme="dark"] .rv-split > :last-child { border-color: var(--line-strong); }

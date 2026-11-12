@@ -6,8 +6,8 @@ import { ContractDownload } from '../contracts/ContractDownload';
 import type { Contract } from '../contracts/types';
 
 const TONE = {
-  wait: { background: '#FFFBF0', borderColor: '#F5D98A' },
-  ok: { background: '#E6F7F0', borderColor: '#A7E3C8' },
+  wait: { background: 'var(--warning-bg)', borderColor: '#F5D98A' },
+  ok: { background: 'var(--success-bg)', borderColor: '#A7E3C8' },
 };
 
 /** The contract that makes the plan binding, where it stands: in preparation, to sign (the signer signs right here),

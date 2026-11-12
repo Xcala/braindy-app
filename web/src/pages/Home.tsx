@@ -36,7 +36,7 @@ export function Home() {
   return (
     <div className="col g40">
       {current.onboarding && current.onboarding.step !== 'live' && (
-        <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: '#EAF0FF', border: 0 }}>
+        <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: 'var(--hielo)', border: 0 }}>
           <span className="col"><span className="w7">{t('ob.continue')}</span><span className="t-sm t-mute">{t('ob.continueSub', { step: t(`ob.a.step.${current.onboarding.step}`) })}</span></span>
           <span className="btn btn-primary btn-sm">{t('common.continue')}</span>
         </Link>

@@ -37,7 +37,7 @@ export function AdminBilling() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.mrr')}</span><span className="h1">{money(mrr, cur, lang)}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.active')}</span><span className="h1">{rows.filter((r) => r.status === 'active').length}</span></div>
-        <div className="card col g4" style={transfers.length ? { borderColor: '#F5D98A', background: '#FFFBF0' } : undefined}><span className="t-sm t-mute w7">{t('bill.a.toConfirm')}</span><span className="h1">{transfers.length}</span></div>
+        <div className="card col g4" style={transfers.length ? { borderColor: '#F5D98A', background: 'var(--warning-bg)' } : undefined}><span className="t-sm t-mute w7">{t('bill.a.toConfirm')}</span><span className="h1">{transfers.length}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.overdue')}</span><span className="h1">{rows.filter((r) => r.status === 'past_due').length}</span></div>
       </div>
       {transfers.map((x) => (

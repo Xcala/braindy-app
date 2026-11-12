@@ -58,7 +58,7 @@ export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, i
               </button>
             ))}
           </div>
-          <Popover label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: '1.25rem', padding: '0 0.4375rem', background: 'var(--azul)', color: '#fff' }}>{n}</span>}</>}>
+          <Popover label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: '1.25rem', padding: '0 0.4375rem', background: 'var(--azul-fill)', color: '#fff' }}>{n}</span>}</>}>
             {(close) => (
               <>
                 {who.length > 1 && sel(t('rf.who'), f.who, (v) => put({ who: v }), [['', t('rf.whoAll', { n: who.length })], ...who.map((w): [string, string] => [w.uid, w.name])])}

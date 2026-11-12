@@ -51,7 +51,7 @@ export function CompareView({ brandId, requestId, versions, fileIndex = 0, onClo
               <figure key={(v as Version).id} className="relative m-0 flex items-center justify-center">
                 {video ? <video src={u as string} controls className="block max-h-[74vh] max-w-full" />
                   : <img src={u as string} alt={`v${(v as Version).n}`} className="block max-h-[74vh] max-w-full" />}
-                <span className="chip absolute left-3 top-3" style={{ background: '#fff' }}>v{(v as Version).n}</span>
+                <span className="chip absolute left-3 top-3" style={{ background: 'var(--white)' }}>v{(v as Version).n}</span>
               </figure>
             ))}
           </div>
@@ -69,8 +69,8 @@ export function CompareView({ brandId, requestId, versions, fileIndex = 0, onClo
             <img src={ub} alt={`v${b?.n}`} className="block max-h-[78vh] max-w-full" />
             <img src={ua} alt={`v${a?.n}`} className="absolute inset-0 block h-full w-full object-contain" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
             <span className="pointer-events-none absolute inset-y-0" style={{ left: `${pos}%`, width: 2, background: '#fff' }} />
-            <span className="chip absolute left-3 top-3" style={{ background: '#fff' }}>v{a?.n}</span>
-            <span className="chip absolute right-3 top-3" style={{ background: '#fff' }}>v{b?.n}</span>
+            <span className="chip absolute left-3 top-3" style={{ background: 'var(--white)' }}>v{a?.n}</span>
+            <span className="chip absolute right-3 top-3" style={{ background: 'var(--white)' }}>v{b?.n}</span>
           </div>
         ) : <div className="skel" style={{ width: '30rem', height: '30rem' }} />}
       </div>

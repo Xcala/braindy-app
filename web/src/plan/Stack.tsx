@@ -49,7 +49,7 @@ export function Stack({ items }: { items: StackItem[] }) {
               <div className="row g8" style={{ flexWrap: 'wrap', alignItems: 'center', marginTop: 'auto' }}>
                 {x.cost != null && <span className="w7">{money(x.cost, x.currency, lang)} <span className="t-sm t-mute">{t(`plan.per.${x.period}`)}</span></span>}
                 {x.cost == null && x.period === 'usage' && <span className="t-sm t-mute">{t('plan.per.usage')}</span>}
-                <span className="chip" style={x.payer === 'client' ? { background: '#FFFBF0', borderColor: '#F5D98A' } : undefined}>{t(`plan.payer.${x.payer}`)}</span>
+                <span className="chip" style={x.payer === 'client' ? { background: 'var(--warning-bg)', borderColor: '#F5D98A' } : undefined}>{t(`plan.payer.${x.payer}`)}</span>
                 {x.status !== 'active' && <span className="chip">{t(`plan.tool.${x.status}`)}</span>}
               </div>
               {x.renews && <span className="t-sm" style={{ color: soon ? '#B54708' : 'var(--mute, #5B6475)' }}>{t('plan.renews', { date: date(x.renews) })}</span>}

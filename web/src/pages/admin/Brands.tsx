@@ -136,7 +136,7 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle, onManage }
       <span><span className={`chip ${brand.kind === 'group' ? 'c-group' : 'c-type'}`}>{brand.kind === 'group' ? t('brand.group') : t('admin.brands.brand')}</span></span>
       <span className="row g8 wrap t-sm">
         {brand.kind === 'group' || !on ? <span className="t-mute">—</span>
-          : health?.late ? <span className="chip" style={{ background: '#FDECEA', color: '#C0362C' }}>{t('brands.lateN', { n: health.late })}</span>
+          : health?.late ? <span className="chip" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>{t('brands.lateN', { n: health.late })}</span>
           : health?.open ? <span className="chip c-active">{t('brands.ok')}</span>
           : <span className="chip chip-plain">{t('brands.quiet')}</span>}
         {health?.open ? <span className="t-mute">{health.open} {t('brands.open').toLowerCase()}</span> : null}

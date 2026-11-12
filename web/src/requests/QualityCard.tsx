@@ -18,7 +18,7 @@ export function QualityCard({ q }: { q: NonNullable<BrandRequest['quality']> }) 
       <ul className="col g4" style={{ margin: 0, paddingLeft: 0, listStyle: 'none' }}>
         {[...failed, ...q.checks.filter((c) => c.ok)].map((c) => (
           <li key={c.id} className="row g8 t-sm" style={{ alignItems: 'flex-start' }}>
-            <span aria-hidden="true" style={{ color: c.ok ? '#1F7A4D' : '#C0362C', fontWeight: 900 }}>{c.ok ? '✓' : '✕'}</span>
+            <span aria-hidden="true" style={{ color: c.ok ? 'var(--success)' : 'var(--danger)', fontWeight: 900 }}>{c.ok ? '✓' : '✕'}</span>
             <span className="col min-w-0"><span>{c.text}{c.critical && !c.ok ? <b> · {t('qc.critical')}</b> : null}</span>{c.note ? <span className="t-xs t-mute">{c.note}</span> : null}</span>
             <span className="sr-only">{c.ok ? t('qc.passed') : t('qc.failed')}</span>
           </li>

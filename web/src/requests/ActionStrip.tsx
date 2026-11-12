@@ -36,7 +36,7 @@ export function ActionStrip({ brandId, list, isAdmin }: { brandId: string; list:
       <div className={`grid gap-5 ${groups.length > 1 ? 'md:grid-cols-2 xl:grid-cols-4' : ''}`}>
         {groups.map((g) => (
           <div key={g.key} className="col g8 min-w-0">
-            {(isAdmin || groups.length > 1) && <p className="label" style={{ margin: 0, color: g.key === 'late' ? '#C0362C' : undefined }}>{t(`at.${g.key}`, { n: g.items.length })}</p>}
+            {(isAdmin || groups.length > 1) && <p className="label" style={{ margin: 0, color: g.key === 'late' ? 'var(--danger)' : undefined }}>{t(`at.${g.key}`, { n: g.items.length })}</p>}
             {g.items.slice(0, 3).map((r) => <Row key={r.id} brandId={brandId} r={r} kind={g.key} sub={g.key === 'incomplete' ? missingOf(r) : null} date={smartDate(r, lang, t).text} />)}
             {g.items.length > 3 && <span className="t-xs t-mute">{t('at.more', { n: g.items.length - 3 })}</span>}
           </div>

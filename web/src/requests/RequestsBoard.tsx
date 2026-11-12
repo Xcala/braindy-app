@@ -7,15 +7,15 @@ import { moveRequest } from './moveRequest';
 import { missingOf, pieceLabel, smartDate } from './requestBits';
 
 export const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
-  { status: 'in_production', bg: '#EEF1F7' }, { status: 'to_approve', bg: '#FFF7E3' },
-  { status: 'approved', bg: '#EEF1F7' }, { status: 'published', bg: '#EEF1F7' },
+  { status: 'in_production', bg: 'var(--col)' }, { status: 'to_approve', bg: 'var(--warning-bg)' },
+  { status: 'approved', bg: 'var(--col)' }, { status: 'published', bg: 'var(--col)' },
 ];
 // Each column starts short; the rest opens on request so the page does not run for metres.
 const COL_FIRST = 8;
 
 export function TagChips({ tags }: { tags?: string[] }) {
   if (!tags?.length) return null;
-  return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: '#F2F5FF', color: 'var(--azul)' }}>#{g}</span>)}</span>;
+  return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: 'var(--hielo)', color: 'var(--azul)' }}>#{g}</span>)}</span>;
 }
 
 /** NickMark only: what an open request still lacks ("Missing: date · where"). */
@@ -23,7 +23,7 @@ export function MissingChip({ r }: { r: BrandRequest }) {
   const { t } = useI18n();
   const m = missingOf(r);
   if (!m.length) return null;
-  return <span className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: '#FFF4E5', color: '#8A4B00' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
+  return <span className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: 'var(--warning-bg)', color: 'var(--warning)' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
 }
 
 /**
@@ -72,7 +72,7 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
                     style={{ borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
                     <span className="rb-title" title={r.title}>{r.title}</span>
                     <span className="t-xs t-mute">
-                      {kind}{kind && d.text ? ' · ' : ''}{d.text && <span style={{ color: d.late ? '#C0362C' : undefined }}>{d.text}</span>}
+                      {kind}{kind && d.text ? ' · ' : ''}{d.text && <span style={{ color: d.late ? 'var(--danger)' : undefined }}>{d.text}</span>}
                     </span>
                     <TagChips tags={r.tags} />
                     {isAdmin && <MissingChip r={r} />}

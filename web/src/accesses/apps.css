@@ -4,9 +4,9 @@
 .apps-search svg { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--graphite); pointer-events: none; }
 .apps-search .input { width: 100%; padding-left: 2.5rem; }
 .apps-select { display: flex; flex-direction: column; gap: 0.25rem; flex: 0 1 10.625rem; }
-.apps-seg { display: inline-flex; padding: 0.1875rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
+.apps-seg { display: inline-flex; padding: 0.1875rem; border: 1px solid var(--line); border-radius: 999px; background: var(--white); }
 .apps-seg button { display: grid; place-items: center; width: 2.5rem; height: 2.25rem; border: 0; border-radius: 999px; background: none; color: var(--graphite); cursor: pointer; }
-.apps-seg button[aria-checked='true'] { background: var(--azul); color: #fff; }
+.apps-seg button[aria-checked='true'] { background: var(--azul-fill); color: #fff; }
 .apps-n { opacity: .7; font-weight: 600; margin-left: 2px; }
 
 .apps-ghead { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0.25rem 0.25rem 0; }

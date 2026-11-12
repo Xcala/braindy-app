@@ -50,7 +50,7 @@ export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: Fil
               ) : (
                 <Icon name={kind === 'video' ? 'external' : kind === 'image' ? 'grid' : 'file'} size={40} className="ico" />
               )}
-              <span className="chip chip-plain c-type badge" style={{ background: '#fff', zIndex: 1 }}>{extLabel(f)}</span>
+              <span className="chip chip-plain c-type badge" style={{ background: 'var(--white)', zIndex: 1 }}>{extLabel(f)}</span>
             </div>
             <div className="tile-meta w-full">
               <span className="tile-name">{f.title}</span>
@@ -117,10 +117,10 @@ export function FolderGrid({ folders, onOpen, menu }: { folders: Array<{ path: s
     <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 14.375rem), 1fr))' }}>
       {folders.map((f) => (
         <div key={f.path} className={`folder fcard${f.toggle ? " has-switch" : ""}`}
-          style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
+          style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: 'var(--hielo)' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
           <div className="row" style={{ gap: '0.25rem', minWidth: 0, flex: '1 1 auto' }}>
           <button type="button" className="fopen" onClick={() => onOpen(f.path)} style={f.hidden ? { opacity: 0.55 } : undefined}>
-            <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
+            <span className="fi" style={f.highlight ? { background: 'var(--azul-fill)', color: '#fff' } : undefined}>
               <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
             </span>
             <span className="col grow" style={{ minWidth: 0 }}>

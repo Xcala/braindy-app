@@ -75,8 +75,8 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
   const getOne = async () => { if (current) window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true)); };
 
   return (
-    <div className="col min-w-0" style={{ background: 'var(--niebla)' }}>
-      <div className="row between g8 wrap" style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--line)', background: '#fff' }}>
+    <div className="col min-w-0 vw-stage">
+      <div className="row between g8 wrap vw-bar" style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--line)' }}>
         <div className="seg" role="tablist" aria-label={t('req.versions')}>
           {versions.map((v) => {
             const st = state(v);

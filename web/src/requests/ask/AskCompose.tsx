@@ -84,7 +84,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   return (
     <div className="col g20">
       <div className="row between g8">
-        <span className="chip chip-plain" style={{ background: '#F2F5FF', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
+        <span className="chip chip-plain" style={{ background: 'var(--hielo)', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onBack}><Icon name="arrowLeft" size={16} />{t('as.change')}</button>
       </div>
 
