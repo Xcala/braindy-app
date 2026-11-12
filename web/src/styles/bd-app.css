@@ -757,3 +757,7 @@ html[data-theme="dark"] .trk-next{background:#22305A}
 .more-link.is-on{color:var(--azul)}
 .more-ico{display:inline-flex;color:var(--graphite)}.more-link.is-on .more-ico{color:var(--azul)}
 .more-ico svg{width:1.375rem;height:1.375rem}
+.subtabs{display:flex;gap:1.25rem;flex-wrap:wrap;padding-left:0.25rem}
+.subtabs a{font:700 0.8125rem/1.25rem var(--f-text);color:var(--graphite);text-decoration:none;padding:0.25rem 0;border-bottom:2px solid transparent}
+.subtabs a.is-on{color:var(--ink);border-bottom-color:var(--azul)}
+.subtabs a:hover{color:var(--ink)}

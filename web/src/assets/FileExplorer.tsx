@@ -54,7 +54,8 @@ function repeatedCopies(files: FileItem[]) {
 }
 
 /** startPath/openId come from a search result: open that folder and show that file. */
-export function FileExplorer({ brandId, brandName, startPath = '', openId }: { brandId: string; brandName: string; startPath?: string; openId?: string }) {
+/** hideApproved: Library leaves out the approved-deliveries folder at the root (it has its own tab, Deliveries). */
+export function FileExplorer({ brandId, brandName, startPath = '', openId, hideApproved = false }: { brandId: string; brandName: string; startPath?: string; openId?: string; hideApproved?: boolean }) {
   const { t } = useI18n();
   const [path, setPath] = useState(startPath);
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -116,12 +117,12 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     // Rebranded brands: at the root, each version shows its own folders (the current one, those of no earlier version).
     const old = versions.find((v) => v.id === era);
     const ofEra = (p: string) => path || !versions.length || (old ? old.folders.includes(p) : !versions.some((v) => v.folders.includes(p)));
-    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path) && ofEra(f.path))
+    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path) && ofEra(f.path) && !(hideApproved && f.path === APPROVED))
       .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path), toggle: isAdmin && !path ? () => toggle(f.path) : undefined }));
     if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false, toggle: undefined });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folders, path, isAdmin, brand?.fileAccess, tops, versions, era]);
+  }, [folders, path, isAdmin, brand?.fileAccess, tops, versions, era, hideApproved]);
   const moveTargets = useMemo(() => ['', UPLOADS, ...folders.map((f) => f.path).filter((p) => p && p !== path)].filter((p, i, a) => a.indexOf(p) === i), [folders, path]);
 
   const needle = normalizeSearch(q);

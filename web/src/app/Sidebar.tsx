@@ -7,7 +7,7 @@ import type { StringKey } from '../i18n/strings';
 import { useRequests } from '../requests/useRequests';
 import { useBrainPulse } from '../brain/useBrainEvents';
 import { sectionOfPath, useMySections } from '../team/sections';
-import { NAV } from './navGroups';
+import { groupOfPath, NAV } from './navGroups';
 import { NAV_ICON } from './navIcons';
 import { useFilled } from './SubNav';
 import './sidebar.css';
@@ -48,13 +48,13 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   );
 }
 
-function Link({ item, slim, on, badge, sub, pulse }: { item: Item; slim: boolean; on?: boolean; badge?: number; sub?: boolean; pulse?: boolean }) {
+function Link({ item, slim, on, badge, sub, pulse, icon }: { item: Item; slim: boolean; on?: boolean; badge?: number; sub?: boolean; pulse?: boolean; icon?: string }) {
   const { t } = useI18n();
   const label = t(item.label);
   return (
     <NavLink to={item.to} end={sub} data-tour={item.to === '/requests' ? 'ask-nav' : undefined} title={slim ? label : undefined} aria-label={slim ? label : undefined}
       className={({ isActive }) => `${sub ? 'sbar-sub' : 'sbar-link'}${on ?? isActive ? ' is-on' : ''}`}>
-      {!sub && <span className="sbar-ico">{NAV_ICON[item.to] ?? NAV_ICON['/home']}{slim && badge ? <i className="sbar-dot" /> : null}{pulse ? <i className="sbar-pulse" aria-hidden="true" /> : null}</span>}
+      {!sub && <span className="sbar-ico">{NAV_ICON[icon ?? item.to] ?? NAV_ICON['/home']}{slim && badge ? <i className="sbar-dot" /> : null}{pulse ? <i className="sbar-pulse" aria-hidden="true" /> : null}</span>}
       {!slim && <span className="grow truncate">{label}</span>}
       {!slim && badge ? <span className="sbar-badge">{badge}</span> : null}
     </NavLink>
@@ -74,13 +74,12 @@ function ClientSections({ slim }: { slim: boolean }) {
   return <>{NAV.map((g) => {
     const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
     if (!pages.length) return null;
-    const on = g.pages.some((p) => pathname === p.to || pathname.startsWith(`${p.to}/`));
-    // Every group shows its pages open, so the client sees them all at a glance (Nicolas, 2026-11-10); a page with nothing in it stays out for the client.
-    const subs = !slim ? pages.filter((p) => isAdmin || pathname === p.to || filled(p.to)) : [];
+    const on = groupOfPath(pathname) === g;
+    // One row per section (2026-11-12): its pages are tabs at the top of the page (SubNav). It opens the first page with something in it.
+    const first = pages.find((p) => isAdmin || filled(p.to)) ?? pages[0]!;
     return (
       <div key={g.label} className="col">
-        <Link item={{ to: pages[0]!.to, label: g.label }} slim={slim} on={on} badge={pages[0]!.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
-        {subs.length > 1 && <div className="sbar-subs">{subs.map((p) => <Link key={p.to} item={p} slim={slim} sub />)}</div>}
+        <Link item={{ to: first.to, label: g.label }} icon={g.pages[0]!.to} slim={slim} on={on} badge={first.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
       </div>
     );
   })}</>;

@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandLinks } from '../links/useBrandLinks';
@@ -7,9 +7,13 @@ import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
-import { groupOfPath } from './navGroups';
+import { groupOfPath, pageMatch, type NavPage } from './navGroups';
 
-/** Phones only (the desktop sidebar lists them). Inside My brand and Deliveries: a small switch between its pages. A page with nothing in it stays out for the client. */
+/**
+ * The tabs of a section, at the top of each of its pages (phones and desktop): My brand → Brand kit · Deliveries · Library ·
+ * Sites and apps · Strategy; Results → Stats · Social calendar. A tab that groups several pages (Strategy) shows a second, smaller
+ * switch. A page with nothing in it stays out for the client.
+ */
 export function SubNav() {
   const { pathname } = useLocation();
   const { t } = useI18n();
@@ -17,12 +21,21 @@ export function SubNav() {
   const isAdmin = useAuth().profile?.role === 'admin';
   const filled = useFilled();
   const group = groupOfPath(pathname);
-  const pages = (group?.pages ?? []).filter((p) => can(sectionOfPath(p.to)) && (isAdmin || pathname === p.to || filled(p.to)));
-  if (pages.length < 2) return null;
+  const pages = (group?.pages ?? []).filter((p) => can(sectionOfPath(p.to)) && (isAdmin || pageMatch(pathname, p.to) || filled(p.to)));
+  const here = pages.find((p) => pageMatch(pathname, p.to));
+  const tabs = pages.filter((p, i) => !p.tab || pages.findIndex((q) => q.tab === p.tab) === i);
+  const inTab = here?.tab ? pages.filter((p) => p.tab === here.tab) : [];
+  if (tabs.length < 2 && inTab.length < 2) return null;
+  const on = (p: NavPage) => (p.tab ? here?.tab === p.tab : here?.to === p.to);
   return (
-    <div className="flex md:hidden" style={{ marginBottom: '1.5rem' }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
-      {pages.map((p) => <NavLink key={p.to} to={p.to} end className={({ isActive }) => (isActive ? 'is-on' : '')}>{t(p.label)}</NavLink>)}
-    </nav></div>
+    <div className="col g8" style={{ marginBottom: '1.5rem' }}>
+      {tabs.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>
+        {tabs.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined}>{t(p.tab ?? p.label)}</Link>)}
+      </nav>}
+      {inTab.length > 1 && <nav className="subtabs" aria-label={t(here!.tab!)}>
+        {inTab.map((p) => <Link key={p.to} to={p.to} className={here?.to === p.to ? 'is-on' : ''} aria-current={here?.to === p.to ? 'page' : undefined}>{t(p.label)}</Link>)}
+      </nav>}
+    </div>
   );
 }
 

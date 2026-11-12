@@ -7,8 +7,10 @@ import { VersionBar } from '../brands/versions/VersionBar';
 import { useVersionView } from '../brands/versions/versionView';
 import { useI18n } from '../i18n/I18nProvider';
 import { ShareLinks } from '../share/ShareLinks';
+import { APPROVED } from '../assets/folderRules';
 
-export function MyAssets() {
+/** My brand › Library (photos, videos, documents, what the client uploads) or › Deliveries (what NickMark delivered and the client approved). */
+export function MyAssets({ deliveries = false }: { deliveries?: boolean }) {
   const { current } = useBrands();
   const { t } = useI18n();
   const [params] = useSearchParams();
@@ -21,12 +23,12 @@ export function MyAssets() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="col g8">
           <p className="label">{current.name}</p>
-          <h1 className="h1"><span className="w9">{t('files.title')}.</span> {t('assets.tagline')}</h1>
+          <h1 className="h1"><span className="w9">{t(deliveries ? 'sub.deliveries' : 'sub.library')}.</span> {t(deliveries ? 'assets.deliveriesTagline' : 'assets.tagline')}</h1>
         </div>
         <div className="row g8 wrap"><ShareLinks brandId={current.id} /><UploadButton brandId={current.id} /></div>
       </div>
       <VersionBar brand={current} versions={versions} viewing={ver} onView={setVer} work />
-      <FileExplorer brandId={current.id} brandName={current.name} startPath={params.get('folder') ?? ''} openId={params.get('file') ?? undefined} />
+      <FileExplorer brandId={current.id} brandName={current.name} startPath={params.get('folder') ?? (deliveries ? APPROVED : '')} hideApproved={!deliveries} openId={params.get('file') ?? undefined} />
     </div>
   );
 }

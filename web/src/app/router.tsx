@@ -65,6 +65,7 @@ export const router = createBrowserRouter([
           { path: 'brand/brain', element: <BrandBrain /> },
           { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
+          { path: 'deliveries', element: <MyAssets deliveries /> },
           { path: 'apps', element: <MyApps /> },
           { path: 'calendar', element: <Calendar /> },
           { path: 'research', element: <MyResearch /> },

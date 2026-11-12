@@ -38,3 +38,4 @@ NAV_ICON['/brand/brain'] = svg(<><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0
 NAV_ICON['/research'] = svg(<><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>);
 NAV_ICON['/apps'] = svg(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
 NAV_ICON['/calendar'] = svg(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);
+NAV_ICON['/deliveries'] = NAV_ICON['/assets'];
