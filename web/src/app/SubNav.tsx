@@ -32,7 +32,7 @@ export function SubNav() {
       {tabs.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>
         {tabs.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined}>{t(p.tab ?? p.label)}</Link>)}
       </nav>}
-      {inTab.length > 1 && <nav className="subtabs" aria-label={t(here!.tab!)}>
+      {inTab.length > 1 && <nav className="seg seg-scroll seg-sm" aria-label={t(here!.tab!)}>
         {inTab.map((p) => <Link key={p.to} to={p.to} className={here?.to === p.to ? 'is-on' : ''} aria-current={here?.to === p.to ? 'page' : undefined}>{t(p.label)}</Link>)}
       </nav>}
     </div>

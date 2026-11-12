@@ -758,10 +758,9 @@ html[data-theme="dark"] .trk-next{background:#22305A}
 .more-link.is-on{color:var(--azul)}
 .more-ico{display:inline-flex;color:var(--graphite)}.more-link.is-on .more-ico{color:var(--azul)}
 .more-ico svg{width:1.375rem;height:1.375rem}
-.subtabs{display:flex;gap:1.25rem;flex-wrap:wrap;padding-left:0.25rem}
-.subtabs a{font:700 0.8125rem/1.25rem var(--f-text);color:var(--graphite);text-decoration:none;padding:0.25rem 0;border-bottom:2px solid transparent}
-.subtabs a.is-on{color:var(--ink);border-bottom-color:var(--azul)}
-.subtabs a:hover{color:var(--ink)}
+/* Second level (Strategy): the same pill switch as the tabs, one size smaller, so both bars read as one system. */
+.seg.seg-sm{padding:0.125rem}
+.seg.seg-sm a{height:1.875rem;padding:0 0.875rem;font-size:0.75rem}
 /* PageHeader: same head on every tab (title · one line · actions on the right, under it on phones). */
 .pagehead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:0.75rem 1.5rem}
 .pagehead-text{min-width:0;max-width:45rem}
