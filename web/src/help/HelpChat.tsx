@@ -1,5 +1,6 @@
 import { followPointer } from './followPointer';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { QuickDial } from './QuickDial';
 import { Link, useLocation } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { useAuth } from '../auth/AuthProvider';
@@ -40,6 +41,11 @@ export function HelpChat() {
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
   const brandId = current?.id ?? '';
+  // The corner button is a menu now (QuickDial): Ask Braindy is one of its actions.
+  const [dial, setDial] = useState(false);
+  const closeDial = useCallback(() => setDial(false), []);
+  const openAi = useCallback(() => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } setOpen(true); }, []);
+  useEffect(() => { setDial(false); }, [pathname]);
 
   useEffect(() => { if (brandId) setS(load(brandId)); }, [brandId]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
@@ -81,7 +87,7 @@ export function HelpChat() {
   return (
     <>
       {/* Never over a piece being reviewed: the intro would cover «Approve» and «Request changes». */}
-      {!open && intro && !/^\/requests\/[^/]+/.test(pathname) && (
+      {!open && !dial && intro && !/^\/requests\/[^/]+/.test(pathname) && (
         <aside className="help-intro" aria-labelledby="help-intro-t">
           <span className="help-ai ai-tag">{t('help.introTag')}</span>
           <b id="help-intro-t">{t('help.introTitle')}</b>
@@ -93,8 +99,12 @@ export function HelpChat() {
         </aside>
       )}
       {!open && (
-        <button type="button" className="help-fab" onPointerMove={followPointer} onClick={() => { dismissIntro(); setOpen(true); }} aria-label={t('help.open')} title={t('help.open')}><span className="help-core"><SparkIcon /></span></button>
+        <button type="button" className={`help-fab${dial ? ' is-open' : ''}`} onPointerMove={followPointer} onClick={() => { dismissIntro(); setDial((d) => !d); }}
+          aria-expanded={dial} aria-label={t(dial ? 'dial.close' : 'dial.label')} title={t(dial ? 'dial.close' : 'dial.label')}>
+          <span className="help-core">{dial ? <span className="qd-x" aria-hidden="true">×</span> : <SparkIcon />}</span>
+        </button>
       )}
+      {!open && dial && <QuickDial onClose={closeDial} onAi={openAi} />}
       {open && (
         <section className="help-panel" role="dialog" aria-modal="false" aria-labelledby="help-title">
           <header className="help-head">

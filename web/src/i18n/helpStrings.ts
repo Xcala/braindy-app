@@ -31,6 +31,7 @@ export const helpEn = {
   'nm.back': 'Put it back in its place',
   'nm.close': 'Close (it comes back for the next meeting)',
   'nm.show': 'Show next meeting',
+  'dial.label': 'Quick actions', 'dial.close': 'Close', 'dial.ask': 'New request', 'dial.ideas': 'Ideas', 'dial.ai': 'AI assistant', 'dial.nick': 'Talk to Nick', 'dial.waText': 'Hi Nick, ',
 } as const;
 
 export const helpEs: Record<keyof typeof helpEn, string> = {
@@ -65,4 +66,5 @@ export const helpEs: Record<keyof typeof helpEn, string> = {
   'nm.back': 'Volverla a su lugar',
   'nm.close': 'Cerrar (vuelve con la próxima reunión)',
   'nm.show': 'Ver siguiente reunión',
+  'dial.label': 'Acciones rápidas', 'dial.close': 'Cerrar', 'dial.ask': 'Nuevo pedido', 'dial.ideas': 'Ideas', 'dial.ai': 'Asistente IA', 'dial.nick': 'Habla con Nico', 'dial.waText': 'Hola Nico, ',
 };

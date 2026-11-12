@@ -9,24 +9,28 @@ import '../accesses/apps.css';
 import './wishes.css';
 
 const TOP = 5;
+const EVT = 'bd:ideas';
+
+/** Where the Ideas panel can open: not on the Wishlist itself, the Ask page, or a request being reviewed. */
+export const ideasHere = (pathname: string) => !(pathname.startsWith('/wishlist') || pathname.startsWith('/ask') || /^\/requests\/[^/]+/.test(pathname));
+/** Opens the panel from anywhere (the corner menu, QuickDial). */
+export const openIdeas = () => window.dispatchEvent(new Event(EVT));
 
 /**
- * «Ideas»: a small button above the Ask Braindy one, on every page (2026-11-12). It opens a side panel (a sheet from the bottom
- * on phones) that invites feedback (the same box as the Wishlist page) and shows the most asked open wishes, with «See the whole list».
- * Not on the Wishlist itself, the Ask page, or a request being reviewed (it would cover «Approve»).
+ * «Ideas» (2026-11-12): a side panel (a sheet from the bottom on phones) that invites feedback (the same box as the Wishlist
+ * page) and shows the most asked open wishes, with «See the whole list». It opens from the corner menu (QuickDial).
  */
 export function IdeasPanel() {
-  const { t } = useI18n();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [pathname]);
-  if (pathname.startsWith('/wishlist') || pathname.startsWith('/ask') || /^\/requests\/[^/]+/.test(pathname)) return null;
-  return open ? <IdeasSheet onClose={() => setOpen(false)} /> : (
-    <button type="button" className="ideas-fab" onClick={() => setOpen(true)} aria-haspopup="dialog">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>
-      {t('ideas.btn')}
-    </button>
-  );
+  useEffect(() => {
+    const on = () => setOpen(true);
+    window.addEventListener(EVT, on);
+    return () => window.removeEventListener(EVT, on);
+  }, []);
+  if (!ideasHere(pathname) || !open) return null;
+  return <IdeasSheet onClose={() => setOpen(false)} />;
 }
 
 /** The open panel; it reads the wishes only while it is open. */

@@ -62,3 +62,22 @@
 /* Dark mode: --ink turns light, so the core goes white with a dark spark (it was white on near-white). */
 html[data-theme="dark"] .help-core{background:#fff}
 html[data-theme="dark"] .help-fab{color:#0B1220}
+
+/* Corner menu (QuickDial): the spark opens a column of labelled pills above it; the spark turns into ×. */
+.qd-menu{position:fixed;right:1rem;bottom:calc(9.5rem + env(safe-area-inset-bottom));z-index:36;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem}
+.qd-btn{display:inline-flex;align-items:center;gap:.5rem;height:2.75rem;padding:0 1rem 0 .375rem;border-radius:999px;border:1px solid var(--line-strong);background:var(--white);color:var(--ink);font:700 .9375rem/1 var(--f-text);box-shadow:var(--sh-2);cursor:pointer;text-decoration:none;white-space:nowrap}
+.qd-btn:hover{border-color:var(--azul)}
+.qd-btn:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+.qd-ico{display:grid;place-items:center;width:2rem;height:2rem;border-radius:50%;background:var(--hielo);color:var(--azul)}
+.qd-btn.is-ai .qd-ico{background:#0B1220;color:#fff}
+.qd-btn.is-nick .qd-ico{background:#E7F8EE;color:#128C4A}
+html[data-theme="dark"] .qd-btn.is-ai .qd-ico{background:#fff;color:#0B1220}
+html[data-theme="dark"] .qd-btn.is-nick .qd-ico{background:#123524;color:#5BD48C}
+.qd-x{font:400 1.75rem/1 var(--f-text)}
+@media (min-width:768px){.qd-menu{right:1.5rem;bottom:5.5rem}}
+@media (prefers-reduced-motion:no-preference){
+  .qd-item{animation:qd-in .18s ease-out both}
+  @keyframes qd-in{from{opacity:0;transform:translateY(.5rem) scale(.96)}to{opacity:1;transform:none}}
+}
+a.qd-btn,a.qd-btn:visited,a.qd-btn:hover{color:var(--ink)}
+.qd-btn.is-ask{background:var(--hielo);border-color:var(--azul)}
