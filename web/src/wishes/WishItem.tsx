@@ -5,7 +5,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useToast } from '../components/Toaster';
 import { WishAudio } from './WishAudio';
-import { deleteWish, editWishText, setWishAdmin, STATUS_COLOR, toggleVote, WISH_STATUSES, type Wish, type WishStatus } from './useWishes';
+import { deleteWish, editWishText, setWishAdmin, shareWish, STATUS_COLOR, toggleVote, WISH_STATUSES, type Wish, type WishStatus } from './useWishes';
 
 /** One wish: kind, status, text, who (you / your team / a client), NickMark's answer and «Me too». The admin sets status and answer. */
 export function WishItem({ w }: { w: Wish }) {
@@ -25,7 +25,8 @@ export function WishItem({ w }: { w: Wish }) {
   const canEdit = mineToEdit || admin;
   const day = (ms?: number) => (ms ? new Date(ms).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '');
   const credit = w.credit ? `${brands.find((b) => b.id === w.credit!.brandId)?.name ?? w.credit.brandId} · ${w.credit.name}` : null;
-  const who = w.public ? (admin && credit ? `${t('wl.public')} (${credit})` : t('wl.public'))
+  const pub = w.askedBy ? t('wl.askedBy', { name: w.askedBy }) : t('wl.public');
+  const who = w.public ? (admin && credit ? `${pub} (${credit})` : pub)
     : admin ? `${brands.find((b) => b.id === w.brandId)?.name ?? w.brandId} · ${w.authorName ?? ''}`
     : w.author === uid ? t('wl.you') : (w.authorName || t('wl.yourTeam'));
   const fail = () => toast({ text: t('wl.error'), tone: 'bad' });
@@ -57,6 +58,7 @@ export function WishItem({ w }: { w: Wish }) {
         </button>
         <span className="grow" />
         {canEdit && !editing && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>{t('wl.edit')}</button>}
+        {admin && !w.public && w.text.trim().length >= 3 && <button type="button" className="btn btn-ghost btn-sm" title={t('wl.shareHint')} onClick={() => shareWish(w).catch(fail)}>{t('wl.share')}</button>}
         {(admin || mineToEdit) && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAsking(true)}>{t('wl.delete')}</button>}
       </div>
       {admin && (

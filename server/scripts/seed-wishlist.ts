@@ -1,5 +1,5 @@
 // Wishlist history: what clients have asked Braindy (the app) for so far, as public entries every client sees.
-// No client or brand names. Idempotent (fixed ids, existing entries keep their votes). Usage: tsx scripts/seed-wishlist.ts [--dry-run]
+// Other clients see only the first name of who asked (askedBy); the brand stays in admin-only wishCredits. Idempotent (fixed ids, existing entries keep their votes). Usage: tsx scripts/seed-wishlist.ts [--dry-run]
 import { Timestamp } from 'firebase-admin/firestore';
 import { db } from '../src/firebase.js';
 
@@ -48,7 +48,7 @@ let created = 0, updated = 0;
 for (const e of HISTORY) {
   const ref = db.collection('wishes').doc(e.id);
   const snap = await ref.get();
-  const data = { text: e.text, kind: e.kind, status: e.status, reply: e.reply, public: true, createdAt: at(e.asked), ...(e.done ? { doneAt: at(e.done) } : {}) };
+  const data = { ...(e.by ? { askedBy: e.by.name.split(' ')[0] } : {}), text: e.text, kind: e.kind, status: e.status, reply: e.reply, public: true, createdAt: at(e.asked), ...(e.done ? { doneAt: at(e.done) } : {}) };
   if (snap.exists) updated++; else created++;
   console.log(`${snap.exists ? 'update' : 'create'} ${e.id} · ${e.status} · ${e.text}`);
   // Votes stay as they are; a new entry starts with none.

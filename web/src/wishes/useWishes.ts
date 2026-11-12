@@ -4,7 +4,7 @@
 // The admin reads both at once through a collection-group query. Rules: firestore.rules › Wishlist.
 import { useEffect, useState } from 'react';
 import {
-  addDoc, arrayRemove, arrayUnion, collection, collectionGroup, deleteDoc, onSnapshot, query, serverTimestamp,
+  addDoc, arrayRemove, setDoc, doc, arrayUnion, collection, collectionGroup, deleteDoc, onSnapshot, query, serverTimestamp,
   updateDoc, where, type DocumentReference, type Timestamp,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -22,6 +22,10 @@ export type Wish = {
   /** A voice note instead of (or with) the text: a file in the brand's Uploads. Not transcribed; NickMark can type it in later. */
   audio?: { assetId: string; name: string; size: number; contentType: string };
   createdAt?: Timestamp; doneAt?: Timestamp;
+  /** First name of who asked, shown to every client on a shared entry (2026-11-12: «crea comunidad»). */
+  askedBy?: string;
+  /** On a brand's wish: the id of its shared copy in the history (the brand then sees that one). */
+  sharedAs?: string;
   /** Admin only: who asked for a history entry. */
   credit?: { brandId: string; name: string };
 };
@@ -63,7 +67,8 @@ export function useWishes(brandId: string | undefined) {
 
   // The admin sees who asked for each history entry (wishCredits); clients never get it.
   const withCredit = all.map((w) => (w.public && credits[w.id] ? { ...w, brandId: null, credit: credits[w.id] } : w));
-  return { list: sortWishes(admin ? withCredit : [...mine, ...shared]), loading, admin };
+  // Once shared, a brand's wish shows as its copy in the history.
+  return { list: sortWishes((admin ? withCredit : [...mine, ...shared]).filter((w) => !w.sharedAs)), loading, admin };
 }
 
 export const addWish = (brandId: string, text: string, kind: WishKind, author: string, authorName: string, audio?: Wish['audio']) =>
@@ -82,3 +87,16 @@ export const setWishAdmin = (w: Wish, status: WishStatus, reply: string) =>
   updateDoc(w.ref, { status, reply, ...(status === 'done' && w.status !== 'done' ? { doneAt: serverTimestamp() } : {}) });
 
 export const deleteWish = (w: Wish) => deleteDoc(w.ref);
+
+/** Admin: share a brand's wish with every client, with only the first name of who asked; the brand stays in wishCredits.
+ *  Only the text travels (a voice note is a file of that brand): type in what the note says first. */
+export async function shareWish(w: Wish) {
+  const id = `${w.brandId}-${w.id}`;
+  const name = (w.authorName ?? '').trim().split(/s+/)[0] ?? '';
+  await setDoc(doc(db, 'wishes', id), {
+    text: w.text, kind: w.kind, status: w.status, reply: w.reply ?? '', public: true, votes: w.votes, ...(name ? { askedBy: name } : {}),
+    createdAt: w.createdAt ?? serverTimestamp(), ...(w.doneAt ? { doneAt: w.doneAt } : {}),
+  });
+  await setDoc(doc(db, 'wishCredits', id), { brandId: w.brandId, name: w.authorName ?? '' });
+  await updateDoc(w.ref, { sharedAs: id });
+}
