@@ -73,7 +73,6 @@ html[data-theme="dark"] .help-fab{color:#0B1220}
 .qd-btn.is-nick .qd-ico{background:#E7F8EE;color:#128C4A}
 html[data-theme="dark"] .qd-btn.is-ai .qd-ico{background:#fff;color:#0B1220}
 html[data-theme="dark"] .qd-btn.is-nick .qd-ico{background:#123524;color:#5BD48C}
-.qd-x{font:400 1.75rem/1 var(--f-text)}
 @media (min-width:768px){.qd-menu{right:1.5rem;bottom:5.5rem}}
 @media (prefers-reduced-motion:no-preference){
   .qd-item{animation:qd-in .18s ease-out both}
@@ -81,3 +80,7 @@ html[data-theme="dark"] .qd-btn.is-nick .qd-ico{background:#123524;color:#5BD48C
 }
 a.qd-btn,a.qd-btn:visited,a.qd-btn:hover{color:var(--ink)}
 .qd-btn.is-ask{background:var(--hielo);border-color:var(--azul)}
+/* The corner button shows + and turns 45° into × while its menu is open. */
+.qd-plus{transition:transform .2s ease-out}
+.help-fab.is-open .qd-plus{transform:rotate(45deg)}
+@media (prefers-reduced-motion:reduce){.qd-plus{transition:none}}

@@ -17,11 +17,6 @@ const KEY = (brandId: string) => `bd-help-${brandId}`;
 const load = (brandId: string): Saved => { try { return JSON.parse(sessionStorage.getItem(KEY(brandId)) ?? '') as Saved; } catch { return { msgs: [], chatId: null }; } };
 const save = (brandId: string, s: Saved) => { try { sessionStorage.setItem(KEY(brandId), JSON.stringify(s)); } catch { /* private mode: the chat just isn't kept */ } };
 
-const SparkIcon = () => (
-  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z" /><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
-  </svg>
-);
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
 const INTRO = 'bd-help-intro';
 const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
@@ -101,7 +96,7 @@ export function HelpChat() {
       {!open && (
         <button type="button" className={`help-fab${dial ? ' is-open' : ''}`} onPointerMove={followPointer} onClick={() => { dismissIntro(); setDial((d) => !d); }}
           aria-expanded={dial} aria-label={t(dial ? 'dial.close' : 'dial.label')} title={t(dial ? 'dial.close' : 'dial.label')}>
-          <span className="help-core">{dial ? <span className="qd-x" aria-hidden="true">×</span> : <SparkIcon />}</span>
+          <span className="help-core"><svg className="qd-plus" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></span>
         </button>
       )}
       {!open && dial && <QuickDial onClose={closeDial} onAi={openAi} />}
