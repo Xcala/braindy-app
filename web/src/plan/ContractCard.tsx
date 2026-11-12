@@ -22,7 +22,7 @@ export function ContractCard({ brandId, contract }: { brandId: string; contract:
     <div className="card card-tight row g16" style={{ justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center', ...style }}>
       <div className="col g4" style={{ minWidth: 0, flex: '1 1 320px' }}>
         <span className="label">{t('plan.c.label')}</span>
-        <span className="w9" style={{ fontSize: 20, lineHeight: '26px' }}>{title}</span>
+        <span className="w9" style={{ fontSize: '1.25rem', lineHeight: '26px' }}>{title}</span>
         <span className="t-sm t-mute">{body}</span>
       </div>
       {panel}

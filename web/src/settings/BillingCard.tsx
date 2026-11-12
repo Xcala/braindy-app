@@ -38,7 +38,7 @@ export function BillingCard({ brandId }: { brandId: string }) {
             <span className={`chip ${plan.status === 'active' ? 'c-active' : plan.status === 'past_due' ? 'c-lost' : 'c-draft'}`}>{t(`bill.status.${plan.status ?? 'pending'}`)}</span>
           </div>
           {SERVICES.map((s) => (
-            <div key={s.key} className="row between g12" style={{ padding: '10px 0', borderTop: '1px solid var(--line)' }}>
+            <div key={s.key} className="row between g12" style={{ padding: '0.625rem 0', borderTop: '1px solid var(--line)' }}>
               <span className="col"><span className="w7 t-sm">{t(s.title)}</span><span className="t-xs t-mute">{t(s.body)}</span></span>
               {included.has(s.key) ? <span className="chip c-approved">{t('bill.inPlan')}</span>
                 : s.key === 'agents'
@@ -63,8 +63,8 @@ export function BillingCard({ brandId }: { brandId: string }) {
         <h2 className="h3" id="inv-h">{t('bill.invoices')}</h2>
         {invoices.length === 0 && <p className="t-sm t-mute">{t('bill.noInvoices')}</p>}
         {invoices.map((i) => (
-          <div key={i.id} className="row between g12 wrap t-sm" style={{ padding: '8px 0', borderTop: '1px solid var(--line)' }}>
-            <span style={{ minWidth: 110 }}>{i.date?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+          <div key={i.id} className="row between g12 wrap t-sm" style={{ padding: '0.5rem 0', borderTop: '1px solid var(--line)' }}>
+            <span style={{ minWidth: '6.875rem' }}>{i.date?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
             <span className="grow truncate">{i.concept}</span>
             <span className="w7">{money(i.amount, i.currency, lang)}</span>
             <span className={`chip ${i.status === 'paid' ? 'c-approved' : 'c-lost'}`}>{t(`bill.inv.${i.status}`)}</span>

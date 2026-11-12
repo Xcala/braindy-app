@@ -60,14 +60,14 @@ function Row({ brandId, r, kind, sub, date }: { brandId: string; r: BrandRequest
     } catch { setState('error'); }
   };
   return (
-    <div className="row g8" style={{ padding: '8px 0', borderTop: '1px solid var(--line)' }}>
+    <div className="row g8" style={{ padding: '0.5rem 0', borderTop: '1px solid var(--line)' }}>
       <Link to={`/requests/${r.id}`} className="col grow min-w-0" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
         <span className="t-sm w7 truncate">{r.title}</span>
         <span className="t-xs t-mute truncate">{sub ? t('rr.missing', { what: sub.map((k) => t(`rr.miss.${k}`)).join(' · ') }) : date}</span>
       </Link>
-      {kind === 'approve' && <Link to={`/requests/${r.id}`} className="btn btn-primary btn-sm flex-none" style={{ height: 32 }}>{t('req.review')}</Link>}
+      {kind === 'approve' && <Link to={`/requests/${r.id}`} className="btn btn-primary btn-sm flex-none" style={{ height: '2rem' }}>{t('req.review')}</Link>}
       {kind === 'incomplete' && (
-        <button type="button" className="btn btn-secondary btn-sm flex-none" style={{ height: 32 }} disabled={state === 'busy' || state === 'done'} onClick={ask}>
+        <button type="button" className="btn btn-secondary btn-sm flex-none" style={{ height: '2rem' }} disabled={state === 'busy' || state === 'done'} onClick={ask}>
           {t(state === 'done' ? 'at.asked' : state === 'error' ? 'files.actionError' : 'at.askBtn')}
         </button>
       )}

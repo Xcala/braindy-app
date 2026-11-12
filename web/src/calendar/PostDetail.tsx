@@ -26,7 +26,7 @@ export function PostDetail({ post, stat, onClose }: { post: SocialPost; stat?: S
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal cal-detail w-full max-w-[760px]" role="dialog" aria-modal="true" aria-labelledby="cal-detail-title">
+      <div className="modal cal-detail w-full max-w-[47.5rem]" role="dialog" aria-modal="true" aria-labelledby="cal-detail-title">
         <div className="cal-detail-media">
           {post.media.length === 0 ? <div className="cal-thumb is-text">Aa</div> : post.media.map((m) => m.kind === 'video'
             ? <video key={m.url} src={m.url} controls playsInline preload="metadata" />

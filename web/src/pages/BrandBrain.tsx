@@ -69,7 +69,7 @@ export function BrandBrain() {
   return (
     <div className="col g32">
       <div className="row between g24 wrap" style={{ alignItems: 'flex-end' }}>
-        <div className="col g8" style={{ maxWidth: 720 }}>
+        <div className="col g8" style={{ maxWidth: '45rem' }}>
           <p className="label">{current.name}</p>
           <h1 className="h1"><span className="w9">{t('bb.title')}</span> {total === 1 ? t('bb.knowsOne') : t('bb.knows', { n: total })}</h1>
           <p className="t-mute"><strong className="w7" style={{ color: 'var(--ink)' }}>{t('bl.line')}</strong> {t('bb.lede')}</p>
@@ -81,7 +81,7 @@ export function BrandBrain() {
 
       <div className="bb-grid">
         <section className="bb-brain col" aria-labelledby="h-bb-brain">
-          <div className="row between g12" style={{ padding: '20px 24px 0', alignItems: 'flex-start' }}>
+          <div className="row between g12" style={{ padding: '1.25rem 1.5rem 0', alignItems: 'flex-start' }}>
             <div className="col g4"><h2 className="h3" id="h-bb-brain">{t('bb.growing')}</h2><p className="t-sm bb-muted">{t('bb.growingSub')}</p></div>
             <button type="button" className="bb-replay" onClick={replay} disabled={replaying || !events.length}>{replaying ? t('bb.replaying') : t('bb.replay')}</button>
           </div>

@@ -17,7 +17,7 @@ export function InsightsCard({ brandId }: { brandId: string }) {
     <div className="card col g12" aria-labelledby="h-insights">
       <h2 className="h3" id="h-insights">{t('brains.news')}</h2>
       {list.map((i) => (
-        <div key={i.id} className="col g4" style={{ paddingTop: 8, borderTop: '1px solid var(--line)' }}>
+        <div key={i.id} className="col g4" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--line)' }}>
           <span className="t-xs t-mute">{brainName(i.brain as BrainId)} · {when(lang, i.at?.toDate())}</span>
           <span className="t-sm w7">{i.title}</span>
           {i.body && <Scan text={i.body} points />}
@@ -66,9 +66,9 @@ export function GroupAnalysis({ groupId, canAsk }: { groupId: string; canAsk: bo
       {last && (
         <>
           <p className="t-sm w7">{last.title}</p>
-          {(last.insights ?? []).map((s, i) => <p key={i} className="t-sm" style={{ borderLeft: '3px solid var(--line)', paddingLeft: 10 }}>{s}</p>)}
+          {(last.insights ?? []).map((s, i) => <p key={i} className="t-sm" style={{ borderLeft: '3px solid var(--line)', paddingLeft: '0.625rem' }}>{s}</p>)}
           {(last.opportunities ?? []).length > 0 && <p className="label">{t('brains.opportunities')}</p>}
-          {(last.opportunities ?? []).map((s, i) => <p key={i} className="t-sm" style={{ borderLeft: '3px solid #8B5CF6', paddingLeft: 10 }}>{s}</p>)}
+          {(last.opportunities ?? []).map((s, i) => <p key={i} className="t-sm" style={{ borderLeft: '3px solid #8B5CF6', paddingLeft: '0.625rem' }}>{s}</p>)}
         </>
       )}
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('brains.error')}</p>}

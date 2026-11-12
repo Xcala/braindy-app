@@ -55,7 +55,7 @@ export function SalesBody({ stats }: { stats: SalesStats }) {
           <h2 className="h3">{t('sales.promos')}</h2>
           <ul className="col">
             {m.promos!.map((p) => (
-              <li key={p.name} className="row between g12 wrap" style={{ padding: '12px 0', borderTop: '1px solid var(--line)' }}>
+              <li key={p.name} className="row between g12 wrap" style={{ padding: '0.75rem 0', borderTop: '1px solid var(--line)' }}>
                 <div className="col g4" style={{ minWidth: 0, flex: '1 1 220px' }}><span className="w7">{p.name}</span>{p.dates && <span className="t-xs t-mute">{p.dates}</span>}</div>
                 <div className="row g16 wrap t-sm">
                   {p.sales != null && <b>{money(p.sales)}</b>}

@@ -27,7 +27,7 @@ export function ConfirmDialog({ title, children, confirmLabel, danger, busy, onC
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
-      <div ref={ref} className="modal w-full max-w-[480px]" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+      <div ref={ref} className="modal w-full max-w-[30rem]" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
         <h2 className="h2" id="confirm-title">{title}</h2>
         {children && <div className="t-mute">{children}</div>}
         <div className="row g12 wrap" style={{ justifyContent: 'flex-end' }}>

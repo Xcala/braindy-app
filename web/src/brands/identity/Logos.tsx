@@ -69,7 +69,7 @@ export function Logos({ logos, name = 'logo' }: { logos: LogoSet; name?: string 
       ))}
     </div>}
     {rows.length > 0 && <div className="logos-d overflow-x-auto">
-      <div className="vgrid" style={{ gridTemplateColumns: `160px repeat(${grounds.length},minmax(0,1fr))`, minWidth: 180 * grounds.length }}>
+      <div className="vgrid" style={{ gridTemplateColumns: `160px repeat(${grounds.length},minmax(0,1fr))`, minWidth: `${(180 * grounds.length) / 16}rem` }}>
         <span />
         {grounds.map((g) => <span key={g.key} className="label" style={{ textAlign: 'center' }}>{groundName(g)}</span>)}
         {rows.map(([label, url]) => (
@@ -103,7 +103,7 @@ function Cell({ g, url, src, label, ground, showGround, file }: { g: Ground; url
       {showGround && <span className="vground" style={{ color: g.dark ? '#C9D0DE' : undefined }}>{ground}</span>}
       <img src={src ?? url} alt="" loading="lazy" style={{ filter }} />
       <LogoDownload className="dl" url={url} tone={g.key === 'darkColor' && !src ? 'white' : g.tone} ground={g.bg} name={file} label={`${label} · ${ground}`}
-        style={{ width: 36, background: g.dark ? 'rgba(255,255,255,.14)' : undefined, color: g.dark ? '#fff' : undefined }} />
+        style={{ width: '2.25rem', background: g.dark ? 'rgba(255,255,255,.14)' : undefined, color: g.dark ? '#fff' : undefined }} />
     </div>
   );
 }

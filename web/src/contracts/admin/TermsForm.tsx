@@ -11,7 +11,7 @@ export function TermsForm({ terms, onChange, missing, hide = [] }: { terms: Reco
     <div className="col g16">
       {TERM_GROUPS.map((g) => (
         <fieldset key={g.title} className="col g8" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="label" style={{ marginBottom: 6 }}>{t(`ctr.tg.${g.title}` as StringKey)}</legend>
+          <legend className="label" style={{ marginBottom: '0.375rem' }}>{t(`ctr.tg.${g.title}` as StringKey)}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             {g.keys.filter((k) => !hide.includes(k)).map((k) => (
               <label key={k} className={`col g4 t-sm ${LONG.has(k) ? 'sm:col-span-2' : ''}`}>

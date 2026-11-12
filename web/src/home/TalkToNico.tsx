@@ -58,7 +58,7 @@ export function TalkToNico({ brandName }: { brandName: string }) {
         {t('home.talkNico')}<Icon name="chevronDown" size={16} />
       </button>
       {open && (
-        <div className="menu absolute left-0 top-[52px] z-40 flex w-[min(300px,calc(100vw-32px))] flex-col gap-0.5" role="menu" aria-label={t('home.talkNico')}>
+        <div className="menu absolute left-0 top-[3.25rem] z-40 flex w-[min(300px,calc(100vw-32px))] flex-col gap-0.5" role="menu" aria-label={t('home.talkNico')}>
           {group
             ? <a href={group} {...ext}><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.group')}</a>
             : admin
@@ -69,7 +69,7 @@ export function TalkToNico({ brandName }: { brandName: string }) {
             ? <a href={`mailto:${NICO_EMAIL}?subject=${subject}`} {...ext} target={undefined}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></a>
             : <button type="button" role="menuitem" aria-expanded={mail} className="menu-item w-full text-left" style={{ border: 0, cursor: 'pointer' }} onClick={() => setMail((m) => !m)}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></button>}
           {!mobile && mail && (
-            <div className="row g6 wrap" style={{ padding: '2px 12px 8px 56px' }}>
+            <div className="row g6 wrap" style={{ padding: '2px 0.75rem 0.5rem 3.5rem' }}>
               <a className="btn btn-secondary btn-sm" href={`https://mail.google.com/mail/?view=cm&fs=1&to=${NICO_EMAIL}&su=${subject}`} target="_blank" rel="noreferrer" onClick={close}>Gmail</a>
               <a className="btn btn-secondary btn-sm" href={`https://outlook.office.com/mail/deeplink/compose?to=${NICO_EMAIL}&subject=${subject}`} target="_blank" rel="noreferrer" onClick={close}>Outlook</a>
               <button type="button" className="btn btn-ghost btn-sm" onClick={copy}>{t(copied ? 'hg.emailCopied' : 'hg.emailCopy')}</button>
@@ -78,7 +78,7 @@ export function TalkToNico({ brandName }: { brandName: string }) {
           )}
           <a href={`sms:+${phone}`} {...ext} target={undefined}><span className="talk-ico"><TextIcon /></span><span className="col"><span>{t('hg.textNico')}</span><span className="t-xs t-mute">+{phone}</span></span></a>
           {current && (
-            <button type="button" role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: undefined, cursor: 'pointer', borderTop: '1px solid var(--line)', borderRadius: 0, marginTop: 4, paddingTop: 10 }} onClick={() => { close(); setBooking(true); }}>
+            <button type="button" role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: undefined, cursor: 'pointer', borderTop: '1px solid var(--line)', borderRadius: 0, marginTop: '0.25rem', paddingTop: '0.625rem' }} onClick={() => { close(); setBooking(true); }}>
               <span className="talk-ico is-cal"><CalIcon /></span>{t('hg.book')}
             </button>
           )}

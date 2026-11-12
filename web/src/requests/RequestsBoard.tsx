@@ -16,7 +16,7 @@ const COL_FIRST = 6;
 
 export function TagChips({ tags }: { tags?: string[] }) {
   if (!tags?.length) return null;
-  return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: 22, fontSize: 11, background: '#F2F5FF', color: 'var(--azul)' }}>#{g}</span>)}</span>;
+  return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: '#F2F5FF', color: 'var(--azul)' }}>#{g}</span>)}</span>;
 }
 
 /** NickMark only: what an open request still lacks ("Missing: date · where"). */
@@ -24,7 +24,7 @@ export function MissingChip({ r }: { r: BrandRequest }) {
   const { t } = useI18n();
   const m = missingOf(r);
   if (!m.length) return null;
-  return <span className="chip chip-plain" style={{ height: 22, fontSize: 11, background: '#FFF4E5', color: '#8A4B00' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
+  return <span className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: '#FFF4E5', color: '#8A4B00' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
 }
 
 /** Board by status. NickMark drags a card to another column to move it. */
@@ -53,26 +53,26 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
             onDrop: (e: React.DragEvent) => { e.preventDefault(); drop(status); },
           } : {};
           return (
-            <section key={status} {...target} className="col g12 rounded-[24px] p-4" aria-label={t(`req.status.${status}`)}
-              style={{ background: bg, minHeight: 320, outline: overCol === status ? '2px dashed var(--azul)' : undefined, outlineOffset: -2 }}>
+            <section key={status} {...target} className="col g12 rounded-[1.5rem] p-4" aria-label={t(`req.status.${status}`)}
+              style={{ background: bg, minHeight: '20rem', outline: overCol === status ? '2px dashed var(--azul)' : undefined, outlineOffset: -2 }}>
               <div className="row between"><span className={`chip ${STATUS_CHIP[status]}`}>{t(`req.status.${status}`)}</span><span className="t-sm t-mute">{all.length}</span></div>
               {items.map((r) => (
                 <Link key={r.id} to={`/requests/${r.id}`} className="card col" draggable={isAdmin}
                   onDragStart={isAdmin ? (e) => { setDragId(r.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.id); } : undefined}
                   onDragEnd={() => { setDragId(null); setOverCol(null); }}
-                  style={{ padding: 16, gap: 10, textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
+                  style={{ padding: '1rem', gap: '0.625rem', textDecoration: 'none', color: 'var(--ink)', borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
                   <span className="w7" style={{ overflowWrap: 'anywhere' }}>{r.title}</span>
                   {r.createdAt && <span className="t-xs t-mute">{t('req.requestedOn', { day: dateLabel(r.createdAt.toDate(), lang) })}</span>}
                   {pieceLabel(r, lang) && <span className="t-xs t-mute">{pieceLabel(r, lang)}</span>}
                   <TagChips tags={r.tags} />
                   {isAdmin && <MissingChip r={r} />}
-                  {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: 22 }}>{t('home.version', { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
+                  {r.versionCount ? <span className="row g8"><span className="chip chip-plain c-type" style={{ height: '1.375rem' }}>{t('home.version', { n: r.versionCount })}</span>{r.approvalLevel === 'nicolas' && <span className="t-xs t-mute">{t('req.reviewedByNicolas')}</span>}</span> : null}
                   <div className="row between g8">
                     <span className="row g8" style={{ minWidth: 0 }}>
                       {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt="" className="h-6 w-6 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
                       <span className="t-xs t-mute truncate">{status === 'in_production' ? t('req.onIt', { brain: brainName(r.leadBrain) }) : t('req.madeByReviewed')}</span>
                     </span>
-                    {status === 'to_approve' && <span className="btn btn-primary btn-sm flex-none" style={{ height: 32 }}>{t('req.review')}</span>}
+                    {status === 'to_approve' && <span className="btn btn-primary btn-sm flex-none" style={{ height: '2rem' }}>{t('req.review')}</span>}
                   </div>
                   {(() => { const d = smartDate(r, lang, t); return d.text && <span className="t-xs" style={{ color: d.late ? '#C0362C' : 'var(--graphite)' }}>{d.text}</span>; })()}
                 </Link>

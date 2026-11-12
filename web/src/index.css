@@ -65,10 +65,10 @@ img[src$="nicolas.jpg"] { object-position: 50% 18%; }
 
 /* Results › Overview: one column per source (website, social, ads) from desktop width; inside each, two cards per row and a smaller number. */
 @media (min-width: 1024px) { .res-cols { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); } }
-.res-cols .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.res-cols .card { padding: 16px; }
-.res-cols .h1 { font-size: 28px; line-height: 1.15; }
+.res-cols .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.res-cols .card { padding: 1rem; }
+.res-cols .h1 { font-size: 1.75rem; line-height: 1.15; }
 
 /* Home › next meeting: in a narrow card the button labels wrap inside the pill instead of spilling out */
-.hg-next .btn{white-space:normal;height:auto;min-height:36px;padding-block:8px;text-align:center;line-height:18px}
-.nm-more{width:36px;padding:0;font-size:20px;line-height:20px}
+.hg-next .btn{white-space:normal;height:auto;min-height:2.25rem;padding-block:0.5rem;text-align:center;line-height:1.125rem}
+.nm-more{width:2.25rem;padding:0;font-size:1.25rem;line-height:1.25rem}

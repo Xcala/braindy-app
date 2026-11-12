@@ -17,11 +17,11 @@ export function AdminAiHealth() {
 
   const table = (rows: Group[], label: (k: string) => string) => (
     <div className="table overflow-x-auto">
-      <div className="trow head label min-w-[560px]" style={{ gridTemplateColumns: COLS }}>
+      <div className="trow head label min-w-[35rem]" style={{ gridTemplateColumns: COLS }}>
         <span>{t('aih.c.what')}</span><span>{t('aih.c.calls')}</span><span>{t('aih.c.failed')}</span><span>{t('aih.c.retried')}</span><span>{t('aih.c.time')}</span><span>{t('aih.c.cost')}</span>
       </div>
       {rows.map((g) => (
-        <div key={g.key} className="trow min-w-[560px] t-sm" style={{ gridTemplateColumns: COLS }}>
+        <div key={g.key} className="trow min-w-[35rem] t-sm" style={{ gridTemplateColumns: COLS }}>
           <span className="w7 truncate" title={label(g.key)}>{label(g.key)}</span><span>{g.calls}</span>
           <span style={{ color: g.failed ? '#C0362C' : undefined, fontWeight: g.failed ? 700 : 400 }}>{g.failed}</span>
           <span>{g.retried}</span><span>{g.p50 ? secs(g.p50) : '—'}</span><span>{usd(g.usd)}</span>
@@ -35,7 +35,7 @@ export function AdminAiHealth() {
     <div className="col g24">
       <div className="row between g12 wrap">
         <div className="col g8"><p className="label">{t('bill.a.only')}</p><h1 className="h1">{t('aih.nav')}</h1><p className="t-mute">{t('aih.sub')}</p></div>
-        <div className="field" style={{ minWidth: 170 }}>
+        <div className="field" style={{ minWidth: '10.625rem' }}>
           <label htmlFor="aih-days">{t('aih.period')}</label>
           <select id="aih-days" className="input" value={days} onChange={(e) => setDays(Number(e.target.value))}>
             <option value={1}>{t('aih.d1')}</option><option value={7}>{t('aih.d7')}</option><option value={30}>{t('aih.d30')}</option>
@@ -44,7 +44,7 @@ export function AdminAiHealth() {
       </div>
 
       {error && <div className="card" role="alert">{t('aih.error')}</div>}
-      {!h && !error && <div className="skel" style={{ height: 240 }} />}
+      {!h && !error && <div className="skel" style={{ height: '15rem' }} />}
       {h && (
         <>
           {!h.configured && <div className="card" role="status" style={{ background: '#FFF7E3', border: 0 }}>⚠ {t('aih.off')}</div>}

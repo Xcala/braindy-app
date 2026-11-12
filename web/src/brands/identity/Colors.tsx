@@ -29,8 +29,8 @@ export function Colors({ colors }: { colors: Color[] }) {
           const hex = c.hex!.toUpperCase();
           return (
             <div key={c.id ?? hex} className="card flex sm:block" style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="swatch w-[84px] flex-none sm:w-auto" style={{ borderRadius: 0, height: 'auto', minHeight: 140, background: hex, borderBottom: inkOn(hex) === '#0B1220' ? '1px solid #E3E7F0' : undefined }} />
-              <div className="col g8 min-w-0 grow p-3.5 sm:p-[18px]">
+              <div className="swatch w-[5.25rem] flex-none sm:w-auto" style={{ borderRadius: 0, height: 'auto', minHeight: '8.75rem', background: hex, borderBottom: inkOn(hex) === '#0B1220' ? '1px solid #E3E7F0' : undefined }} />
+              <div className="col g8 min-w-0 grow p-3.5 sm:p-[1.125rem]">
                 <span className="h3">{c.name ?? hex}</span>
                 <div className="spec">
                   <span className="k">Hex</span><span className="mono">{hex}</span>

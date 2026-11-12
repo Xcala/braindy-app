@@ -48,7 +48,7 @@ export function LogoDownload({ url, tone, ground, name, label, style, className 
         <span ref={pop} role="menu" className="fmenu" style={open} aria-label={`${t('common.download')} ${label}`}>
           {formats.map((f) => (
             <button key={f} type="button" role="menuitem" onClick={() => get(f)}>
-              <b style={{ minWidth: 34 }}>{f === 'pngClear' ? 'PNG' : f.toUpperCase()}</b>
+              <b style={{ minWidth: '2.125rem' }}>{f === 'pngClear' ? 'PNG' : f.toUpperCase()}</b>
               <span className="t-mute">{t(`logoDl.${f}` as StringKey)}</span>
             </button>
           ))}

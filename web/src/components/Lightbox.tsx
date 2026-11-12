@@ -47,7 +47,7 @@ export function Lightbox({ items, index, onIndex, onClose }: { items: LightboxIt
         </div>
       </div>
       <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-4 sm:px-20" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-        <img key={item.url} src={item.url} alt={item.name ?? ''} className="max-h-full max-w-full rounded-[12px] object-contain" style={{ boxShadow: '0 20px 60px #0008' }} />
+        <img key={item.url} src={item.url} alt={item.name ?? ''} className="max-h-full max-w-full rounded-[0.75rem] object-contain" style={{ boxShadow: '0 20px 60px #0008' }} />
         {n > 1 && <>
           <button type="button" className={`${nav} left-2 sm:left-5`} style={{ background: '#ffffff1f' }} onClick={() => go(-1)} aria-label={t('lb.prev')}>‹</button>
           <button type="button" className={`${nav} right-2 sm:right-5`} style={{ background: '#ffffff1f' }} onClick={() => go(1)} aria-label={t('lb.next')}>›</button>

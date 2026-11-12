@@ -43,7 +43,7 @@ export function MyWhatsappCard() {
         <input id="mywa-num" className="input" inputMode="tel" placeholder="+57 300 000 0000" value={phone} onChange={(e) => { setPhone(e.target.value); setMsg(null); }} />
       </div>
       <label className="row g8 t-sm" style={{ alignItems: 'flex-start' }}>
-        <input type="checkbox" checked={optIn} onChange={(e) => { setOptIn(e.target.checked); setMsg(null); }} style={{ marginTop: 3 }} />
+        <input type="checkbox" checked={optIn} onChange={(e) => { setOptIn(e.target.checked); setMsg(null); }} style={{ marginTop: '0.1875rem' }} />
         <span>{t('mywa.consent')}</span>
       </label>
       <div className="row g8 wrap">

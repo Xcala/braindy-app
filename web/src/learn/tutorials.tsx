@@ -53,7 +53,7 @@ export function HowItWorks() {
   const l = list.filter((x) => x.kind === 'section' && x.status === 'published' && best(x) > 0).sort((a, b) => best(b) - best(a))[0];
   if (!l || pathname.startsWith('/learn')) return null;
   return (
-    <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 8 }}>
+    <div className="row" style={{ justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
       <Link to={`/learn/${l.id}`} className="chip chip-plain t-sm" title={l.title[lang]}>▶ {t('tut.how')} · {t('cr.minutes', { n: l.minutes })}</Link>
     </div>
   );

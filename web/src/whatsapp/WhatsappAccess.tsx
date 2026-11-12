@@ -39,27 +39,27 @@ export function WhatsappAccess() {
     <section className="card col g16" aria-labelledby="h-waa">
       <div className="row between wrap g12">
         <div className="col"><h2 className="h3" id="h-waa">{t('waa.title')}</h2><span className="t-xs t-mute">{t('waa.sub')}</span></div>
-        <select className="input" style={{ width: 'auto', minWidth: 200 }} value={brandId} onChange={(e) => setBrandId(e.target.value)} aria-label={t('wa.brand')}>
+        <select className="input" style={{ width: 'auto', minWidth: '12.5rem' }} value={brandId} onChange={(e) => setBrandId(e.target.value)} aria-label={t('wa.brand')}>
           <option value="">{t('wa.brand')}</option>
           {active.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       </div>
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
       {!brandId && <p className="t-sm t-mute">{t('waa.pick')}</p>}
-      {brandId && people === null && <div className="skel" style={{ height: 80 }} />}
+      {brandId && people === null && <div className="skel" style={{ height: '5rem' }} />}
       {brandId && people?.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}
       {people?.map((p) => {
         const label = p.name && p.name !== p.email ? p.name : p.email || p.uid;
         const dirty = (phones[p.uid] ?? '').replace(/\D/g, '') !== p.phone;
         return (
-          <div key={p.uid} className="row g12 wrap" style={{ paddingBottom: 12, borderBottom: '1px solid var(--line)' }}>
+          <div key={p.uid} className="row g12 wrap" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
             <span className="avatar-txt">{(p.email || '?').slice(0, 2).toUpperCase()}</span>
-            <div className="col grow" style={{ minWidth: 180 }}>
+            <div className="col grow" style={{ minWidth: '11.25rem' }}>
               <span className="w7 truncate">{label}</span>
               <span className="t-xs t-mute truncate">{p.email}{p.phone ? ` · ${t(p.optIn ? 'waa.linked' : 'waa.stopped')}` : ` · ${t('waa.noNumber')}`}</span>
             </div>
             <form className="row g8" onSubmit={(e) => { e.preventDefault(); save(p, { phone: phones[p.uid] ?? '' }); }}>
-              <input className="input" style={{ height: 36, width: 170 }} type="tel" inputMode="tel" placeholder="+57 300 000 0000" aria-label={`${t('mywa.number')} · ${label}`}
+              <input className="input" style={{ height: '2.25rem', width: '10.625rem' }} type="tel" inputMode="tel" placeholder="+57 300 000 0000" aria-label={`${t('mywa.number')} · ${label}`}
                 value={phones[p.uid] ?? ''} onChange={(e) => setPhones({ ...phones, [p.uid]: e.target.value })} />
               {dirty && <button type="submit" className="btn btn-secondary btn-sm">{t('mywa.save')}</button>}
             </form>

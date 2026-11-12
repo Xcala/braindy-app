@@ -18,7 +18,7 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
   return (
     <div className="col g20">
       {brain.position && (
-        <div className="stage col g12 rounded-[24px] p-6 sm:p-10">
+        <div className="stage col g12 rounded-[1.5rem] p-6 sm:p-10">
           <p className="label">{t('brand.position')}</p>
           <p className="d-lg d-fit d-fit-lg" style={{ color: '#fff' }}>{brain.position}</p>
           <span className="row g8">

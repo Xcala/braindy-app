@@ -19,7 +19,7 @@ export function CopyBtn({ value, onCopied, label }: { value: string; onCopied?: 
   const { t } = useI18n();
   const [done, setDone] = useState(false);
   return (
-    <button type="button" className="btn btn-ghost btn-sm flex-none" style={{ height: 30, width: 30, padding: 0 }} aria-label={label} title={done ? t('common.copied') : label}
+    <button type="button" className="btn btn-ghost btn-sm flex-none" style={{ height: '1.875rem', width: '1.875rem', padding: 0 }} aria-label={label} title={done ? t('common.copied') : label}
       onClick={async () => { await navigator.clipboard.writeText(value).catch(() => undefined); setDone(true); onCopied?.(); setTimeout(() => setDone(false), 1800); }}>
       {done ? '✓' : <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>}
     </button>
@@ -65,7 +65,7 @@ export function PasswordCell({ brandId, a, onEdit }: { brandId: string; a: Acces
       <span className="mono t-sm truncate" aria-live="polite">{value}</span>
       <span className="t-xs t-mute whitespace-nowrap" aria-label={t('acc.hidesIn', { time: fmt(left) })}>{fmt(left)}</span>
       <CopyBtn value={value} label={`${t('acc.copy')} · ${t('acc.password')}`} onCopied={() => accessesApi.copied(brandId, a.id).catch(() => undefined)} />
-      <button type="button" className="btn btn-ghost btn-sm" style={{ height: 30, padding: '0 8px' }} onClick={() => setValue(null)}>{t('acc.hide')}</button>
+      <button type="button" className="btn btn-ghost btn-sm" style={{ height: '1.875rem', padding: '0 0.5rem' }} onClick={() => setValue(null)}>{t('acc.hide')}</button>
     </span>
   ) : (
     <span className="row g8 min-w-0">

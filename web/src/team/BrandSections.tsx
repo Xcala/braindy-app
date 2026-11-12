@@ -27,7 +27,7 @@ export function BrandSections({ brandId }: { brandId: string }) {
     updateDoc(doc(db, 'brands', brandId), { sectionsOff: SECTIONS.filter((x) => next.includes(x)) }).catch(() => setError(true));
   };
   return (
-    <div className="col g8" style={{ paddingBottom: 16, borderBottom: '1px solid var(--line)' }}>
+    <div className="col g8" style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--line)' }}>
       <p className="w7" style={{ margin: 0 }}>{t('bsec.title')}</p>
       <p className="t-sm t-mute" style={{ margin: 0 }}>{t('bsec.hint')}</p>
       <div className="row g6 wrap" role="group" aria-label={t('bsec.title')}>
@@ -35,7 +35,7 @@ export function BrandSections({ brandId }: { brandId: string }) {
           const on = isOn(s);
           return (
             <button key={s} type="button" aria-pressed={on} onClick={() => toggle(s)} className="t-xs w7"
-              style={{ borderRadius: 999, padding: '5px 10px', cursor: 'pointer', border: `1px solid ${on ? 'var(--azul)' : 'var(--line)'}`,
+              style={{ borderRadius: '62.4375rem', padding: '0.3125rem 0.625rem', cursor: 'pointer', border: `1px solid ${on ? 'var(--azul)' : 'var(--line)'}`,
                 background: on ? 'var(--hielo)' : '#fff', color: on ? 'var(--azul)' : 'var(--graphite)', textDecoration: on ? undefined : 'line-through' }}>
               {on ? '✓ ' : ''}{t(SECTION_LABEL[s])}
             </button>

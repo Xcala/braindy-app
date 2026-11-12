@@ -67,7 +67,7 @@ function Field({ label, value, onSave, type = 'text', area, placeholder }: {
     <div className="field">
       <label htmlFor={id}>{label}</label>
       {area
-        ? <textarea id={id} className="input" style={{ height: 96, padding: '12px 16px', resize: 'vertical' }} value={v} placeholder={placeholder} onChange={(e) => setV(e.target.value)} onBlur={commit} />
+        ? <textarea id={id} className="input" style={{ height: '6rem', padding: '0.75rem 1rem', resize: 'vertical' }} value={v} placeholder={placeholder} onChange={(e) => setV(e.target.value)} onBlur={commit} />
         : <input id={id} className="input" type={type} value={v} placeholder={placeholder} onChange={(e) => setV(e.target.value)} onBlur={commit} />}
     </div>
   );

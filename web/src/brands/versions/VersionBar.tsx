@@ -35,7 +35,7 @@ export function VersionBar({ brand, versions, viewing, onView, isAdmin = false, 
         {isAdmin && !viewing && <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setAsking(true)}>{t('ver.new')}</button>}
       </div>
       {old && (
-        <div className="card row g12 wrap between" role="status" style={{ padding: '12px 16px' }}>
+        <div className="card row g12 wrap between" role="status" style={{ padding: '0.75rem 1rem' }}>
           <span className="t-sm">{t(work ? 'ver.viewingWork' : 'ver.viewing', { name: old.name })}</span>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => onView(null)}>{t('ver.backToCurrent')}</button>
         </div>

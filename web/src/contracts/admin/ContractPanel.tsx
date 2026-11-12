@@ -54,7 +54,7 @@ export function ContractPanel({ brand }: { brand: Brand }) {
 
   return (
     <section className="col g16">
-      <div className="card col g16" style={{ padding: 22 }}>
+      <div className="card col g16" style={{ padding: '1.375rem' }}>
         <div className="row between g8 wrap">
           <h2 className="h3">{t('ctr.a.title')}</h2>
           <span className="chip">{t(`ctr.status.${status}` as StringKey)}</span>
@@ -75,14 +75,14 @@ export function ContractPanel({ brand }: { brand: Brand }) {
 
             <details className="col g12">
               <summary className="w7 t-sm" style={{ cursor: 'pointer' }}>{t('ctr.a.more')}</summary>
-              <div className="col g16" style={{ marginTop: 12 }}>
+              <div className="col g16" style={{ marginTop: '0.75rem' }}>
                 <TermsForm terms={draft.terms} missing={missing} hide={[...MAIN]} onChange={(terms) => setDraft({ ...draft, terms })} />
                 {field('scope', t('ctr.annex1'), <textarea className="input" rows={5} value={draft.scope} placeholder={t('ctr.a.scopeHint')} onChange={(e) => setDraft({ ...draft, scope: e.target.value })} />)}
               </div>
             </details>
             <details className="col g12">
               <summary className="w7 t-sm" style={{ cursor: 'pointer' }}>{t('ctr.a.annexes')}</summary>
-              <div className="col g16" style={{ marginTop: 12 }}>
+              <div className="col g16" style={{ marginTop: '0.75rem' }}>
                 <GanttEditor schedule={draft.schedule} onChange={(s) => setDraft({ ...draft, schedule: s })} />
                 <ChecklistEditor items={draft.checklist} weeks={draft.schedule.weeks} onChange={(checklist) => setDraft({ ...draft, checklist })} />
               </div>
@@ -107,16 +107,16 @@ export function ContractPanel({ brand }: { brand: Brand }) {
         {msg && <p className="t-sm" role="status">{msg}</p>}
       </div>
 
-      {status === 'draft' && preview && <div className="card" style={{ padding: 22, maxHeight: 520, overflowY: 'auto' }}><ContractText text={preview} /></div>}
+      {status === 'draft' && preview && <div className="card" style={{ padding: '1.375rem', maxHeight: '32.5rem', overflowY: 'auto' }}><ContractText text={preview} /></div>}
       {status === 'sent' && draft.sentText && (
-        <details className="card" style={{ padding: 22 }}>
+        <details className="card" style={{ padding: '1.375rem' }}>
           <summary className="w7" style={{ cursor: 'pointer' }}>{t('ctr.text')}</summary>
-          <div style={{ marginTop: 12 }}><ContractText text={draft.sentText} /></div>
+          <div style={{ marginTop: '0.75rem' }}><ContractText text={draft.sentText} /></div>
         </details>
       )}
 
       {status === 'signed' && schedule && (
-        <details className="card col g12" style={{ padding: 22 }}>
+        <details className="card col g12" style={{ padding: '1.375rem' }}>
           <summary className="h3" style={{ cursor: 'pointer' }}>{t('ctr.a.liveSchedule')}</summary>
           <p className="t-xs t-mute">{t('ctr.a.liveScheduleSub')}</p>
           <GanttEditor schedule={schedule} onChange={setSchedule} />

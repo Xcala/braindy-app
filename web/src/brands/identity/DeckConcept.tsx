@@ -39,7 +39,7 @@ export function DeckConcept({ shots }: { shots: Shot[] }) {
                 <img src={s.url} alt={name(s)} loading="lazy" className={s.kind === 'hero' ? 'dc-img dc-cover' : 'dc-img'} />
               </button>
             </div>
-            <figcaption className="dc-cap row between g8" style={{ padding: '10px 16px 14px' }}>
+            <figcaption className="dc-cap row between g8" style={{ padding: '0.625rem 1rem 0.875rem' }}>
               <span className="col g4" style={{ minWidth: 0 }}>
                 <span className="label">{name(s)}</span>
                 {s.caption && <span className="t-sm t-mute">{s.caption}</span>}

@@ -42,20 +42,20 @@ export function SignContract({ brandId, contract }: { brandId: string; contract:
 
   return (
     <section className="col g20 min-w-0">
-      <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+      <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <p className="label">{t('ctr.step1')}</p>
-        <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.rules1')}</span> {t('ctr.rules2')}</h1>
+        <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{t('ctr.rules1')}</span> {t('ctr.rules2')}</h1>
         <p className="t-lg muted">{t('ctr.rulesSub')}</p>
       </div>
 
-      <div className="card col g12" style={{ padding: 22, maxHeight: 640, overflowY: 'auto' }} tabIndex={0} aria-label={t('ctr.text')}>
+      <div className="card col g12" style={{ padding: '1.375rem', maxHeight: '40rem', overflowY: 'auto' }} tabIndex={0} aria-label={t('ctr.text')}>
         <ContractText text={text} />
-        {contract.scope && <><h3 className="w9" style={{ fontSize: 15 }}>{t('ctr.annex1')}</h3><ContractText text={contract.scope} /></>}
+        {contract.scope && <><h3 className="w9" style={{ fontSize: '0.9375rem' }}>{t('ctr.annex1')}</h3><ContractText text={contract.scope} /></>}
       </div>
       {contract.schedule && (
-        <details className="card col g12" style={{ padding: 22 }}>
+        <details className="card col g12" style={{ padding: '1.375rem' }}>
           <summary className="w7" style={{ cursor: 'pointer' }}>{t('ctr.annexes')}</summary>
-          <div className="col g16" style={{ marginTop: 12 }}>
+          <div className="col g16" style={{ marginTop: '0.75rem' }}>
             <Gantt schedule={contract.schedule} />
             <Checklist items={contract.checklist} start={contract.schedule.start} />
           </div>
@@ -65,7 +65,7 @@ export function SignContract({ brandId, contract }: { brandId: string; contract:
       {!isSigner ? (
         <div className="card t-sm" role="status" style={{ background: '#EAF0FF', border: 0 }}>{t('ctr.notSigner', { email: contract.signer.email })}</div>
       ) : (
-        <div className="card col g16" style={{ padding: 22 }}>
+        <div className="card col g16" style={{ padding: '1.375rem' }}>
           <h2 className="h3">{t('ctr.signTitle')}</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {CLIENT_FIELDS.map((k) => (
@@ -77,7 +77,7 @@ export function SignContract({ brandId, contract }: { brandId: string; contract:
           </div>
           <SignaturePad label={t('ctr.yourSignature')} onChange={setSignature} />
           <label className="row g8 t-sm" style={{ alignItems: 'flex-start' }}>
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 3 }} />
+            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: '0.1875rem' }} />
             <span>{t('ctr.consent')}</span>
           </label>
           {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}

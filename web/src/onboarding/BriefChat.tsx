@@ -38,14 +38,14 @@ export function BriefChat({ brandId, brandName }: { brandId: string; brandName: 
 
   const Bubble = ({ who, children }: { who: string; children: React.ReactNode }) => (
     <div className="row g12" style={{ alignItems: 'flex-start' }}>
-      <img src={AVATAR} alt="" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', background: '#05070D', flex: 'none' }} />
-      <div className="col g8" style={{ maxWidth: 560 }}><span className="t-xs t-mute w7">{who}</span>
-        <div className="card" style={{ padding: '14px 16px', borderRadius: '4px 16px 16px 16px' }}>{children}</div></div>
+      <img src={AVATAR} alt="" style={{ width: '2.75rem', height: '2.75rem', borderRadius: '0.75rem', objectFit: 'cover', background: '#05070D', flex: 'none' }} />
+      <div className="col g8" style={{ maxWidth: '35rem' }}><span className="t-xs t-mute w7">{who}</span>
+        <div className="card" style={{ padding: '0.875rem 1rem', borderRadius: '0.25rem 1rem 1rem 1rem' }}>{children}</div></div>
     </div>
   );
   const Mine = ({ children }: { children: React.ReactNode }) => (
     <div className="row" style={{ justifyContent: 'flex-end' }}>
-      <div style={{ background: '#2F4DE0', color: '#fff', borderRadius: '16px 4px 16px 16px', padding: '14px 16px', maxWidth: 460, whiteSpace: 'pre-wrap' }}>{children}</div>
+      <div style={{ background: '#2F4DE0', color: '#fff', borderRadius: '1rem 0.25rem 1rem 1rem', padding: '0.875rem 1rem', maxWidth: '28.75rem', whiteSpace: 'pre-wrap' }}>{children}</div>
     </div>
   );
 
@@ -66,11 +66,11 @@ export function BriefChat({ brandId, brandName }: { brandId: string; brandName: 
         <div ref={end} />
       </div>
       {next ? (
-        <form className="glass row g12 wrap" style={{ borderRadius: 18, padding: '10px 10px 10px 18px' }} onSubmit={(e) => { e.preventDefault(); send(); }}>
+        <form className="glass row g12 wrap" style={{ borderRadius: '1.125rem', padding: '0.625rem 0.625rem 0.625rem 1.125rem' }} onSubmit={(e) => { e.preventDefault(); send(); }}>
           <label className="sr" htmlFor="brief-in">{next.topic[lang]}</label>
           <textarea id="brief-in" className="grow" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('ob.placeholder')}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            style={{ border: 0, background: 'transparent', resize: 'none', font: 'inherit', minWidth: 200, outline: 'none' }} />
+            style={{ border: 0, background: 'transparent', resize: 'none', font: 'inherit', minWidth: '12.5rem', outline: 'none' }} />
           <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => send(true)}>{t('ob.skip')}</button>
           <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !text.trim()}>{t('ob.send')}</button>
         </form>

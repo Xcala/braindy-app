@@ -20,7 +20,7 @@ export function SubNav() {
   const pages = (group?.pages ?? []).filter((p) => can(sectionOfPath(p.to)) && (isAdmin || pathname === p.to || filled(p.to)));
   if (pages.length < 2) return null;
   return (
-    <div className="flex md:hidden" style={{ marginBottom: 24 }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
+    <div className="flex md:hidden" style={{ marginBottom: '1.5rem' }}><nav className="seg seg-scroll" aria-label={t(group!.label)}>
       {pages.map((p) => <NavLink key={p.to} to={p.to} end className={({ isActive }) => (isActive ? 'is-on' : '')}>{t(p.label)}</NavLink>)}
     </nav></div>
   );

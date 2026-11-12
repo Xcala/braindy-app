@@ -34,7 +34,7 @@ export function AdminOnboarding() {
           <h2 className="h3">{t('ob.a.queue')}</h2>
           {inFlight.length === 0 && <p className="t-sm t-mute">{t('ob.a.queueEmpty')}</p>}
           {inFlight.map((b) => (
-            <button key={b.id} onClick={() => setSel(b.id)} className={`menu-item text-left ${selected?.id === b.id ? 'is-on' : ''}`} style={{ border: 0, cursor: 'pointer', background: selected?.id === b.id ? 'var(--niebla)' : 'none', height: 'auto', padding: '8px 10px' }}>
+            <button key={b.id} onClick={() => setSel(b.id)} className={`menu-item text-left ${selected?.id === b.id ? 'is-on' : ''}`} style={{ border: 0, cursor: 'pointer', background: selected?.id === b.id ? 'var(--niebla)' : 'none', height: 'auto', padding: '0.5rem 0.625rem' }}>
               <span className="sel" style={{ border: 0, padding: 0, height: 'auto', background: 'none' }}><BrandMark brand={b} /></span>
               <span className="col"><span className="w7 t-sm">{b.name}</span><span className="t-xs t-mute">{t(`ob.a.step.${b.onboarding!.step}`)}</span></span>
             </button>
@@ -75,7 +75,7 @@ function SignPanel({ brand }: { brand: Brand }) {
       <NoticesList brandId={brand.id} />
       <ContractPanel brand={brand} />
       {step === 'kickoff' && (
-        <div className="card row between g12 wrap" style={{ padding: 22 }}>
+        <div className="card row between g12 wrap" style={{ padding: '1.375rem' }}>
           <span className="t-sm">{t('ctr.a.kickoffNote')}</span>
           <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => run(() => onboardingApi.start(brand.id), t('ob.a.saved'))}>{t('ctr.a.toStrategy')}</button>
         </div>
@@ -83,7 +83,7 @@ function SignPanel({ brand }: { brand: Brand }) {
       {(step === 'contract' || step === 'kickoff') ? (msg && <p className="t-sm" role="status">{msg}</p>) : !draft ? <div className="card t-mute">{step === 'brief' ? t('ob.a.briefInProgress') : t('common.loading')}</div> : (
         <>
           <BrainCards brain={draft} onChange={setDraft} />
-          <div className="card row between g16 wrap" style={{ padding: 22 }}>
+          <div className="card row between g16 wrap" style={{ padding: '1.375rem' }}>
             <div className="row g12"><img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
               <div className="col"><span className="w7">{t('sig.card')}</span><span className="t-xs t-mute">{t('ob.a.signNote')}</span></div></div>
             <div className="row g8 wrap">

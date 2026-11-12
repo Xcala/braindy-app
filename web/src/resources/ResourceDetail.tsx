@@ -15,7 +15,7 @@ export function ResourceDetail({ r, onClose }: { r: Resource; onClose: () => voi
   const how = r.howTo?.[lang] || r.howTo?.es;
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal w-full max-w-[680px] res-detail" role="dialog" aria-modal="true" aria-labelledby="res-d-title">
+      <div className="modal w-full max-w-[42.5rem] res-detail" role="dialog" aria-modal="true" aria-labelledby="res-d-title">
         <div className="row g12" style={{ alignItems: 'flex-start' }}>
           <KindBadge kind={r.kind} big />
           <span className="col g4 grow" style={{ minWidth: 0 }}>

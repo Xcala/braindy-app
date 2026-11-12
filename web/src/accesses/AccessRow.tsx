@@ -34,7 +34,7 @@ export function AccessRow({ brandId, a, cols, logo, drag, onEdit }: { brandId: s
   };
 
   return (
-    <div className={`trow acc-row${drag.className}`} {...drag.bind} style={{ gridTemplateColumns: gridFor(cols), minHeight: 64, minWidth: 260 + cols.length * 170 }}>
+    <div className={`trow acc-row${drag.className}`} {...drag.bind} style={{ gridTemplateColumns: gridFor(cols), minHeight: '4rem', minWidth: `${(260 + cols.length * 170) / 16}rem` }}>
       <span className="row g12 min-w-0">
         {drag.enabled && <DragHandle label={t('apps.move', { name: a.platform })} onMove={drag.move} />}
         <AppLogo name={a.platform} domain={logo} />

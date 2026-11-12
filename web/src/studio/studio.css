@@ -1,6 +1,6 @@
 /* El Estudio: photographic scene with a live layer. Dark by design (it sits on the photo). */
-.sd-scroll { overflow-x: auto; border-radius: 20px; background: #000; }
-.sd-scene { position: relative; aspect-ratio: 2752 / 1536; min-width: 720px; overflow: hidden; container-type: inline-size; color: #EEF1F8; font-family: inherit; }
+.sd-scroll { overflow-x: auto; border-radius: 1.25rem; background: #000; }
+.sd-scene { position: relative; aspect-ratio: 2752 / 1536; min-width: 45rem; overflow: hidden; container-type: inline-size; color: #EEF1F8; font-family: inherit; }
 .sd-cam { position: absolute; inset: 0; transform-origin: 0 0; transition: transform 1s cubic-bezier(.22,.7,.18,1); }
 .sd-cam img, .sd-cam video, .sd-closeup { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .sd-cam video { opacity: 0; transition: opacity .6s; }
@@ -15,16 +15,16 @@
 .sd-clock b small { font-size: .68cqw; line-height: 1; letter-spacing: .06em; text-transform: uppercase; color: #AEB6CC; text-shadow: none; }
 .sd-clock i { position: absolute; display: grid; place-items: center; background: #0B0D12; font: 700 .62cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; letter-spacing: .04em; text-transform: uppercase; color: #E9EDF7; white-space: nowrap; overflow: hidden; }
 .sd-bubbles { position: absolute; inset: 0; pointer-events: none; transition: opacity .4s; }
-.sd-bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 12px; padding: 6px 10px; font-size: clamp(9px, .8cqw, 12px); line-height: 1.3; backdrop-filter: blur(8px); box-shadow: 0 6px 24px #0006; }
-.sd-bubble .who { font-weight: 900; display: flex; align-items: center; gap: 6px; }
-.sd-bubble .who i { width: 7px; height: 7px; border-radius: 50%; }
+.sd-bubble { position: absolute; transform: translate(-50%, -100%); max-width: 19%; background: #0B1022E0; border: 1px solid #2C3558; border-radius: 0.75rem; padding: 0.375rem 0.625rem; font-size: clamp(0.5625rem, .8cqw, 0.75rem); line-height: 1.3; backdrop-filter: blur(8px); box-shadow: 0 6px 24px #0006; }
+.sd-bubble .who { font-weight: 900; display: flex; align-items: center; gap: 0.375rem; }
+.sd-bubble .who i { width: 0.4375rem; height: 0.4375rem; border-radius: 50%; }
 .sd-bubble .st { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .85em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
-.sd-badge { position: absolute; right: 3%; top: 4%; font-size: clamp(10px, .95cqw, 14px); font-weight: 700; color: #fff; background: #2F4DE0; border-radius: 999px; padding: 6px 12px; pointer-events: none; }
-.sd-hint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(10px, .9cqw, 12px); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 6px 12px; pointer-events: none; transition: opacity .4s; }
-.sd-sim { position: absolute; left: 3%; top: 4%; font-size: clamp(10px, .9cqw, 12px); font-weight: 700; color: #1A1200; background: #F5B301; border-radius: 999px; padding: 6px 12px; border: 0; font-family: inherit; cursor: pointer; z-index: 2; }
+.sd-badge { position: absolute; right: 3%; top: 4%; font-size: clamp(0.625rem, .95cqw, 0.875rem); font-weight: 700; color: #fff; background: #2F4DE0; border-radius: 999px; padding: 0.375rem 0.75rem; pointer-events: none; }
+.sd-hint { position: absolute; left: 3%; bottom: 4%; font-size: clamp(0.625rem, .9cqw, 0.75rem); color: #fff; background: #0B1022B3; border-radius: 999px; padding: 0.375rem 0.75rem; pointer-events: none; transition: opacity .4s; }
+.sd-sim { position: absolute; left: 3%; top: 4%; font-size: clamp(0.625rem, .9cqw, 0.75rem); font-weight: 700; color: #1A1200; background: #F5B301; border-radius: 999px; padding: 0.375rem 0.75rem; border: 0; font-family: inherit; cursor: pointer; z-index: 2; }
 .sd-closeup { opacity: 0; transition: opacity .7s ease; pointer-events: none; }
 .sd-closeup.on { opacity: 1; }
-.sd-back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(11px, 1cqw, 14px); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 8px 16px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
+.sd-back { position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%); font: inherit; font-size: clamp(0.6875rem, 1cqw, 0.875rem); font-weight: 700; color: #fff; background: #0B1022E6; border: 1px solid #3A4570; border-radius: 999px; padding: 0.5rem 1rem; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .4s .5s; }
 .sd-scene.zoomed .sd-bubbles, .sd-scene.zoomed .sd-hint, .sd-scene.zoomed .sd-badge { opacity: 0; }
 .sd-scene.zoomed .sd-back { opacity: 1; pointer-events: auto; }
 .sd-scene.zoomed { cursor: zoom-out; }
@@ -35,55 +35,55 @@
 .sd-scene { --panel: 28%; }
 .sd-scene.zoomed .sd-closeup { width: calc(100% - var(--panel)); }
 .sd-scene.zoomed .sd-back { left: calc((100% - var(--panel)) / 2); }
-.sd-focus { position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel); overflow: auto; background: #0B1022; border-left: 1px solid #2C3558; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px; font-size: clamp(11px, 1cqw, 14px); box-shadow: -12px 0 40px #0008; transform: translateX(100%); transition: transform .6s cubic-bezier(.22,.7,.18,1); pointer-events: none; }
+.sd-focus { position: absolute; top: 0; right: 0; bottom: 0; width: var(--panel); overflow: auto; background: #0B1022; border-left: 1px solid #2C3558; padding: 1.375rem 1.25rem; display: flex; flex-direction: column; gap: 0.625rem; font-size: clamp(0.6875rem, 1cqw, 0.875rem); box-shadow: -12px 0 40px #0008; transform: translateX(100%); transition: transform .6s cubic-bezier(.22,.7,.18,1); pointer-events: none; }
 .sd-scene.zoomed .sd-focus { transform: none; pointer-events: auto; }
 .sd-focus h3 { margin: 0; font-size: 1.25em; font-weight: 900; color: #fff; }
 .sd-focus .lbl { font-family: 'Red Hat Mono', ui-monospace, monospace; font-size: .74em; color: #8F98B2; text-transform: uppercase; letter-spacing: .08em; }
-.sd-focus .now { background: #151C36; border-radius: 10px; padding: 8px 10px; }
-.sd-focus .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #222A47; }
+.sd-focus .now { background: #151C36; border-radius: 0.625rem; padding: 0.5rem 0.625rem; }
+.sd-focus .row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.375rem 0; border-bottom: 1px solid #222A47; }
 .sd-focus .row:last-child { border-bottom: 0; }
 .sd-focus .row small { font-family: 'Red Hat Mono', ui-monospace, monospace; color: #8F98B2; }
 .sd-focus a { color: #9DB3FF; }
 .sd-focus .note { margin: 0; color: #AEB6CC; line-height: 1.4; }
-.sd-btn { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 8px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.sd-btn { font: inherit; font-size: .85em; font-weight: 700; color: #fff; background: #2F4DE0; border: 0; border-radius: 0.5rem; padding: 0.3125rem 0.625rem; cursor: pointer; white-space: nowrap; }
 .sd-btn.ghost { background: transparent; border: 1px solid #3A4570; }
 .sd-btn.ok { background: #1F7A4D; }
 .sd-btn:disabled { opacity: .5; cursor: default; }
-.sd-focus textarea, .sd-focus select { font: inherit; font-size: .95em; color: #EEF1F8; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 10px; padding: 8px 10px; width: 100%; }
-.sd-focus textarea { min-height: 70px; resize: vertical; }
-.sd-seg { display: flex; gap: 4px; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 10px; padding: 3px; }
-.sd-seg button { flex: 1; font: inherit; font-size: .85em; font-weight: 700; color: #8F98B2; background: none; border: 0; border-radius: 7px; padding: 6px; cursor: pointer; }
+.sd-focus textarea, .sd-focus select { font: inherit; font-size: .95em; color: #EEF1F8; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 0.625rem; padding: 0.5rem 0.625rem; width: 100%; }
+.sd-focus textarea { min-height: 4.375rem; resize: vertical; }
+.sd-seg { display: flex; gap: 0.25rem; background: #0A0E1C; border: 1px solid #2C3558; border-radius: 0.625rem; padding: 0.1875rem; }
+.sd-seg button { flex: 1; font: inherit; font-size: .85em; font-weight: 700; color: #8F98B2; background: none; border: 0; border-radius: 0.4375rem; padding: 0.375rem; cursor: pointer; }
 .sd-seg button.on { background: #1B2342; color: #fff; }
 @media (prefers-reduced-motion: reduce) { .sd-cam, .sd-closeup, .sd-focus { transition: none; } }
 
 /* Compact: the sign-in stage shows the whole studio in a narrow column (no horizontal scroll, no hint). */
 .sd-compact .sd-scene { min-width: 0; }
 .sd-compact .sd-hint { display: none; }
-.sd-compact .sd-bubble { padding: 4px 7px; border-radius: 9px; max-width: 24%; }
+.sd-compact .sd-bubble { padding: 0.25rem 0.4375rem; border-radius: 0.5625rem; max-width: 24%; }
 .sd-wrap:has(.sd-scene.zoomed) .sd-live { opacity: 0; }
 .sd-live { transition: opacity .3s; }
 
 /* Launches under the studio (the studio keeps the full width): an endless marquee, the brand's own and the community's together. */
-.sd-with-launches { display: flex; flex-direction: column; gap: 12px; }
-.sd-ticker { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
-.sd-ticker-run { display: flex; gap: 12px; padding: 4px 0; margin: 0; list-style: none; width: max-content; animation: sd-crawl var(--crawl, 48s) linear infinite; }
+.sd-with-launches { display: flex; flex-direction: column; gap: 0.75rem; }
+.sd-ticker { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); }
+.sd-ticker-run { display: flex; gap: 0.75rem; padding: 0.25rem 0; margin: 0; list-style: none; width: max-content; animation: sd-crawl var(--crawl, 48s) linear infinite; }
 .sd-ticker:hover .sd-ticker-run, .sd-ticker:focus-within .sd-ticker-run { animation-play-state: paused; }
-.sd-ticker-item { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 14px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font: inherit; text-align: left; max-width: 320px; }
+.sd-ticker-item { display: flex; align-items: center; gap: 0.625rem; padding: 0.375rem 0.875rem 0.375rem 0.375rem; border-radius: 0.875rem; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font: inherit; text-align: left; max-width: 20rem; }
 .sd-ticker-item:hover { border-color: var(--azul); }
 .sd-ticker-item:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
 .sd-thumb { position: relative; flex: none; display: block; }
-.sd-thumb img, .sd-thumb video { width: 72px; height: 48px; border-radius: 9px; object-fit: cover; background: #000; display: block; }
-.sd-city { position: absolute; top: 4px; left: 4px; font: 700 9px/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; letter-spacing: .06em; padding: 3px 5px; border-radius: 6px; background: rgba(11,13,18,.72); color: #fff; }
-.sd-launches { display: flex; flex-direction: column; gap: 8px; }
-.sd-launches-title { margin: 0; font-size: 15px; font-weight: 700; color: var(--ink); }
-.sd-community { align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: .02em; line-height: 1; padding: 3px 7px; margin-bottom: 3px; border-radius: 999px; background: #EEF1FD; color: var(--azul); }
+.sd-thumb img, .sd-thumb video { width: 4.5rem; height: 3rem; border-radius: 0.5625rem; object-fit: cover; background: #000; display: block; }
+.sd-city { position: absolute; top: 0.25rem; left: 0.25rem; font: 700 0.5625rem/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; letter-spacing: .06em; padding: 0.1875rem 0.3125rem; border-radius: 0.375rem; background: rgba(11,13,18,.72); color: #fff; }
+.sd-launches { display: flex; flex-direction: column; gap: 0.5rem; }
+.sd-launches-title { margin: 0; font-size: 0.9375rem; font-weight: 700; color: var(--ink); }
+.sd-community { align-self: flex-start; font-size: 0.625rem; font-weight: 700; letter-spacing: .02em; line-height: 1; padding: 0.1875rem 0.4375rem; margin-bottom: 0.1875rem; border-radius: 999px; background: #EEF1FD; color: var(--azul); }
 @keyframes sd-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) {
   .sd-ticker-run { animation: none; }
   .sd-ticker { overflow-x: auto; mask-image: none; }
 }
-.sd-launch-media { width: 100%; max-height: 62vh; object-fit: contain; border-radius: 14px; background: #000; display: block; }
-.sd-react { display: inline-flex; align-items: center; gap: 4px; font: inherit; font-size: 14px; line-height: 1; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
+.sd-launch-media { width: 100%; max-height: 62vh; object-fit: contain; border-radius: 0.875rem; background: #000; display: block; }
+.sd-react { display: inline-flex; align-items: center; gap: 0.25rem; font: inherit; font-size: 0.875rem; line-height: 1; padding: 0.3125rem 0.5625rem; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: inherit; cursor: pointer; }
 .sd-react:hover { border-color: var(--azul); }
 .sd-react.on { border-color: var(--azul); background: color-mix(in srgb, var(--azul) 14%, transparent); }
 .sd-react:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }

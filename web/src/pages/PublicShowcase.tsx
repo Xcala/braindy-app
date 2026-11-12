@@ -17,11 +17,11 @@ export function PublicShowcase() {
   return (
     <div className="pub-page">
       <header className="row between g12 pub-head">
-        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 24 }} />
+        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.5rem' }} />
         <LangToggle />
       </header>
       <main className="pub-main is-wide">
-        {gone ? <div className="card"><p className="h3">{t('sh.gone')}</p></div> : !data ? <div className="skel" style={{ height: 420 }} /> : (
+        {gone ? <div className="card"><p className="h3">{t('sh.gone')}</p></div> : !data ? <div className="skel" style={{ height: '26.25rem' }} /> : (
           <div className="col g24">
             <div className="row g12">
               {data.brand.logoUrl && <img src={data.brand.logoUrl} alt="" className="pub-logo" />}
@@ -46,7 +46,7 @@ export function PublicShowcase() {
                         {rest.filter((f) => f.contentType.startsWith('image/')).slice(0, 4).map((f) => <a key={f.url} href={f.url} target="_blank" rel="noreferrer"><img src={f.url} alt={f.name} loading="lazy" /></a>)}
                       </div>
                     )}
-                    <div className="col g4" style={{ padding: '14px 16px' }}>
+                    <div className="col g4" style={{ padding: '0.875rem 1rem' }}>
                       <h2 className="h3" style={{ margin: 0 }}>{it.title}</h2>
                       <span className="t-xs t-mute">{[day(it.approvedAt) && t('sh.approvedOn', { date: day(it.approvedAt) }), it.total > 1 && t('sh.files', { n: it.total })].filter(Boolean).join(' · ')}</span>
                     </div>

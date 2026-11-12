@@ -80,7 +80,7 @@ export function AdminBrands() {
         <Capacity n={brands.filter((b) => b.status === 'active' && b.kind === 'brand').length} />
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="search w-full sm:w-[320px]">
+        <div className="search w-full sm:w-[20rem]">
           <Icon name="search" />
           <input className="input" placeholder={t('admin.brands.search')} aria-label={t('brand.search')} value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
@@ -101,7 +101,7 @@ export function AdminBrands() {
 
       <BrandCards rows={rows} health={health} onManage={manage} />
       <div className="hidden md:block"><div className="table overflow-x-auto">
-        <div className="trow head label min-w-[990px]" style={{ gridTemplateColumns: COLS }}>
+        <div className="trow head label min-w-[61.875rem]" style={{ gridTemplateColumns: COLS }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
         </div>
         {rows.map(({ brand, depth }) => (
@@ -122,14 +122,14 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle, onManage }
   const navigate = useNavigate();
   const on = brand.status === 'active';
   return (
-    <div className={`trow min-w-[990px] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
+    <div className={`trow min-w-[61.875rem] ${depth ? 'child' : ''} ${on ? '' : 'is-archived'}`} style={{ gridTemplateColumns: COLS }}>
       <span className="row g12" style={{ paddingLeft: depth * 44 }}>
         {brand.kind === 'group' ? (
           <button className="btn btn-ghost btn-icon btn-sm" onClick={onCollapse} aria-expanded={!collapsed}
-            aria-label={`${collapsed ? t('admin.brands.expand') : t('admin.brands.collapse')} ${brand.name}`} style={{ width: 32, color: 'var(--ink)' }}>
+            aria-label={`${collapsed ? t('admin.brands.expand') : t('admin.brands.collapse')} ${brand.name}`} style={{ width: '2rem', color: 'var(--ink)' }}>
             <Icon name={collapsed ? 'chevronRight' : 'chevronDown'} size={16} />
           </button>
-        ) : <span style={{ width: 32 }} />}
+        ) : <span style={{ width: '2rem' }} />}
         <span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none' }}><BrandMark brand={brand} /></span>
         <button onClick={() => { select(brand.id); navigate('/brand'); }} className="w7 truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'inherit' }}>{brand.name}</button>
       </span>
@@ -159,7 +159,7 @@ const CAP = 50;
 function Capacity({ n }: { n: number }) {
   const { t } = useI18n();
   return (
-    <div className="col" style={{ gap: 6, width: 260 }}>
+    <div className="col" style={{ gap: '0.375rem', width: '16.25rem' }}>
       <div className="row between"><span className="w7 t-sm">{t('team.capacity')}</span><span className="t-xs t-mute">{t('team.ceiling', { n: CAP })}</span></div>
       <div className="bar"><i style={{ width: `${Math.min(100, (n / CAP) * 100)}%`, background: n > CAP * 0.8 ? 'var(--warning)' : 'var(--azul)' }} /></div>
       <span className="t-xs t-mute">{t('team.activeBrands', { n })}</span>

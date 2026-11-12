@@ -28,7 +28,7 @@ export function CommentEdit({ text, max, onSave, onDelete, editing, setEditing }
     <form className="col g6" onSubmit={save}>
       <textarea className="input" rows={3} value={draft} maxLength={max} aria-label={t('ce.label')} autoFocus
         onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Escape') setEditing(false); if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) save(); }}
-        style={{ height: 'auto', paddingTop: 8, fontSize: 14 }} />
+        style={{ height: 'auto', paddingTop: '0.5rem', fontSize: '0.875rem' }} />
       <div className="row g8">
         <button type="submit" className="btn btn-primary btn-sm" disabled={!draft.trim() || state === 'busy'}>{t('ce.save')}</button>
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setDraft(text); setEditing(false); }}>{t('ce.cancel')}</button>

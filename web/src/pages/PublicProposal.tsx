@@ -37,7 +37,7 @@ export function PublicProposal() {
 
   return (
     <div style={{ background: '#fff' }}>
-      <div className="mx-auto max-w-[1440px]">
+      <div className="mx-auto max-w-[90rem]">
         <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
         <Proof c={c} />
         <FromAtoB c={c} p={data} />
@@ -48,7 +48,7 @@ export function PublicProposal() {
           onPayAgain={() => publicApi.pay(token).then((r) => { if (r.payUrl) window.location.href = r.payUrl; }).catch(() => undefined)} />}
         <Talk c={c} files={data.files} onFile={openFile} onAccept={() => setAccepting(data.recommended ?? 'transform')} />
         <footer className="row between g16 wrap px-5 py-10 sm:px-14" style={{ borderTop: '1px solid var(--line)' }}>
-          <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 28 }} />
+          <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.75rem' }} />
           <p className="t-sm t-mute">{c.footer}</p>
         </footer>
       </div>

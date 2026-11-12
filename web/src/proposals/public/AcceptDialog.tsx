@@ -33,7 +33,7 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <section ref={box} className="modal w-full max-w-[600px]" role="dialog" aria-modal="true" aria-labelledby="acc-t">
+      <section ref={box} className="modal w-full max-w-[37.5rem]" role="dialog" aria-modal="true" aria-labelledby="acc-t">
         <div className="row between" style={{ alignItems: 'flex-start' }}>
           <div className="col g8">
             <span className="t-sm t-mute">{fill(c.acceptFor, { name: prospectName })}{validLabel ? ` · ${fill(c.acceptValid, { date: validLabel })}` : ''}</span>
@@ -56,15 +56,15 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
             <div className="field"><label htmlFor="se">{c.email}</label><input className="input" id="se" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /><span className="t-xs t-mute">{c.emailHint}</span></div>
             <div className="col g8">
               <span className="t-sm w7">{c.signature}</span>
-              <div aria-live="polite" style={{ height: 96, border: '1.5px dashed var(--line-strong)', borderRadius: 16, display: 'flex', alignItems: 'center', padding: '0 24px', font: "500 34px/1 'Red Hat Display', sans-serif", color: 'var(--ink)' }}>{name}</div>
+              <div aria-live="polite" style={{ height: '6rem', border: '1.5px dashed var(--line-strong)', borderRadius: '1rem', display: 'flex', alignItems: 'center', padding: '0 1.5rem', font: "500 34px/1 'Red Hat Display', sans-serif", color: 'var(--ink)' }}>{name}</div>
               <span className="t-xs t-mute">{c.signatureHint}</span>
             </div>
             <label className="row g12" style={{ alignItems: 'flex-start' }}>
-              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} style={{ width: 20, height: 20, accentColor: 'var(--azul)', marginTop: 2 }} />
+              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--azul)', marginTop: 2 }} />
               <span className="t-sm">{c.agree}</span>
             </label>
             {state === 'error' && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{c.error}</p>}
-            <button className="btn btn-primary btn-block" style={{ height: 52 }} disabled={!agree || name.trim().length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) || state === 'busy'} onClick={sign}>{c.signContinue}</button>
+            <button className="btn btn-primary btn-block" style={{ height: '3.25rem' }} disabled={!agree || name.trim().length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) || state === 'busy'} onClick={sign}>{c.signContinue}</button>
             <span className="t-xs t-mute">{c.paymentNext}</span>
           </>
         )}

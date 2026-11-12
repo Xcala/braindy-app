@@ -37,19 +37,19 @@ export function RequestsList({ brandId, shown, isAdmin, archived, tags }: Props)
     <div className="col g12">
       {isAdmin && ids.length > 0 && <BulkBar brandId={brandId} ids={ids} archived={archived} tags={tags} clear={() => setPicked([])} />}
       <div className="table overflow-x-auto">
-        <div className="trow head label min-w-[760px]" style={{ gridTemplateColumns: cols }}>
+        <div className="trow head label min-w-[47.5rem]" style={{ gridTemplateColumns: cols }}>
           {isAdmin && <label className="fx-check" style={check}><input type="checkbox" checked={allOn} aria-label={t('files.selectAll')} onChange={() => setPicked(allOn ? [] : rows.map((r) => r.id))} /></label>}
           <span>{t('req.col.request')}</span><span>{t('rr.piece')}</span><span>{t('rr.date')}</span><span>{t('req.col.status')}</span>
         </div>
         {rows.map((r, i) => {
           const d = smartDate(r, lang, t);
           return (
-            <div key={r.id} className="trow min-w-[760px]" style={{ gridTemplateColumns: cols, background: ids.includes(r.id) ? '#F5F8FF' : r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
+            <div key={r.id} className="trow min-w-[47.5rem]" style={{ gridTemplateColumns: cols, background: ids.includes(r.id) ? '#F5F8FF' : r.status === 'to_approve' ? '#FFFBF0' : undefined }}>
               {isAdmin && <label className="fx-check" style={check}><input type="checkbox" checked={ids.includes(r.id)} aria-label={r.title}
                 onClick={(e) => { e.preventDefault(); pick(i, e.shiftKey); }} onChange={() => undefined} /></label>}
               <span className="row g12 min-w-0">
                 {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt={brainName(r.leadBrain)} title={t('req.onIt', { brain: brainName(r.leadBrain) })} className="h-7 w-7 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
-                <span className="col min-w-0" style={{ gap: 3 }}>
+                <span className="col min-w-0" style={{ gap: '0.1875rem' }}>
                   <Link to={`/requests/${r.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{r.title}</Link>
                   <span className="row g8 wrap t-xs t-mute">{r.createdAt && <span>{t('rr.askedOn', { day: dateLabel(r.createdAt.toDate(), lang) })}</span>}<TagChips tags={r.tags} />{isAdmin && <MissingChip r={r} />}</span>
                 </span>

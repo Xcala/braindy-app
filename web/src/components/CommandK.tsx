@@ -108,16 +108,16 @@ function Palette({ onClose }: { onClose: () => void }) {
   let lastGroup = '';
   return (
     <div className="scrim fixed inset-0 z-50 flex items-start justify-center p-4 pt-[10vh]" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="cmdk menu w-full max-w-[640px]" role="dialog" aria-modal="true" aria-label={t('search.title')} onKeyDown={onKey} style={{ padding: 8 }}>
-        <div className="search" style={{ margin: 4 }}>
+      <div className="cmdk menu w-full max-w-[40rem]" role="dialog" aria-modal="true" aria-label={t('search.title')} onKeyDown={onKey} style={{ padding: '0.5rem' }}>
+        <div className="search" style={{ margin: '0.25rem' }}>
           <Icon name="search" />
           <input ref={input} className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('search.placeholder', { name: current?.name ?? '' })}
             aria-label={t('search.title')} role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-activedescendant={shown[active]?.id} />
         </div>
-        <div id="cmdk-list" role="listbox" className="col overflow-y-auto" style={{ maxHeight: '60vh', marginTop: 6 }}>
-          {shown.length === 0 && !fileHits.loading && <p className="t-sm t-mute" style={{ padding: '12px' }}>{t('search.noResults')}</p>}
+        <div id="cmdk-list" role="listbox" className="col overflow-y-auto" style={{ maxHeight: '60vh', marginTop: '0.375rem' }}>
+          {shown.length === 0 && !fileHits.loading && <p className="t-sm t-mute" style={{ padding: '0.75rem' }}>{t('search.noResults')}</p>}
           {shown.map((i, n) => {
-            const header = i.group !== lastGroup ? <p className="label" style={{ padding: '8px 12px 4px' }}>{t(i.group)}</p> : null;
+            const header = i.group !== lastGroup ? <p className="label" style={{ padding: '0.5rem 0.75rem 0.25rem' }}>{t(i.group)}</p> : null;
             lastGroup = i.group;
             return (
               <div key={i.id}>
@@ -125,15 +125,15 @@ function Palette({ onClose }: { onClose: () => void }) {
                 <button id={i.id} role="option" aria-selected={n === active} onMouseEnter={() => setActive(n)} onClick={i.run}
                   className={`menu-item w-full text-left ${n === active ? 'is-on' : ''}`} style={{ border: 0, background: undefined, cursor: 'pointer' }}>
                   {i.brand && <BrandMark brand={i.brand} />}
-                  {i.swatch && <i aria-hidden="true" style={{ width: 20, height: 20, borderRadius: 6, background: i.swatch, border: '1px solid var(--line)', flex: 'none' }} />}
+                  {i.swatch && <i aria-hidden="true" style={{ width: '1.25rem', height: '1.25rem', borderRadius: '0.375rem', background: i.swatch, border: '1px solid var(--line)', flex: 'none' }} />}
                   <span className="grow truncate">{i.label}</span>
-                  {i.hint && <span className="t-xs t-mute truncate" style={{ maxWidth: 220 }}>{i.hint}</span>}
+                  {i.hint && <span className="t-xs t-mute truncate" style={{ maxWidth: '13.75rem' }}>{i.hint}</span>}
                 </button>
               </div>
             );
           })}
         </div>
-        <div className="row between g8 wrap" style={{ padding: '8px 12px 4px' }}>
+        <div className="row between g8 wrap" style={{ padding: '0.5rem 0.75rem 0.25rem' }}>
           <p className="t-xs t-mute">{fileHits.loading ? `${t('search.searchingFiles')}…` : needle && fileHits.total > fileHits.files.length ? t('search.moreFiles', { n: String(fileHits.total - fileHits.files.length) }) : <span className="hidden md:inline">{t('search.keys')}</span>}</p>
           {isAdmin && <button type="button" className={`chip ${allBrands ? 'c-active' : 'chip-plain'}`} style={{ cursor: 'pointer', border: 0 }} aria-pressed={allBrands} onClick={() => setAllBrands((a) => !a)}>{t('search.allBrands')}</button>}
         </div>

@@ -5,7 +5,7 @@ export function LiveBanner({ liveAt }: { liveAt?: Date | null }) {
   const { t } = useI18n();
   if (!liveAt || Date.now() - liveAt.getTime() > 14 * 864e5) return null;
   return (
-    <section className="stage col g12 rounded-[20px] p-6 sm:p-9" aria-labelledby="h-live">
+    <section className="stage col g12 rounded-[1.25rem] p-6 sm:p-9" aria-labelledby="h-live">
       <p className="label">{t('home.liveKicker')}</p>
       <h1 className="d-lg" id="h-live" style={{ color: '#fff' }}><span className="w9">{t('home.live1')}</span> {t('home.live2')}</h1>
       <p className="t-lg muted">{t('home.liveSub')}</p>

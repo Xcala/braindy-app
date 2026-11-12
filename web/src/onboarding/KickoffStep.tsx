@@ -21,21 +21,21 @@ export function KickoffStep({ brand }: { brand: Brand }) {
 
   return (
     <section className="col g20 min-w-0">
-      <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+      <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <p className="label">{t('ctr.step2')}</p>
-        <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.kick1')}</span> {t('ctr.kick2')}</h1>
+        <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{t('ctr.kick1')}</span> {t('ctr.kick2')}</h1>
         <p className="t-lg muted">{t('ctr.kickSub')}</p>
       </div>
       <SessionPicker brandId={brand.id} brandName={brand.name} bookedAt={brand.onboarding?.kickoffAt} kind="kickoff" />
       {kickoff && (
-        <div className="card col g12" style={{ padding: 22 }}>
+        <div className="card col g12" style={{ padding: '1.375rem' }}>
           <div className="row between g8 wrap"><h2 className="h3">{t('ctr.checklist')}</h2><span className="chip">{t('ctr.doneOf', { done, total: items.length })}</span></div>
           <p className="t-sm t-mute">{t('ctr.checklistTick')}</p>
           <Checklist items={items} start={kickoff.start} onToggle={(id, v) => { contractsApi.tick(brand.id, id, v).catch(() => undefined); }} />
         </div>
       )}
       {schedule && (
-        <div className="card col g12" style={{ padding: 22 }}>
+        <div className="card col g12" style={{ padding: '1.375rem' }}>
           <div className="row between g8 wrap"><h2 className="h3">{t('ctr.schedule')}</h2><Link to="/plan" className="btn btn-secondary btn-sm">{t('plan.seeOnboarding')}</Link></div>
           <Gantt schedule={schedule} />
         </div>

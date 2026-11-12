@@ -11,8 +11,8 @@ export function Signed({ c, acceptance, paid, locale, onPayAgain }: {
   return (
     <section className="mx-auto col g16 px-5 py-10 sm:px-14" aria-labelledby="signed-h">
       {paid === '1' && (
-        <div className="stage col g12 rounded-[20px] p-6 sm:p-9 print:hidden" role="status">
-          <h2 className="d-lg" id="signed-h" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{c.paidOk}</span></h2>
+        <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9 print:hidden" role="status">
+          <h2 className="d-lg" id="signed-h" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{c.paidOk}</span></h2>
           <p className="t-lg muted">{fill(c.paidOkBody, { email: acceptance.email ?? '' })}</p>
           <a className="btn btn-white self-start" href="/login">{c.openApp}</a>
         </div>

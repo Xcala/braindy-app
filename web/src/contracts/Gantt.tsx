@@ -51,9 +51,9 @@ export function Gantt({ schedule: s, onStatus }: { schedule: Schedule; onStatus?
   return (
     <div className="col g12">
       <div className="row g16 t-sm" style={{ flexWrap: 'wrap' }} aria-label={t('plan.legend')}>
-        {tones.map((k) => <span key={k} className="row g8"><i style={{ width: 22, height: 10, borderRadius: 4, background: TONE_COLOR[k] }} />{t(`plan.tone.${k}`)}</span>)}
-        <span className="row g8"><i style={{ width: 22, height: 10, borderRadius: 4, background: MILESTONE }} />{t('ctr.milestone')}</span>
-        {today >= 0 && <span className="row g8"><i style={{ width: 2, height: 14, background: TODAY }} />{t('plan.today')}</span>}
+        {tones.map((k) => <span key={k} className="row g8"><i style={{ width: '1.375rem', height: '0.625rem', borderRadius: '0.25rem', background: TONE_COLOR[k] }} />{t(`plan.tone.${k}`)}</span>)}
+        <span className="row g8"><i style={{ width: '1.375rem', height: '0.625rem', borderRadius: '0.25rem', background: MILESTONE }} />{t('ctr.milestone')}</span>
+        {today >= 0 && <span className="row g8"><i style={{ width: 2, height: '0.875rem', background: TODAY }} />{t('plan.today')}</span>}
       </div>
       <div className="card" style={{ padding: 0, overflowX: 'auto' }} role="region" aria-label={t('ctr.gantt')} tabIndex={0}>
         <div role="table" aria-label={t('ctr.gantt')} style={grid}>
@@ -64,14 +64,14 @@ export function Gantt({ schedule: s, onStatus }: { schedule: Schedule; onStatus?
           <div role="row" style={{ display: 'contents' }}>
             {Array.from({ length: n }, (_, w) => (
               <div key={w} role="columnheader" style={{ ...head, background: w === today ? '#FDEFF5' : 'var(--niebla)' }}>
-                <div className="w9" style={{ fontSize: 12, color: w === today ? '#C2185B' : 'var(--ink)' }}>{t('ctr.weekShort', { n: w + 1 })}</div>
-                <div className="t-mute" style={{ fontSize: 10 }}>{weekDate(s.start, w).toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' })}</div>
+                <div className="w9" style={{ fontSize: '0.75rem', color: w === today ? '#C2185B' : 'var(--ink)' }}>{t('ctr.weekShort', { n: w + 1 })}</div>
+                <div className="t-mute" style={{ fontSize: '0.625rem' }}>{weekDate(s.start, w).toLocaleDateString(locale, { day: 'numeric', month: 'short', timeZone: 'UTC' })}</div>
               </div>
             ))}
           </div>
           <div role="row" style={{ display: 'contents' }}>
-            <div role="rowheader" style={{ ...cell, ...sticky }}><div className="w7 t-sm">{t('plan.meeting', { minutes: s.meeting.minutes })}</div><div className="t-mute" style={{ fontSize: 12 }}>{wd} · {s.meeting.time}</div></div>
-            {Array.from({ length: n }, (_, w) => <div key={w} role="cell" style={{ ...cell, padding: '8px 3px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><i aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 99, background: w < today ? '#9DB0FF' : '#C9D3FF', border: w === today ? `2px solid ${TODAY}` : undefined }} /></div>)}
+            <div role="rowheader" style={{ ...cell, ...sticky }}><div className="w7 t-sm">{t('plan.meeting', { minutes: s.meeting.minutes })}</div><div className="t-mute" style={{ fontSize: '0.75rem' }}>{wd} · {s.meeting.time}</div></div>
+            {Array.from({ length: n }, (_, w) => <div key={w} role="cell" style={{ ...cell, padding: '0.5rem 0.1875rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}><i aria-hidden="true" style={{ width: '0.5rem', height: '0.5rem', borderRadius: '6.1875rem', background: w < today ? '#9DB0FF' : '#C9D3FF', border: w === today ? `2px solid ${TODAY}` : undefined }} /></div>)}
           </div>
           {s.groups.map((g, gi) => (
             <Fragment key={g.id}>
@@ -102,19 +102,19 @@ function Bar({ r, n, today, fill, sticky, onDone }: { r: ScheduleRow; n: number;
           {r.milestone && <span aria-hidden="true" style={{ color: '#F26B1D' }}>⚡</span>}
           <div className="col" style={{ minWidth: 0 }}>
             <span className={`t-sm ${r.milestone ? 'w9' : 'w7'}`}>{r.title}</span>
-            {r.note && <span className="t-mute" style={{ fontSize: 12, lineHeight: '16px' }}>{r.note}</span>}
+            {r.note && <span className="t-mute" style={{ fontSize: '0.75rem', lineHeight: '16px' }}>{r.note}</span>}
             {onDone ? (
-              <label className="row g4" style={{ fontSize: 12, marginTop: 4, cursor: 'pointer' }}><input type="checkbox" checked={done} onChange={(e) => onDone(e.target.checked)} />{t('ctr.delivered')}</label>
-            ) : status && <span className="w7" style={{ fontSize: 12, marginTop: 2, color: status.color }}>{status.text}</span>}
+              <label className="row g4" style={{ fontSize: '0.75rem', marginTop: '0.25rem', cursor: 'pointer' }}><input type="checkbox" checked={done} onChange={(e) => onDone(e.target.checked)} />{t('ctr.delivered')}</label>
+            ) : status && <span className="w7" style={{ fontSize: '0.75rem', marginTop: 2, color: status.color }}>{status.text}</span>}
           </div>
         </div>
       </div>
-      <div role="cell" style={{ ...cell, gridColumn: `span ${n}`, display: 'grid', gridTemplateColumns: `repeat(${n}, 1fr)`, alignItems: 'center', padding: '8px 0', position: 'relative' }}>
+      <div role="cell" style={{ ...cell, gridColumn: `span ${n}`, display: 'grid', gridTemplateColumns: `repeat(${n}, 1fr)`, alignItems: 'center', padding: '0.5rem 0', position: 'relative' }}>
         {today >= 0 && <i aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: `${((today + 0.5) / n) * 100}%`, width: 2, background: TODAY, opacity: 0.5 }} />}
         <div title={`${r.title} · ${t(`ctr.st.${r.status}`)}`} style={{
-          gridColumn: `${r.from + 1} / ${r.to + 2}`, height: 24, margin: '0 3px', borderRadius: 6, background: fill,
+          gridColumn: `${r.from + 1} / ${r.to + 2}`, height: '1.5rem', margin: '0 0.1875rem', borderRadius: '0.375rem', background: fill,
           opacity: r.status === 'pending' && !r.milestone ? 0.75 : 1, outline: r.status === 'blocked' ? '2px solid #B42318' : undefined,
-          color: '#fff', fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontSize: '0.625rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: r.milestone ? '0 4px 14px rgba(242,107,29,.35)' : undefined, whiteSpace: 'nowrap', overflow: 'hidden',
         }}>{text}</div>
       </div>

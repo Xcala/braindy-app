@@ -34,11 +34,11 @@ export function PublicReview() {
 
   const shell = (body: React.ReactNode) => (
     <div className="min-h-full" style={{ background: 'var(--niebla)' }}>
-      <header className="row between g12" style={{ padding: '16px 20px' }}>
-        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 24 }} />
+      <header className="row between g12" style={{ padding: '1rem 1.25rem' }}>
+        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.5rem' }} />
         <LangToggle />
       </header>
-      <main className="mx-auto col g20 w-full max-w-[720px] px-4 pb-16">{body}</main>
+      <main className="mx-auto col g20 w-full max-w-[45rem] px-4 pb-16">{body}</main>
     </div>
   );
 
@@ -74,7 +74,7 @@ export function PublicReview() {
       ) : changes ? (
         <div className="card col g12">
           <label className="field"><span className="w7">{t('rev.whatToChange')}</span>
-            <textarea className="input" rows={4} value={note} onChange={(e) => setNote(e.target.value)} style={{ height: 'auto', paddingTop: 10 }} autoFocus /></label>
+            <textarea className="input" rows={4} value={note} onChange={(e) => setNote(e.target.value)} style={{ height: 'auto', paddingTop: '0.625rem' }} autoFocus /></label>
           <div className="row g12 wrap">
             <button className="btn btn-primary" disabled={busy || !note.trim()} onClick={() => decide('changes_requested')}>{t('rev.sendChanges')}</button>
             <button className="btn btn-ghost" onClick={() => setChanges(false)}>{t('common.cancel')}</button>

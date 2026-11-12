@@ -41,7 +41,7 @@ export function VoiceNote({ brandId, onAdd, onBusy }: { brandId: string; onAdd: 
 
   return state === 'rec' ? (
     <button type="button" className="btn btn-sm" style={{ background: '#FDECEA', color: '#B3261E', border: '1px solid #F5C2BD' }} onClick={() => rec.current?.stop()}>
-      <span aria-hidden style={{ width: 8, height: 8, borderRadius: 4, background: '#D93025' }} />{t('vn.stop', { t: mmss })}
+      <span aria-hidden style={{ width: '0.5rem', height: '0.5rem', borderRadius: '0.25rem', background: '#D93025' }} />{t('vn.stop', { t: mmss })}
     </button>
   ) : (
     <button type="button" className="btn btn-secondary btn-sm" disabled={state === 'up'} onClick={start} title={state === 'error' ? t('vn.error') : undefined}>

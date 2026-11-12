@@ -47,7 +47,7 @@ export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, i
     <div className="card fx" style={{ padding: 0 }}>
       <div className="fx-bar" style={{ borderBottom: 0 }}>
         <div className="fx-row">
-          <div className="search" style={{ flex: '1 1 180px', maxWidth: 260 }}>
+          <div className="search" style={{ flex: '1 1 180px', maxWidth: '16.25rem' }}>
             <Icon name="search" />
             <input className="input" type="search" value={f.q} onChange={(e) => put({ q: e.target.value })} placeholder={t('rf.search')} aria-label={t('rf.search')} />
           </div>
@@ -58,7 +58,7 @@ export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, i
               </button>
             ))}
           </div>
-          <Popover label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: 20, padding: '0 7px', background: 'var(--azul)', color: '#fff' }}>{n}</span>}</>}>
+          <Popover label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: '1.25rem', padding: '0 0.4375rem', background: 'var(--azul)', color: '#fff' }}>{n}</span>}</>}>
             {(close) => (
               <>
                 {who.length > 1 && sel(t('rf.who'), f.who, (v) => put({ who: v }), [['', t('rf.whoAll', { n: who.length })], ...who.map((w): [string, string] => [w.uid, w.name])])}

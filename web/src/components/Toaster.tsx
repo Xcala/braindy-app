@@ -34,7 +34,7 @@ function Item({ t, onClose }: { t: Toast; onClose: () => void }) {
     return () => { window.clearTimeout(id); left.current -= Date.now() - started; };
   }, [paused, onClose]);
   return (
-    <div className="toast pointer-events-auto w-full max-w-[420px]" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
+    <div className="toast pointer-events-auto w-full max-w-[26.25rem]" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
       <span className={t.tone === 'bad' ? 'bad' : 'ok'} aria-hidden="true">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">{t.tone === 'bad' ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="m5 12 5 5 9-10" />}</svg>

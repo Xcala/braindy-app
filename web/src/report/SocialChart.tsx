@@ -71,7 +71,7 @@ export function SocialChart({ net, range, keys, metrics = METRICS, prefix = 'soc
             {points.map((p, i) => <rect key={`h${p.k}`} x={PAD.l + step * i} y={PAD.t} width={step} height={ih} fill="transparent" onMouseEnter={() => setHover(i)} />)}
           </svg>
           {h && (
-            <div className="card t-xs" style={{ position: 'absolute', top: 0, left: `min(calc(${((PAD.l + step * hover! + step / 2) / W) * 100}% + 8px), calc(100% - 140px))`, padding: '6px 10px', pointerEvents: 'none', boxShadow: '0 4px 14px rgba(0,0,0,.08)' }}>
+            <div className="card t-xs" style={{ position: 'absolute', top: 0, left: `min(calc(${((PAD.l + step * hover! + step / 2) / W) * 100}% + 8px), calc(100% - 140px))`, padding: '0.375rem 0.625rem', pointerEvents: 'none', boxShadow: '0 4px 14px rgba(0,0,0,.08)' }}>
               <div className="t-mute">{unit === 'week' ? t('soc.weekOf', { d: label(h.k) }) : label(h.k)}</div>
               <div className="w7">{fmt(h.v)} {t(`${prefix}.${metric}` as StringKey).toLowerCase()}</div>
             </div>

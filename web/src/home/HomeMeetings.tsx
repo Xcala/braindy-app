@@ -97,12 +97,12 @@ function ManualMeeting({ brandId }: { brandId: string }) {
   return (
     <details>
       <summary className="t-sm w7" style={{ cursor: 'pointer' }}>+ {t('mt.manual')}</summary>
-      <form className="col g8" style={{ marginTop: 10 }} onSubmit={add}>
+      <form className="col g8" style={{ marginTop: '0.625rem' }} onSubmit={add}>
         <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
           <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('team.meetingTitle')} aria-label={t('team.meetingTitle')} />
           <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label={t('team.meetingDate')} />
         </div>
-        <textarea className="input" rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('team.meetingNotesPh')} aria-label={t('team.meetingNotes')} style={{ height: 'auto', paddingTop: 10 }} />
+        <textarea className="input" rows={5} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('team.meetingNotesPh')} aria-label={t('team.meetingNotes')} style={{ height: 'auto', paddingTop: '0.625rem' }} />
         <button className="btn btn-primary btn-sm self-start" disabled={busy || !notes.trim()}>{t('team.meetingAdd')}</button>
       </form>
     </details>

@@ -56,7 +56,7 @@ export function ResourceEditor({ r, nextOrder, onClose }: { r: Resource | null; 
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form className="modal w-full max-w-[720px] res-editor" role="dialog" aria-modal="true" aria-labelledby="res-e-title" onSubmit={save}>
+      <form className="modal w-full max-w-[45rem] res-editor" role="dialog" aria-modal="true" aria-labelledby="res-e-title" onSubmit={save}>
         <h2 className="h2" id="res-e-title">{r ? t('res.edit') : t('res.new')}</h2>
         <label className="col g6"><span className="label">{t('res.f.kind')}</span>
           <select className="input" value={kind} onChange={(e) => setKind(e.target.value as Kind)}>{KINDS.map((k) => <option key={k} value={k}>{t(`res.kind.${k}`)}</option>)}</select>

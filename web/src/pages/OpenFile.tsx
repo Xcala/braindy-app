@@ -11,5 +11,5 @@ export function OpenFile() {
   useEffect(() => {
     signedUrl(brandId, assetId, true).then((u) => window.location.replace(u)).catch(() => setError(true));
   }, [brandId, assetId]);
-  return <p className="t-mute" style={{ padding: 32 }}>{error ? t('files.previewError') : `${t('common.loading')}…`}</p>;
+  return <p className="t-mute" style={{ padding: '2rem' }}>{error ? t('files.previewError') : `${t('common.loading')}…`}</p>;
 }

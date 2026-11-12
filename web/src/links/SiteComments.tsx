@@ -141,7 +141,7 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
       </summary>
       <p className="t-xs t-mute">{pathOf(c.url)} · {when(c.createdAt)}{c.spot?.text ? ` · «${c.spot.text}»` : ''}{c.where ? ` · ${t('sc.whereIs')}: ${c.where}` : ''}</p>
       {(c.author === user?.uid || isAdmin) && (
-        <div style={{ margin: '0 12px 8px' }}>
+        <div style={{ margin: '0 0.75rem 0.5rem' }}>
           {editing === c.id && <p className="t-xs t-mute">{t('ce.label')}</p>}
           <CommentEdit text={c.text} max={2000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
             onSave={c.author === user?.uid ? (v) => updateDoc(cref, { text: v, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(cref)} />
@@ -161,7 +161,7 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
         <input className="input" value={text} maxLength={2000} placeholder={t('sc.replyPh')} aria-label={t('sc.replyPh')} onChange={(e) => setText(e.target.value)} />
         <button type="submit" className="btn btn-secondary btn-sm" disabled={!text.trim()}>{t('sc.reply')}</button>
       </form>
-      <div className="row g8 wrap" style={{ margin: '0 12px 10px' }}>
+      <div className="row g8 wrap" style={{ margin: '0 0.75rem 0.625rem' }}>
         {canResolve && <button type="button" className="btn btn-ghost btn-sm" onClick={() => resolve(!c.resolved)}>{c.resolved ? t('sc.reopen') : `✓ ${t('sc.resolve')}`}</button>}
         {isAdmin && onToPoint && !c.resolved && (c.asPoint
           ? <span className="t-xs t-mute">{t('sc.asPoint', { key: c.asPoint })}</span>

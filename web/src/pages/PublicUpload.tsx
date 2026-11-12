@@ -46,14 +46,14 @@ export function PublicUpload() {
   const shell = (body: ReactNode) => (
     <div className="pub-page">
       <header className="row between g12 pub-head">
-        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 24 }} />
+        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.5rem' }} />
         <LangToggle />
       </header>
       <main className="pub-main">{body}</main>
     </div>
   );
   if (gone) return shell(<div className="card col g8"><p className="h3">{t('ul.gone')}</p></div>);
-  if (!brand) return shell(<div className="skel" style={{ height: 320 }} />);
+  if (!brand) return shell(<div className="skel" style={{ height: '20rem' }} />);
 
   return shell(
     <div className="card col g20">

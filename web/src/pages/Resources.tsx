@@ -34,7 +34,7 @@ export function Resources() {
   return (
     <div className="col g24">
       <div className="row between g16 wrap" style={{ alignItems: 'flex-end' }}>
-        <div className="col g8" style={{ maxWidth: 720 }}>
+        <div className="col g8" style={{ maxWidth: '45rem' }}>
           <h1 className="h1"><span className="w9">{t('res.title')}.</span></h1>
           <p className="t-md t-mute">{t('res.sub')}</p>
         </div>
@@ -64,7 +64,7 @@ export function Resources() {
           )}
         </div>
       )}
-      {loading ? <div className="skel" style={{ height: 200 }} />
+      {loading ? <div className="skel" style={{ height: '12.5rem' }} />
         : list.length === 0 ? <div className="card t-mute">{t('res.empty')}</div>
         : shown.length === 0 ? <div className="card t-mute">{t('res.noMatch')}</div>
         : <ul className={layout === 'grid' ? 'res-grid' : 'res-list card'}>

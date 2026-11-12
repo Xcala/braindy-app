@@ -44,7 +44,7 @@ export function AdaptDialog({ brandId, r, v, onClose }: { brandId: string; r: Br
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={ref} className="modal w-full max-w-[520px]" role="dialog" aria-modal="true" aria-labelledby="adapt-title">
+      <div ref={ref} className="modal w-full max-w-[32.5rem]" role="dialog" aria-modal="true" aria-labelledby="adapt-title">
         <h2 className="h3" id="adapt-title">{t('ad.title', { title: r.title })}</h2>
         {done ? (
           <>
@@ -58,7 +58,7 @@ export function AdaptDialog({ brandId, r, v, onClose }: { brandId: string; r: Br
           <>
             <p className="t-sm t-mute">{t('ad.lead')}</p>
             <fieldset className="col g8" style={{ border: 0, padding: 0, margin: 0 }}>
-              <legend className="label" style={{ marginBottom: 8 }}>{t('ad.pick')}</legend>
+              <legend className="label" style={{ marginBottom: '0.5rem' }}>{t('ad.pick')}</legend>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {FORMATS.map((f) => (
                   <label key={f} className={`ad-opt${picked.has(f) ? ' is-on' : ''}`}>
@@ -69,7 +69,7 @@ export function AdaptDialog({ brandId, r, v, onClose }: { brandId: string; r: Br
               </div>
             </fieldset>
             <label className="col g4"><span className="t-sm w7">{t('ad.note')}</span>
-              <textarea className="input" rows={3} value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} style={{ height: 'auto', paddingTop: 10 }} />
+              <textarea className="input" rows={3} value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} style={{ height: 'auto', paddingTop: '0.625rem' }} />
             </label>
             {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('ad.error')}</p>}
             <div className="row g12" style={{ justifyContent: 'flex-end' }}>

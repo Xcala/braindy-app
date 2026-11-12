@@ -10,7 +10,7 @@ export function ChecklistEditor({ items, weeks, onChange }: { items: ChecklistIt
       {items.map((it, i) => (
         <div key={it.id} className="row g8">
           <input className="input" style={{ flex: 1 }} value={it.title} aria-label={t('ctr.k.item')} onChange={(e) => set(i, { title: e.target.value })} />
-          <select className="input" style={{ width: 90 }} value={it.week} aria-label={t('ctr.k.week')} onChange={(e) => set(i, { week: Number(e.target.value) })}>
+          <select className="input" style={{ width: '5.625rem' }} value={it.week} aria-label={t('ctr.k.week')} onChange={(e) => set(i, { week: Number(e.target.value) })}>
             {Array.from({ length: weeks }, (_, w) => <option key={w} value={w}>{t('ctr.weekShort', { n: w + 1 })}</option>)}
           </select>
           <button className="btn btn-ghost btn-sm" aria-label={t('ctr.g.removeRow')} onClick={() => onChange(items.filter((_, k) => k !== i))}>×</button>

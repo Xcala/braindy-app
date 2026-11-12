@@ -35,11 +35,11 @@ export function BulkBar({ brandId, ids, archived, tags, clear }: { brandId: stri
           <Icon name="chevronDown" size={14} />
         </label>
         <span className="row g4">
-          <input type="date" className="input" style={{ height: 36, width: 150 }} value={due} onChange={(e) => setDue(e.target.value)} aria-label={t('rb.due')} />
+          <input type="date" className="input" style={{ height: '2.25rem', width: '9.375rem' }} value={due} onChange={(e) => setDue(e.target.value)} aria-label={t('rb.due')} />
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy || !due} onClick={() => run({ kind: 'due', dueDate: due }, t('rb.dueSet', { n }))}>{t('rb.due')}</button>
         </span>
         <span className="row g4">
-          <input className="input" list="rb-tags" style={{ height: 36, width: 160 }} placeholder={t('rb.tagPh')} value={tag} onChange={(e) => setTag(e.target.value)} aria-label={t('rb.tagPh')} />
+          <input className="input" list="rb-tags" style={{ height: '2.25rem', width: '10rem' }} placeholder={t('rb.tagPh')} value={tag} onChange={(e) => setTag(e.target.value)} aria-label={t('rb.tagPh')} />
           <datalist id="rb-tags">{tags.map((g) => <option key={g} value={g} />)}</datalist>
           <button type="button" className="btn btn-secondary btn-sm" disabled={busy || !cleanTag} onClick={() => run({ kind: 'tag', tag: cleanTag, add: true }, t('rb.tagged', { n, tag: cleanTag }))}>{t('rb.tagAdd')}</button>
           <button type="button" className="btn btn-ghost btn-sm" disabled={busy || !cleanTag} onClick={() => run({ kind: 'tag', tag: cleanTag, add: false }, t('rb.untagged', { n, tag: cleanTag }))}>{t('rb.tagRemove')}</button>

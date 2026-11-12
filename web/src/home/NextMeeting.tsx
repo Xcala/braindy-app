@@ -56,7 +56,7 @@ export function NextMeetingCard({ brandId, brandName, m, mkey }: { brandId: stri
     <div ref={box} className="relative shrink-0">
       <button type="button" className="btn btn-ghost btn-sm nm-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t('nm.menu')} onClick={() => setMenu((o) => !o)}>⋯</button>
       {menu && (
-        <div className="menu absolute right-0 top-[40px] z-40 flex w-[220px] flex-col gap-0.5" role="menu" aria-label={t('nm.menu')}>
+        <div className="menu absolute right-0 top-[2.5rem] z-40 flex w-[13.75rem] flex-col gap-0.5" role="menu" aria-label={t('nm.menu')}>
           <button type="button" role="menuitem" className="menu-item" onClick={() => pick({ small: !prefs.small })}>{t(prefs.small ? 'nm.big' : 'nm.small')}</button>
           <button type="button" role="menuitem" className="menu-item" onClick={() => pick({ top: !prefs.top })}>{t(prefs.top ? 'nm.back' : 'nm.top')}</button>
           <button type="button" role="menuitem" className="menu-item" onClick={() => pick({ closedFor: mkey })}>{t('nm.close')}</button>
@@ -67,7 +67,7 @@ export function NextMeetingCard({ brandId, brandName, m, mkey }: { brandId: stri
 
   if (prefs.small) {
     return (
-      <section className="card row g12 hg-next min-w-0" style={{ padding: '10px 12px 10px 16px' }} aria-label={t('hg.next')}>
+      <section className="card row g12 hg-next min-w-0" style={{ padding: '0.625rem 0.75rem 0.625rem 1rem' }} aria-label={t('hg.next')}>
         <span className="col grow" style={{ minWidth: 0 }}>
           <span className="t-xs t-mute">{t('hg.next')}</span>
           <span className="w7 truncate">{when ?? t('hg.noNext')}</span>
@@ -96,7 +96,7 @@ export function NextMeetingCard({ brandId, brandName, m, mkey }: { brandId: stri
         </>
       ) : <p className="t-sm t-mute">{t('hg.noNext')}</p>}
       {admin && cal && !cal.connected && (
-        <div className="col g6" style={{ borderTop: '1px solid var(--line)', paddingTop: 12 }}>
+        <div className="col g6" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.75rem' }}>
           {cal.ready ? <button type="button" className="btn btn-secondary btn-sm" onClick={connect}>{t('hg.connectCal')}</button> : null}
           <span className="t-xs t-mute">{t(cal.ready ? 'hg.connectCalSub' : 'hg.calNotReady')}</span>
         </div>

@@ -42,7 +42,7 @@ export function Typography({ fonts }: { fonts: Font[] }) {
               <p className="label">{f.role ?? ''}</p>
               {f.type && <span className="chip c-type">{f.type === 'google' ? 'Google Fonts' : f.type.toLowerCase().includes('adobe') ? 'Adobe Fonts' : f.type}</span>}
             </div>
-            <p className="text-5xl sm:text-[64px] sm:leading-[64px]" style={{ fontFamily: f.fontFamily, color: 'var(--ink)' }}>Aa</p>
+            <p className="text-5xl sm:text-[4rem] sm:leading-[4rem]" style={{ fontFamily: f.fontFamily, color: 'var(--ink)' }}>Aa</p>
             <div className="col g4">
               <span className="h3" style={{ fontFamily: f.fontFamily }}>{f.name ?? f.fontFamily}</span>
               {f.description && <Scan text={f.description} points />}

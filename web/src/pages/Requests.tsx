@@ -81,7 +81,7 @@ export function Requests() {
           onCsv={() => downloadCsv(fileName, head, rows())} onPdf={() => printPdf(`${current.name} · ${t('nav.requests')}`, t('rf.count', { n: shown.length, total: list.length }), head, rows())} />
       )}
 
-      {loading ? <div className="grid gap-5 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 300 }} />)}</div>
+      {loading ? <div className="grid gap-5 md:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: '18.75rem' }} />)}</div>
         : list.length === 0 ? (
           <div className="card empty col g12"><p className="h3">{t('req.empty')}</p><button type="button" className="btn btn-primary self-start" onClick={() => setParam('new', '1')}><Icon name="plus" size={18} />{t('as.new')}</button></div>
         ) : shown.length === 0 && view !== 'calendar' ? (

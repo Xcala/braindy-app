@@ -41,7 +41,7 @@ function TextCard({ brandId, requestId, versionId, index }: { brandId: string; r
   return (
     <div className="vw-text">
       {error ? <p className="t-sm t-mute" style={{ margin: 0 }}>{t('vw.textError')}</p>
-        : text === null ? <div className="skel" style={{ height: 160 }} /> : <pre>{text}</pre>}
+        : text === null ? <div className="skel" style={{ height: '10rem' }} /> : <pre>{text}</pre>}
       {text && <button className="btn btn-secondary btn-sm self-start" onClick={copy}><Icon name={copied ? 'check' : 'copy'} />{t(copied ? 'vw.copied' : 'vw.copy')}</button>}
     </div>
   );

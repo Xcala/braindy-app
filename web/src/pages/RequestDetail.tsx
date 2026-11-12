@@ -47,7 +47,7 @@ export function RequestDetail() {
 
   useTour('review', () => reviewSteps(lang), versions.length > 0, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
-  if (r === undefined) return <div className="skel" style={{ height: 400 }} />;
+  if (r === undefined) return <div className="skel" style={{ height: '25rem' }} />;
   if (r === null) return <p className="t-mute">{t('req.notFound')}</p>;
   const v = versions.find((x) => x.id === versionId) ?? versions[versions.length - 1];
   const type = [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang], r.formatType].filter(Boolean).join(' · ');
