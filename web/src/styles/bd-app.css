@@ -100,6 +100,7 @@ p{margin:0}
 .field{display:flex;flex-direction:column;gap:0.5rem}
 .field label,.field .label{font:600 0.875rem/1.125rem var(--f-text);color:var(--ink)}
 .input{height:3rem;border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:0 1rem;font:400 0.9375rem/1.25rem var(--f-text);color:var(--ink);background:#fff;width:100%}
+textarea.input{height:auto;min-height:3rem;padding:0.875rem 1rem;line-height:1.375rem;resize:vertical}
 .input::placeholder{color:#6B7285}
 .input.is-focus{border-color:var(--azul)}
 .input.is-error{border-color:var(--danger)}
