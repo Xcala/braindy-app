@@ -1,3 +1,4 @@
+import { followPointer } from './followPointer';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
@@ -91,7 +92,7 @@ export function HelpChat() {
         </aside>
       )}
       {!open && (
-        <button type="button" className="help-fab" onClick={() => { dismissIntro(); setOpen(true); }} aria-label={t('help.open')} title={t('help.open')}><span className="help-core"><SparkIcon /></span></button>
+        <button type="button" className="help-fab" onPointerMove={followPointer} onClick={() => { dismissIntro(); setOpen(true); }} aria-label={t('help.open')} title={t('help.open')}><span className="help-core"><SparkIcon /></span></button>
       )}
       {open && (
         <section className="help-panel" role="dialog" aria-modal="false" aria-labelledby="help-title">

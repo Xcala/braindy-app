@@ -1,16 +1,14 @@
 /* In-app help: a small round button in the corner and a chat panel. On phones it sits above the bottom bar. */
 .help-fab{position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:35;width:52px;height:52px;border-radius:50%;border:0;padding:0;background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer;isolation:isolate}
 .help-core{position:absolute;inset:0;border-radius:50%;background:var(--ink,#0B1220);display:grid;place-items:center}
-@property --help-ang{syntax:"<angle>";inherits:false;initial-value:0deg}
-/* Comet glow: a soft arc in the Brain colors travels around the edge (like a light running along the rim). Still at rest; it runs only while hovered or focused. */
-.help-fab::before,.help-fab::after{content:"";position:absolute;border-radius:50%;background:conic-gradient(from var(--help-ang),transparent 0deg,transparent 160deg,#2A7FFF 215deg,#06B6D4 255deg,#8B5CF6 300deg,#F5B301 345deg,transparent 360deg);z-index:-1}
+@property --help-ang{syntax:"<angle>";inherits:true;initial-value:200deg}
+/* Comet glow: a soft arc in the Brain colors travels around the edge (like a light running along the rim). The arc turns toward the mouse while it is over the button (followPointer.ts). */
+.help-fab::before,.help-fab::after{content:"";position:absolute;border-radius:50%;background:conic-gradient(from var(--help-ang),transparent 0deg,transparent 180deg,#2A7FFF 215deg,#06B6D4 250deg,#8B5CF6 290deg,#F5B301 325deg,transparent 360deg);z-index:-1}
 .help-fab::before{inset:-3px;filter:blur(1.5px)}
 .help-fab::after{inset:-7px;filter:blur(9px);z-index:-2}
-.help-fab::before,.help-fab::after{--help-ang:200deg;transition:opacity .3s,inset .3s}
+.help-fab::before,.help-fab::after{transition:opacity .3s,inset .3s,--help-ang .35s ease-out}
 .help-fab::after{opacity:.55}
 .help-fab:is(:hover,:focus-visible)::after{opacity:1;inset:-9px}
-@media (prefers-reduced-motion:no-preference){.help-fab:is(:hover,:focus-visible)::before,.help-fab:is(:hover,:focus-visible)::after{animation:help-run 1.8s linear infinite}}
-@keyframes help-run{from{--help-ang:200deg}to{--help-ang:560deg}}
 .help-fab:focus-visible{outline:3px solid var(--azul-on-dark);outline-offset:2px}
 .help-panel{position:fixed;inset:auto 0 0 0;z-index:45;height:min(78vh,620px);background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -12px 40px -16px rgba(6,13,30,.35);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
 @media (min-width:768px){
