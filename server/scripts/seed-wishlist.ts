@@ -40,6 +40,12 @@ const HISTORY: Entry[] = [
     text: 'Recibir las entregas por WhatsApp y aprobarlas desde ahí con un botón.', reply: 'Planeada.' },
   { id: 'h-voz', kind: 'improve', status: 'new', asked: '2026-11-08',
     text: 'Poder hablarle a Braindy por voz, como una llamada, y que haga lo que le pido.', reply: '' },
+  { id: 'h-notas-pedido', kind: 'improve', status: 'new', asked: '2026-11-12', by: { brandId: 'revista-level', name: 'Karol' },
+    text: 'Poder agregarle notas o detalles a un pedido ya enviado, cuando me acuerdo de algo más.', reply: '' },
+  { id: 'h-aprobar-vs-pedido', kind: 'improve', status: 'new', asked: '2026-11-12', by: { brandId: 'revista-level', name: 'Karol' },
+    text: 'Al aprobar, ver al lado lo que pedí, para no aprobar por error algo distinto.', reply: '' },
+  { id: 'h-calificar-entrega', kind: 'improve', status: 'new', asked: '2026-11-12', by: { brandId: 'revista-level', name: 'Karol' },
+    text: 'Poder calificar lo que me entregan y felicitar cuando quedó bien, no solo pedir cambios.', reply: '' },
 ];
 
 const dry = process.argv.includes('--dry-run');
