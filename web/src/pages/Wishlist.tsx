@@ -94,7 +94,7 @@ export function Wishlist() {
       {loading ? <div className="skel" style={{ height: '10rem' }} />
         : list.length === 0 ? <div className="card t-mute">{t('wl.empty')}</div>
         : shown.length === 0 ? <div className="card t-mute">{t('wl.noMatch')}</div>
-        : <ul className="wl-list">{shown.map((w) => <WishItem key={w.ref.path} w={w} />)}</ul>}
+        : <ul className="wl-list card">{shown.map((w) => <WishItem key={w.ref.path} w={w} />)}</ul>}
     </div>
   );
 }

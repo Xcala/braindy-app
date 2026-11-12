@@ -12,7 +12,7 @@ export const wishEn = {
   'wl.public': 'From a client', 'wl.empty': 'Nothing here yet. Be the first to ask.', 'wl.noMatch': 'Nothing with that filter.',
   'wl.delete': 'Delete', 'wl.deleteAsk': 'Delete this wish?', 'wl.edit': 'Edit',
   'wl.adm.status': 'Status', 'wl.adm.reply': 'Answer to the client', 'wl.adm.save': 'Save', 'wl.adm.newPublic': 'Add to the history (visible to every client, no names)',
-  'wl.done': 'Done on {date}', 'wl.listen': 'Listen to the voice note', 'wl.askedBy': 'Asked by {name}', 'wl.share': 'Share with everyone', 'wl.shareHint': 'Every client sees it, with only the first name of who asked', 'wl.audioError': 'Could not open the voice note',
+  'wl.done': 'Done on {date}', 'wl.listen': 'Listen to the voice note', 'wl.askedBy': 'Asked by {name}', 'wl.manage': 'Manage', 'wl.share': 'Share with everyone', 'wl.shareHint': 'Every client sees it, with only the first name of who asked', 'wl.audioError': 'Could not open the voice note',
 } as const;
 
 export const wishEs: Record<keyof typeof wishEn, string> = {
@@ -28,5 +28,5 @@ export const wishEs: Record<keyof typeof wishEn, string> = {
   'wl.public': 'De un cliente', 'wl.empty': 'Aún no hay nada. Sé el primero en pedir.', 'wl.noMatch': 'Nada con ese filtro.',
   'wl.delete': 'Borrar', 'wl.deleteAsk': '¿Borrar este deseo?', 'wl.edit': 'Editar',
   'wl.adm.status': 'Estado', 'wl.adm.reply': 'Respuesta al cliente', 'wl.adm.save': 'Guardar', 'wl.adm.newPublic': 'Agregar al historial (lo ven todos los clientes, sin nombres)',
-  'wl.done': 'Hecha el {date}', 'wl.listen': 'Escuchar la nota de voz', 'wl.askedBy': 'Lo pidió {name}', 'wl.share': 'Compartir con todos', 'wl.shareHint': 'La ven todos los clientes, solo con el nombre de pila de quien la pidió', 'wl.audioError': 'No se pudo abrir la nota de voz',
+  'wl.done': 'Hecha el {date}', 'wl.listen': 'Escuchar la nota de voz', 'wl.askedBy': 'Lo pidió {name}', 'wl.manage': 'Gestionar', 'wl.share': 'Compartir con todos', 'wl.shareHint': 'La ven todos los clientes, solo con el nombre de pila de quien la pidió', 'wl.audioError': 'No se pudo abrir la nota de voz',
 };
