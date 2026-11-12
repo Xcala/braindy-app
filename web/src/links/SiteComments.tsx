@@ -5,9 +5,13 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { CommentEdit } from '../components/CommentEdit';
 import { samePage, type SiteFrame } from './useSpot';
+import { VoiceNote } from '../requests/ask/VoiceNote';
+import { WishAudio } from '../wishes/WishAudio';
+
+type Audio = { assetId: string; name: string; size: number; contentType: string };
 
 /** A comment on the site (brands/{b}/siteComments), pinned on a part of it or general to a page. n: its number on the pins, oldest first. asPoint: key of the adjustment NickMark made from it. */
-export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp; editedAt?: Timestamp }
+export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; audio?: Audio; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp; editedAt?: Timestamp }
 type Reply = { id: string; author: string; authorName: string; text: string; createdAt?: Timestamp; editedAt?: Timestamp };
 
 const hostOf = (url?: string) => { try { return url ? new URL(url).host.replace(/^www\./, '') : ''; } catch { return ''; } };
@@ -34,6 +38,8 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
   const [error, setError] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [where, setWhere] = useState('');
+  const [audio, setAudio] = useState<Audio>();
+  const [recBusy, setRecBusy] = useState(false);
   const bridge = !!frame?.hasBridge;
   const open_ = list.filter((c) => !c.resolved).reverse();
 
@@ -50,7 +56,7 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
-    const v = text.trim(), p = frame?.picked;
+    const v = text.trim() || (audio ? `🎤 ${t('sc.voiceNote')}` : ''), p = frame?.picked;
     if (!v || !user) return;
     setBusy(true); setError(false);
     try {
@@ -58,9 +64,10 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
         author: user.uid, authorName: (profile?.name ?? '').slice(0, 120), text: v.slice(0, 2000), url: (p?.url ?? page ?? siteUrl).slice(0, 1000),
         ...(p ? { spot: { selector: p.selector.slice(0, 500), text: p.text.slice(0, 120), x: p.x, y: p.y } } : {}),
         ...(!bridge && where.trim() ? { where: where.trim().slice(0, 200) } : {}),
+        ...(audio ? { audio } : {}),
         resolved: false, createdAt: serverTimestamp(),
       });
-      setText(''); setWhere(''); frame?.clearPicked();
+      setText(''); setWhere(''); setAudio(undefined); frame?.clearPicked();
     } catch { setError(true); } finally { setBusy(false); }
   }
 
@@ -86,8 +93,9 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
         <textarea className="input" rows={3} value={text} maxLength={2000} placeholder={t('sc.ph')} aria-label={t('sc.ph')} onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) send(e); }} />
         <div className="row g8 between">
-          <span />
-          <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !text.trim()}>{t('sc.send')}</button>
+          {audio ? <span className="row g8" style={{ alignItems: 'center', minWidth: 0 }}><WishAudio brandId={brandId} audio={audio} /><button type="button" className="btn btn-ghost btn-sm" onClick={() => setAudio(undefined)} aria-label={t('sc.cancel')}>✕</button></span>
+            : <VoiceNote brandId={brandId} onAdd={setAudio} onBusy={setRecBusy} />}
+          <button type="submit" className="btn btn-primary btn-sm" disabled={busy || recBusy || (!text.trim() && !audio)}>{t('sc.send')}</button>
         </div>
         {error && <p className="help err" role="alert" style={{ margin: 0 }}>{t('sc.error')}</p>}
       </form>
@@ -139,6 +147,7 @@ export function CommentItem({ brandId, c, frame, open, onOpen, onToPoint }: { br
         <span className="sc-n">{c.n}</span>
         <span className="spanel-ptitle"><b>{c.authorName || t('sc.someone')}</b> {c.text}{c.editedAt ? <span className="t-mute"> · {t('ce.edited')}</span> : null}</span>
       </summary>
+      {c.audio && <div style={{ margin: '0 0.75rem 0.5rem' }}><WishAudio brandId={brandId} audio={c.audio} /></div>}
       <p className="t-xs t-mute">{pathOf(c.url)} · {when(c.createdAt)}{c.spot?.text ? ` · «${c.spot.text}»` : ''}{c.where ? ` · ${t('sc.whereIs')}: ${c.where}` : ''}</p>
       {(c.author === user?.uid || isAdmin) && (
         <div style={{ margin: '0 0.75rem 0.5rem' }}>

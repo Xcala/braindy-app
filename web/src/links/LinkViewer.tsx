@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { SitePanel } from './SitePanel';
 import { useSpot } from './useSpot';
 import { AddressBar } from './AddressBar';
+import { ModeIntro, ModeSwitch, useSiteMode } from './SiteModes';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
 
@@ -39,6 +40,9 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
   // The adjustments column: open by default where there is room, folded on phones.
   const hasPanel = link.section === 'apps';
   const [panel, setPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
+  // A site with its own editor: «Dímelo» (this panel) or «Hazlo tú» (its editor, full width, in the same frame).
+  const sm = useSiteMode(link.id, spot, hasPanel && !blocked);
+  const editing = sm.mode === 'edit';
 
   return (
     <div className="lview" role="dialog" aria-modal="true" aria-label={link.title}>
@@ -51,8 +55,9 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
           <span className="w7 truncate">{link.title}</span>
           {blocked && <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>}
         </div>
-        {!blocked && <AddressBar spot={spot} home={link.url} />}
-        {!blocked && (
+        {!blocked && !editing && <AddressBar spot={spot} home={link.url} />}
+        {sm.canEdit && <ModeSwitch mode={sm.mode} setMode={sm.setMode} />}
+        {!blocked && !editing && (
           <div className="seg lview-sizes" role="group" aria-label={t('lv.size')}>
             {(Object.keys(SIZES) as Size[]).map((s) => (
               <button key={s} type="button" className={size === s ? 'is-on' : ''} aria-pressed={size === s} onClick={() => setSize(s)}>{t(`lv.${s}`)}</button>
@@ -72,15 +77,16 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
             </div>
           ) : (
             <>
-              <iframe ref={spot.frame} title={link.title} src={link.url} className="lview-frame" style={{ width: SIZES[size] }}
+              <iframe ref={spot.frame} title={link.title} src={link.url} className="lview-frame" style={{ width: editing ? '100%' : SIZES[size] }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
                 referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
+              {sm.intro && <ModeIntro setMode={sm.setMode} />}
               {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
               {spot.note && <p className="lview-note t-sm" role="status">{t(spot.note === 'moved' ? 'sp.noBridge' : spot.note === 'nobridge' ? 'sc.noBridge' : 'sp.notFound')} <button type="button" className="btn btn-ghost btn-sm" onClick={spot.dismiss} aria-label={t('lb.close')}>✕</button></p>}
             </>
           )}
         </div>
-        {hasPanel && (
+        {hasPanel && !editing && (
           <div className={`lview-side${panel ? ' is-open' : ''}`}>
             {/* One clear handle: a rail with the label when folded, a round button in the corner when open. */}
             <button type="button" className="lview-side-tog" aria-expanded={panel} aria-controls="site-panel" onClick={() => setPanel((p) => !p)}
