@@ -25,5 +25,12 @@ export const NAV: NavGroup[] = [
   { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }, { to: '/calendar', label: 'sub.socialCal' }] },
 ];
 
+/** Below them (2026-11-12): three rows instead of five. Learn · Wishlist · Account, each one's pages as tabs too. */
+export const FOOT_NAV: NavGroup[] = [
+  { label: 'nav.learnGroup', short: 'nav.learnGroup', pages: [{ to: '/learn', label: 'sub.lessons' }, { to: '/resources', label: 'res.nav' }] },
+  { label: 'nav.wishlist', short: 'nav.wishlist', pages: [{ to: '/wishlist', label: 'nav.wishlist' }] },
+  { label: 'nav.account', short: 'nav.account', pages: [{ to: '/plan', label: 'nav.plan' }, { to: '/accesses', label: 'nav.accesses' }, { to: '/settings', label: 'nav.settings' }] },
+];
+
 export const pageMatch = (path: string, to: string) => path === to || (to !== '/brand' && path.startsWith(`${to}/`)) || (to === '/brand' && /^\/brand\/(?!visual|brain|docs)[^/]+$/.test(path));
-export const groupOfPath = (path: string) => NAV.find((g) => g.pages.some((p) => pageMatch(path, p.to) || path.startsWith(`${p.to}/`)));
+export const groupOfPath = (path: string) => [...NAV, ...FOOT_NAV].find((g) => g.pages.some((p) => pageMatch(path, p.to) || path.startsWith(`${p.to}/`)));

@@ -39,3 +39,6 @@ NAV_ICON['/research'] = svg(<><circle cx="11" cy="11" r="7" /><path d="m20 20-4-
 NAV_ICON['/apps'] = svg(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
 NAV_ICON['/calendar'] = svg(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);
 NAV_ICON['/deliveries'] = NAV_ICON['/assets'];
+// Bottom of the menu: Wishlist (a star) and Account (a person).
+NAV_ICON['/wishlist'] = svg(<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />);
+NAV_ICON['nav.account'] = svg(<><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>);

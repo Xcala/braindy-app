@@ -7,7 +7,7 @@ import type { StringKey } from '../i18n/strings';
 import { useRequests } from '../requests/useRequests';
 import { useBrainPulse } from '../brain/useBrainEvents';
 import { sectionOfPath, useMySections } from '../team/sections';
-import { groupOfPath, NAV } from './navGroups';
+import { FOOT_NAV, groupOfPath, NAV, type NavGroup } from './navGroups';
 import { NAV_ICON } from './navIcons';
 import { useFilled } from './SubNav';
 import './sidebar.css';
@@ -16,15 +16,10 @@ type Item = { to: string; label: StringKey };
 const KEY = 'braindy.sidebar';
 const savedSlim = () => { try { return localStorage.getItem(KEY) === 'slim'; } catch { return false; } };
 
-/** Below the main sections: learning, accesses, plan and settings, each only when this person may use it. */
-export const FOOT: Item[] = [
-  { to: '/learn', label: 'cr.nav' }, { to: '/resources', label: 'res.nav' }, { to: '/accesses', label: 'nav.accesses' },
-  { to: '/plan', label: 'nav.plan' }, { to: '/settings', label: 'nav.settings' },
-];
 
 /**
- * Desktop navigation as a left sidebar (dashboard style). Client: the sections in NAV with their pages under the open one,
- * the count waiting for approval on Requests, and learning, accesses, plan and settings below. Admin: its own pages.
+ * Desktop navigation as a left sidebar (dashboard style). Client: one row per section (Home, Requests with the count waiting
+ * for approval, My brand, Results) and, below, Learn · Wishlist · Account; each section's pages are tabs on the page. Admin: its own pages.
  * It folds to icons only, remembered per browser. Phones keep the bottom bar.
  */
 export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
@@ -63,15 +58,21 @@ function Link({ item, slim, on, badge, sub, pulse, icon }: { item: Item; slim: b
 
 function ClientSections({ slim }: { slim: boolean }) {
   const { can } = useMySections();
-  const { pathname } = useLocation();
-  const isAdmin = useAuth().profile?.role === 'admin';
-  const filled = useFilled();
   const { current } = useBrands();
   const { list } = useRequests(can('requests') ? current?.id : undefined);
   const waiting = list.filter((r) => r.status === 'to_approve').length;
   // When the Brain learns something new (an approval, a file, Mi marca…), My brand pulses for a moment.
   const learned = useBrainPulse(can('brand') && current?.kind === 'brand' ? current.id : undefined);
-  return <>{NAV.map((g) => {
+  return <Groups groups={NAV} slim={slim} waiting={waiting} learned={learned} />;
+}
+
+/** One row per section; it lights on any of its pages and opens the first one this person may use (and has something in it). */
+function Groups({ groups, slim, waiting, learned }: { groups: NavGroup[]; slim: boolean; waiting?: number; learned?: boolean }) {
+  const { can } = useMySections();
+  const { pathname } = useLocation();
+  const isAdmin = useAuth().profile?.role === 'admin';
+  const filled = useFilled();
+  return <>{groups.map((g) => {
     const pages = g.pages.filter((p) => can(sectionOfPath(p.to)));
     if (!pages.length) return null;
     const on = groupOfPath(pathname) === g;
@@ -79,13 +80,12 @@ function ClientSections({ slim }: { slim: boolean }) {
     const first = pages.find((p) => isAdmin || filled(p.to)) ?? pages[0]!;
     return (
       <div key={g.label} className="col">
-        <Link item={{ to: first.to, label: g.label }} icon={g.pages[0]!.to} slim={slim} on={on} badge={first.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
+        <Link item={{ to: first.to, label: g.label }} icon={NAV_ICON[g.label] ? g.label : g.pages[0]!.to} slim={slim} on={on} badge={first.to === '/requests' ? waiting : undefined} pulse={g.label === 'nav.brand' && learned} />
       </div>
     );
   })}</>;
 }
 
 function ClientFoot({ slim }: { slim: boolean }) {
-  const { can } = useMySections();
-  return <>{FOOT.filter((i) => can(sectionOfPath(i.to))).map((i) => <Link key={i.to} item={i} slim={slim} />)}</>;
+  return <Groups groups={FOOT_NAV} slim={slim} />;
 }

@@ -1,0 +1,9 @@
+/* Wishlist: a column of cards, each wish with its status, NickMark's answer and «Me too». */
+.wl-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.75rem}
+.wl-item{display:flex;flex-direction:column;gap:0.625rem}
+.wl-text{margin:0;white-space:pre-wrap;word-break:break-word}
+.wl-kind{background:var(--fog,#F4F6FB);color:var(--graphite)}
+.wl-reply{margin:0;padding:0.625rem 0.875rem;border-radius:0.75rem;background:var(--fog,#F4F6FB);border-left:3px solid var(--azul)}
+.wl-admin{padding-top:0.625rem;border-top:1px dashed var(--line)}
+.wl-select{width:auto;height:2.25rem;padding:0 0.75rem}
+.wl-audio{width:100%;max-width:26rem;height:2.5rem}

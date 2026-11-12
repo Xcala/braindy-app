@@ -36,6 +36,7 @@ import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
 import { Resources } from '../pages/Resources';
+import { Wishlist } from '../pages/Wishlist';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
           { path: 'learn', element: <Learn /> },
           { path: 'learn/:id', element: <LearnLesson /> },
           { path: 'resources', element: <Resources /> },
+          { path: 'wishlist', element: <Wishlist /> },
           { path: 'plan', element: <MyPlan /> },
           { path: 'account', element: <Account /> },
           { path: 'pay', element: <Pay /> },
