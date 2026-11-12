@@ -28,6 +28,8 @@ export function TalkToNico({ brandName }: { brandName: string }) {
   const admin = useAuth().profile?.role === 'admin';
   const [open, setOpen] = useState(false);
   const [booking, setBooking] = useState(false);
+  const [mail, setMail] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [group, setGroup] = useState<string | null>(null);
   const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -43,7 +45,11 @@ export function TalkToNico({ brandName }: { brandName: string }) {
   }, [open]);
 
   const phone = nicoPhone(current);
-  const close = () => setOpen(false);
+  const close = () => { setOpen(false); setMail(false); setCopied(false); };
+  // A mailto link does nothing on a PC without a mail app, so on computers the person picks Gmail, Outlook or copying the address.
+  const subject = encodeURIComponent(`Braindy · ${brandName}`);
+  const mobile = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+  const copy = () => { void navigator.clipboard?.writeText(NICO_EMAIL).then(() => setCopied(true)); };
   const ext = { target: '_blank', rel: 'noreferrer', onClick: close, role: 'menuitem', className: 'menu-item' } as const;
 
   return (
@@ -59,7 +65,17 @@ export function TalkToNico({ brandName }: { brandName: string }) {
               ? <Link to="/settings?tab=notices" onClick={close} role="menuitem" className="menu-item"><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.groupAdd')}</Link>
               : <a href={nicoWhatsApp(current, t('hg.groupAskText', { brand: brandName }))} {...ext}><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.groupAsk')}</a>}
           <a href={nicoWhatsApp(current)} {...ext}><span className="talk-ico is-wa"><WhatsAppIcon /></span>{t('hg.waNico')}</a>
-          <a href={`mailto:${NICO_EMAIL}?subject=${encodeURIComponent(`Braindy · ${brandName}`)}`} {...ext} target={undefined}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></a>
+          {mobile
+            ? <a href={`mailto:${NICO_EMAIL}?subject=${subject}`} {...ext} target={undefined}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></a>
+            : <button type="button" role="menuitem" aria-expanded={mail} className="menu-item w-full text-left" style={{ border: 0, cursor: 'pointer' }} onClick={() => setMail((m) => !m)}><span className="talk-ico"><MailIcon /></span><span className="col"><span>{t('hg.emailNico')}</span><span className="t-xs t-mute">{NICO_EMAIL}</span></span></button>}
+          {!mobile && mail && (
+            <div className="row g6 wrap" style={{ padding: '2px 12px 8px 56px' }}>
+              <a className="btn btn-secondary btn-sm" href={`https://mail.google.com/mail/?view=cm&fs=1&to=${NICO_EMAIL}&su=${subject}`} target="_blank" rel="noreferrer" onClick={close}>Gmail</a>
+              <a className="btn btn-secondary btn-sm" href={`https://outlook.office.com/mail/deeplink/compose?to=${NICO_EMAIL}&subject=${subject}`} target="_blank" rel="noreferrer" onClick={close}>Outlook</a>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={copy}>{t(copied ? 'hg.emailCopied' : 'hg.emailCopy')}</button>
+              <a className="t-xs t-mute self-center" href={`mailto:${NICO_EMAIL}?subject=${subject}`} onClick={close}>{t('hg.emailApp')}</a>
+            </div>
+          )}
           <a href={`sms:+${phone}`} {...ext} target={undefined}><span className="talk-ico"><TextIcon /></span><span className="col"><span>{t('hg.textNico')}</span><span className="t-xs t-mute">+{phone}</span></span></a>
           {current && (
             <button type="button" role="menuitem" className="menu-item w-full text-left" style={{ border: 0, background: undefined, cursor: 'pointer', borderTop: '1px solid var(--line)', borderRadius: 0, marginTop: 4, paddingTop: 10 }} onClick={() => { close(); setBooking(true); }}>

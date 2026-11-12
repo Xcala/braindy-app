@@ -15,11 +15,14 @@ const KEY = (brandId: string) => `bd-help-${brandId}`;
 const load = (brandId: string): Saved => { try { return JSON.parse(sessionStorage.getItem(KEY(brandId)) ?? '') as Saved; } catch { return { msgs: [], chatId: null }; } };
 const save = (brandId: string, s: Saved) => { try { sessionStorage.setItem(KEY(brandId), JSON.stringify(s)); } catch { /* private mode: the chat just isn't kept */ } };
 
-const ChatIcon = () => (
+const SparkIcon = () => (
   <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 5h14v10H10l-4 4v-4H5z" /><path d="M10.2 8.6a1.9 1.9 0 1 1 2.5 1.8c-.5.2-.7.6-.7 1.1M12 13.2h.01" />
+    <path d="M12 3l1.8 4.6L18 9.4l-4.2 1.8L12 16l-1.8-4.8L6 9.4l4.2-1.8z" /><path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" />
   </svg>
 );
+const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
+const INTRO = 'bd-help-intro';
+const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
 
 /** The small help button in the corner: a chat that knows how Braindy works and hands off to Nick when it can't help. */
 export function HelpChat() {
@@ -31,6 +34,8 @@ export function HelpChat() {
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [intro, setIntro] = useState(() => !introSeen());
+  const dismissIntro = () => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } };
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
   const brandId = current?.id ?? '';
@@ -74,15 +79,27 @@ export function HelpChat() {
 
   return (
     <>
+      {!open && intro && (
+        <aside className="help-intro" aria-labelledby="help-intro-t">
+          <span className="help-ai ai-tag">{t('help.introTag')}</span>
+          <b id="help-intro-t">{t('help.introTitle')}</b>
+          <p>{t('help.introText')}</p>
+          <div className="row">
+            <button type="button" className="go" onClick={() => { dismissIntro(); setOpen(true); }}>{t('help.introGo')}</button>
+            <button type="button" className="later" onClick={dismissIntro}>{t('help.introLater')}</button>
+          </div>
+        </aside>
+      )}
       {!open && (
-        <button type="button" className="help-fab" onClick={() => setOpen(true)} aria-label={t('help.open')} title={t('help.open')}><ChatIcon /></button>
+        <button type="button" className="help-fab" onClick={() => { dismissIntro(); setOpen(true); }} aria-label={t('help.open')} title={t('help.open')}><span className="help-core"><SparkIcon /></span></button>
       )}
       {open && (
         <section className="help-panel" role="dialog" aria-modal="false" aria-labelledby="help-title">
           <header className="help-head">
             <div className="col" style={{ minWidth: 0 }}>
-              <h2 id="help-title" className="help-title">{t('help.title')}</h2>
+              <h2 id="help-title" className="help-title">{t('help.title')}<span className="help-ai">{t('help.ai')}</span></h2>
               <p className="t-xs t-mute">{t('help.sub')}</p>
+              <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
               {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
             </div>
             <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
