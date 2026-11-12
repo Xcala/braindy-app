@@ -44,3 +44,15 @@ export function VersionBar({ brand, versions, viewing, onView, isAdmin = false, 
     </div>
   );
 }
+
+/** Admin, in My brand's page head: «New brand version» with its dialog. */
+export function NewVersionButton({ brand }: { brand: Brand }) {
+  const { t } = useI18n();
+  const [asking, setAsking] = useState(false);
+  return (
+    <>
+      <button type="button" className="btn btn-secondary" onClick={() => setAsking(true)}>{t('ver.new')}</button>
+      {asking && <NewVersionDialog brand={brand} onClose={() => setAsking(false)} />}
+    </>
+  );
+}

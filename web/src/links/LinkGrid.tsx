@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -20,7 +20,11 @@ const host = (url: string) => { try { return new URL(url).host.replace(/^www\./,
 
 /** Cards for My apps / My research. Everyone in the brand opens them; NickMark adds, edits and deletes.
  *  A site or app card shows its adjustments; opening it puts the page beside its triage. */
-export function LinkGrid({ brandId, section, links }: { brandId: string; section: LinkSection; links: BrandLink[] }) {
+export function LinkGrid({ brandId, section, links, adding, onAdding }: {
+  brandId: string; section: LinkSection; links: BrandLink[];
+  /** When the page head holds «Add link»: open the form from there. */
+  adding?: boolean; onAdding?: (v: boolean) => void;
+}) {
   const { t } = useI18n();
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -28,11 +32,13 @@ export function LinkGrid({ brandId, section, links }: { brandId: string; section
   const [viewing, setViewing] = useState<BrandLink | null>(null);
   const closeViewer = useCallback(() => setViewing(null), []);
   const changes = useSiteChanges(brandId);
+  useEffect(() => { if (adding) setEditing('new'); }, [adding]);
+  const close = () => { setEditing(null); onAdding?.(false); };
 
   return (
     <div className="col g16">
-      {isAdmin && !editing && <div><button type="button" className="btn btn-primary btn-sm" onClick={() => setEditing('new')}>+ {t('links.add')}</button></div>}
-      {editing && <LinkForm brandId={brandId} section={section} link={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
+      {isAdmin && !editing && !onAdding && <div><button type="button" className="btn btn-primary btn-sm" onClick={() => setEditing('new')}>+ {t('links.add')}</button></div>}
+      {editing && <LinkForm brandId={brandId} section={section} link={editing === 'new' ? undefined : editing} onClose={close} />}
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {links.map((l) => (
           <div key={l.id} className="deck">

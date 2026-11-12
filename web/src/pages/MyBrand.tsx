@@ -23,7 +23,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { BrandEditor, type EditableIdentity } from '../brands/edit/BrandEditor';
 import type { StringKey } from '../i18n/strings';
 import { useBrandVersions } from '../brands/versions/useBrandVersions';
-import { VersionBar } from '../brands/versions/VersionBar';
+import { NewVersionButton, VersionBar } from '../brands/versions/VersionBar';
+import { PageHeader } from '../components/PageHeader';
 import { useVersionView } from '../brands/versions/versionView';
 
 type Identity = {
@@ -93,14 +94,11 @@ export function MyBrand() {
 
   return (
     <div className="col g48 brandpage">
-      <VersionBar brand={current} versions={versions} viewing={ver} onView={setVer} isAdmin={isAdmin} />
+      <PageHeader title={t(view === 'essence' ? 'sub.essence' : 'sub.kit')} sub={t(view === 'essence' ? 'ph.essence' : 'ph.kit')}
+        actions={isAdmin && !old && <><NewVersionButton brand={current} /><button type="button" className="btn btn-primary" onClick={() => setEditing(true)}>{t('be.open')}</button></>} />
+      <VersionBar brand={current} versions={versions} viewing={ver} onView={setVer} />
       {view === 'essence' && <BrandHero brand={shown} logo={id.logos?.primary ?? shown.logoUrl ?? undefined}
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />}
-      {isAdmin && !old && (
-        <div className="row" style={{ justifyContent: 'flex-end', marginTop: view === 'essence' ? -32 : 0 }}>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('be.open')}</button>
-        </div>
-      )}
       {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} primal={primal} onClose={() => setEditing(false)} />}
 
       {view === 'visual' && visible.length > 1 && (

@@ -10,6 +10,7 @@ import { useBrainEvents, type BrainEvent } from '../brain/useBrainEvents';
 import { BrainLoopSteps } from '../brain/BrainLoop';
 import { BrainBetter } from '../brain/BrainLearned';
 import '../brain/brain.css';
+import { PageHeader } from '../components/PageHeader';
 
 /**
  * My brand › Brain: what NickMark and his Brains know about the brand, live. Every request, approval, change asked,
@@ -68,14 +69,8 @@ export function BrandBrain() {
   const last = events[0]?.at ?? null;
   return (
     <div className="col g32">
-      <div className="row between g24 wrap" style={{ alignItems: 'flex-end' }}>
-        <div className="col g8" style={{ maxWidth: '45rem' }}>
-          <p className="label">{current.name}</p>
-          <h1 className="h1"><span className="w9">{t('bb.title')}</span> {total === 1 ? t('bb.knowsOne') : t('bb.knows', { n: total })}</h1>
-          <p className="t-mute"><strong className="w7" style={{ color: 'var(--ink)' }}>{t('bl.line')}</strong> {t('bb.lede')}</p>
-        </div>
-        <div className="bb-stat"><span className="t-xs t-mute">{t('bb.last')}</span><b className="mono">{ago(last, t)}</b></div>
-      </div>
+      <PageHeader title={t('sub.brain')} sub={<>{total === 1 ? t('bb.knowsOne') : t('bb.knows', { n: total })}. {t('bb.lede')}</>}
+        actions={<div className="bb-stat"><span className="t-xs t-mute">{t('bb.last')}</span><b className="mono">{ago(last, t)}</b></div>} />
       {/* The loop, lit on its last step each time something new is learned while the page is open. */}
       <BrainLoopSteps key={fresh.size} on={fresh.size ? 'learn' : undefined} />
 

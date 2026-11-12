@@ -89,3 +89,13 @@ html[data-theme="dark"] .fx .lrow.is-picked { background: #141C36; }
 .folder.fcard.has-switch { flex-direction: column; align-items: stretch; }
 .folder.fcard.has-switch > [role="switch"] { align-self: flex-start; }
 .fx-why { display: inline-flex; align-items: center; gap: 0.25rem; color: var(--marketer, #8B5CF6); font-weight: 700; }
+/* Deliveries gallery: one card per approved request (cover, name, approval day · file count). */
+.dg-grid{list-style:none;margin:0;padding:0;display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.dg-card{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;width:100%;height:100%;background:#fff;border:1px solid var(--line);border-radius:1.25rem;overflow:hidden;transition:box-shadow .2s,transform .2s}
+.dg-card:hover{box-shadow:var(--sh-2,0 8px 24px rgba(11,18,32,.08));transform:translateY(-2px)}
+.dg-card:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+.dg-cover{display:grid;place-items:center;aspect-ratio:4/3;background:var(--fog,#F4F6FB);color:#fff;font:800 1rem/1 var(--f-display);overflow:hidden}
+.dg-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.dg-body{display:flex;flex-direction:column;gap:0.25rem;padding:0.875rem 1rem 1rem}
+.dg-title{font:700 0.9375rem/1.25rem var(--f-text);color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (prefers-reduced-motion:reduce){.dg-card{transition:none}.dg-card:hover{transform:none}}
