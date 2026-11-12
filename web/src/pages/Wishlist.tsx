@@ -66,7 +66,7 @@ export function Wishlist() {
                 <button key={k} type="button" role="radio" aria-checked={kind === k} className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{t(`wl.kind.${k}`)}</button>
               ))}
             </div>
-            {admin && <select className="input wl-select" value={newStatus} onChange={(e) => setNewStatus(e.target.value as WishStatus)} aria-label={t('wl.adm.status')}>
+            {admin && <select className="input wl-select" style={{ width: 'auto' }} value={newStatus} onChange={(e) => setNewStatus(e.target.value as WishStatus)} aria-label={t('wl.adm.status')}>
               {WISH_STATUSES.map((s) => <option key={s} value={s}>{t(`wl.st.${s}`)}</option>)}
             </select>}
             {!admin && current && !audio && <VoiceNote brandId={current.id} onAdd={(f) => setAudio(f)} onBusy={setRecBusy} />}
