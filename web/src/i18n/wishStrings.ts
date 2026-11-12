@@ -13,6 +13,7 @@ export const wishEn = {
   'wl.delete': 'Delete', 'wl.deleteAsk': 'Delete this wish?', 'wl.edit': 'Edit',
   'wl.adm.status': 'Status', 'wl.adm.reply': 'Answer to the client', 'wl.adm.save': 'Save', 'wl.adm.newPublic': 'Add to the history (visible to every client, no names)',
   'wl.done': 'Done on {date}', 'wl.listen': 'Listen to the voice note', 'wl.askedBy': 'Asked by {name}', 'wl.manage': 'Manage', 'wl.share': 'Share with everyone', 'wl.shareHint': 'Every client sees it, with only the first name of who asked', 'wl.audioError': 'Could not open the voice note',
+  'ideas.btn': 'Ideas', 'ideas.title': 'What is Braindy missing?', 'ideas.sub': 'Tell us what you would improve or fix. NickMark reads every one.', 'ideas.top': 'Most asked', 'ideas.all': 'See the whole list', 'ideas.close': 'Close',
 } as const;
 
 export const wishEs: Record<keyof typeof wishEn, string> = {
@@ -29,4 +30,5 @@ export const wishEs: Record<keyof typeof wishEn, string> = {
   'wl.delete': 'Borrar', 'wl.deleteAsk': '¿Borrar este deseo?', 'wl.edit': 'Editar',
   'wl.adm.status': 'Estado', 'wl.adm.reply': 'Respuesta al cliente', 'wl.adm.save': 'Guardar', 'wl.adm.newPublic': 'Agregar al historial (lo ven todos los clientes, sin nombres)',
   'wl.done': 'Hecha el {date}', 'wl.listen': 'Escuchar la nota de voz', 'wl.askedBy': 'Lo pidió {name}', 'wl.manage': 'Gestionar', 'wl.share': 'Compartir con todos', 'wl.shareHint': 'La ven todos los clientes, solo con el nombre de pila de quien la pidió', 'wl.audioError': 'No se pudo abrir la nota de voz',
+  'ideas.btn': 'Ideas', 'ideas.title': '¿Qué le falta a Braindy?', 'ideas.sub': 'Cuéntanos qué mejorarías o ajustarías. NicoMarca las lee todas.', 'ideas.top': 'Lo más pedido', 'ideas.all': 'Ver toda la lista', 'ideas.close': 'Cerrar',
 };
