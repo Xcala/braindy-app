@@ -5,8 +5,8 @@ import { fill, type PublicCopy } from './copy';
 import type { OptionKey } from '../types';
 
 /** "Accept and sign" from the design: typed signature, scope consent, then payment (next step). */
-export function AcceptDialog({ c, token, prospectName, validLabel, option, onClose }: {
-  c: PublicCopy; token: string; prospectName: string; validLabel?: string; option: OptionKey; onClose: () => void;
+export function AcceptDialog({ c, token, prospectName, validLabel, option, label, onClose }: {
+  c: PublicCopy; token: string; prospectName: string; validLabel?: string; option: OptionKey; label?: string; onClose: () => void;
 }) {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
@@ -50,7 +50,7 @@ export function AcceptDialog({ c, token, prospectName, validLabel, option, onClo
         ) : (
           <>
             <div className="row g8 wrap">{c.steps.map((s, i) => <span key={s} className={`chip ${i === 0 ? 'c-prod' : 'chip-plain'}`}>{s}</span>)}</div>
-            <p className="t-sm"><span className="t-mute">{c.option}:</span> <b>{c.options[option].name}</b></p>
+            <p className="t-sm"><span className="t-mute">{c.option}:</span> <b>{label ?? c.options[option].name}</b></p>
             <div className="field"><label htmlFor="sn">{c.fullName}</label><input className="input" id="sn" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" /></div>
             <div className="field"><label htmlFor="sr">{c.roleCompany}</label><input className="input" id="sr" value={role} onChange={(e) => setRole(e.target.value)} autoComplete="organization-title" /></div>
             <div className="field"><label htmlFor="se">{c.email}</label><input className="input" id="se" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /><span className="t-xs t-mute">{c.emailHint}</span></div>

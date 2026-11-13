@@ -7,6 +7,9 @@ import { AcceptDialog } from '../proposals/public/AcceptDialog';
 import { Signed } from '../proposals/public/Signed';
 import { Braintrust, Days, FromAtoB, Hero, Options, Proof, Talk, type PublicProposal as Data } from '../proposals/public/Sections';
 import type { OptionKey } from '../proposals/types';
+import { HowWeWork, OfferSummary } from '../proposals/public/OfferSections';
+import { DeckBar, useDeck } from '../proposals/public/DeckBar';
+import { BOS, PHASES, PHASE_KEYS, pathOf, type Offer } from '../proposals/offer/catalog';
 
 /** The page a prospect opens from a tracked link. No login; every open and reading time is recorded. */
 export function PublicProposal() {
@@ -25,6 +28,7 @@ export function PublicProposal() {
   }, [token]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   usePublicTracking(token, data?.sessionId);
+  const [deck, setDeck] = useDeck();
 
   const c = PUBLIC_COPY[lang];
   if (failed) return <div className="flex min-h-full items-center justify-center p-6"><p className="t-lg t-mute">{c.notFound}</p></div>;
@@ -33,27 +37,33 @@ export function PublicProposal() {
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
   const dateLabel = new Date().toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   const validLabel = data.validUntil ? new Date(`${data.validUntil}T12:00:00`).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' }) : undefined;
+  // New proposals carry the offer (phases + BOS at this client's price); older ones keep the three paths.
+  const offer = (data.options as Record<string, unknown> | undefined)?.offer as Offer | undefined;
+  const offerLabel = offer ? [...PHASE_KEYS.filter((k) => k in offer.phases).map((k) => PHASES[k].name), ...(offer.bos ? [`BOS ${BOS[offer.bos].name}`] : [])].join(' + ') : undefined;
+  const pick = () => setAccepting(offer ? (pathOf(offer) as OptionKey) : data.recommended ?? 'transform');
   const openFile = async (id: string) => window.open(await publicApi.fileUrl(token, id), '_blank', 'noopener');
 
   return (
     <div style={{ background: '#fff' }}>
-      <div className="mx-auto max-w-[90rem]">
+      <div className={`mx-auto max-w-[90rem]${deck ? ' deck' : ''}`}>
         <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
         <Proof c={c} />
         <FromAtoB c={c} p={data} />
         <Braintrust c={c} />
-        <Days c={c} />
-        <Options c={c} p={data} onPick={setAccepting} />
+        {offer ? <HowWeWork lang={lang} offer={offer} /> : <Days c={c} />}
+        {offer ? <OfferSummary lang={lang} offer={offer} cur={data.currency ?? 'cop'} accepted={!!data.acceptance} onAccept={pick} />
+          : <Options c={c} p={data} onPick={setAccepting} />}
         {data.acceptance && <Signed c={c} acceptance={data.acceptance} locale={locale} paid={new URLSearchParams(window.location.search).get('paid')}
           onPayAgain={() => publicApi.pay(token).then((r) => { if (r.payUrl) window.location.href = r.payUrl; }).catch(() => undefined)} />}
-        <Talk c={c} files={data.files} onFile={openFile} onAccept={() => setAccepting(data.recommended ?? 'transform')} />
+        <Talk c={c} files={data.files} onFile={openFile} onAccept={pick} />
         <footer className="row between g16 wrap px-5 py-10 sm:px-14" style={{ borderTop: '1px solid var(--line)' }}>
           <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.75rem' }} />
           <p className="t-sm t-mute">{c.footer}</p>
         </footer>
       </div>
+      <DeckBar on={deck} setOn={setDeck} lang={lang} />
       {accepting && (
-        <AcceptDialog c={c} token={token} option={accepting} validLabel={validLabel}
+        <AcceptDialog c={c} token={token} option={accepting} label={offerLabel} validLabel={validLabel}
           prospectName={data.prospect.company || data.prospect.name || ''} onClose={() => setAccepting(null)} />
       )}
     </div>

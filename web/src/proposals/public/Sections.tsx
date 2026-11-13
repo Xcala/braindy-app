@@ -11,6 +11,7 @@ export interface PublicProposal {
   toB?: { target?: string; changes?: string };
   options?: Partial<Record<OptionKey | 'aiAgents', { price?: string }>>;
   recommended?: OptionKey;
+  currency?: string;
   files: Array<{ id: string; title: string }>;
   acceptance?: { name: string; role?: string; email?: string; at?: { _seconds?: number; seconds?: number } };
 }

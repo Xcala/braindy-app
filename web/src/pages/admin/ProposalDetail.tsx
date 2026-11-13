@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useBrands } from '../../brands/BrandProvider';
 import { useProposal } from '../../proposals/useProposals';
 import { ProposalForm } from '../../proposals/ProposalForm';
+import { OfferForm } from '../../proposals/offer/OfferForm';
 import { ProposalFiles } from '../../proposals/ProposalFiles';
 import { SendPanel } from '../../proposals/SendPanel';
 import { Tracking } from '../../proposals/Tracking';
@@ -69,6 +70,7 @@ export function ProposalDetail() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_440px]">
         <div className="col g24">
           <ProposalForm key={p.id} p={p} />
+          <OfferForm key={`o-${p.id}`} p={p} />
           <ProposalFiles id={p.id} />
           <Tracking id={p.id} />
         </div>

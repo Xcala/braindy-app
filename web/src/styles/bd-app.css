@@ -379,6 +379,15 @@ textarea.input{height:auto;min-height:3rem;padding:0.875rem 1rem;line-height:1.3
 .lead-row{display:flex;align-items:center;gap:0.75rem;background:#fff;color:#0B1220;border-radius:0.75rem;padding:0.75rem 0.875rem}
 .lead-row i{width:1.625rem;height:1.625rem;border-radius:50%;background:#E8174B;flex:none;box-shadow:inset 0 0 0 7px #E8174B,inset 0 0 0 9px #fff}
 .rule-line{height:1px;background:rgba(255,255,255,.12)}
+/* Proposals · the offer (phases, BOS) and slides mode */
+.offer-sub{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.125rem}
+.offer-sub li{position:relative;padding-left:.875rem;color:var(--ink-2,#5B6475);font-size:.875rem;line-height:1.25rem}
+.offer-sub li::before{content:'–';position:absolute;left:0;color:var(--c,var(--azul))}
+.stage .offer-sub li{color:#AEB6C8}
+.offer-phase{border-top:4px solid var(--c)}
+html.deck-on{scroll-snap-type:y proximity}
+.deck [data-section]{min-height:100vh;min-height:100dvh;scroll-snap-align:start;justify-content:center;align-content:center}
+.deck-bar{position:fixed;right:1rem;bottom:1rem;z-index:40;display:flex;gap:.5rem;align-items:center}
 
 /* v2.1 · Liquid Glass pass (Liquid Layer v3.1: blur 22, saturate 180, no rim, specular highlight) */
 :root{--g-light:rgba(255,255,255,.62);--g-clear:rgba(255,255,255,.14);--g-dark:rgba(6,13,30,.44);--g-blur:blur(1.375rem) saturate(180%);--g-spec:radial-gradient(120% 90% at 18% 0%,rgba(255,255,255,.55),rgba(255,255,255,0) 52%);--g-spec-d:radial-gradient(120% 90% at 18% 0%,rgba(255,255,255,.16),rgba(255,255,255,0) 50%);--g-sh:0 0.625rem 2.125rem rgba(11,18,32,.10),0 1px 2px rgba(11,18,32,.04)}
