@@ -100,7 +100,7 @@ export function PaySuccess() {
       <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <h1 className="d-lg" style={{ color: '#fff' }}><span className="w9">{t('pay.okTitle1')}</span> {t('pay.okTitle2')}</h1>
         <p className="t-lg muted">{t('pay.okBody')}</p>
-        <div className="row g12 wrap"><Link className="btn btn-white" to="/onboarding">{t('pay.startBrief')}</Link><Link className="btn btn-outline-light" to="/settings?tab=billing">{t('pay.receipt')}</Link></div>
+        <div className="row g12 wrap"><Link className="btn btn-white" to="/onboarding">{t('pay.startBrief')}</Link><Link className="btn btn-outline-light" to="/plan?tab=payments">{t('pay.receipt')}</Link></div>
       </div>
       <div className="card row g12"><img src="/brand/proposal/b3d-researcher.jpg" alt="" className="h-12 w-12 rounded-xl object-cover" />
         <div className="col"><span className="w7 t-sm">{t('pay.researcherWaits')}</span><span className="t-xs t-mute">{t('pay.eightQuestions')}</span></div></div>

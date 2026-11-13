@@ -12,7 +12,7 @@ const TONE = {
 
 /** The contract that makes the plan binding, where it stands: in preparation, to sign (the signer signs right here),
  *  or signed with the sealed PDF (NickMark signs when sending, so the client's signature closes it). Admin gets a shortcut to the contract panel. */
-export function ContractCard({ brandId, contract }: { brandId: string; contract: Contract | null }) {
+export function ContractCard({ brandId, contract, noPlan }: { brandId: string; contract: Contract | null; noPlan?: boolean }) {
   const { t } = useI18n();
   const { user, profile } = useAuth();
   const admin = profile?.role === 'admin';
@@ -30,7 +30,7 @@ export function ContractCard({ brandId, contract }: { brandId: string; contract:
   );
 
   let body;
-  if (!contract || contract.status === 'draft') body = head(t('plan.c.prep'), admin ? t('plan.c.prepAdmin') : t('plan.c.prepBody'));
+  if (!contract || contract.status === 'draft') body = head(t('plan.c.prep'), admin ? t('plan.c.prepAdmin') : !contract && noPlan ? t('plan.empty') : t('plan.c.prepBody'));
   else if (contract.status === 'sent') {
     body = isSigner && !admin
       ? <div className="col g12">{head(t('plan.c.toSign'), t('plan.c.toSignBody'), TONE.wait)}<SignContract brandId={brandId} contract={contract} /></div>

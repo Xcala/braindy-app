@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { PaymentsTab } from '../plan/PaymentsTab';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -58,13 +59,12 @@ export function MyPlan() {
     <div className="col g32">
       <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
-        payments={<div className="col g16"><Subscription current={current} part="design" /><p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p></div>}
+        payments={<PaymentsTab brand={current} />}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
-        contract={<ContractCard brandId={id} contract={contract} />}
+        contract={<ContractCard brandId={id} contract={contract} noPlan={!plan} />}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
-      {!plan && !schedule && !stack?.length && <div className="card t-mute">{t('plan.empty')}</div>}
       {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
     </div>
   );

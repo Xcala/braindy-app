@@ -7,6 +7,7 @@ import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
 import { Stack } from './Stack';
+import { OnceIntro } from './OnceIntro';
 import type { BrandPlan, PackStatus, StackItem } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
@@ -46,9 +47,16 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
+  // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
+  const head = !plan && !schedule ? (
+    <header className="col g4">
+      <p className="label" style={{ margin: 0 }}>{brandName}</p>
+      <h1 className="h1">{t('plan.title')}</h1>
+    </header>
+  ) : null;
   return (
-    <div className="col g40">
-      <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
+    <div className="col g32">
+      {head ?? <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
         <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
         <h1 className="h1" style={{ color: '#fff' }}><span className="w3">{t('plan.title')}{plan ? ' · ' : ''}</span>{plan && <span className="w9">{plan.title}</span>}</h1>
         {plan?.summary && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan.summary}</p>}
@@ -70,9 +78,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           {/* The "ai" inside Brains goes in 900 in signatures. */}
           {t('plan.signature').split('Brains').flatMap((part, i) => (i ? [<span key={i}>Br<b className="w9">ai</b>ns</span>, part] : [part]))}
         </p>
-      </header>
+      </header>}
       {tabs}
-      {intros?.[tab]}
+      {intros?.[tab] && <OnceIntro key={tab} id={tab}>{intros[tab]}</OnceIntro>}
       {tab === 'summary' && contract}
       {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
       {tab === 'schedule' && schedule && (
@@ -97,9 +105,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
         </section>
       )}
       {tab === 'brand' && brand}
+      {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
       {tab === 'site' && stack && <Stack items={stack} />}
-      {tab === 'site' && site}
       {tab === 'payments' && payments}
     </div>
   );

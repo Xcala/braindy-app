@@ -6,13 +6,13 @@ import { LangToggle } from '../i18n/LangToggle';
 import { NoticesCard } from '../settings/NoticesCard';
 import { MyWhatsappCard } from '../settings/MyWhatsappCard';
 import { MembersCard } from '../team/MembersCard';
-import { BillingCard } from '../settings/BillingCard';
 import type { StringKey } from '../i18n/strings';
 import { BackToAccount } from './Account';
 
-const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team', 'set.tab.team'], ['language', 'set.tab.language'], ['billing', 'set.tab.billing']];
+// Billing moved to Mi plan › Pagos (one place for every charge); old links land there.
+const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team', 'set.tab.team'], ['language', 'set.tab.language']];
 
-/** Settings: WhatsApp and notices, team and approvers, language, billing. Per brand, in tabs like the other pages. */
+/** Settings: WhatsApp and notices, team and approvers, language. Per brand, in tabs like the other pages. */
 export function Settings() {
   const { current } = useBrands();
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -21,6 +21,7 @@ export function Settings() {
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   if (isAdmin && params.get('tab') === 'team') return <Navigate to="/team" replace />;
+  if (params.get('tab') === 'billing') return <Navigate to="/plan?tab=payments" replace />;
   const tab = tabs.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
@@ -47,7 +48,6 @@ export function Settings() {
           <LangToggle />
         </div>
       )}
-      {tab === 'billing' && <BillingCard brandId={current.id} />}
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const HOSTING_USD: Record<Hosting, number> = { esencial: 5, pro: 15, ultr
 
 export type Plan = {
   path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[]; agentsMonthly?: number | null; addonRequests?: string[]; hosting?: Hosting | null;
-  hostingStatus?: 'active' | 'past_due' | 'canceled'; hostingCur?: 'usd' | 'cop'; hostingBill?: 'm' | 'y'; hostingNextChargeAt?: Timestamp;
+  hostingStatus?: 'active' | 'past_due' | 'canceled'; hostingCur?: 'usd' | 'cop'; hostingBill?: 'm' | 'y'; hostingNextChargeAt?: Timestamp; hostingPaused?: boolean;
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; nextChargeAt?: Timestamp; stripeCustomerId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string }; cancelRequestedAt?: Timestamp;
 };

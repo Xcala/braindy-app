@@ -121,7 +121,7 @@ export const planEn = {
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
-  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'Brand', 'plan.tab.site': 'Sitio y apps', 'plan.tab.payments': 'Pagos',
+  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'Marca', 'plan.tab.site': 'Sitio y apps', 'plan.tab.payments': 'Pagos',
   'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan', 'nav.appsShort': 'Mis apps',
   'plan.title': 'Mi plan', 'plan.sub': 'Lo que tienes con Braindy: el diseño de tu marca y el hosting de tu sitio.',
   'plan.design': 'Plan de diseño', 'plan.hosting': 'Hosting del sitio',

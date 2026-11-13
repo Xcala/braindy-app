@@ -5,6 +5,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { billingApi, money, useBilling } from '../billing/useBilling';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
 import type { StringKey } from '../i18n/strings';
+import { Invoices } from './Invoices';
 
 const SERVICES: Array<{ key: string; title: StringKey; body: StringKey }> = [
   { key: 'social', title: 'bill.s.social', body: 'bill.s.socialBody' },
@@ -14,7 +15,7 @@ const SERVICES: Array<{ key: string; title: StringKey; body: StringKey }> = [
   { key: 'print', title: 'bill.s.print', body: 'bill.s.printBody' },
 ];
 
-/** Settings · Billing (design 20): plan, services, next charge, payment method, invoices, cancellation. */
+/** Mi plan › Pagos · The design plan (design 20): plan, services, next charge, payment method, invoices, cancellation. */
 export function BillingCard({ brandId }: { brandId: string }) {
   const wa = useNicoWhatsApp();
   const { t, lang } = useI18n();
@@ -59,19 +60,7 @@ export function BillingCard({ brandId }: { brandId: string }) {
           <div className="card col g8"><span className="t-sm w7">{t('bill.braintrust')}</span><span className="t-xs t-mute">{t('bill.braintrustSub')}</span></div>
         </aside>
       </div>
-      <section className="card col g8" aria-labelledby="inv-h">
-        <h2 className="h3" id="inv-h">{t('bill.invoices')}</h2>
-        {invoices.length === 0 && <p className="t-sm t-mute">{t('bill.noInvoices')}</p>}
-        {invoices.map((i) => (
-          <div key={i.id} className="row between g12 wrap t-sm" style={{ padding: '0.5rem 0', borderTop: '1px solid var(--line)' }}>
-            <span style={{ minWidth: '6.875rem' }}>{i.date?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-            <span className="grow truncate">{i.concept}</span>
-            <span className="w7">{money(i.amount, i.currency, lang)}</span>
-            <span className={`chip ${i.status === 'paid' ? 'c-approved' : 'c-lost'}`}>{t(`bill.inv.${i.status}`)}</span>
-            {(i.pdfUrl || i.hostedUrl) ? <a href={(i.pdfUrl ?? i.hostedUrl)!} target="_blank" rel="noreferrer" className="w7">PDF</a> : <span className="t-mute">—</span>}
-          </div>
-        ))}
-      </section>
+      <Invoices invoices={invoices} />
       <div className="card row between g12 wrap">
         <span className="col"><span className="w7 t-sm">{t('bill.details')}</span><span className="t-sm t-mute">{[plan.invoiceDetails?.company, plan.invoiceDetails?.taxId && `NIT ${plan.invoiceDetails.taxId}`, plan.invoiceDetails?.email].filter(Boolean).join(' · ') || '—'}</span></span>
         <Link className="btn btn-ghost btn-sm" to="/pay?edit=details">{t('bill.edit')}</Link>

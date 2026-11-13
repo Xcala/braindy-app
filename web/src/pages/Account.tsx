@@ -60,7 +60,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
 
   const brand = ([
     { to: '/plan', icon: I.plan, label: 'nav.plan', value: plan?.path ? t(`bill.path.${plan.path}`) : undefined },
-    { to: '/settings?tab=billing', icon: I.billing, label: 'set.tab.billing' },
+    { to: '/plan?tab=payments', icon: I.billing, label: 'set.tab.billing' },
     { to: '/accesses', icon: I.connectors, label: 'nav.accesses', value: acc.loading || acc.denied ? undefined : t('acct.connected', { n: String(acc.list.length) }) },
     { to: '/settings?tab=team', icon: I.team, label: 'set.tab.team' },
     { to: '/settings?tab=notices', icon: I.notices, label: 'set.tab.notices' },
