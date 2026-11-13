@@ -51,7 +51,7 @@ export function ImagesEdit({ brandId, field, items }: { brandId: string; field: 
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
         {list.map((x, i) => (
           <Thumb key={x.img.preview} img={x.img} onRemove={() => setList((l) => l.filter((_, j) => j !== i))}>
-            <input className="input" style={{ height: 36, fontSize: 13 }} placeholder={t(field === 'concept' ? 'be.caption' : 'be.mockupName')} value={x.text}
+            <input className="input" style={{ height: '2.25rem', fontSize: '0.8125rem' }} placeholder={t(field === 'concept' ? 'be.caption' : 'be.mockupName')} value={x.text}
               onChange={(e) => setList((l) => l.map((y, j) => (j === i ? { ...y, text: e.target.value } : y)))} />
           </Thumb>
         ))}

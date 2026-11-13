@@ -34,7 +34,7 @@ function Piece({ r }: { r: ScopedRequest }) {
   const url = useFileUrl(r.brandId, r.id, v);
   const type = v?.files?.[0]?.contentType ?? '';
   return (
-    <Link to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)} className="card col g12 min-w-0" style={{ textDecoration: 'none', color: 'var(--ink)', padding: 12 }}>
+    <Link to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)} className="card col g12 min-w-0" style={{ textDecoration: 'none', color: 'var(--ink)', padding: '0.75rem' }}>
       <div className="overflow-hidden rounded-xl" style={{ aspectRatio: '4 / 3', background: 'var(--niebla)' }}>
         {url && isImage(type) ? <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
           : url && type.startsWith('video/') ? <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />

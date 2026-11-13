@@ -8,6 +8,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from '../firebase.js';
 import { contentTypeOf as lookup } from '../lib/mime.js';
+import { bumpIndex } from '../fileOps.js';
 
 const bucket = () => getStorage().bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
 const MAX_FILE = 500 * 1024 ** 2;
@@ -20,8 +21,9 @@ export async function findBrands(query: string) {
   const q = query.trim().toLowerCase();
   const snap = await db.collection('brands').get();
   return snap.docs
-    .map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id), kind: d.get('kind') ?? 'brand', status: d.get('status') ?? 'active', groupId: d.get('groupId') ?? null }))
-    .filter((b) => !q || b.id.includes(q) || b.name.toLowerCase().includes(q))
+    .map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id), kind: d.get('kind') ?? 'brand', status: d.get('status') ?? 'active', groupId: d.get('groupId') ?? null, previousNames: (d.get('previousNames') as string[] | undefined) ?? [] }))
+    // A rebranded brand is found by its old names too (iPark → Muvify).
+    .filter((b) => !q || b.id.includes(q) || [b.name, ...b.previousNames].some((n) => n.toLowerCase().includes(q)))
     .sort((a, b) => (a.status === b.status ? a.name.localeCompare(b.name) : a.status === 'active' ? -1 : 1))
     .slice(0, 25);
 }
@@ -138,9 +140,13 @@ async function storeUpload(brandId: string, name: string, size: number, folder: 
   const storagePath = `brands/${brandId}/uploads/${id}/${name}`;
   const contentType = lookup(name);
   await write(bucket().file(storagePath), contentType);
-  await db.doc(`brands/${brandId}/assets/${id}`).set({
-    type: 'file', source: 'upload', title: name, folder, storagePath, size, contentType,
-    status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
+  // Same transaction as the asset, so a folder outside Uploads shows up in Files right away (bumpIndex skips Uploads).
+  await db.runTransaction(async (tx) => {
+    await bumpIndex(tx, brandId, [folder, 1, size]);
+    tx.set(db.doc(`brands/${brandId}/assets/${id}`), {
+      type: 'file', source: 'upload', title: name, folder, storagePath, size, contentType,
+      status: 'published', uploadedBy: 'connector', createdAt: FieldValue.serverTimestamp(), uploadedAt: FieldValue.serverTimestamp(),
+    });
   });
   return id;
 }

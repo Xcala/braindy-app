@@ -129,11 +129,16 @@ fileOps.delete('/brands/:brandId/trash/:assetId', async (c) => {
   return c.json({ ok: true });
 });
 
-/** Rename and/or move to another folder. */
+/** Rename and/or move to another folder. Clients may rename the files they can see (only NickMark moves them). */
 fileOps.patch('/brands/:brandId/assets/:assetId', async (c) => {
   const { brandId, assetId } = c.req.param();
-  if (!(await adminOnly(c.get('user').uid, brandId))) return c.json({ error: 'forbidden' }, 403);
   const body = await c.req.json<{ title?: string; folder?: string }>();
+  const access = await brandAccess(c.get('user').uid, brandId);
+  if (!access.admin) {
+    if (!access.member || !access.sections.includes('files') || body.folder !== undefined || body.title === undefined) return c.json({ error: 'forbidden' }, 403);
+    const a = await db.doc(`brands/${brandId}/assets/${assetId}`).get();
+    if (!a.exists || !(await fileFilter(brandId))(a)) return c.json({ error: 'not_found' }, 404);
+  }
   const title = body.title === undefined ? undefined : String(body.title).replace(/[\\/\r\n]/g, '_').trim().slice(0, 200);
   const folder = body.folder === undefined ? undefined : String(body.folder).split('/').map((p) => p.trim()).filter(Boolean).join('/').slice(0, 500);
   if (title === '') return c.json({ error: 'invalid' }, 400);

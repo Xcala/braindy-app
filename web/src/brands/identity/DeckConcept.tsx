@@ -5,13 +5,16 @@ import type { LegacyAsset } from '../../assets/BrandDocs';
 
 type Shot = { url: string; kind: 'hero' | 'design-concept'; caption?: string };
 
+const PLACEHOLDER = /^https?:\/\/(picsum\.photos|placehold|via\.placeholder)/i;
+
 /** The images that only lived in the LogoDeck (brand cover and design concept), without duplicates. */
 export function deckShots(assets: LegacyAsset[]): Shot[] {
   const seen = new Set<string>();
   const out: Shot[] = [];
   for (const a of assets.filter((x) => x.type === 'logodeck')) {
     for (const s of a.data?.sections ?? []) {
-      if (s.visible === false || !s.imageUrl || seen.has(s.imageUrl)) continue;
+      // The old Brands app filled an empty concept with a stock photo (picsum): that is no concept, so the section stays hidden.
+      if (s.visible === false || !s.imageUrl || PLACEHOLDER.test(s.imageUrl) || seen.has(s.imageUrl)) continue;
       if (s.type !== 'hero' && s.type !== 'design-concept') continue;
       seen.add(s.imageUrl);
       out.push({ url: s.imageUrl, kind: s.type, caption: s.type === 'hero' ? a.data?.heroSubtitle : undefined });
@@ -36,7 +39,7 @@ export function DeckConcept({ shots }: { shots: Shot[] }) {
                 <img src={s.url} alt={name(s)} loading="lazy" className={s.kind === 'hero' ? 'dc-img dc-cover' : 'dc-img'} />
               </button>
             </div>
-            <figcaption className="dc-cap row between g8" style={{ padding: '10px 16px 14px' }}>
+            <figcaption className="dc-cap row between g8" style={{ padding: '0.625rem 1rem 0.875rem' }}>
               <span className="col g4" style={{ minWidth: 0 }}>
                 <span className="label">{name(s)}</span>
                 {s.caption && <span className="t-sm t-mute">{s.caption}</span>}

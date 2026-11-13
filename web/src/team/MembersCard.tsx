@@ -10,6 +10,7 @@ import { BrandSections } from './BrandSections';
 import { profileOf } from './sections';
 import { sendAccessLink } from '../auth/emailLink';
 import { useBrands } from '../brands/BrandProvider';
+import { Scan } from '../components/Scan';
 
 type Member = { uid: string; email?: string; name?: string; role: 'client_owner' | 'client_member'; canApprove?: boolean; sections?: string[] | null };
 
@@ -60,15 +61,15 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         const self = m.uid === user?.uid;
         const initials = (m.email ?? '?').slice(0, 2).toUpperCase();
         return (
-          <div key={m.uid} className="col g8" style={{ paddingBottom: 12, borderBottom: '1px solid var(--line)' }}>
+          <div key={m.uid} className="col g8" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
             <div className='row g12'>
               <span className='avatar-txt'>{initials}</span>
               <div className='col grow' style={{ minWidth: 0 }}><span className='w7 truncate'>{m.name && m.name !== m.email ? m.name : m.email ?? m.uid}</span>{m.name && m.name !== m.email && <span className='t-xs t-mute truncate'>{m.email}</span>}</div>
               {!self && <button className='btn btn-ghost btn-sm' onClick={() => setRemoving(m)}>{t('team.remove')}</button>}
             </div>
-            <div className='row g16 wrap' style={{ paddingLeft: 52 }}>
+            <div className='row g16 wrap' style={{ paddingLeft: '3.25rem' }}>
               {isAdmin ? <MemberAccess member={m} disabled={self} onChange={(patch) => save(m.uid, patch)} /> : (
-              <select className='input' style={{ height: 36, width: 'auto' }} value={m.role} disabled={self} aria-label={t('team.role')}
+              <select className='input' style={{ height: '2.25rem', width: 'auto' }} value={m.role} disabled={self} aria-label={t('team.role')}
                 onChange={(e) => save(m.uid, { role: e.target.value })}>
                 <option value='client_owner'>{t('team.owner')}</option>
                 <option value='client_member'>{t('team.member')}</option>
@@ -84,15 +85,23 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         );
       })}
       {invites.map((i) => (
-        <div key={i.id} className="row g12">
-          <span className="avatar-txt">?</span>
-          <div className="col grow"><span className="w7 truncate">{i.email}</span><span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span></div>
-          <button className="btn btn-ghost btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
+        // Laid out like a member: who on top (the email gets the whole width), the actions on their own line below.
+        <div key={i.id} className="col g8" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
+          <div className="row g12">
+            <span className="avatar-txt">{i.email.slice(0, 2).toUpperCase()}</span>
+            <div className="col grow" style={{ minWidth: 0 }}>
+              <span className="w7" style={{ overflowWrap: 'anywhere' }}>{i.email}</span>
+              <span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span>
+            </div>
+          </div>
+          <div className="row g8 wrap" style={{ paddingLeft: '3.25rem' }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
+          </div>
         </div>
       ))}
       <form className="row g8 wrap" onSubmit={(e) => { e.preventDefault(); if (valid) invite(); }}>
-        <input className="input grow" style={{ minWidth: 200 }} type="email" placeholder={t('team.invitePh')} aria-label={t('team.invitePh')} value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="input grow" style={{ minWidth: '12.5rem' }} type="email" placeholder={t('team.invitePh')} aria-label={t('team.invitePh')} value={email} onChange={(e) => setEmail(e.target.value)} />
         {isAdmin ? (
           <select className="input" style={{ width: 'auto' }} value={invProfile} onChange={(e) => setInvProfile(e.target.value as typeof invProfile)} aria-label={t('perm.profile')}>
             <option value="all">{t('perm.all')}</option>
@@ -107,7 +116,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         <button type="submit" className="btn btn-primary" disabled={!valid}>{t('team.invite')}</button>
       </form>
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
-      <p className="t-xs t-mute">{t('team.inviteHint')}</p>
+      <Scan text={t('team.inviteHint')} className="t-xs" />
       {removing && (
         <ConfirmDialog title={t('team.removeTitle', { email: removing.email ?? '' })} confirmLabel={t('team.remove')} danger
           onConfirm={async () => { await removeMember(brandId, removing.uid); setRemoving(null); }} onCancel={() => setRemoving(null)}>

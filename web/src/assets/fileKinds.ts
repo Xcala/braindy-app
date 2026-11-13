@@ -7,7 +7,13 @@ export interface FileItem {
   size: number;
   ext?: string;
   mtimeMs?: number;
+  /** When the file entered Braindy (upload or import): decides its brand version after a rebrand. */
+  addedMs?: number;
   folder?: string;
+  /** What the AI saw in it (scripts/describe-files.ts): search matches it too. */
+  ai?: { summary?: string; tags?: string[]; text?: string };
+  /** The search found it by what it shows, not by its name. */
+  why?: 'ai';
 }
 
 const DESIGN = /^(ai|psd|indd|eps|fig|sketch|xd|afdesign|aep|prproj)$/i;

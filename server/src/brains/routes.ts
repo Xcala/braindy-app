@@ -36,6 +36,12 @@ adminBrains.post('/brands/:brandId/brains/meetings', async (c) => {
   });
   return c.json({ id: ref.id });
 });
+/** Hide a meeting from the client (or show it again); the Brains keep reading it either way. */
+adminBrains.patch('/brands/:brandId/brains/meetings/:id', async (c) => {
+  const { hidden } = await c.req.json<{ hidden?: boolean }>();
+  await db.doc(`brands/${c.req.param('brandId')}/meetings/${c.req.param('id')}`).update({ hidden: hidden === true });
+  return c.json({ ok: true });
+});
 adminBrains.delete('/brands/:brandId/brains/meetings/:id', async (c) => {
   await db.doc(`brands/${c.req.param('brandId')}/meetings/${c.req.param('id')}`).delete();
   return c.json({ ok: true });

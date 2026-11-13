@@ -21,6 +21,10 @@ export interface Brand {
   fileAccess: { mode: 'all' | 'selected'; folders: string[] } | null;
   /** Sections NickMark switched off for the whole brand (e.g. Requests after the contract ends). */
   sectionsOff: string[];
+  /** Results is opt-in per brand (NickMark switches it on where there is data to show, e.g. Metricool). */
+  resultsOn: boolean;
+  /** Names the brand had before a rebrand (iPark → Muvify); its earlier Mi marca lives in brands/{id}/versions. */
+  previousNames: string[];
 }
 
 /** contract = step 1 (rules of the game), kickoff = step 2, brief → firstDelivery = step 3 (strategy and training). */
@@ -49,6 +53,8 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   city: (d.city as Brand['city']) ?? null,
   fileAccess: (d.fileAccess as Brand['fileAccess']) ?? null,
   sectionsOff: Array.isArray(d.sectionsOff) ? (d.sectionsOff as string[]) : [],
+  resultsOn: d.resultsOn === true,
+  previousNames: Array.isArray(d.previousNames) ? (d.previousNames as string[]) : [],
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {

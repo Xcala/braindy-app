@@ -60,16 +60,16 @@ export function WhatsappInbox() {
       {msg && <p className="t-sm" role="status">{msg}</p>}
       {items.length === 0 && <p className="t-sm t-mute">{t('wa.empty')}</p>}
       {items.map((i) => (
-        <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+        <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.625rem' }}>
           <span className="t-sm"><b>{i.name || `+${i.phone}`}</b> <span className="t-mute">· +{i.phone}{i.at ? ` · ${i.at.toDate().toLocaleString()}` : ''}</span></span>
           {i.text && <p className="t-sm" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{i.text}</p>}
           {i.media?.length ? <span className="t-xs t-mute">{t('wa.files', { n: i.media.length })}</span> : null}
           <div className="row g8 wrap">
-            <select className="input" style={{ height: 36, width: 'auto', minWidth: 180 }} value={brand[i.id] ?? ''} onChange={(e) => pickBrand(i.id, e.target.value)} aria-label={t('wa.brand')}>
+            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} value={brand[i.id] ?? ''} onChange={(e) => pickBrand(i.id, e.target.value)} aria-label={t('wa.brand')}>
               <option value="">{t('wa.brand')}</option>
               {active.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <select className="input" style={{ height: 36, width: 'auto', minWidth: 180 }} disabled={!brand[i.id]} value={person[i.id] ?? ''} onChange={(e) => setPerson({ ...person, [i.id]: e.target.value })} aria-label={t('wa.person')}>
+            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} disabled={!brand[i.id]} value={person[i.id] ?? ''} onChange={(e) => setPerson({ ...person, [i.id]: e.target.value })} aria-label={t('wa.person')}>
               <option value="">{t('wa.person')}</option>
               {(people[brand[i.id]] ?? []).map((p) => <option key={p.uid} value={p.uid}>{p.label}</option>)}
             </select>

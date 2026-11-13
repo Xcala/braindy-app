@@ -8,12 +8,12 @@ import { useBrandsRequests } from '../requests/useBrandsRequests';
 import { HomeHero } from '../home/HomeHero';
 import { HomeDelivered } from '../home/HomeDelivered';
 import { HomeProduction } from '../home/HomeProduction';
-import { HomeMeetingsRow } from '../home/HomeMeetingsRow';
+import { HomeMeetingsRow, NextMeetingTop } from '../home/HomeMeetingsRow';
 import { InsightsCard } from '../brains/BrainPanels';
 import { LiveBanner } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
-import { HomeMeetings } from '../home/HomeMeetings';
 import { HomeThisMonth } from '../home/HomeThisMonth';
+import { HomeBrainLoop } from '../brain/BrainLoop';
 
 /**
  * Home, by hierarchy: the studio with what was launched (4 columns: studio 3, launches 1), what was delivered
@@ -36,13 +36,15 @@ export function Home() {
   return (
     <div className="col g40">
       {current.onboarding && current.onboarding.step !== 'live' && (
-        <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: '#EAF0FF', border: 0 }}>
+        <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: 'var(--hielo)', border: 0 }}>
           <span className="col"><span className="w7">{t('ob.continue')}</span><span className="t-sm t-mute">{t('ob.continueSub', { step: t(`ob.a.step.${current.onboarding.step}`) })}</span></span>
           <span className="btn btn-primary btn-sm">{t('common.continue')}</span>
         </Link>
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
+      <NextMeetingTop brandId={current.id} brandName={current.name} />
       <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
+      {current.kind === 'brand' && <HomeBrainLoop brandId={current.id} />}
       <HomeThisMonth brandId={current.id} requests={all} />
       <HomeDelivered items={needsYou} />
       <HomeProduction items={inProd} />
@@ -51,7 +53,6 @@ export function Home() {
         <LessonOfTheWeek />
         <InsightsCard brandId={current.id} />
       </div>
-      {profile?.role === 'admin' && <HomeMeetings brandId={current.id} />}
     </div>
   );
 }

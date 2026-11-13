@@ -13,8 +13,11 @@ export type Stage = 'onboarding' | 'ask' | 'review' | 'report';
 
 export type Lesson = {
   id: string; area: Area; order: number; status: 'draft' | 'published'; minutes: number;
-  title: L2; summary: L2; body: L2; script?: L2; videoUrl?: string; deckUrl?: string;
+  title: L2; summary: L2; body: L2; script?: L2; videoUrl?: string; videoVertical?: string; deckUrl?: string;
   categories: string[]; stages: Stage[]; updatedAt?: Timestamp;
+  /** App tutorials ("How to use Braindy"): which kind, the pages it explains, and the video per language. */
+  kind?: 'general' | 'section' | 'feature'; paths?: string[];
+  videos?: Partial<Record<'es' | 'en', { wide: string; tall?: string }>>;
 };
 export type Objection = {
   id: string; area: Area; order: number; status: 'draft' | 'published';
@@ -75,6 +78,9 @@ export function embedUrl(url?: string) {
   if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
   return null;
 }
+
+/** A video file we host (MP4 in Storage): it plays in our own player instead of an embed. */
+export const isVideoFile = (url?: string) => !!url && (/\.(mp4|webm)(\?|$)/i.test(url) || url.includes('firebasestorage.googleapis.com'));
 
 /** Tells NickMark which objections show up (shown / opened the lesson / sent anyway). Never sends the comment text. */
 export const logObjection = (brandId: string, objectionId: string, outcome: 'shown' | 'opened' | 'sent') =>

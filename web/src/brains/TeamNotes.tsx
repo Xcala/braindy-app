@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName } from '../components/BrainStack';
+import { Scan } from '../components/Scan';
 import type { BrainId } from '../requests/taxonomy';
 
 const ORDER: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
@@ -8,13 +9,13 @@ const ORDER: BrainId[] = ['researcher', 'marketer', 'creator', 'builder'];
 export function TeamNotes({ notes }: { notes: Partial<Record<BrainId, string>> & { ai?: boolean } }) {
   const { t } = useI18n();
   return (
-    <details className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: 12 }}>
+    <details className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.75rem' }}>
       <summary className="t-sm w7" style={{ cursor: 'pointer' }}>{t('team.notes')} <span className="t-xs t-mute">· {t(notes.ai ? 'brains.proposedAi' : 'brains.proposedBasic')}</span></summary>
-      <div className="col g8" style={{ marginTop: 10 }}>
+      <div className="col g8" style={{ marginTop: '0.625rem' }}>
         {ORDER.filter((b) => notes[b]).map((b) => (
           <div key={b} className="row g12" style={{ alignItems: 'flex-start' }}>
-            <span className={`brain b-${b}`} style={{ width: 32, height: 32, flex: 'none' }}><img src={`/brand/brains/${b}.png`} alt="" /></span>
-            <span className="col"><span className="t-xs w7">{brainName(b)}</span><span className="t-sm">{notes[b]}</span></span>
+            <span className={`brain b-${b}`} style={{ width: '2rem', height: '2rem', flex: 'none' }}><img src={`/brand/brains/${b}.png`} alt="" /></span>
+            <span className="col"><span className="t-xs w7">{brainName(b)}</span><Scan text={notes[b]!} points tone="ink" /></span>
           </div>
         ))}
       </div>

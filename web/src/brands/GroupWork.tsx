@@ -19,15 +19,15 @@ export function GroupWork({ group, all }: { group: Brand; all: Brand[] }) {
     <div className="col g16">
       <div className="grid grid-cols-3 gap-4">
         <div className="card card-tight col"><span className="h2">{total.prod}</span><span className="t-xs t-mute">{t('req.status.in_production')}</span></div>
-        <div className="card card-tight col" style={total.approve ? { borderColor: '#F5D98A', background: '#FFFBF0' } : undefined}><span className="h2">{total.approve}</span><span className="t-xs t-mute">{t('req.status.to_approve')}</span></div>
+        <div className="card card-tight col" style={total.approve ? { borderColor: '#F5D98A', background: 'var(--warning-bg)' } : undefined}><span className="h2">{total.approve}</span><span className="t-xs t-mute">{t('req.status.to_approve')}</span></div>
         <div className="card card-tight col"><span className="h2">{total.done}</span><span className="t-xs t-mute">{t('group.delivered')}</span></div>
       </div>
       <div className="table overflow-x-auto">
-        <div className="trow head label min-w-[560px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 120px 120px' }}>
+        <div className="trow head label min-w-[35rem]" style={{ gridTemplateColumns: 'minmax(0,1fr) 7.5rem 7.5rem 7.5rem' }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('req.status.in_production')}</span><span>{t('req.status.to_approve')}</span><span>{t('group.delivered')}</span>
         </div>
         {rows.map(({ b, prod, approve, done }) => (
-          <div key={b.id} className="trow min-w-[560px]" style={{ gridTemplateColumns: 'minmax(0,1fr) 120px 120px 120px', minHeight: 56 }}>
+          <div key={b.id} className="trow min-w-[35rem]" style={{ gridTemplateColumns: 'minmax(0,1fr) 7.5rem 7.5rem 7.5rem', minHeight: '3.5rem' }}>
             <button className="row g12 text-left" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }} onClick={() => { select(b.id); window.scrollTo({ top: 0 }); }}>
               <span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none' }}><BrandMark brand={b} /></span>
               <span className={`truncate ${b.kind === 'group' ? 'w9' : 'w7'}`}>{b.name}</span>

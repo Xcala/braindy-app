@@ -37,7 +37,7 @@ export function AdminBilling() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.mrr')}</span><span className="h1">{money(mrr, cur, lang)}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.active')}</span><span className="h1">{rows.filter((r) => r.status === 'active').length}</span></div>
-        <div className="card col g4" style={transfers.length ? { borderColor: '#F5D98A', background: '#FFFBF0' } : undefined}><span className="t-sm t-mute w7">{t('bill.a.toConfirm')}</span><span className="h1">{transfers.length}</span></div>
+        <div className="card col g4" style={transfers.length ? { borderColor: '#F5D98A', background: 'var(--warning-bg)' } : undefined}><span className="t-sm t-mute w7">{t('bill.a.toConfirm')}</span><span className="h1">{transfers.length}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.overdue')}</span><span className="h1">{rows.filter((r) => r.status === 'past_due').length}</span></div>
       </div>
       {transfers.map((x) => (
@@ -47,13 +47,13 @@ export function AdminBilling() {
         </div>
       ))}
       <div className="table overflow-x-auto">
-        <div className="trow head label min-w-[680px]" style={{ gridTemplateColumns: 'minmax(0,1.4fr) 1fr 1fr 1fr 120px' }}>
+        <div className="trow head label min-w-[42.5rem]" style={{ gridTemplateColumns: 'minmax(0,1.4fr) 1fr 1fr 1fr 7.5rem' }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('bill.a.path')}</span><span>{t('bill.a.amount')}</span><span>{t('bill.a.status')}</span><span />
         </div>
         {brands.filter((b) => b.status === 'active' && b.kind === 'brand').map((b) => {
           const r = rows.find((x) => x.brandId === b.id);
           return (
-            <div key={b.id} className="trow min-w-[680px]" style={{ gridTemplateColumns: 'minmax(0,1.4fr) 1fr 1fr 1fr 120px' }}>
+            <div key={b.id} className="trow min-w-[42.5rem]" style={{ gridTemplateColumns: 'minmax(0,1.4fr) 1fr 1fr 1fr 7.5rem' }}>
               <span className="w7 truncate">{b.name}</span>
               <span className="t-sm">{r?.path ? t(`bill.path.${r.path}`) : '—'}</span>
               <span className="t-sm">{r?.monthly ? `${money(r.monthly, r.currency, lang)} / ${t('pay.month')}` : r?.project ? money(r.project, r.currency, lang) : '—'}</span>
@@ -65,7 +65,7 @@ export function AdminBilling() {
       </div>
       {editing && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setEditing(null)}>
-          <div className="modal w-full max-w-[480px]" role="dialog" aria-modal="true" aria-labelledby="plan-h">
+          <div className="modal w-full max-w-[30rem]" role="dialog" aria-modal="true" aria-labelledby="plan-h">
             <h2 className="h2" id="plan-h">{t('bill.a.planFor', { name: name(editing) })}</h2>
             <div className="field"><label htmlFor="pl-path">{t('bill.a.path')}</label>
               <select id="pl-path" className="input" value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value as Plan['path'] })}>

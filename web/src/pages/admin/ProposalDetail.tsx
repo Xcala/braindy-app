@@ -43,7 +43,7 @@ export function ProposalDetail() {
   }
 
   return (
-    <div className="col" style={{ gap: 28 }}>
+    <div className="col" style={{ gap: '1.75rem' }}>
       <nav className="crumbs" aria-label="Breadcrumb">
         <Link to="/admin/proposals">{t('proposals.title')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{p.prospect?.company || p.title}</span>
       </nav>
@@ -77,7 +77,7 @@ export function ProposalDetail() {
 
       {dialog === 'lost' && (
         <ConfirmDialog title={t('proposals.markLostTitle')} confirmLabel={t('proposals.markLost')} danger busy={busy} onConfirm={markLost} onCancel={() => setDialog(null)}>
-          <div className="field" style={{ marginTop: 8 }}>
+          <div className="field" style={{ marginTop: '0.5rem' }}>
             <label htmlFor="reason">{t('proposals.reason')}</label>
             <input id="reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t('proposals.reasonPh')} />
           </div>

@@ -8,6 +8,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
 import { useOpenWork, type WorkItem } from '../../team/useWork';
 import { GranolaInbox } from '../../team/GranolaInbox';
+import { AiAlert } from '../../costs/AiAlert';
 import { dayLabel, daysFrom } from '../../lib/dates';
 
 type Pay = { brandId: string; kind: 'transfer' | 'past_due' };
@@ -38,23 +39,23 @@ export function AdminToday() {
   const byDue = (a: WorkItem, b: WorkItem) => String(a.dueDate).localeCompare(String(b.dueDate));
 
   const row = (i: WorkItem, note: string, tone?: 'danger') => (
-    <Link key={`${i.brandId}/${i.id}`} to={`/requests/${i.id}`} onClick={() => select(i.brandId)} className="trow" style={{ gridTemplateColumns: '32px minmax(0,1fr) auto', textDecoration: 'none', color: 'var(--ink)' }}>
+    <Link key={`${i.brandId}/${i.id}`} to={`/requests/${i.id}`} onClick={() => select(i.brandId)} className="trow today-row" style={{ gridTemplateColumns: '2rem minmax(0,1fr) auto', textDecoration: 'none', color: 'var(--ink)' }}>
       {byId.get(i.brandId) ? <BrandMark brand={byId.get(i.brandId)!} /> : <span />}
       <span className="col" style={{ minWidth: 0 }}><span className="w7 truncate">{i.title}</span><span className="t-xs t-mute truncate">{byId.get(i.brandId)?.name ?? i.brandId}</span></span>
-      <span className="t-xs whitespace-nowrap" style={{ color: tone === 'danger' ? '#C0362C' : 'var(--graphite)', fontWeight: tone ? 700 : 400 }}>{note}</span>
+      <span className="t-xs whitespace-nowrap today-note" style={{ color: tone === 'danger' ? 'var(--danger)' : 'var(--graphite)', fontWeight: tone ? 700 : 400 }}>{note}</span>
     </Link>
   );
 
   const blocks: Array<{ key: StringKey; n: number; body: React.ReactNode; tone?: string }> = [
     { key: 'today.late', n: late.length, tone: '#FDECEA', body: late.sort(byDue).map((i) => row(i, t('home.late', { day: dayLabel(i.dueDate, lang) }), 'danger')) },
-    { key: 'today.toReview', n: review.length, tone: '#FFF7E3', body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
+    { key: 'today.toReview', n: review.length, tone: 'var(--warning-bg)', body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
     { key: 'today.dueSoon', n: soon.length, body: soon.sort(byDue).map((i) => row(i, t('home.dueDay', { day: dayLabel(i.dueDate, lang) }))) },
     { key: 'today.waitingClient', n: waiting.length, body: waiting.map((i) => row(i, t('today.daysWaiting', { n: daysSince(i.updatedAt?.toMillis()) }))) },
     { key: 'today.billing', n: pays.length, body: pays.map((p) => (
-      <Link key={`${p.brandId}-${p.kind}`} to="/admin/billing" className="trow" style={{ gridTemplateColumns: '32px minmax(0,1fr) auto', textDecoration: 'none', color: 'var(--ink)' }}>
+      <Link key={`${p.brandId}-${p.kind}`} to="/admin/billing" className="trow today-row" style={{ gridTemplateColumns: '2rem minmax(0,1fr) auto', textDecoration: 'none', color: 'var(--ink)' }}>
         {byId.get(p.brandId) ? <BrandMark brand={byId.get(p.brandId)!} /> : <span />}
         <span className="w7 truncate">{byId.get(p.brandId)?.name ?? p.brandId}</span>
-        <span className="t-xs t-mute">{p.kind === 'transfer' ? t('bill.a.toConfirm') : t('bill.a.overdue')}</span>
+        <span className="t-xs t-mute today-note">{p.kind === 'transfer' ? t('bill.a.toConfirm') : t('bill.a.overdue')}</span>
       </Link>
     )) },
   ];
@@ -63,7 +64,8 @@ export function AdminToday() {
     <div className="col g24">
       <div className="col g8"><p className="label">{new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         <h1 className="h1"><span className="w9">{t('today.title')}.</span> {t('today.sub')}</h1></div>
-      {loading ? <div className="skel" style={{ height: 240 }} /> : (
+      <AiAlert />
+      {loading ? <div className="skel" style={{ height: '15rem' }} /> : (
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
           {blocks.map((b) => (
             <section key={b.key} className="card col g8" style={b.n && b.tone ? { background: b.tone, border: 0 } : undefined} aria-label={t(b.key)}>

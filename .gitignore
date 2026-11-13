@@ -15,3 +15,9 @@ migration-reports/
 
 # local dev
 .claude/settings.local.json
+
+# tsc -b sometimes emits .js next to the sources; Vite would then serve those stale copies instead of the .ts/.tsx
+web/src/**/*.js
+!web/src/tour/engine.js
+web/vite.config.js
+web/tsconfig.tsbuildinfo

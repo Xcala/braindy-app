@@ -24,9 +24,8 @@ const SECONDS_PER_ITEM = 6;
 const MIN_RUN = 8;
 
 /**
- * Under the studio: an endless marquee of what was just launched. The brand's own finished work and the
- * community's launches (other brands, chosen by NickMark) run together, newest first; the community ones carry
- * a "Brainders community" tag. Tapping an item opens it big (community ones with reactions). Titled "Latest launches"; each piece carries its brand's city (BOG, NYC). Hidden while empty.
+ * Under the studio: an endless marquee of what was just launched, newest first. With a brand open, only that brand's
+ * own finished work; without one, the community's launches (chosen by NickMark), tagged "Brainders community". Tapping an item opens it big (community ones with reactions). Titled "Latest launches"; each piece carries its brand's city (BOG, NYC). Hidden while empty.
  */
 export function Launches() {
   const { t, lang } = useI18n();
@@ -35,7 +34,8 @@ export function Launches() {
   const [open, setOpen] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
-    Promise.all([brand ? fetchOwn(brand.id).catch(() => []) : Promise.resolve([]), fetchLaunches().catch(() => [])]).then(([o, l]) => {
+    // With a brand open only its own work shows (Nicolas, 2026-11-10); the community's launches only without a brand.
+    Promise.all([brand ? fetchOwn(brand.id).catch(() => []) : Promise.resolve([]), brand ? Promise.resolve([]) : fetchLaunches().catch(() => [])]).then(([o, l]) => {
       if (!live) return;
       const own: Item[] = o.map((w) => ({ ...w, city: brand?.city ?? null, community: false }));
       const others: Item[] = l.filter((x) => x.brandId !== brand?.id).map((x) => ({ ...x, community: true }));

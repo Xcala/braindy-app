@@ -37,10 +37,10 @@ export function AccountMenu() {
   return (
     <>
       <button ref={btn} type="button" onClick={() => setOpen(true)} aria-label={t('acct.account')} aria-expanded={open} aria-haspopup="dialog"
-        className="row g12" style={{ background: 'none', border: 0, padding: 2, borderRadius: 999, cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
+        className="row g12" style={{ background: 'none', border: 0, padding: 2, borderRadius: '62.4375rem', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
         {user?.photoURL ? <img className="avatar" src={user.photoURL} alt="" /> : <span className="avatar-txt">{initials}</span>}
         <span className="hidden flex-col items-start md:flex" style={{ lineHeight: '16px' }}>
-          <span className="w7" style={{ fontSize: 14, color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
+          <span className="w7" style={{ fontSize: '0.875rem', color: 'var(--ink)' }}>{profile?.name?.split(' ')[0] ?? name}</span>
           <span className="t-xs t-mute">{profile?.role === 'admin' ? t('role.admin') : t('role.client')}</span>
         </span>
       </button>

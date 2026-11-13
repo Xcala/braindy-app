@@ -14,12 +14,12 @@ export const now = () => FieldValue.serverTimestamp();
 export const contractRef = (brandId: string, id: string) => db.doc(`brands/${brandId}/contracts/${id}`);
 export const sha256 = (data: string | Uint8Array) => createHash('sha256').update(data).digest('hex');
 
-export type ContractStatus = 'draft' | 'sent' | 'clientSigned' | 'signed';
+export type ContractStatus = 'draft' | 'sent' | 'signed';
 export const CONSENT = {
   client: 'Leí el contrato y sus anexos, los acepto y firmo electrónicamente como representante legal de EL CONTRATANTE.',
   contractor: 'Leí el contrato y sus anexos, los acepto y firmo electrónicamente como EL CONTRATISTA.',
 };
-export const METHOD = 'Enlace de un solo uso enviado al correo del firmante (Firebase Authentication)';
+export const METHOD = 'Sesión iniciada en Braindy con el correo verificado del firmante (Firebase Authentication)';
 
 /** A drawn signature as a PNG data URL, at most ~300 KB. */
 export function signaturePng(dataUrl: unknown): Buffer | null {

@@ -29,7 +29,7 @@ export function BrandEditor({ brandId, identity, voice, brain, primal, onClose }
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-modal="true" aria-labelledby="h-be" className="card col g16 my-6 w-full" style={{ maxWidth: 880 }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="h-be" className="card col g16 my-6 w-full" style={{ maxWidth: '55rem' }}>
         <div className="row between g12">
           <div className="col g4"><h2 className="h3" id="h-be">{t('be.title')}</h2><span className="t-xs t-mute">{t('be.hint')}</span></div>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>{t('be.close')}</button>

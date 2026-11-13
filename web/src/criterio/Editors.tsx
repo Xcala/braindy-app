@@ -16,7 +16,7 @@ function Bi({ label, value, onChange, rows = 1 }: { label: string; value: L2; on
       <div className="grid gap-3 md:grid-cols-2">
         {(['es', 'en'] as const).map((k) => (
           rows > 1
-            ? <textarea key={k} className="input" style={{ height: rows * 24 + 24, padding: '10px 14px', resize: 'vertical' }} aria-label={`${label} ${k}`} placeholder={k.toUpperCase()} value={value[k]} onChange={(e) => onChange({ ...value, [k]: e.target.value })} />
+            ? <textarea key={k} className="input" style={{ height: rows * 24 + 24, padding: '0.625rem 0.875rem', resize: 'vertical' }} aria-label={`${label} ${k}`} placeholder={k.toUpperCase()} value={value[k]} onChange={(e) => onChange({ ...value, [k]: e.target.value })} />
             : <input key={k} className="input" aria-label={`${label} ${k}`} placeholder={k.toUpperCase()} value={value[k]} onChange={(e) => onChange({ ...value, [k]: e.target.value })} />
         ))}
       </div>

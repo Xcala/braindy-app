@@ -10,11 +10,11 @@ export function Checklist({ items, start, onToggle }: { items: ChecklistItem[]; 
   return (
     <ul className="col" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
       {items.map((it) => (
-        <li key={it.id} className="row between g12" style={{ padding: '10px 0', borderTop: '1px solid #EEF1F6' }}>
+        <li key={it.id} className="row between g12" style={{ padding: '0.625rem 0', borderTop: '1px solid #EEF1F6' }}>
           <label className="row g12 min-w-0" style={{ cursor: onToggle ? 'pointer' : 'default' }}>
             {onToggle
               ? <input type="checkbox" checked={it.done} onChange={(e) => onToggle(it.id, e.target.checked)} />
-              : <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 4, background: '#C9D0DE', flex: 'none' }} />}
+              : <span aria-hidden="true" style={{ width: '0.5rem', height: '0.5rem', borderRadius: '0.25rem', background: '#C9D0DE', flex: 'none' }} />}
             <span className={`t-sm ${it.done ? 't-mute' : ''}`} style={it.done ? { textDecoration: 'line-through' } : undefined}>{it.title}</span>
           </label>
           <span className="t-xs w7" style={{ flex: 'none', color: late(it) ? 'var(--danger)' : 'var(--mute, #6B7385)' }}>

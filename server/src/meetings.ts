@@ -1,4 +1,4 @@
-// Meetings on the client's home: the history (title, date and topics only; full notes stay NickMark's)
+// Meetings on the client's home: the history with its notes (Nicolas can hide a meeting from the client)
 // and the next meeting, read from NickMark's Google Calendar. The calendar is connected once by the admin
 // (OAuth, offline); the refresh token is sealed with KMS and never leaves the server. A client only ever
 // gets events whose guests include a member of their brand.
@@ -36,12 +36,15 @@ const isAdmin = async (uid: string) => (await db.doc(`users/${uid}`).get()).get(
 
 export const meetings = new Hono<AuthEnv>();
 
-/** Members: the latest meetings with the brand, without the notes. */
+/** Members: the latest meetings with the brand and their notes; meetings Nicolas hid stay out (admins see them, marked). */
 meetings.get('/brands/:brandId/meetings', async (c) => {
   const { brandId } = c.req.param();
-  if (!(await brandAccess(c.get('user').uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
-  const snap = await db.collection(`brands/${brandId}/meetings`).orderBy('date', 'desc').limit(12).get();
-  return c.json({ items: snap.docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), date: String(d.get('date') ?? ''), topics: topics(d.get('notes')), people: (d.get('attendees') as unknown[] | undefined)?.length ?? 0 })) });
+  const access = await brandAccess(c.get('user').uid, brandId);
+  if (!access.member) return c.json({ error: 'forbidden' }, 403);
+  const snap = await db.collection(`brands/${brandId}/meetings`).orderBy('date', 'desc').limit(40).get();
+  const docs = snap.docs.filter((d) => access.admin || d.get('hidden') !== true);
+  return c.json({ items: docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), date: String(d.get('date') ?? ''), topics: topics(d.get('notes')),
+    people: (d.get('attendees') as unknown[] | undefined)?.length ?? 0, notes: String(d.get('notes') ?? ''), hidden: d.get('hidden') === true })) });
 });
 
 // ---------- Google Calendar ----------

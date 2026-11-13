@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes } from './fileApi';
+import { APPROVED } from './folderRules';
 import { extLabel, kindOf, thumbClass, type FileItem } from './fileKinds';
 
 const date = (ms?: number, lang = 'en') =>
@@ -34,7 +35,7 @@ function PinButton({ pin, f, style }: { pin: Pin; f: FileItem; style?: CSSProper
 type Menu = (f: FileItem, style?: CSSProperties) => ReactNode;
 
 export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: FileItem[]; thumbs: Record<string, string>; onOpen: (f: FileItem) => void; pin?: Pin; menu?: Menu; sel?: Sel }) {
-  const { lang } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {files.map((f) => {
@@ -43,22 +44,23 @@ export function FileGrid({ files, thumbs, onOpen, pin, menu, sel }: { files: Fil
         return (
           <div key={f.id} className={`tile${sel?.on(f.id) ? ' is-picked' : ''}`} style={{ padding: 0, position: 'relative' }}>
           <button type="button" className="text-left" style={{ cursor: 'pointer', padding: 0, border: 0, background: 'none', width: '100%' }} onClick={() => onOpen(f)}>
-            <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: 180, overflow: 'hidden', width: '100%' }}>
+            <div className={`thumb ${thumb ? '' : thumbClass[kind]}`} style={{ height: '11.25rem', overflow: 'hidden', width: '100%' }}>
               {thumb ? (
                 <img className="cover h-full w-full object-cover" src={thumb} alt="" loading="lazy" />
               ) : (
                 <Icon name={kind === 'video' ? 'external' : kind === 'image' ? 'grid' : 'file'} size={40} className="ico" />
               )}
-              <span className="chip chip-plain c-type badge" style={{ background: '#fff', zIndex: 1 }}>{extLabel(f)}</span>
+              <span className="chip chip-plain c-type badge" style={{ background: 'var(--white)', zIndex: 1 }}>{extLabel(f)}</span>
             </div>
             <div className="tile-meta w-full">
               <span className="tile-name">{f.title}</span>
+              {f.why === 'ai' && <span className="t-xs fx-why" title={f.ai?.summary}><Icon name="spark" size={12} />{t('ss.why')}</span>}
               <span className="t-sm t-mute">{formatBytes(f.size)}{f.mtimeMs ? ` · ${date(f.mtimeMs, lang)}` : ''}</span>
             </div>
           </button>
-          {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: 12, right: 12, zIndex: 2 }} />}
+          {pin && <PinButton pin={pin} f={f} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', zIndex: 2 }} />}
           {menu?.(f, { position: 'absolute', top: 136, right: 12, zIndex: 3 })}
-          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: 136, left: 12, zIndex: 2 }} />}
+          {sel && <Check sel={sel} f={f} style={{ position: 'absolute', top: '8.5rem', left: '0.75rem', zIndex: 2 }} />}
           </div>
         );
       })}
@@ -71,10 +73,11 @@ export function FileList({ files, onOpen, onDownload, pin, menu, sel, onFolder }
   const { t, lang } = useI18n();
   return (
     <div className="list overflow-x-auto">
-      <div className={`lrow head label min-w-[640px]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
+      <div className={`lrow head label min-w-[40rem]${pin ? ' has-pin' : ''}`}><span>{t('files.name')}</span><span>{t('files.type')}</span><span>{t('files.size')}</span><span>{t('files.modified')}</span><span /></div>
       {files.map((f) => (
-        <div key={f.id} className={`lrow min-w-[640px]${pin ? ' has-pin' : ''}${sel?.on(f.id) ? ' is-picked' : ''}`}>
+        <div key={f.id} className={`lrow min-w-[40rem]${pin ? ' has-pin' : ''}${sel?.on(f.id) ? ' is-picked' : ''}`}>
           <span className="row g10" style={{ minWidth: 0 }}>{sel && <Check sel={sel} f={f} />}<span className="col" style={{ minWidth: 0 }}><button type="button" onClick={() => onOpen(f)} className="truncate text-left w7" style={{ background: 'none', border: 0, cursor: 'pointer', color: 'var(--ink)' }}>{f.title}</button>
+            {f.why === 'ai' && <span className="t-xs fx-why" title={f.ai?.summary}><Icon name="spark" size={12} />{t('ss.why')}</span>}
             {onFolder && <button type="button" className="t-xs t-mute truncate text-left" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }} onClick={() => onFolder(f.folder ?? '')}><Icon name="folder" size={12} /> {f.folder || t('files.rootFolder')}</button>}</span></span>
           <span><span className="chip chip-plain c-type">{extLabel(f)}</span></span>
           <span className="t-sm t-mute">{formatBytes(f.size)}</span>
@@ -98,9 +101,9 @@ export function ShareSwitch({ on, label, onToggle }: { on: boolean; label: strin
   return (
     <button type="button" role="switch" aria-checked={on} aria-label={t('fa.toggleLabel', { name: label })} title={t(on ? 'fa.onHint' : 'fa.offHint')}
       onClick={(e) => { e.stopPropagation(); onToggle(); }} className="row g6 t-xs w7"
-      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--mute, #6B7280)', borderRadius: 999, padding: '4px 8px 4px 4px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-      <span aria-hidden="true" style={{ width: 26, height: 16, borderRadius: 999, background: on ? '#1F9D5C' : '#CBD2DC', position: 'relative', transition: 'background .2s', flex: 'none' }}>
-        <span style={{ position: 'absolute', top: 2, left: on ? 12 : 2, width: 12, height: 12, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--mute, #6B7280)', borderRadius: '62.4375rem', padding: '0.25rem 0.5rem 0.25rem 0.25rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      <span aria-hidden="true" style={{ width: '1.625rem', height: '1rem', borderRadius: '62.4375rem', background: on ? '#1F9D5C' : '#CBD2DC', position: 'relative', transition: 'background .2s', flex: 'none' }}>
+        <span style={{ position: 'absolute', top: 2, left: on ? 12 : 2, width: '0.75rem', height: '0.75rem', borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
       </span>
       {t(on ? 'fa.on' : 'fa.off')}
     </button>
@@ -111,17 +114,17 @@ export function FolderGrid({ folders, onOpen, menu }: { folders: Array<{ path: s
   const { t } = useI18n();
   return (
     // As many columns as fit with room for the name, the ⋯ menu and the client switch.
-    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 230px), 1fr))' }}>
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 14.375rem), 1fr))' }}>
       {folders.map((f) => (
         <div key={f.path} className={`folder fcard${f.toggle ? " has-switch" : ""}`}
-          style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: '#F7F9FF' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
-          <div className="row" style={{ gap: 4, minWidth: 0, flex: '1 1 auto' }}>
+          style={{ ...(f.highlight ? { borderColor: 'var(--azul)', background: 'var(--hielo)' } : {}), ...(f.hidden ? { borderStyle: 'dashed' } : {}) }}>
+          <div className="row" style={{ gap: '0.25rem', minWidth: 0, flex: '1 1 auto' }}>
           <button type="button" className="fopen" onClick={() => onOpen(f.path)} style={f.hidden ? { opacity: 0.55 } : undefined}>
-            <span className="fi" style={f.highlight ? { background: 'var(--azul)', color: '#fff' } : undefined}>
+            <span className="fi" style={f.highlight ? { background: 'var(--azul-fill)', color: '#fff' } : undefined}>
               <Icon name={f.highlight ? 'upload' : 'folder'} size={22} />
             </span>
             <span className="col grow" style={{ minWidth: 0 }}>
-              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
+              <span className="w7 fname">{f.highlight ? t('files.uploadsName') : f.path === APPROVED ? t('files.approvedName') : f.path.slice(f.path.lastIndexOf('/') + 1)}</span>
               <span className="t-sm t-mute truncate">{f.highlight ? t('files.uploadsHint') : `${formatBytes(f.bytes)}`}{f.hidden && !f.toggle ? ` · ${t('fa.hiddenTag')}` : ''}</span>
             </span>
           </button>

@@ -5,7 +5,7 @@ import type { BrandLink } from './useBrandLinks';
 
 /** Site adjustments: the triage of each site or app, synced from its working session (asked, delivered, state). */
 export type Status = 'delivered' | 'in_progress' | 'decision' | 'client' | 'discarded';
-export interface SiteChange { id: string; key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: Status; link?: string; spot?: string; round?: string; siteUrl?: string; updatedAt?: Timestamp }
+export interface SiteChange { id: string; key: string; group?: string; title: string; request?: string; source?: string; delivered?: string; status: Status; link?: string; spot?: string; round?: string; siteUrl?: string; updatedAt?: Timestamp; order?: number }
 
 export const STATUSES: Status[] = ['delivered', 'in_progress', 'decision', 'client', 'discarded'];
 

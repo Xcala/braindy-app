@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import { money } from '../billing/useBilling';
 import type { StackItem, ToolCategory } from './types';
+import { Scan } from '../components/Scan';
 
 const COLOR: Record<ToolCategory, string> = {
   web: '#2A7FFF', email: '#8B5CF6', ai: '#06B6D4', automation: '#2F4DE0', social: '#E0428A',
@@ -23,12 +24,12 @@ export function Stack({ items }: { items: StackItem[] }) {
         <div className="col g4">
           <p className="label">{t('plan.b4')}</p>
           <h2 id="plan-stack" className="h2">{t('plan.stackTitle')}</h2>
-          <p className="t-sm t-mute" style={{ margin: 0, maxWidth: 640 }}>{t('plan.stackSub')}</p>
+          <p className="t-sm t-mute" style={{ margin: 0, maxWidth: '40rem' }}>{t('plan.stackSub')}</p>
         </div>
         {Object.keys(monthly).length > 0 && (
           <div className="col" style={{ textAlign: 'right' }}>
             <span className="label">{t('plan.stackMonthly')}</span>
-            <span className="w9" style={{ fontSize: 24, lineHeight: '30px' }}>{Object.entries(monthly).map(([cur, v]) => money(Math.round(v), cur, lang)).join(' + ')}</span>
+            <span className="w9" style={{ fontSize: '1.5rem', lineHeight: '30px' }}>{Object.entries(monthly).map(([cur, v]) => money(Math.round(v), cur, lang)).join(' + ')}</span>
           </div>
         )}
       </div>
@@ -38,7 +39,7 @@ export function Stack({ items }: { items: StackItem[] }) {
           return (
             <article key={i} className="card card-tight col g8" style={{ opacity: x.status === 'active' ? 1 : 0.6 }}>
               <div className="row g12" style={{ alignItems: 'center' }}>
-                <span aria-hidden style={{ width: 40, height: 40, borderRadius: 12, background: COLOR[x.category] ?? COLOR.other, color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: 18, flex: 'none' }}>{x.name.slice(0, 1).toUpperCase()}</span>
+                <span aria-hidden style={{ width: '2.5rem', height: '2.5rem', borderRadius: '0.75rem', background: COLOR[x.category] ?? COLOR.other, color: '#fff', display: 'grid', placeItems: 'center', fontWeight: 900, fontSize: '1.125rem', flex: 'none' }}>{x.name.slice(0, 1).toUpperCase()}</span>
                 <div className="col" style={{ minWidth: 0, flex: 1 }}>
                   {x.url ? <a href={x.url} target="_blank" rel="noreferrer" className="w9" style={{ color: 'var(--ink)' }}>{x.name}</a> : <span className="w9">{x.name}</span>}
                   <span className="t-sm t-mute">{t(`plan.cat.${x.category}`)}{x.plan ? ` · ${x.plan}` : ''}</span>
@@ -48,11 +49,11 @@ export function Stack({ items }: { items: StackItem[] }) {
               <div className="row g8" style={{ flexWrap: 'wrap', alignItems: 'center', marginTop: 'auto' }}>
                 {x.cost != null && <span className="w7">{money(x.cost, x.currency, lang)} <span className="t-sm t-mute">{t(`plan.per.${x.period}`)}</span></span>}
                 {x.cost == null && x.period === 'usage' && <span className="t-sm t-mute">{t('plan.per.usage')}</span>}
-                <span className="chip" style={x.payer === 'client' ? { background: '#FFFBF0', borderColor: '#F5D98A' } : undefined}>{t(`plan.payer.${x.payer}`)}</span>
+                <span className="chip" style={x.payer === 'client' ? { background: 'var(--warning-bg)', borderColor: '#F5D98A' } : undefined}>{t(`plan.payer.${x.payer}`)}</span>
                 {x.status !== 'active' && <span className="chip">{t(`plan.tool.${x.status}`)}</span>}
               </div>
               {x.renews && <span className="t-sm" style={{ color: soon ? '#B54708' : 'var(--mute, #5B6475)' }}>{t('plan.renews', { date: date(x.renews) })}</span>}
-              {x.note && <span className="t-sm t-mute">{x.note}</span>}
+              {x.note && <Scan text={x.note} points />}
             </article>
           );
         })}

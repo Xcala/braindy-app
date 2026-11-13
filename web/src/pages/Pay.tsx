@@ -39,7 +39,7 @@ export function Pay() {
   }
 
   return (
-    <div className="mx-auto col g24 w-full max-w-[760px]">
+    <div className="mx-auto col g24 w-full max-w-[47.5rem]">
       {params.get('state') === 'canceled' && (
         <div className="card col g8" role="alert" style={{ borderColor: '#F5D98A', background: '#FFFBF0' }}>
           <span className="w7">{t('pay.failedTitle')}</span><span className="t-sm">{t('pay.failedBody')}</span>
@@ -81,7 +81,7 @@ export function Pay() {
       </div>
       <details className="card">
         <summary className="w7 t-sm" style={{ cursor: 'pointer' }}>{t('pay.byTransfer')}</summary>
-        <div className="col g8" style={{ marginTop: 12 }}>
+        <div className="col g8" style={{ marginTop: '0.75rem' }}>
           <p className="t-sm t-mute">{t('pay.transferHelp')}</p>
           <div className="row g8 wrap"><input className="input grow" value={ref} onChange={(e) => setRef(e.target.value)} placeholder={t('pay.transferRef')} aria-label={t('pay.transferRef')} />
             <button className="btn btn-secondary" disabled={!ref.trim() || !detailsOk || !agree || busy} onClick={transfer}>{t('pay.sendTransfer')}</button></div>
@@ -96,8 +96,8 @@ export function Pay() {
 export function PaySuccess() {
   const { t } = useI18n();
   return (
-    <div className="mx-auto col g20 w-full max-w-[640px]">
-      <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+    <div className="mx-auto col g20 w-full max-w-[40rem]">
+      <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <h1 className="d-lg" style={{ color: '#fff' }}><span className="w9">{t('pay.okTitle1')}</span> {t('pay.okTitle2')}</h1>
         <p className="t-lg muted">{t('pay.okBody')}</p>
         <div className="row g12 wrap"><Link className="btn btn-white" to="/onboarding">{t('pay.startBrief')}</Link><Link className="btn btn-outline-light" to="/settings?tab=billing">{t('pay.receipt')}</Link></div>

@@ -12,11 +12,14 @@ import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
-import { folderVisible, UPLOADS } from './folderRules';
+import { APPROVED, folderVisible, UPLOADS } from './folderRules';
+
 import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
 import { ExplorerToolbar, SORTS, type Filter, type Sort } from './ExplorerToolbar';
 import { useFileActions } from './useFileActions';
+import { useBrandVersions, versionAt } from '../brands/versions/useBrandVersions';
+import { useVersionView } from '../brands/versions/versionView';
 import { FileMenu, FolderMenu } from './FileMenu';
 import { SelectionBar } from './SelectionBar';
 import { FileDialogs } from './FileDialogs';
@@ -26,6 +29,9 @@ import { UploadButton, UploadStatus } from './UploadButton';
 import { useUploader } from './useUploader';
 import { useSearchAll } from './useSearchAll';
 import './files.css';
+
+/** Top folders every brand version shares (server/src/brandVersions.ts SHARED). */
+const SHARED_TOPS = new Set([APPROVED, 'Interno Braindy']);
 
 type Folder = { path: string; files: number; bytes: number };
 const SORT_KEY = 'braindy.files.sort';
@@ -48,13 +54,17 @@ function repeatedCopies(files: FileItem[]) {
 }
 
 /** startPath/openId come from a search result: open that folder and show that file. */
-export function FileExplorer({ brandId, brandName, startPath = '', openId }: { brandId: string; brandName: string; startPath?: string; openId?: string }) {
+/** hideApproved: Library leaves out the approved-deliveries folder at the root (it has its own tab, Deliveries). */
+export function FileExplorer({ brandId, brandName, startPath = '', openId, hideApproved = false }: { brandId: string; brandName: string; startPath?: string; openId?: string; hideApproved?: boolean }) {
   const { t } = useI18n();
   const [path, setPath] = useState(startPath);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [q, setQ] = useState('');
   const [everywhere, setEverywhere] = useState(false);
   const [filter, setFilter] = useState<Filter>('all');
+  // Rebranded brands: files by the version they belong to, by when they entered Braindy ('current' = after the last rebrand).
+  const versions = useBrandVersions(brandId).list;
+  const [era] = useVersionView(brandId, versions.map((v) => v.id));
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [sort, setSortState] = useState<Sort>(savedSort);
   const setSort = (s: Sort) => { setSortState(s); try { localStorage.setItem(SORT_KEY, s); } catch { /* private mode */ } };
@@ -85,7 +95,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     toggle: (f: FileItem) => { const old = pinned.find((d) => d.id === f.id); (old ? unpinBrandFile(brandId, old) : pinBrandFile(brandId, f)).catch(() => setShareError(true)); },
   } : undefined;
   const actions = useFileActions(brandId, brandName);
-  const menu = isAdmin ? (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} /> : undefined;
+  const menu = (f: FileItem, style?: CSSProperties) => <FileMenu f={f} actions={actions} style={style} admin={isAdmin} />;
   const dropUp = useUploader(brandId);
   const closeHide = useCallback(() => setHideAsk(false), []);
   const toggle = (top: string) => { setShareError(false); share.toggle(top).catch(() => setShareError(true)); };
@@ -98,24 +108,34 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
     const qy = query(collection(db, 'brands', brandId, 'assets'), where('folder', '==', path));
     return onSnapshot(qy, (s) => setFiles(
       s.docs.filter((d) => d.get('status') !== 'uploading')
-        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) })),
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<FileItem, 'id'>), mtimeMs: (d.get('mtimeMs') as number | undefined) ?? ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')),
+          addedMs: ms(d.get('uploadedAt')) ?? ms(d.get('importedAt')) ?? ms(d.get('migratedAt')) })),
     ), () => setFiles([]));
   }, [brandId, path, pathShared]);
 
   const subfolders = useMemo(() => {
-    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path))
+    // Rebranded brands: at the root, each version shows its own folders (the current one, those of no earlier version).
+    const old = versions.find((v) => v.id === era);
+    const ofEra = (p: string) => path || !versions.length || (old ? old.folders.includes(p) : !versions.some((v) => v.folders.includes(p)));
+    const list = folders.filter((f) => f.path && parentOf(f.path) === path && visible(f.path) && ofEra(f.path) && !(hideApproved && f.path === APPROVED))
       .map((f) => ({ ...f, highlight: false, hidden: isAdmin && !forClient(f.path), toggle: isAdmin && !path ? () => toggle(f.path) : undefined }));
     if (!path) list.unshift({ path: UPLOADS, files: 0, bytes: 0, highlight: true, hidden: false, toggle: undefined });
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folders, path, isAdmin, brand?.fileAccess, tops]);
+  }, [folders, path, isAdmin, brand?.fileAccess, tops, versions, era, hideApproved]);
   const moveTargets = useMemo(() => ['', UPLOADS, ...folders.map((f) => f.path).filter((p) => p && p !== path)].filter((p, i, a) => a.indexOf(p) === i), [folders, path]);
 
   const needle = normalizeSearch(q);
   const hits = useSearchAll(brandId, q.trim(), everywhere || !path, Number(actions.busy));
   const searchingAll = hits !== null;
   const source = searchingAll ? hits : files;
-  const shown = source.filter((f) => (filter === 'all' || kindOf(f) === filter) && (searchingAll || !needle || normalizeSearch(f.title).includes(needle)))
+  // In a folder the name is matched here, and what the AI saw in the file too (the server does both across folders).
+  const seen = (f: FileItem) => normalizeSearch([f.ai?.summary, ...(f.ai?.tags ?? []), f.ai?.text].filter(Boolean).join(' '));
+  const local = (f: FileItem): FileItem | null => (!needle || normalizeSearch(f.title).includes(needle) ? f : needle.split(/s+/).every((w) => seen(f).includes(w)) ? { ...f, why: 'ai' } : null);
+  // A file belongs to the version of its top folder; in shared ones (Uploads, approved, internal) to when it came in.
+  const eraOf = (f: FileItem) => { const top = (f.folder ?? '').split('/')[0]!; return !top || top === UPLOADS || SHARED_TOPS.has(top) ? versionAt(versions, f.addedMs ?? f.mtimeMs)?.id ?? null : versions.find((v) => v.folders.includes(top))?.id ?? null; };
+  const shown = (searchingAll ? source : source.map(local).filter((f): f is FileItem => !!f)).filter((f) => filter === 'all' || kindOf(f) === filter)
+    .filter((f) => !versions.length || eraOf(f) === era)
     .sort(sort === 'name' ? (a, b) => a.title.localeCompare(b.title)
       : sort === 'big' ? (a, b) => b.size - a.size
       : (a, b) => ((a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)) * (sort === 'new' ? -1 : 1));
@@ -174,7 +194,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
               </div>
             )}
             <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath}
-              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== 'Entregas aprobadas'} /> : undefined} />
+              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== APPROVED} /> : undefined} />
             {subfolders.length > FOLDERS_FIRST && (
               <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
                 {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}
@@ -198,7 +218,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId }: { b
           )}
           {(page.length > 0 || actions.picked.size > 0) && <SelectionBar actions={actions} pageIds={page.map((f) => f.id)} folders={moveTargets} admin={isAdmin} />}
           {index.loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: 230 }} />)}</div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((i) => <div key={i} className="skel" style={{ height: '14.375rem' }} />)}</div>
           ) : shown.length === 0 ? (
             <div className="empty"><Icon name="folder" size={32} /><p className="t-mute">{needle ? t('files.noMatch') : t('assets.empty')}</p></div>
           ) : view === 'grid' && !searchingAll ? (

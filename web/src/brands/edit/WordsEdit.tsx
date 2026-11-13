@@ -10,7 +10,7 @@ function Field({ label, value, onChange, rows = 2 }: { label: StringKey; value: 
   const { t } = useI18n();
   return (
     <label className="col g4"><span className="t-sm w7">{t(label)}</span>
-      <textarea className="input" rows={rows} style={{ padding: '10px 12px', resize: 'vertical', lineHeight: 1.45 }} value={value} onChange={(e) => onChange(e.target.value)} /></label>
+      <textarea className="input" rows={rows} style={{ padding: '0.625rem 0.75rem', resize: 'vertical', lineHeight: 1.45 }} value={value} onChange={(e) => onChange(e.target.value)} /></label>
   );
 }
 

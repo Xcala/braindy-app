@@ -5,6 +5,7 @@ import { dateLabel } from '../../lib/dates';
 import { useSocialPosts } from '../../calendar/useSocialPosts';
 import { INTENTS, ideasFor, intentForCategory, type Answers } from './intents';
 import type { BrandRequest } from '../types';
+import { BrainKnows } from '../../brain/BrainLearned';
 
 export type Seed = { intent: string; answers: Answers; text: string; category?: string; sub?: string; formatType?: string; links?: string[] };
 
@@ -27,6 +28,7 @@ export function AskStart({ brandId, list, onPick }: { brandId: string; list: Bra
 
   return (
     <div className="col g24">
+      <BrainKnows brandId={brandId} />
       <div className="col g12" data-tour="ask-what">
         <p className="label" style={{ margin: 0 }}>{t('as.intentsLabel')}</p>
         <div className="grid gap-3 sm:grid-cols-2">

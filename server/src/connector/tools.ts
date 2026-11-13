@@ -9,9 +9,16 @@ import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand,
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
+import { syncSocialStats } from './socialStats.js';
+import { registerAdTools } from './adStats.js';
+import { syncAllWebStats, syncWebStats } from '../webStats.js';
+import { syncAllSearchStats, syncSearchStats } from '../searchStats.js';
+import { db } from '../firebase.js';
 import { setIdentity } from './identity.js';
 import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
+import { registerStepTools } from '../brains/steps.js';
+import { registerQualityTools } from '../brains/quality.js';
 import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
@@ -31,6 +38,9 @@ const REMOTE_FILE = z.object({
 
 export function registerTools(server: McpServer, ctx: ToolContext) {
   registerSiteCommentTools(server, ctx.uid);
+  registerAdTools(server, APP);
+  registerStepTools(server);
+  registerQualityTools(server);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',
@@ -144,6 +154,60 @@ Ver: ${APP}/plan`;
     const name = await requireBrand(brandId);
     const r = await syncSocialPosts(brandId, posts, { from, to }, metricoolBrand);
     return `${name}: ${r.total} publicaciones · ${r.created} nuevas · ${r.updated} actualizadas · ${r.unchanged} sin cambios${r.removed ? ` · ${r.removed} quitadas` : ''}.\nVer: ${APP}/calendar`;
+  }));
+
+  server.registerTool('braindy_social_stats_sync', {
+    title: 'Subir los resultados de redes a Braindy App',
+    description: 'Mirrors one network\'s analytics from Metricool (getAnalyticsDataByMetrics) into Braindy App, section "Resultados": daily evolution, every post with its numbers, and audience. '
+      + 'Days merge with what is stored, so a short recent range is enough for a daily refresh; posts are upserted by id. One call per network. '
+      + 'Use when Nicolas says "trae los resultados de Metricool", "actualiza resultados de X".',
+    inputSchema: {
+      brandId: z.string(),
+      network: z.string().describe('instagram, facebook, linkedin, youtube, tiktok…'),
+      handle: z.string().optional(),
+      daily: z.array(z.record(z.string(), z.union([z.number(), z.string(), z.null()]))).max(1100)
+        .describe('{ d: "YYYY-MM-DD", followers, views, reach, interactions, posts, stories, engaged, gained, lost, clicks, likes, comments, shares, saves, watchMinutes }'),
+      posts: z.array(z.record(z.string(), z.union([z.number(), z.string(), z.null()]))).max(600).optional()
+        .describe('{ id, date, type, text, image, url, views, reach, likes, comments, saves, shares, interactions, engagement, clicks, watchTime, follows }'),
+      audience: z.object({
+        countries: z.array(z.object({ name: z.string(), n: z.number() })).optional(),
+        cities: z.array(z.object({ name: z.string(), n: z.number() })).optional(),
+        industry: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        seniority: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        function: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        companySize: z.array(z.object({ name: z.string(), n: z.number() })).optional().describe('LinkedIn'),
+        ageGender: z.array(z.object({ age: z.string(), gender: z.string(), v: z.number() })).optional(),
+      }).optional(),
+    },
+  }, run(async ({ brandId, network, ...input }) => {
+    const name = await requireBrand(brandId);
+    const r = await syncSocialStats(brandId, network, input);
+    return `${name} · ${network}: ${r.days} días (${r.from} a ${r.to}) · ${r.posts} publicaciones.\nVer: ${APP}/report`;
+  }));
+
+  server.registerTool('braindy_web_stats_refresh', {
+    title: 'Actualizar las visitas y búsquedas del sitio (Google Analytics + Search Console) en Braindy App',
+    description: 'Reads Google Analytics 4 on the server (the braindy-api service account must be Viewer on the property) and refreshes Results › Website: '
+      + 'daily users, sessions, views, engagement and key events, 30/90/365-day totals and top pages, channels, sources, countries, cities and devices; '
+      + 'also Search Console (braindy-api as Restricted user): Google clicks, impressions, position, top searches and pages. '
+      + 'Pass brandId (and propertyId / gscSite the first time, to link them) for one brand, or nothing for every brand that has one. '
+      + 'Only works from the remote connector (Cloud Run). Use when Nicolas says "actualiza Analytics", "conecta el Analytics de X", and in the daily refresh.',
+    inputSchema: {
+      brandId: z.string().optional(),
+      propertyId: z.string().regex(/^\d{6,12}$/).optional().describe('GA4 property id (numbers only), saved on the brand'),
+      gscSite: z.string().regex(/^(sc-domain:|https?:\/\/)/).optional().describe('Search Console property, e.g. sc-domain:example.com'),
+    },
+  }, run(async ({ brandId, propertyId, gscSite }) => {
+    const line = (src: string) => (r: { ok: boolean; brandId: string; note: string }) => `${r.ok ? '✓' : '✗'} ${r.brandId} · ${src}: ${r.note}`;
+    if (!brandId) {
+      const all = [...(await syncAllWebStats()).map(line('GA')), ...(await syncAllSearchStats()).map(line('Search Console'))];
+      return all.join('\n') || 'Ninguna marca tiene Google Analytics ni Search Console.';
+    }
+    const name = await requireBrand(brandId);
+    if (propertyId || gscSite) await db.doc(`brands/${brandId}`).set({ ...(propertyId && { gaPropertyId: propertyId }), ...(gscSite && { gscSite }) }, { merge: true });
+    const ga = await syncWebStats(brandId).then((r) => `${r.days} días · ${r.users30 ?? 0} usuarios en 30 días`, (e: Error) => e.message);
+    const sc = await syncSearchStats(brandId).then((r) => `${r.days} días · ${r.clicks30} clics en 30 días`, (e: Error) => e.message);
+    return `${name}\nGoogle Analytics: ${ga}\nSearch Console: ${sc}\nVer: ${APP}/report`;
   }));
 
   server.registerTool('braindy_site_changes_import_html', {
@@ -314,7 +378,9 @@ Ver: ${APP}/brand`;
       + (ctx.mode === 'local' ? 'Files are absolute paths.' : `Files go as base64 or https links (up to ${REMOTE_MAX_FILE / 1024 ** 2} MB each).`),
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
-      notes: z.string().max(4000).describe('What changed and why, in Spanish, for the client'),
+      notes: z.string().max(4000).describe('What it is and what changed, in Spanish, for the client, written to scan: short sections on their own line ending in ":" '
+        + '(e.g. "Qué es:", "Recorrido:", "Incluye:", "Para revisar:"), then one point per line starting with "- " and its keyword in **bold** '
+        + '("- **PDF** para LinkedIn."). One idea per line; no long paragraphs, no arrows chaining ideas.'),
       ...(ctx.mode === 'local' ? { paths: z.array(z.string()).min(1).max(20) } : { files: z.array(REMOTE_FILE).min(1).max(20) }),
     },
   }, run(async (a: { brandId: string; requestId: string; notes: string; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {

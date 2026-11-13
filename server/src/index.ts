@@ -14,7 +14,7 @@ import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
 import { adminLaunches, launches } from './launches.js';
 import { adminCalendar, calendarCallback, meetings } from './meetings.js';
-import { booking } from './booking.js';
+import { booking, publicBooking } from './booking.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
@@ -34,9 +34,14 @@ import { meWhatsapp } from './wa/contacts.js';
 import { adminWhatsapp } from './wa/admin.js';
 import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
+import { help } from './help/route.js';
+import { resources } from './resources.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
+import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
+import { adminBrandVersions } from './brandVersions.js';
+import { publicShare, shareLinks } from './shareLinks.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -56,17 +61,24 @@ app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 
 app.get('/health', (c) => c.json({ ok: true }));
 
 // Public proposal pages: no login, tracked per send.
-app.use('/public/*', cors({ origin: allowedOrigins, allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+// braindy.co books meetings here too (the site's /book page), so the public routes also answer the site.
+const siteOrigins = ['https://braindy.co', 'https://www.braindy.co'];
+app.use('/public/*', cors({ origin: [...allowedOrigins, ...siteOrigins], allowHeaders: ['Content-Type'], allowMethods: ['GET', 'POST', 'OPTIONS'] }));
 // Abuse protection on login-free routes: tokens cannot be brute-forced and tracking cannot be flooded.
 app.use('/public/p/:token/accept', rateLimit('accept', 10, 10 * 60_000));
 app.use('/public/p/:token/pay', rateLimit('pay', 10, 10 * 60_000));
 app.use('/public/r/:token/decision', rateLimit('decision', 20, 10 * 60_000));
 app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_000));
+app.use('/public/booking/book', rateLimit('web-booking', 5, 60 * 60_000));
+// Upload links take files from strangers: a few hundred per sender per hour at most.
+app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
 app.route('/public', publicReview);
+app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
+app.route('/public', publicShare);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -124,6 +136,7 @@ app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
 app.route('/v1', connectorAuth);
 app.route('/v1/admin', adminIdentity);
+app.route('/v1/admin', adminBrandVersions);
 app.route('/v1/admin', adminGeo);
 app.route('/v1', onboarding);
 app.route('/v1', contracts);
@@ -137,7 +150,12 @@ app.route('/v1', brains);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
+app.route('/v1/admin', adminAiHealth);
 app.route('/v1', criterio);
+app.route('/v1', shareLinks);
+app.use('/v1/help/chat', rateLimit('help', 20, 60_000));
+app.route('/v1', help);
+app.route('/v1', resources);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

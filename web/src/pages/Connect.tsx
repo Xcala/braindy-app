@@ -32,17 +32,17 @@ export function Connect() {
   const isAdmin = profile?.role === 'admin';
   return (
     <AuthLayout>
-      <div className="col g16" style={{ maxWidth: 420 }}>
-        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 28, width: 'auto', alignSelf: 'flex-start' }} />
+      <div className="col g16" style={{ maxWidth: '26.25rem' }}>
+        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.75rem', width: 'auto', alignSelf: 'flex-start' }} />
         {!isAdmin ? <p className="t-mute">{t('connect.adminOnly')}</p>
-          : state === 'loading' ? <div className="skel" style={{ height: 120 }} />
+          : state === 'loading' ? <div className="skel" style={{ height: '7.5rem' }} />
           : state === 'expired' ? <p className="t-mute">{t('connect.expired')}</p>
           : state === 'done' ? <p className="t-mute">{t('connect.done')}</p>
           : (
             <>
               <h1 className="h2">{t('connect.title', { client: info?.clientName ?? 'Claude' })}</h1>
               <p className="t-sm t-mute">{t('connect.sub')}</p>
-              <ul className="col g8 t-sm" style={{ paddingLeft: 18, listStyle: 'disc' }}>
+              <ul className="col g8 t-sm" style={{ paddingLeft: '1.125rem', listStyle: 'disc' }}>
                 <li>{t('connect.can1')}</li><li>{t('connect.can2')}</li><li>{t('connect.can3')}</li>
               </ul>
               <p className="t-xs t-mute">{t('connect.never')}</p>

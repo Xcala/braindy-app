@@ -37,7 +37,7 @@ type Row = { to?: string; onClick?: () => void; icon: React.ReactNode; label: St
 
 /** Account page (search and deep links); the photo opens the same list as a menu over everything. */
 export function Account() {
-  return <div className="mx-auto w-full max-w-[560px]"><AccountBody /></div>;
+  return <div className="mx-auto w-full max-w-[35rem]"><AccountBody /></div>;
 }
 
 /** ChatGPT-style grouped list; each row opens its own content. onPick closes the menu when a row navigates. */

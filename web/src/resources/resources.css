@@ -1,0 +1,19 @@
+/* Free resources: grid of cards or a list of rows. */
+.res-grid{list-style:none;margin:0;padding:0;display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(16.25rem,1fr))}
+.res-card{min-height:15rem}
+.res-list{list-style:none;margin:0;padding:0.25rem 0;display:flex;flex-direction:column}
+.res-row{display:flex;align-items:center;gap:0.875rem;padding:0.875rem 1.125rem;border-top:1px solid var(--line)}
+.res-row:first-child{border-top:0}
+.res-kind{display:grid;place-items:center;border-radius:0.75rem;flex:none}
+.res-title{all:unset;cursor:pointer;font:800 1.0625rem/1.375rem var(--f-display);color:var(--ink,#0B1220)}
+.res-title:hover{color:var(--azul)}
+.res-title:focus-visible{outline:3px solid var(--azul);outline-offset:2px;border-radius:0.25rem}
+.res-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.res-tag{font:600 0.75rem/1rem var(--f-text);color:var(--graphite);background:var(--fog,#F4F6FB);border-radius:6.1875rem;padding:0.1875rem 0.5625rem}
+.res-body{margin:0;max-height:20rem;overflow:auto;padding:0.875rem 1rem;border-radius:0.875rem;background:#0B1220;color:#E6EAF5;font:0.8125rem/1.25rem ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.res-mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:0.8125rem}
+.res-detail,.res-editor{max-height:calc(100vh - 2rem);overflow-y:auto}
+@media (max-width:640px){
+  .res-row{flex-wrap:wrap}
+  .res-row-actions{width:100%;padding-left:3.125rem}
+}

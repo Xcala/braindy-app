@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import type { FileKind } from './fileKinds';
-import { UPLOADS } from './folderRules';
+import { APPROVED, UPLOADS } from './folderRules';
 
 export type Filter = 'all' | FileKind;
 export type Sort = 'name' | 'new' | 'old' | 'big';
@@ -13,6 +13,7 @@ type Props = {
   q: string; setQ: (q: string) => void; everywhere: boolean; setEverywhere: (on: boolean) => void;
   filter: Filter; setFilter: (f: Filter) => void; sort: Sort; setSort: (s: Sort) => void;
   view: 'grid' | 'list'; setView: (v: 'grid' | 'list') => void;
+  /** Rebranded brands only: which version's files to show (all, the current one or an earlier one). */
   /** Right end of the second row (upload into this folder). */
   actions?: ReactNode;
 };
@@ -21,8 +22,8 @@ type Props = {
 export function ExplorerToolbar(p: Props) {
   const { t } = useI18n();
   const crumbs = p.path ? p.path.split('/') : [];
-  // Uploads is a fixed folder name in the data; people read it in their language.
-  const label = (c: string, i: number) => (i === 0 && c === UPLOADS ? t('files.uploadsName') : c);
+  // Uploads and the approved folder are fixed names in the data; people read them in their language.
+  const label = (c: string, i: number) => (i === 0 && c === UPLOADS ? t('files.uploadsName') : i === 0 && c === APPROVED ? t('files.approvedName') : c);
   return (
     <div className="fx-bar">
       <div className="fx-row">

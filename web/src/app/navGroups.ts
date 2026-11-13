@@ -1,22 +1,36 @@
 import type { StringKey } from '../i18n/strings';
 
 /**
- * The client navigation in five tabs. Two tabs group pages that already exist:
- * My brand = essence, visual, documents + research, Deliveries = files + apps + calendar. Routes and section permissions stay the same.
+ * The client navigation: four sections, each one row in the menu; their pages show as tabs at the top of the page
+ * (2026-11-12, after research on brand portals: «Kit de marca», «Entregas», «Biblioteca» read better than «Visual» or «Archivos»).
+ * My brand also holds what used to be Deliveries; Strategy groups essence, Brain and research under one tab.
+ * Routes and section permissions stay the same, so old links keep working.
  */
-export type NavGroup = { label: StringKey; short: StringKey; pages: Array<{ to: string; label: StringKey }> };
+export type NavPage = { to: string; label: StringKey; tab?: StringKey };
+export type NavGroup = { label: StringKey; short: StringKey; pages: NavPage[] };
 
-/** Results is off until there is enough to show (2026-11-02). The /report page still works by its address; set true to bring the tab back. */
-export const SHOW_RESULTS = false;
-
-const ALL: NavGroup[] = [
+export const NAV: NavGroup[] = [
   { label: 'nav.home', short: 'nav.homeShort', pages: [{ to: '/home', label: 'nav.home' }] },
-  { label: 'nav.brand', short: 'nav.brandShort', // Visual first (2026-11-02). Brain: what the Brains know about the brand, live (2026-11-04). Brand documents left My brand: the files already live in Deliveries.
-    pages: [{ to: '/brand/visual', label: 'sub.visual' }, { to: '/brand', label: 'sub.essence' }, { to: '/brand/brain', label: 'sub.brain' }, { to: '/research', label: 'sub.research' }] },
   { label: 'nav.orders', short: 'nav.askShort', pages: [{ to: '/requests', label: 'nav.orders' }] },
-  { label: 'nav.deliveries', short: 'nav.deliveriesShort', pages: [{ to: '/assets', label: 'sub.files' }, { to: '/apps', label: 'sub.apps' }, { to: '/calendar', label: 'sub.calendar' }] },
-  { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'nav.report' }] },
+  { label: 'nav.brand', short: 'nav.brandShort', pages: [
+    { to: '/brand/visual', label: 'sub.kit' },
+    { to: '/deliveries', label: 'sub.deliveries' },
+    { to: '/assets', label: 'sub.library' },
+    { to: '/apps', label: 'sub.sites' },
+    { to: '/brand', label: 'sub.essence', tab: 'sub.strategy' },
+    { to: '/brand/brain', label: 'sub.brain', tab: 'sub.strategy' },
+    { to: '/research', label: 'sub.research', tab: 'sub.strategy' },
+  ] },
+  // Results shows only on brands with resultsOn; the social calendar lives here next to its numbers.
+  { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }, { to: '/calendar', label: 'sub.socialCal' }] },
 ];
-export const NAV = ALL.filter((g) => SHOW_RESULTS || g.label !== 'nav.report');
 
-export const groupOfPath = (path: string) => NAV.find((g) => g.pages.some((p) => path === p.to || path.startsWith(`${p.to}/`)));
+/** Below them (2026-11-12): three rows instead of five. Learn · Wishlist · Account, each one's pages as tabs too. */
+export const FOOT_NAV: NavGroup[] = [
+  { label: 'nav.learnGroup', short: 'nav.learnGroup', pages: [{ to: '/learn', label: 'sub.lessons' }, { to: '/resources', label: 'res.nav' }] },
+  { label: 'nav.wishlist', short: 'nav.wishlist', pages: [{ to: '/wishlist', label: 'nav.wishlist' }] },
+  { label: 'nav.account', short: 'nav.account', pages: [{ to: '/plan', label: 'nav.plan' }, { to: '/accesses', label: 'nav.accesses' }, { to: '/settings', label: 'nav.settings' }] },
+];
+
+export const pageMatch = (path: string, to: string) => path === to || (to !== '/brand' && path.startsWith(`${to}/`)) || (to === '/brand' && /^\/brand\/(?!visual|brain|docs)[^/]+$/.test(path));
+export const groupOfPath = (path: string) => [...NAV, ...FOOT_NAV].find((g) => g.pages.some((p) => pageMatch(path, p.to) || path.startsWith(`${p.to}/`)));

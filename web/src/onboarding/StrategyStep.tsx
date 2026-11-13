@@ -20,12 +20,12 @@ const TRAINING: Array<{ to: string; title: StringKey; sub: StringKey }> = [
 function Training() {
   const { t } = useI18n();
   return (
-    <div className="card col g12" style={{ padding: 22 }}>
+    <div className="card col g12" style={{ padding: '1.375rem' }}>
       <h2 className="h3">{t('ctr.trTitle')}</h2>
       <p className="t-sm t-mute">{t('ctr.trSub')}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {TRAINING.map((x, i) => (
-          <Link key={x.title} to={x.to} className="card col g4" style={{ padding: 16, textDecoration: 'none', color: 'var(--ink)', background: '#F7F8FB', border: 0 }}>
+          <Link key={x.title} to={x.to} className="card col g4" style={{ padding: '1rem', textDecoration: 'none', color: 'var(--ink)', background: 'var(--niebla)', border: 0 }}>
             <span className="sec-num">0{i + 1}</span><span className="w7">{t(x.title)}</span><span className="t-xs t-mute">{t(x.sub)}</span>
           </Link>
         ))}
@@ -44,9 +44,9 @@ export function StrategyStep({ brand }: { brand: Brand }) {
   if (ob.step === 'brief') {
     return (
       <div className="col g24 min-w-0">
-        <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+        <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
           <p className="label">{t('ctr.step3')}</p>
-          <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.strat1')}</span> {t('ctr.strat2')}</h1>
+          <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{t('ctr.strat1')}</span> {t('ctr.strat2')}</h1>
           <p className="t-lg muted">{t('ctr.stratSub')}</p>
         </div>
         <Training />
@@ -59,7 +59,7 @@ export function StrategyStep({ brand }: { brand: Brand }) {
   if (ob.step === 'firstDelivery') {
     return (
       <section className="col g20">
-        <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+        <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
           <p className="label">{t('ctr.step3')}</p>
           <h1 className="d-lg" style={{ color: '#fff' }}><span className="w9">{t('ob.signedTitle1')}</span> {t('ob.signedTitle2')}</h1>
           <p className="t-lg muted">{t('ob.signedSub')}</p>
@@ -72,13 +72,13 @@ export function StrategyStep({ brand }: { brand: Brand }) {
 
   return (
     <section className="col g20">
-      <div className="stage grid items-center gap-6 rounded-[20px] p-6 sm:p-9 md:grid-cols-[minmax(0,1fr)_260px]">
+      <div className="stage grid items-center gap-6 rounded-[1.25rem] p-6 sm:p-9 md:grid-cols-[minmax(0,1fr)_260px]">
         <div className="col g12">
           <div className="row g8 wrap"><p className="label">{t('ctr.step3')} · {t('ob.byResearcher')}</p><span className="chip c-draft">{t('ob.namePending')}</span></div>
-          <h1 className="d-lg" style={{ color: '#fff', fontSize: 44, lineHeight: '46px' }}><span className="w9">{t('ob.brainReady1')}</span> {t('ob.brainReady2')}</h1>
+          <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.75rem', lineHeight: '46px' }}><span className="w9">{t('ob.brainReady1')}</span> {t('ob.brainReady2')}</h1>
           <p className="t-lg muted">{t('ob.brainReadySub')}</p>
         </div>
-        <div className="widget col" style={{ alignItems: 'flex-start', gap: 8, position: 'static' }}>
+        <div className="widget col" style={{ alignItems: 'flex-start', gap: '0.5rem', position: 'static' }}>
           <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('ob.signature')}</span>
           <div className="row g8"><img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-10 w-10 rounded-full object-cover" />
             <div className="col"><span className="w7 t-sm">{signed ? t('ob.signedBy') : t('ob.waitingNicolas')}</span><span className="t-xs" style={{ color: '#C9D0DE' }}>{t('ob.signDay2')}</span></div></div>
@@ -86,14 +86,14 @@ export function StrategyStep({ brand }: { brand: Brand }) {
       </div>
       <SessionPicker brandId={brand.id} brandName={brand.name} bookedAt={ob.sessionAt} />
       {ob.step === 'session' && (
-        <div className="card col g8" style={{ padding: 22 }}>
+        <div className="card col g8" style={{ padding: '1.375rem' }}>
           <h2 className="h3">{t('ob.agenda')}</h2>
           {(['ob.agenda1', 'ob.agenda2', 'ob.agenda3', 'ob.agenda4'] as const).map((k, i) => <div key={k} className="row g12 t-sm"><span className="sec-num">0{i + 1}</span>{t(k)}</div>)}
         </div>
       )}
       <BrainCards brain={brain} />
       <Training />
-      <div className="card t-sm" style={{ background: '#EAF0FF', border: 0 }}><b>{t('ob.aiNoteBold')}</b> {t('ob.aiNote')}</div>
+      <div className="card t-sm" style={{ background: 'var(--hielo)', border: 0 }}><b>{t('ob.aiNoteBold')}</b> {t('ob.aiNote')}</div>
       <OnboardingLessons />
     </section>
   );

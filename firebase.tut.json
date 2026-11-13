@@ -1,0 +1,27 @@
+{
+  "firestore": [
+    {
+      "database": "braindy-app",
+      "rules": "firestore.rules",
+      "indexes": "firestore.indexes.json"
+    }
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9299
+    },
+    "firestore": {
+      "port": 8281
+    },
+    "hub": {
+      "port": 4410
+    },
+    "logging": {
+      "port": 4510
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

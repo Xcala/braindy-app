@@ -49,16 +49,22 @@ const id = created.json.id as string;
 check('brand moves to step contract', (await db.doc('brands/e2e').get()).get('onboarding.step') === 'contract');
 check('client cannot create', (await call(rep.token, 'POST', '/v1/admin/brands/e2e/contracts', {})).status === 403);
 const early = await call(admin.token, 'POST', C(id, '/send'));
-check('send refuses missing terms', early.status === 400 && early.json.fields.includes('signer.email'), early.json);
+check('send refuses missing terms and signature', early.status === 400 && early.json.fields.includes('signer.email') && early.json.fields.includes('signature'), early.json);
 const saved = await call(admin.token, 'POST', C(id), {
-  terms: { objeto: 'estrategia e identidad', 'plazo.inicio': '2 de noviembre de 2026', 'valor.monto': '12000000', 'pago.cuota': '$4.000.000 COP', 'cliente.contacto': 'Rep', 'cliente.aprobadores': 'Rep' },
+  // Only what the one-step form asks: the total, contact and approvers are filled in at send.
+  terms: { objeto: 'estrategia e identidad', 'plazo.inicio': '2026-11-02', 'plazo.meses': '3', 'pago.cuota': '4.000.000' },
   signer: { email: 'REP@e2e.local', name: 'Rep Prueba' }, scope: '1. Identidad\n2. Manual',
 });
 check('admin saves draft', saved.status === 200, saved);
-check('admin sends', (await call(admin.token, 'POST', C(id, '/send'))).status === 200);
+check('send without your signature refused', (await call(admin.token, 'POST', C(id, '/send'))).status === 400);
+check('admin signs and sends', (await call(admin.token, 'POST', C(id, '/send'), { signature: sig })).status === 200);
 check('draft locked after send', (await call(admin.token, 'POST', C(id), { scope: 'x' })).status === 409);
 
 const sent = (await db.doc(`brands/e2e/contracts/${id}`).get()).data()!;
+check('sent with contractor signature', !!sent.signatures?.contractor?.imagePath && sent.signatures.contractor.consent.includes('CONTRATISTA'));
+check('total, date and contact filled in', sent.terms['valor.monto'] === '12000000' && sent.terms['cliente.aprobadores'] === 'Rep Prueba'
+  && String(sent.sentText).includes('$12.000.000 COP') && String(sent.sentText).includes('2 de noviembre de 2026') && String(sent.sentText).includes('por $4.000.000 COP'));
+check('schedule starts the week of the start date', sent.schedule.start === '2026-11-02');
 const client = { razonSocial: 'Marca E2E S.A.S.', nit: '000-1', direccion: 'Calle prueba', representante: 'Rep Prueba', tipoDoc: 'C.C.', doc: '111', cargo: 'Representante legal' };
 // Same replacement the web page does (web/src/contracts/text.ts), written out here so a server bug cannot hide.
 const seen = String(sent.sentText).replace(/\{\{cliente\.(\w+)\}\}/g, (_, k: string) => ({ ...client, correo: 'rep@e2e.local' } as Record<string, string>)[k] ?? '________');
@@ -70,12 +76,10 @@ check('admin cannot sign as client', (await call(admin.token, 'POST', S, { clien
 check('no consent refused', (await call(rep.token, 'POST', S, { client, signature: sig, consent: false, textHash: hash })).status === 400);
 check('wrong hash refused', (await call(rep.token, 'POST', S, { client, signature: sig, consent: true, textHash: 'abc' })).status === 409);
 const signed = await call(rep.token, 'POST', S, { client, signature: sig, consent: true, textHash: hash });
-check('signer signs', signed.status === 200 && signed.json.textHash === hash, signed);
+check('signer signs and that closes it', signed.status === 200 && signed.json.textHash === hash && !!signed.json.pdf?.sha256, signed);
 check('cannot sign twice', (await call(rep.token, 'POST', S, { client, signature: sig, consent: true })).status === 409);
-check('cannot reopen after client signed', (await call(admin.token, 'POST', C(id, '/reopen'))).status === 409);
+check('cannot reopen after signed', (await call(admin.token, 'POST', C(id, '/reopen'))).status === 409);
 
-const counter = await call(admin.token, 'POST', C(id, '/countersign'), { signature: sig });
-check('admin countersigns and seals', counter.status === 200, counter);
 const final = (await db.doc(`brands/e2e/contracts/${id}`).get()).data()!;
 check('status signed with pdf', final.status === 'signed' && !!final.pdf?.sha256);
 check('sealed text has the client data and no blanks', String(final.text).includes('Marca E2E S.A.S.') && !String(final.text).includes('{{') && !String(final.text).includes('________'));

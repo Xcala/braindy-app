@@ -61,14 +61,14 @@ export function SendPanel({ p }: { p: Proposal }) {
           )}
           {channel === 'whatsapp' && (
             <div className="field"><label htmlFor="msg">{t('proposals.message')}</label>
-              <textarea id="msg" className="input" style={{ height: 160, padding: '14px 16px', lineHeight: '22px' }} value={message} onChange={(e) => setMessage(e.target.value)} /></div>
+              <textarea id="msg" className="input" style={{ height: '10rem', padding: '0.875rem 1rem', lineHeight: '22px' }} value={message} onChange={(e) => setMessage(e.target.value)} /></div>
           )}
-          <button className="btn btn-primary btn-block" style={{ height: 52 }} onClick={send} disabled={busy || (channel === 'whatsapp' && to.replace(/\D/g, '').length < 8)}>
+          <button className="btn btn-primary btn-block" style={{ height: '3.25rem' }} onClick={send} disabled={busy || (channel === 'whatsapp' && to.replace(/\D/g, '').length < 8)}>
             {channel === 'whatsapp' ? t('proposals.openWhatsapp') : t('proposals.createLink')}
           </button>
           {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{t('proposals.sendError')}</p>}
           {result && (
-            <div className="row g12" style={{ border: '1px solid var(--line)', borderRadius: 14, padding: '12px 14px' }}>
+            <div className="row g12" style={{ border: '1px solid var(--line)', borderRadius: '0.875rem', padding: '0.75rem 0.875rem' }}>
               <Icon name="link" size={20} />
               <span className="mono grow truncate">{result.url.replace(/^https?:\/\//, '')}</span>
               <button className="copybtn" onClick={() => copy(result.url)}>{copied === result.url ? t('common.copied') : t('common.copy')}</button>

@@ -18,10 +18,15 @@ export interface BrandRequest {
   format?: string;
   language?: string;
   status: RequestStatus;
+  doneOutside?: { by: string; at?: Timestamp; prevStatus?: string | null };
   stage: Stage;
   leadBrain: BrainId;
   helperBrains: BrainId[];
   approvalLevel: 'self' | 'nicolas';
+  /** The team at work for real (server/brains/steps.ts): one step per Brain, moved by the session doing the request. */
+  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[] } | null;
+  /** Brand check the team ran before delivering (admin). */
+  quality?: { score: number; passed: boolean; round: number; checks: Array<{ id: string; text: string; critical: boolean; ok: boolean; note?: string }> } | null;
   teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;
@@ -41,6 +46,8 @@ export interface BrandRequest {
   launch?: { versionId: string; title: string } | null;
 }
 
+export interface WorkStep { brain: BrainId; task: string; state: 'todo' | 'doing' | 'done' | 'skip'; note?: string; at?: number }
+
 export interface VersionFile { name: string; contentType: string; size: number; storagePath?: string; url?: string }
 
 export interface Version {
@@ -56,7 +63,8 @@ export interface Version {
   publishedAt?: Timestamp;
 }
 
-export interface Annotation { x: number; y: number; w: number; h: number; versionId: string }
+/** A box or point on a piece. `fileIndex` is the file of the version it was made on (older marks: the first). */
+export interface Annotation { x: number; y: number; w: number; h: number; versionId: string; fileIndex?: number; /** Seconds into a video: a comment on a moment, not an area. */ t?: number }
 
 export interface RequestComment {
   id: string;
@@ -67,6 +75,7 @@ export interface RequestComment {
   kind?: string;
   resolved?: boolean;
   createdAt?: Timestamp;
+  editedAt?: Timestamp;
 }
 
 export const STATUS_CHIP: Record<RequestStatus, string> = {

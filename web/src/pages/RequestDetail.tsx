@@ -11,6 +11,7 @@ import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
 import { Progress } from '../requests/Progress';
 import { TeamAtWork } from '../requests/TeamAtWork';
+import { QualityCard } from '../requests/QualityCard';
 import { PlanCard } from '../requests/PlanCard';
 import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
@@ -20,7 +21,7 @@ import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
-import { AttachedFiles } from '../requests/AttachedFiles';
+import { BriefSummary } from '../requests/BriefSummary';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -39,12 +40,14 @@ export function RequestDetail() {
   const [versionId, setVersionId] = useState<string | undefined>();
   const [mark, setMark] = useState<Annotation | null>(null);
   const [comparing, setComparing] = useState(false);
+  const [fileIndex, setFileIndex] = useState(0);
+  const [seek, setSeek] = useState<{ t: number; n: number } | null>(null);
 
-  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); }, [r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); setFileIndex(0); },[r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTour('review', () => reviewSteps(lang), versions.length > 0, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
-  if (r === undefined) return <div className="skel" style={{ height: 400 }} />;
+  if (r === undefined) return <div className="skel" style={{ height: '25rem' }} />;
   if (r === null) return <p className="t-mute">{t('req.notFound')}</p>;
   const v = versions.find((x) => x.id === versionId) ?? versions[versions.length - 1];
   const type = [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang], r.formatType].filter(Boolean).join(' · ');
@@ -61,14 +64,17 @@ export function RequestDetail() {
       </div>
 
       {r.status === 'in_production' && <TeamAtWork r={r} />}
+      {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (
         <SafeBoundary>
-        <div className="card grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
+        <div className="card rv-split grid grid-cols-1 overflow-hidden p-0 lg:grid-cols-[minmax(0,1fr)_400px]" style={{ padding: 0 }} data-tour="review-viewer">
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
-            comments={comments} onMark={setMark} onCompare={() => setComparing(true)} />
+            fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
+            comments={comments} onMark={setMark} onCompare={() => setComparing(true)} seek={seek} />
           <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
-            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} />
+            canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex}
+            onSeek={(i, t) => { setFileIndex(i); setSeek((s) => ({ t, n: (s?.n ?? 0) + 1 })); }} />
         </div>
         </SafeBoundary>
       )}
@@ -76,15 +82,7 @@ export function RequestDetail() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_1.2fr]" data-tour="review-brief">
         <div className="col g12">
           <p className="label">{t('req.brief')}</p>
-          {(['product', 'application', 'scene'] as const).filter((k) => k === 'product' || r.cards?.[k]?.text || r.cards?.[k]?.links?.length).map((k) => (
-            <div key={k} className="card card-tight col g8">
-              <span className={`kind ${k === 'scene' ? '' : 'kind-logodeck'}`}>{t(`ask.card.${k}`)}</span>
-              <p className={`t-sm ${r.cards?.[k]?.text ? '' : 't-mute'}`} style={{ whiteSpace: 'pre-line' }}>{r.cards?.[k]?.text || t(`req.emptyCard.${k}`)}</p>
-              {(r.cards?.[k]?.links ?? []).map((l) => <a key={l} href={l} target="_blank" rel="noreferrer" className="t-sm truncate">{l}</a>)}
-              {k === 'product' && <AttachedFiles brandId={current.id} files={r.cards?.product?.files} />}
-            </div>
-          ))}
-          {(r.format || r.language) && <p className="t-sm t-mute">{[r.format, r.language].filter(Boolean).join(' · ')}</p>}
+          <BriefSummary brandId={current.id} r={r} />
         </div>
         <div className="col g12">
           <p className="label">{t('req.plan')}</p>
@@ -94,7 +92,7 @@ export function RequestDetail() {
       </div>
 
       {isAdmin && <AdminVersionPanel brandId={current.id} r={r} />}
-      {comparing && <CompareView brandId={current.id} requestId={r.id} versions={versions} onClose={() => setComparing(false)} />}
+      {comparing && <CompareView brandId={current.id} requestId={r.id} versions={versions} fileIndex={fileIndex} onClose={() => setComparing(false)} />}
     </div>
   );
 }

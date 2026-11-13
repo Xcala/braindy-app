@@ -7,7 +7,10 @@ import { BrainFeed, ago, eventText } from '../brain/BrainFeed';
 import { BrainUse } from '../brain/BrainUse';
 import { AREAS, countKnowledge, gaps } from '../brain/knowledge';
 import { useBrainEvents, type BrainEvent } from '../brain/useBrainEvents';
+import { BrainLoopSteps } from '../brain/BrainLoop';
+import { BrainBetter } from '../brain/BrainLearned';
 import '../brain/brain.css';
+import { PageHeader } from '../components/PageHeader';
 
 /**
  * My brand › Brain: what NickMark and his Brains know about the brand, live. Every request, approval, change asked,
@@ -39,7 +42,6 @@ export function BrandBrain() {
 
   const counts = useMemo(() => countKnowledge({ identity, voice, brain, primal, learnings, talks }), [identity, voice, brain, primal, learnings, talks]);
   const total = AREAS.reduce((s, a) => s + counts[a], 0);
-  const week = events.filter((e) => e.at && Date.now() - +e.at < 7 * 864e5).length;
   const color = brainColor(((identity?.colors as Array<{ hex?: string }> | undefined) ?? [])[0]?.hex);
   // Quietly draw what it already knows; only new events fly in.
   useEffect(() => { if (!replaying) canvas.current?.sync(counts); }, [counts, replaying]);
@@ -67,21 +69,14 @@ export function BrandBrain() {
   const last = events[0]?.at ?? null;
   return (
     <div className="col g32">
-      <div className="row between g24 wrap" style={{ alignItems: 'flex-end' }}>
-        <div className="col g8" style={{ maxWidth: 720 }}>
-          <p className="label">{current.name}</p>
-          <h1 className="h1"><span className="w9">{t('bb.title')}</span> {total === 1 ? t('bb.knowsOne') : t('bb.knows', { n: total })}</h1>
-          <p className="t-mute">{t('bb.lede')}</p>
-        </div>
-        <div className="row g12 wrap">
-          <div className="bb-stat"><span className="t-xs t-mute">{t('bb.week')}</span><b className="mono">+{week}</b></div>
-          <div className="bb-stat"><span className="t-xs t-mute">{t('bb.last')}</span><b className="mono">{ago(last, t)}</b></div>
-        </div>
-      </div>
+      <PageHeader title={t('sub.brain')} sub={<>{total === 1 ? t('bb.knowsOne') : t('bb.knows', { n: total })}. {t('bb.lede')}</>}
+        actions={<div className="bb-stat"><span className="t-xs t-mute">{t('bb.last')}</span><b className="mono">{ago(last, t)}</b></div>} />
+      {/* The loop, lit on its last step each time something new is learned while the page is open. */}
+      <BrainLoopSteps key={fresh.size} on={fresh.size ? 'learn' : undefined} />
 
       <div className="bb-grid">
         <section className="bb-brain col" aria-labelledby="h-bb-brain">
-          <div className="row between g12" style={{ padding: '20px 24px 0', alignItems: 'flex-start' }}>
+          <div className="row between g12" style={{ padding: '1.25rem 1.5rem 0', alignItems: 'flex-start' }}>
             <div className="col g4"><h2 className="h3" id="h-bb-brain">{t('bb.growing')}</h2><p className="t-sm bb-muted">{t('bb.growingSub')}</p></div>
             <button type="button" className="bb-replay" onClick={replay} disabled={replaying || !events.length}>{replaying ? t('bb.replaying') : t('bb.replay')}</button>
           </div>
@@ -90,6 +85,8 @@ export function BrandBrain() {
         </section>
         <BrainFeed events={events} fresh={fresh} />
       </div>
+
+      <BrainBetter learnings={learnings} />
 
       <BrainUse identity={identity} voice={voice} brain={brain} learnings={learnings} talks={talks}
         requests={events.filter((e) => e.kind === 'request').length} gaps={gaps({ identity, voice, brain, learnings, talks })} />

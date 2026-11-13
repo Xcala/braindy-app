@@ -3,7 +3,7 @@
  * Add once to every page: <script src="/braindy-bridge.js" defer></script> (copy this file into the site).
  * Inert outside an iframe and for any parent that is not Braindy App. It only reads the page; it never changes content.
  * Parent → frame: { type: 'braindy:spot', id, spot, label } · { type: 'braindy:comment-mode', on } · { type: 'braindy:pins', pins: [{ id, n, selector, text, x, y, done }] }
- * Frame → parent: { type: 'braindy:ready', url } · { type: 'braindy:spot-result', id, found } ·
+ * Frame → parent: { type: 'braindy:ready', url, editor?, inEditor? } · { type: 'braindy:spot-result', id, found } ·
  *   { type: 'braindy:picked', url, selector, text, x, y } · { type: 'braindy:comment-mode', on: false } · { type: 'braindy:pin', id }
  */
 (function () {
@@ -12,7 +12,9 @@
   var VIOLET = '#8B5CF6', Z = 2147483640;
   var parentOrigin = null;
   // A message aimed at an origin the parent does not have is dropped by the browser, so "ready" goes to each allowed one.
-  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href }, o); }); }
+  // A site with its own editor names it in <meta name="braindy-editor" content="/admin/editor?p=">: Braindy App then offers to edit the site in place.
+  var em = document.querySelector('meta[name="braindy-editor"]'), EDITOR = em ? new URL(em.content, location.origin).href : '';
+  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href, editor: EDITOR || undefined, inEditor: !!EDITOR && location.pathname === new URL(EDITOR).pathname }, o); }); }
   function tell(msg) { if (parentOrigin) window.parent.postMessage(msg, parentOrigin); }
   function el(css) { var d = document.createElement('div'); d.setAttribute('aria-hidden', 'true'); d.style.cssText = css; document.body.appendChild(d); return d; }
 
@@ -146,4 +148,13 @@
     else if (d.type === 'braindy:pins') setPins(d.pins);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
+  // Single-page sites change page without reloading: say "ready" again with the new address so the viewer's bar follows.
+  var lastHref = location.href;
+  function moved() { setTimeout(function () { if (location.href !== lastHref) { lastHref = location.href; ready(); } }, 0); }
+  ['pushState', 'replaceState'].forEach(function (k) {
+    var orig = history[k];
+    history[k] = function () { var r = orig.apply(this, arguments); moved(); return r; };
+  });
+  window.addEventListener('popstate', moved);
+  window.addEventListener('hashchange', moved);
 })();

@@ -31,7 +31,7 @@ export function Explainer({ label, title, strong, lead, stage, steps, children }
       <div className="col g8">
         <span className="label">{label}</span>
         <h2 className="h2">{title}<span className="w9">{strong}</span></h2>
-        {lead && <p className="t-mute" style={{ margin: 0, maxWidth: 560 }}>{lead}</p>}
+        {lead && <p className="t-mute" style={{ margin: 0, maxWidth: '35rem' }}>{lead}</p>}
       </div>
       <div className="bp-stage">
         <div className="bp-anim" aria-hidden="true">{stage}</div>

@@ -15,7 +15,7 @@ export function ContractText({ text }: { text: string }) {
         if (lines[0].startsWith('## ') || lines[0].startsWith('### ')) {
           return (
             <Fragment key={i}>
-              <h3 className="w9" style={{ fontSize: 15, marginTop: 8 }}>{lines[0].replace(/^#+\s/, '')}</h3>
+              <h3 className="w9" style={{ fontSize: '0.9375rem', marginTop: '0.5rem' }}>{lines[0].replace(/^#+\s/, '')}</h3>
               {lines.slice(1).map((l, k) => <p key={k}>{inline(l)}</p>)}
             </Fragment>
           );
@@ -24,11 +24,11 @@ export function ContractText({ text }: { text: string }) {
           const rows = lines.filter((l) => !/^\|\s*-/.test(l)).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
           return (
             <div key={i} style={{ overflowX: 'auto' }}>
-              <table className="t-sm" style={{ borderCollapse: 'collapse', width: '100%', minWidth: 420 }}>
+              <table className="t-sm" style={{ borderCollapse: 'collapse', width: '100%', minWidth: '26.25rem' }}>
                 <tbody>{rows.map((r, k) => (
                   <tr key={k}>{r.map((c, j) => {
                     const Cell = k === 0 ? 'th' : 'td';
-                    return <Cell key={j} style={{ border: '1px solid #E3E7F0', padding: '6px 8px', textAlign: 'left', background: k === 0 ? '#F4F6FA' : undefined }}>{inline(c)}</Cell>;
+                    return <Cell key={j} style={{ border: '1px solid #E3E7F0', padding: '0.375rem 0.5rem', textAlign: 'left', background: k === 0 ? '#F4F6FA' : undefined }}>{inline(c)}</Cell>;
                   })}</tr>
                 ))}</tbody>
               </table>

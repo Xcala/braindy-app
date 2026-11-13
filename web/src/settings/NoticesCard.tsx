@@ -100,13 +100,13 @@ export function NoticesCard({ brandId }: { brandId: string }) {
         </div>
         {note('notices')}
         {KEYS.map((k) => (
-          <div key={k} className="row between g12" style={{ padding: '6px 0' }}>
+          <div key={k} className="row between g12" style={{ padding: '0.375rem 0' }}>
             <span className="col"><span className="w7 t-sm">{t(`set.n.${k}`)}</span><span className="t-xs t-mute">{t(`set.n.${k}Sub`)}</span></span>
             <button className={`switch ${on(k) ? 'is-on' : ''}`} role="switch" aria-checked={on(k)} aria-label={t(`set.n.${k}`)}
               onClick={() => set({ notices: { ...s.notices, [k]: !on(k) } })} />
           </div>
         ))}
-        <div className="field" style={{ maxWidth: 240 }}>
+        <div className="field" style={{ maxWidth: '15rem' }}>
           <label htmlFor="wa-lang">{t('set.noticeLang')}</label>
           <select id="wa-lang" className="input" value={s.lang ?? 'es'} onChange={(e) => set({ lang: e.target.value as 'es' | 'en' })}>
             <option value="es">Español</option><option value="en">English</option>

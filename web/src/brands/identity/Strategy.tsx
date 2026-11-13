@@ -1,5 +1,7 @@
 import { useI18n } from '../../i18n/I18nProvider';
 import type { StringKey } from '../../i18n/strings';
+import { scanBlocks } from '../../lib/scan';
+import { bold } from '../../components/Scan';
 
 export type BrainDoc = {
   status?: 'draft' | 'signed'; position?: string; audiences?: string; goals?: string; avoid?: string;
@@ -16,7 +18,7 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
   return (
     <div className="col g20">
       {brain.position && (
-        <div className="stage col g12 rounded-[24px] p-6 sm:p-10">
+        <div className="stage col g12 rounded-[1.5rem] p-6 sm:p-10">
           <p className="label">{t('brand.position')}</p>
           <p className="d-lg d-fit d-fit-lg" style={{ color: '#fff' }}>{brain.position}</p>
           <span className="row g8">
@@ -29,7 +31,7 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
         {items.filter(([, v]) => v).map(([k, v]) => (
           <div key={k} className={`card col g12 sfield sf-${k.split('.')[1]}`}>
             <p className="label">{t(k)}</p>
-            <Field text={v!} />
+            <Field text={v!} list={k === 'brand.avoid'} />
           </div>
         ))}
       </div>
@@ -50,27 +52,13 @@ export function Strategy({ brain }: { brain: BrainDoc }) {
 
 export const hasStrategy = (b?: BrainDoc | null) => !!b && !!(b.position || b.audiences || b.goals || b.avoid);
 
-/** A strategy text as written in the Brand Brain: an intro paragraph, then "· Title — detail" lines shown as a list. */
-function Field({ text }: { text: string }) {
-  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
-  const isItem = (l: string) => /^([·•*–-]|\d+[.)])\s+/.test(l);
-  const intro = lines.filter((l) => !isItem(l));
-  const list = lines.filter(isItem).map((l) => l.replace(/^([·•*–-]|\d+[.)])\s+/, ''));
+/** A strategy text made to scan: an intro, then one point per line with its key in bold (comma lists too for "avoid"). */
+function Field({ text, list }: { text: string; list?: boolean }) {
   return (
     <>
-      {intro.map((p, i) => <p key={p} className={i === 0 ? 'sf-intro' : 'sf-v'}>{p}</p>)}
-      {list.length > 0 && (
-        <ul className="sf-list">
-          {list.map((l) => {
-            const m = /^(.{2,60}?)\s+[—–-]\s+(.+)$/.exec(l) ?? /^([^:]{2,40}):\s+(.+)$/.exec(l);
-            return (
-              <li key={l}>
-                {m ? <><span className="sf-k">{m[1]}</span><span className="sf-v">{m[2]}</span></> : <span className="sf-solo">{l}</span>}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {scanBlocks(text, { list, points: true }).map((b, i) => b.kind === 'list' ? (
+        <ul key={i} className="sf-list">{b.items.map((x, j) => <li key={j}><span className="sf-v">{bold(x)}</span></li>)}</ul>
+      ) : <p key={i} className={i === 0 ? 'sf-intro' : 'sf-v'}>{bold(b.text)}</p>)}
     </>
   );
 }

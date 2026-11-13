@@ -14,9 +14,11 @@ import { recordLearning } from './brains/learn.js';
 import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
 import { fileApproved } from './approvedFiles.js';
+import { zipStream } from './zip.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 export const URL_TTL_MS = 15 * 60 * 1000;
+const TEXT_MAX_BYTES = 200 * 1024;
 export const bucket = () => getStorage().bucket(BUCKET);
 
 type Brain = 'researcher' | 'marketer' | 'creator' | 'builder';
@@ -101,8 +103,13 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
   const attachments = (list?: InFile[]) => (list ?? []).slice(0, 20)
     .map((x) => ({ assetId: str(x.assetId, 80), name: str(x.name, 200), size: Number(x.size) || 0, contentType: str(x.contentType, 120) }))
     .filter((x) => x.assetId.startsWith('upl-'));
+  // «Adapt to every format» and «Ask for more like this» point at the approved piece they start from (same brand only).
+  const fromIn = (b.from ?? {}) as { requestId?: unknown; versionId?: unknown };
+  const fromReq = str(fromIn.requestId, 80), fromVer = str(fromIn.versionId, 80);
+  const from = fromReq && fromVer && (await db.doc(`brands/${brandId}/requests/${fromReq}/versions/${fromVer}`).get()).exists ? { requestId: fromReq, versionId: fromVer } : null;
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
+    ...(from ? { from } : {}),
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
     cards: { product: { ...card('product'), files: attachments(cards.product?.files) }, application: card('application'), scene: card('scene') },
@@ -166,6 +173,33 @@ requests.post('/brands/:brandId/approvals/batch', async (c) => {
   return c.json({ approved: results.filter((r) => r === 'ok').length, total: list.length });
 });
 
+/**
+ * «Already done»: the piece was approved by voice or finished together outside the app. It leaves every pending list
+ * (status approved + archived) without a formal approval on the version, and it can be undone.
+ */
+requests.post('/brands/:brandId/requests/:requestId/done', async (c) => {
+  const { brandId, requestId } = c.req.param();
+  const uid = c.get('user').uid;
+  if (!(await canApprove(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const { undo } = await c.req.json<{ undo?: boolean }>().catch(() => ({ undo: false }));
+  const ref = db.doc(`brands/${brandId}/requests/${requestId}`);
+  const snap = await ref.get();
+  if (!snap.exists) return c.json({ error: 'not_found' }, 404);
+  const prev = snap.get('doneOutside') as { prevStatus?: string; prevStage?: string } | undefined;
+  if (undo) {
+    if (!prev) return c.json({ ok: true });
+    await ref.update({ status: prev.prevStatus ?? 'to_approve', stage: prev.prevStage ?? 'clientApproval', archived: false, doneOutside: FieldValue.delete(), updatedAt: now() });
+  } else {
+    if (prev) return c.json({ ok: true });
+    await ref.update({
+      status: 'approved', stage: 'approved', archived: true, approvedAt: now(), updatedAt: now(),
+      doneOutside: { by: uid, at: now(), prevStatus: snap.get('status') ?? null, prevStage: snap.get('stage') ?? null },
+    });
+  }
+  await db.collection('audit').doc().set({ type: undo ? 'request_done_outside_undo' : 'request_done_outside', brandId, requestId, by: uid, at: now() });
+  return c.json({ ok: true });
+});
+
 /** Signed URL for a file of a version (members of the brand only). */
 requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/files/:index', async (c) => {
   const { brandId, requestId, versionId, index } = c.req.param();
@@ -175,9 +209,33 @@ requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/files/:in
   if (!file) return c.json({ error: 'not_found' }, 404);
   if (file.url) return c.json({ url: file.url });
   if (!file.storagePath?.startsWith(`brands/${brandId}/`)) return c.json({ error: 'not_found' }, 404);
+  // A short text (the post copy, hashtags) is read here so the viewer can show it without a cross-site fetch.
+  if (c.req.query('text') === '1') {
+    const [buf] = await bucket().file(file.storagePath).download({ end: TEXT_MAX_BYTES - 1 });
+    return c.json({ text: buf.toString('utf8') });
+  }
   const disposition = c.req.query('download') === '1' ? 'attachment' : 'inline';
   const [url] = await bucket().file(file.storagePath).getSignedUrl({ version: 'v4', action: 'read', expires: Date.now() + URL_TTL_MS, responseDisposition: disposition });
   return c.json({ url });
+});
+
+/** Every file of a version in one .zip, streamed from the bucket (members of the brand only). */
+requests.get('/brands/:brandId/requests/:requestId/versions/:versionId/zip', async (c) => {
+  const { brandId, requestId, versionId } = c.req.param();
+  if (!(await brandAccess(c.get('user').uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
+  const ver = await db.doc(`brands/${brandId}/requests/${requestId}/versions/${versionId}`).get();
+  const files = ((ver.get('files') as Array<{ name?: string; storagePath?: string }>) ?? [])
+    .filter((f) => f.storagePath?.startsWith(`brands/${brandId}/`));
+  if (!files.length) return c.json({ error: 'not_found' }, 404);
+  const used = new Map<string, number>();
+  const entries = files.map((f, i) => {
+    const name = f.name || `file-${i + 1}`;
+    const n = used.get(name) ?? 0; used.set(name, n + 1);
+    return { name: n ? name.replace(/(\.[^.]*)?$/, (ext) => ` (${n + 1})${ext}`) : name, open: () => bucket().file(f.storagePath!).createReadStream() };
+  });
+  return new Response(zipStream(entries), {
+    headers: { 'Content-Type': 'application/zip', 'Content-Disposition': `attachment; filename="v${Number(ver.get('n') ?? 1)}.zip"` },
+  });
 });
 
 // ---------- admin (Nicolas) ----------

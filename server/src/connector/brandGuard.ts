@@ -13,7 +13,7 @@ function marks(name: string): string[] {
 }
 
 /** Brands that share a client with this one (through users' brandIds), with their names. */
-async function siblings(brandId: string) {
+export async function siblings(brandId: string) {
   const users = await db.collection('users').where('brandIds', 'array-contains', brandId).limit(20).get();
   const ids = new Set<string>();
   users.docs.forEach((u) => ((u.get('brandIds') as string[]) ?? []).forEach((id) => id !== brandId && ids.add(id)));

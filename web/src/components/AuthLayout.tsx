@@ -8,21 +8,21 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   return (
     <div className="flex min-h-full bg-white p-0 lg:p-6">
-      <section className="stage hidden min-w-0 flex-1 basis-0 flex-col justify-between gap-10 rounded-[20px] px-14 pb-10 pt-12 lg:flex">
+      <section className="stage hidden min-w-0 flex-1 basis-0 flex-col justify-between gap-10 rounded-[1.25rem] px-14 pb-10 pt-12 lg:flex">
         <div className="col g32">
-          <img src="/brand/braindy-logo-light.svg" alt="Braindy" className="h-[34px] w-auto self-start" />
+          <img src="/brand/braindy-logo-light.svg" alt="Braindy" className="h-[2.125rem] w-auto self-start" />
           <LoginStudio />
         </div>
-        <div className="col g20" style={{ maxWidth: 500 }}>
+        <div className="col g20" style={{ maxWidth: '31.25rem' }}>
           <p className="label">{t('login.kicker')}</p>
-          <h1 className="d-xl" style={{ color: '#fff', fontSize: 56, lineHeight: '58px' }}>
+          <h1 className="d-xl" style={{ color: '#fff', fontSize: '3.5rem', lineHeight: '58px' }}>
             <span className="w9">{t('login.hero1')}</span> {t('login.hero2')}
           </h1>
-          <p className="t-lg muted" style={{ maxWidth: 430 }}>{t('login.heroBody')}</p>
+          <p className="t-lg muted" style={{ maxWidth: '26.875rem' }}>{t('login.heroBody2')}</p>
         </div>
         <div className="col g16">
           <div className="rule-line" />
-          <p className="kicker" style={{ fontSize: 18, lineHeight: '24px' }}>
+          <p className="kicker" style={{ fontSize: '1.125rem', lineHeight: '24px' }}>
             <b>{t('login.line1')}</b> {t('login.line2')}
           </p>
         </div>

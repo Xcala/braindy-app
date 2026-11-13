@@ -2,7 +2,8 @@
 export const costEn = {
   'cost.nav': 'AI costs',
   'cost.sub': 'What each brand costs in Claude, Higgsfield and Magnific. Only you see this.',
-  'cost.month': 'Month',
+  'cost.month': 'Month', 'cost.period': 'Period',
+  'cost.p.this': 'This month', 'cost.p.last': 'Last month', 'cost.p.m3': 'Last 3 months (90 days)', 'cost.p.m6': 'Last 6 months', 'cost.p.m12': 'Last 12 months', 'cost.p.year': 'This year',
   'cost.total': 'Real cost this month', 'cost.totalSub': 'Claude Max prorated + Claude API',
   'cost.apiEq': 'Sessions at API prices', 'cost.apiEqSub': 'What your sessions would cost without Max',
   'cost.api': 'Claude API · Braindy App', 'cost.apiSub': 'Brains, plans and brief, billed per token',
@@ -24,7 +25,8 @@ export const costEn = {
 export const costEs: Record<keyof typeof costEn, string> = {
   'cost.nav': 'Costos IA',
   'cost.sub': 'Lo que cuesta cada marca en Claude, Higgsfield y Magnific. Solo tú lo ves.',
-  'cost.month': 'Mes',
+  'cost.month': 'Mes', 'cost.period': 'Periodo',
+  'cost.p.this': 'Este mes', 'cost.p.last': 'Mes pasado', 'cost.p.m3': 'Últimos 3 meses (90 días)', 'cost.p.m6': 'Últimos 6 meses', 'cost.p.m12': 'Últimos 12 meses', 'cost.p.year': 'Este año',
   'cost.total': 'Costo real del mes', 'cost.totalSub': 'Claude Max repartido + Claude API',
   'cost.apiEq': 'Sesiones a precio de API', 'cost.apiEqSub': 'Lo que costarían tus sesiones sin Max',
   'cost.api': 'Claude API · Braindy App', 'cost.apiSub': 'Brains, planes y brief, cobrados por token',

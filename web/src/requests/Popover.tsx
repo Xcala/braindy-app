@@ -14,7 +14,7 @@ export function Popover({ label, children, align = 'left', className = 'fx-chip'
     <div ref={box} style={{ position: 'relative' }}>
       <button type="button" className={`${className}${open ? ' is-on' : ''}`} aria-expanded={open} onClick={() => setOpen((o) => !o)}>{label}</button>
       {open && (
-        <div className="card col g12" role="dialog" style={{ position: 'absolute', top: 'calc(100% + 8px)', [align]: 0, zIndex: 30, width: 'min(320px, 86vw)', padding: 16, boxShadow: '0 18px 40px rgba(11,18,32,.14)' }}>
+        <div className="card col g12" role="dialog" style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', [align]: 0, zIndex: 30, width: 'min(20rem, 86vw)', padding: '1rem', boxShadow: '0 18px 40px rgba(11,18,32,.14)' }}>
           {children(() => setOpen(false))}
         </div>
       )}

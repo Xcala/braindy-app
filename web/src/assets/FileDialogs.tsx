@@ -35,7 +35,7 @@ export function FileDialogs({ actions }: { actions: FileActions }) {
     const saveDir = (e?: FormEvent) => { e?.preventDefault(); actions.closeAsk(); actions.renameDir(ask.path, field.current?.value.trim() ?? ''); };
     return (
       <ConfirmDialog title={t('files.folderRename')} confirmLabel={t('files.rename')} onCancel={actions.closeAsk} onConfirm={saveDir}>
-        <form onSubmit={saveDir} className="col g8" style={{ marginTop: 4 }}>
+        <form onSubmit={saveDir} className="col g8" style={{ marginTop: '0.25rem' }}>
           <label className="t-sm w7" htmlFor="folder-rename" style={{ color: 'var(--ink)' }}>{t('files.renamePrompt')}</label>
           <input id="folder-rename" ref={field} className="input" defaultValue={name} data-autofocus />
         </form>
@@ -47,7 +47,7 @@ export function FileDialogs({ actions }: { actions: FileActions }) {
   const save = (e?: FormEvent) => { e?.preventDefault(); actions.closeAsk(); actions.rename(f, field.current?.value.trim() ?? ''); };
   return (
     <ConfirmDialog title={t('files.rename')} confirmLabel={t('files.rename')} onCancel={actions.closeAsk} onConfirm={save}>
-      <form onSubmit={save} className="col g8" style={{ marginTop: 4 }}>
+      <form onSubmit={save} className="col g8" style={{ marginTop: '0.25rem' }}>
         <label className="t-sm w7" htmlFor="file-rename" style={{ color: 'var(--ink)' }}>{t('files.renamePrompt')}</label>
         {/* Uncontrolled: typing does not re-render the dialog (which would move the focus). */}
         <input id="file-rename" ref={field} className="input" defaultValue={f.title} data-autofocus

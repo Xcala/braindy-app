@@ -1,6 +1,7 @@
 import { useI18n } from '../i18n/I18nProvider';
 import type { BrainDraft } from './api';
 import type { StringKey } from '../i18n/strings';
+import { Scan } from '../components/Scan';
 
 type TextKey = 'voice' | 'audiences' | 'lookAndFeel' | 'goals' | 'avoid' | 'position' | 'criterio';
 const CARDS: Array<{ key: TextKey; title: StringKey; source: StringKey; adminOnly?: boolean }> = [
@@ -24,22 +25,22 @@ export function BrainCards({ brain, onChange }: { brain: BrainDraft; onChange?: 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 [&>*]:min-w-0">
       {CARDS.filter((c) => edit || !c.adminOnly || brain[c.key]).map((c) => (
-        <div key={c.key} className="card col g8" style={{ padding: 22 }}>
+        <div key={c.key} className="card col g8" style={{ padding: '1.375rem' }}>
           <div className="row between g8"><h3 className="h3">{t(c.title)}</h3><span className="t-xs t-mute">{t(c.source)}</span></div>
           {edit
-            ? <textarea className="input" rows={4} value={brain[c.key] ?? ''} onChange={(e) => onChange!({ ...brain, [c.key]: e.target.value })} aria-label={t(c.title)} style={{ height: 'auto', paddingTop: 10 }} />
-            : <p className="t-sm" style={{ whiteSpace: 'pre-wrap' }}>{brain[c.key] || <span className="t-mute">{t('ob.b.empty')}</span>}</p>}
+            ? <textarea className="input" rows={4} value={brain[c.key] ?? ''} onChange={(e) => onChange!({ ...brain, [c.key]: e.target.value })} aria-label={t(c.title)} style={{ height: 'auto', paddingTop: '0.625rem' }} />
+            : brain[c.key] ? <Scan text={brain[c.key]!} points list={c.key === 'avoid'} tone="ink" /> : <p className="t-sm t-mute">{t('ob.b.empty')}</p>}
         </div>
       ))}
-      <div className="card col g8 md:col-span-2" style={{ padding: 22 }}>
+      <div className="card col g8 md:col-span-2" style={{ padding: '1.375rem' }}>
         <div className="row between g8"><h3 className="h3">{t('ob.b.competitors')}</h3><span className="t-xs t-mute">{t('ob.b.researcherRead')}</span></div>
         <div className="table overflow-x-auto">
-          <div className="trow head label min-w-[480px]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}><span>{t('ob.b.name')}</span><span>{t('ob.b.promise')}</span><span>{t('ob.b.price')}</span>{edit && <span>{t('brains.site')}</span>}</div>
-          {comps.length === 0 && <p className="t-sm t-mute" style={{ padding: 12 }}>{t('ob.b.empty')}</p>}
+          <div className="trow head label min-w-[30rem]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}><span>{t('ob.b.name')}</span><span>{t('ob.b.promise')}</span><span>{t('ob.b.price')}</span>{edit && <span>{t('brains.site')}</span>}</div>
+          {comps.length === 0 && <p className="t-sm t-mute" style={{ padding: '0.75rem' }}>{t('ob.b.empty')}</p>}
           {comps.map((c, i) => (
-            <div key={i} className="trow min-w-[480px]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}>
+            <div key={i} className="trow min-w-[30rem]" style={{ gridTemplateColumns: edit ? '1fr 1.4fr 1fr 1.2fr' : '1fr 1.4fr 1fr' }}>
               {(edit ? ['name', 'promise', 'price', 'url'] as const : ['name', 'promise', 'price'] as const).map((k) => edit
-                ? <input key={k} className="input" style={{ height: 36 }} value={c[k] ?? ''} placeholder={k === 'url' ? 'https://' : undefined} onChange={(e) => setComp(i, k, e.target.value)} aria-label={`${k === 'url' ? t('brains.site') : t(`ob.b.${k}`)} ${i + 1}`} />
+                ? <input key={k} className="input" style={{ height: '2.25rem' }} value={c[k] ?? ''} placeholder={k === 'url' ? 'https://' : undefined} onChange={(e) => setComp(i, k, e.target.value)} aria-label={`${k === 'url' ? t('brains.site') : t(`ob.b.${k}`)} ${i + 1}`} />
                 : <span key={k} className="t-sm">{c[k] || '—'}</span>)}
             </div>
           ))}

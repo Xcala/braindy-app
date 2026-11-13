@@ -34,7 +34,7 @@ export function useSave(brandId: string) {
 export function SaveBar({ state, error, onSave }: { state: string; error: string; onSave: () => void }) {
   const { t } = useI18n();
   return (
-    <div className="row between g12 wrap" style={{ borderTop: '1px solid var(--line)', paddingTop: 14 }}>
+    <div className="row between g12 wrap" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.875rem' }}>
       <span className="t-sm" role="status" style={{ color: state === 'error' ? 'var(--danger)' : 'var(--success)' }}>
         {state === 'done' ? t('be.saved') : state === 'error' ? t('be.error', { e: error }) : ''}
       </span>
@@ -61,9 +61,9 @@ export function PickImages({ multiple, onPick, children, onError }: { multiple?:
 export function Thumb({ img, onRemove, children }: { img: Img; onRemove: () => void; children?: ReactNode }) {
   const { t } = useI18n();
   return (
-    <div className="col g8" style={{ border: '1px solid var(--line)', borderRadius: 14, padding: 10, background: '#fff' }}>
-      <div style={{ height: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-conic-gradient(#EEF0F4 0% 25%, #fff 0% 50%) 50% / 16px 16px', borderRadius: 10 }}>
-        <img src={img.preview} alt="" style={{ maxWidth: '90%', maxHeight: 96, objectFit: 'contain' }} />
+    <div className="col g8" style={{ border: '1px solid var(--line)', borderRadius: '0.875rem', padding: '0.625rem', background: 'var(--white)' }}>
+      <div style={{ height: '6.875rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'repeating-conic-gradient(#EEF0F4 0% 25%, #fff 0% 50%) 50% / 1rem 1rem', borderRadius: '0.625rem' }}>
+        <img src={img.preview} alt="" style={{ maxWidth: '90%', maxHeight: '6rem', objectFit: 'contain' }} />
       </div>
       {children}
       <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove}>{t('be.remove')}</button>

@@ -76,6 +76,23 @@ export function missingTerms(t: Terms): TermKey[] {
   return required.filter((k) => !t[k].trim());
 }
 
+/** What the one-step form leaves out, filled from what it has: total = monthly × months, contact and
+ *  approvers = the signer, the date in words. */
+export function completeTerms(t: Terms, signerName: string): Terms {
+  const out = { ...t };
+  const digits = (v: string) => Number(String(v).replace(/[^\d]/g, ''));
+  if (!digits(out['valor.monto']) && digits(out['pago.cuota']) && digits(out['plazo.meses'])) out['valor.monto'] = String(digits(out['pago.cuota']) * digits(out['plazo.meses']));
+  if (!out['cliente.contacto'].trim()) out['cliente.contacto'] = signerName;
+  if (!out['cliente.aprobadores'].trim()) out['cliente.aprobadores'] = signerName;
+  return out;
+}
+
+/** A YYYY-MM-DD date in words (15 de marzo de 2026); anything else stays as typed. */
+export function dateInWords(v: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  return new Date(`${v}T12:00:00-05:00`).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Bogota' });
+}
+
 export function formatMoney(amount: string, currency: string) {
   const n = Number(String(amount).replace(/[^\d]/g, ''));
   if (!Number.isFinite(n) || n <= 0) return '';
@@ -87,6 +104,8 @@ export function fill(terms: Terms, contractor: Partial<Contractor>): string {
   const n = Number(String(terms['valor.monto']).replace(/[^\d]/g, ''));
   const values: Record<string, string> = {
     ...terms,
+    'plazo.inicio': dateInWords(terms['plazo.inicio']),
+    'pago.cuota': /^[\d.\s$]+$/.test(terms['pago.cuota']) ? formatMoney(terms['pago.cuota'], terms['valor.moneda']) : terms['pago.cuota'],
     'valor.total': formatMoney(terms['valor.monto'], terms['valor.moneda']),
     'valor.letras': n > 0 ? amountInWords(n, terms['valor.moneda']) : '',
     'terceros.incluidos': terms['terceros.incluidos'] ? `Sí están incluidos: ${terms['terceros.incluidos']}` : '',

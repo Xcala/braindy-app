@@ -22,7 +22,7 @@ export function AskCard({ k, value, onChange }: { k: CardKey; value: Card; onCha
         <span className={`chip ${done ? 'c-approved' : k === 'scene' ? 'c-draft' : 'c-prod'}`}>{done ? t('ask.done') : k === 'scene' ? t('ask.optional') : t('ask.needed')}</span>
       </div>
       <label className="h3" htmlFor={`card-${k}`}>{t(`ask.q.${k}`)}</label>
-      <textarea id={`card-${k}`} className="input" style={{ height: 110, padding: '12px 16px', resize: 'vertical' }}
+      <textarea id={`card-${k}`} className="input" style={{ height: '6.875rem', padding: '0.75rem 1rem', resize: 'vertical' }}
         placeholder={t(`ask.ph.${k}`)} value={value.text ?? ''} onChange={(e) => onChange({ ...value, text: e.target.value })} />
       {(value.links ?? []).map((l) => (
         <div key={l} className="row g8 t-sm">
@@ -31,7 +31,7 @@ export function AskCard({ k, value, onChange }: { k: CardKey; value: Card; onCha
         </div>
       ))}
       <div className="row g8">
-        <input className="input" style={{ height: 40 }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')}
+        <input className="input" style={{ height: '2.5rem' }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')}
           value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())} />
         <button className="btn btn-secondary btn-sm" onClick={addLink}>{t('ask.addLink')}</button>
       </div>

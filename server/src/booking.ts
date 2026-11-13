@@ -9,11 +9,12 @@ import { accessToken, eventsCache } from './meetings.js';
 import type { AuthEnv } from './auth.js';
 
 const SLOT_MIN = 30;
-const DAY_START = 9, DAY_END = 17;      // Bogotá time (UTC-5): first slot 9:00, last one 16:30
+// Nicolas's hours, in his own time zone (IANA, so daylight saving moves with it): first slot 7:00, last one 16:30.
+export const HOST_TZ = 'America/Los_Angeles';
+const DAY_START = 7, DAY_END = 17;
 const DAYS_AHEAD = 10;                  // calendar days shown
 const LEAD_MS = 2 * 3600_000;           // not sooner than 2 hours from now
 const MAX_UPCOMING = 2;                 // a person can hold at most this many future bookings
-const OFFSET = 5 * 3600_000;
 const CAL = 'https://www.googleapis.com/calendar/v3';
 
 let busyCache: { at: number; busy: Array<[number, number]> } | null = null;
@@ -29,16 +30,23 @@ async function busy(token: string, from: number, to: number): Promise<Array<[num
   return list;
 }
 
-/** Every 30-minute start on weekdays between DAY_START and DAY_END (Bogotá), from now + lead time. */
+/** How far HOST_TZ's wall clock is ahead of UTC at instant t (negative west of Greenwich). */
+const wall = new Intl.DateTimeFormat('en-US', { timeZone: HOST_TZ, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+function offsetAt(t: number): number {
+  const p = Object.fromEntries(wall.formatToParts(t).map((x) => [x.type, Number(x.value)]));
+  return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - Math.floor(t / 60_000) * 60_000;
+}
+
+/** Every 30-minute start on weekdays between DAY_START and DAY_END in HOST_TZ, from now + lead time. */
 function candidates(now: number): number[] {
   const out: number[] = [];
-  const d0 = new Date(now - OFFSET);
+  const d0 = new Date(now + offsetAt(now));
   for (let i = 0; i <= DAYS_AHEAD; i++) {
     const day = Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth(), d0.getUTCDate() + i);
     const dow = new Date(day).getUTCDay();
     if (dow === 0 || dow === 6) continue;
     for (let m = DAY_START * 60; m + SLOT_MIN <= DAY_END * 60; m += SLOT_MIN) {
-      const t = day + m * 60_000 + OFFSET;
+      const local = day + m * 60_000, t = local - offsetAt(local - offsetAt(local));
       if (t >= now + LEAD_MS) out.push(t);
     }
   }
@@ -59,7 +67,7 @@ booking.get('/brands/:brandId/meetings/slots', async (c) => {
   if (!all.length) return c.json({ connected: true, slots: [] });
   const b = await busy(token, all[0], all[all.length - 1] + SLOT_MIN * 60_000);
   if (!b) return c.json({ connected: false, slots: [] });
-  return c.json({ connected: true, minutes: SLOT_MIN, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
+  return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
 });
 
 /** Members: book one slot. Rechecks it is still free, creates the event with a Meet link and invites the booker. */
@@ -97,6 +105,61 @@ booking.post('/brands/:brandId/meetings/book', async (c) => {
   if (!r.ok) return c.json({ error: 'calendar_error' }, 502);
   const ev = await r.json() as { id: string; hangoutLink?: string };
   await db.collection('bookings').add({ uid: user.uid, email: user.email, brandId, eventId: ev.id, start: new Date(t), at: new Date() });
+  busyCache = null; eventsCache.clear();
+  return c.json({ ok: true, start: new Date(t).toISOString(), end: new Date(end).toISOString(), link: ev.hangoutLink ?? null });
+});
+
+// Visitors of braindy.co book the same 30 minutes without an account (the site's /book page): name and email instead
+// of a login. Guards: a hidden field bots fill, the rate limit in index.ts and MAX_UPCOMING per email.
+const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
+const clip = (v: unknown, n: number) => String(v ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+
+export const publicBooking = new Hono();
+
+publicBooking.get('/booking/slots', async (c) => {
+  c.header('Cache-Control', 'no-store');
+  const token = await accessToken();
+  if (!token) return c.json({ connected: false, slots: [] });
+  const all = candidates(Date.now());
+  if (!all.length) return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: [] });
+  const b = await busy(token, all[0], all[all.length - 1] + SLOT_MIN * 60_000);
+  if (!b) return c.json({ connected: false, slots: [] });
+  return c.json({ connected: true, minutes: SLOT_MIN, hostTz: HOST_TZ, slots: all.filter((t) => !overlaps(t, b)).map((t) => new Date(t).toISOString()) });
+});
+
+publicBooking.post('/booking/book', async (c) => {
+  const body = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
+  if (clip(body.website, 200)) return c.json({ ok: true }); // the hidden field: bots get a quiet yes and nothing is booked
+  const name = clip(body.name, 80), email = clip(body.email, 254).toLowerCase(), company = clip(body.company, 80), note = clip(body.note, 1000);
+  const lang = body.lang === 'es' ? 'es' : 'en';
+  if (!name || !EMAIL_RE.test(email)) return c.json({ error: 'invalid_contact' }, 400);
+  const t = Date.parse(String(body.start ?? ''));
+  if (!Number.isFinite(t) || !candidates(Date.now()).includes(t)) return c.json({ error: 'invalid_slot' }, 400);
+  const token = await accessToken();
+  if (!token) return c.json({ error: 'not_connected' }, 409);
+
+  busyCache = null;
+  const b = await busy(token, t, t + SLOT_MIN * 60_000);
+  if (!b || overlaps(t, b)) return c.json({ error: 'taken' }, 409);
+  const mine = await db.collection('bookings').where('email', '==', email).get();
+  const ahead = mine.docs.filter((d) => ((d.get('start') as { toMillis?: () => number })?.toMillis?.() ?? 0) > Date.now());
+  if (ahead.length >= MAX_UPCOMING) return c.json({ error: 'too_many' }, 429);
+
+  const end = t + SLOT_MIN * 60_000;
+  const who = company ? `${name} (${company})` : name;
+  const r = await fetch(`${CAL}/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all`, {
+    method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      summary: `Braindy · ${company || name} · Nicolas`,
+      description: (lang === 'es' ? `Reunión de 30 minutos agendada desde braindy.co por ${who}.` : `30 minute meeting booked on braindy.co by ${who}.`) + (note ? `\n\n${note}` : ''),
+      start: { dateTime: new Date(t).toISOString() }, end: { dateTime: new Date(end).toISOString() },
+      attendees: [{ email, displayName: name }],
+      conferenceData: { createRequest: { requestId: randomBytes(12).toString('hex'), conferenceSolutionKey: { type: 'hangoutsMeet' } } },
+    }),
+  });
+  if (!r.ok) return c.json({ error: 'calendar_error' }, 502);
+  const ev = await r.json() as { id: string; hangoutLink?: string };
+  await db.collection('bookings').add({ uid: null, source: 'web', name, email, company, eventId: ev.id, start: new Date(t), at: new Date() });
   busyCache = null; eventsCache.clear();
   return c.json({ ok: true, start: new Date(t).toISOString(), end: new Date(end).toISOString(), link: ev.hangoutLink ?? null });
 });

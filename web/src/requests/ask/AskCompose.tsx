@@ -84,11 +84,11 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   return (
     <div className="col g20">
       <div className="row between g8">
-        <span className="chip chip-plain" style={{ background: '#F2F5FF', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
+        <span className="chip chip-plain" style={{ background: 'var(--hielo)', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onBack}><Icon name="arrowLeft" size={16} />{t('as.change')}</button>
       </div>
 
-      <textarea className="input" autoFocus aria-label={t('ask.need')} data-tour="ask-what" style={{ minHeight: 120, padding: '14px 16px', resize: 'vertical', fontSize: 16, lineHeight: 1.5 }}
+      <textarea className="input" autoFocus aria-label={t('ask.need')} data-tour="ask-what" style={{ minHeight: '7.5rem', padding: '0.875rem 1rem', resize: 'vertical', fontSize: '1rem', lineHeight: 1.5 }}
         placeholder={intent?.ph[lang] ?? t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} />
 
       {intent?.questions.map((x) => (
@@ -96,7 +96,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
           <span className="t-sm w7">{x.label[lang]}{x.multi && <span className="t-xs t-mute"> · {t('as.several')}</span>}</span>
           <div className="row g8 wrap">
             {x.options.map((o) => { const on = !!answers[x.key]?.includes(o[lang]); return (
-              <button key={o.es} type="button" className={`fx-chip${on ? ' is-on' : ''}`} style={{ height: 36 }} aria-pressed={on} onClick={() => toggle(x.key, o[lang], x.multi)}>{on && <Icon name="check" size={14} />}{o[lang]}</button>
+              <button key={o.es} type="button" className={`fx-chip${on ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={on} onClick={() => toggle(x.key, o[lang], x.multi)}>{on && <Icon name="check" size={14} />}{o[lang]}</button>
             ); })}
           </div>
         </div>
@@ -106,11 +106,11 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         <span className="t-sm w7">{t('as.when')}</span>
         <div className="row g8 wrap">
           {(['thisWeek', 'nextWeek', 'noRush', 'pick'] as When[]).map((w) => (
-            <button key={w} type="button" className={`fx-chip${when === w ? ' is-on' : ''}`} style={{ height: 36 }} aria-pressed={when === w} onClick={() => setWhen(when === w ? '' : w)}>
+            <button key={w} type="button" className={`fx-chip${when === w ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={when === w} onClick={() => setWhen(when === w ? '' : w)}>
               {t(`as.w.${w}` as 'as.w.pick', { day: dayLabel(w === 'thisWeek' ? q.thisWeek : q.nextWeek, lang) })}
             </button>
           ))}
-          {when === 'pick' && <input type="date" className="input" style={{ height: 36, width: 160 }} value={picked} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setPicked(e.target.value)} aria-label={t('ask.due')} />}
+          {when === 'pick' && <input type="date" className="input" style={{ height: '2.25rem', width: '10rem' }} value={picked} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setPicked(e.target.value)} aria-label={t('ask.due')} />}
         </div>
       </div>
 
@@ -119,15 +119,15 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         <AskAttachments brandId={brandId} files={files} onChange={setFiles} onBusy={(b) => setBusyFiles((n) => n + (b ? 1 : -1))} />
         <div className="row g8 wrap">
           <VoiceNote brandId={brandId} onAdd={(f) => setFiles((all) => [...all, f])} onBusy={(b) => setBusyFiles((n) => n + (b ? 1 : -1))} />
-          <button type="button" className={`fx-chip${noMaterial ? ' is-on' : ''}`} style={{ height: 36 }} aria-pressed={noMaterial} onClick={() => setNoMaterial((v) => !v)}>{noMaterial && <Icon name="check" size={14} />}{t('as.noMaterial')}</button>
+          <button type="button" className={`fx-chip${noMaterial ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={noMaterial} onClick={() => setNoMaterial((v) => !v)}>{noMaterial && <Icon name="check" size={14} />}{t('as.noMaterial')}</button>
         </div>
         {links.map((l) => (
           <div key={l} className="row g8 t-sm"><Icon name="link" size={14} /><a href={l} target="_blank" rel="noreferrer" className="grow truncate">{l}</a>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setLinks((all) => all.filter((x) => x !== l))} aria-label={t('ask.removeLink')}>✕</button></div>
         ))}
         <div className="row g8">
-          <input className="input grow" style={{ height: 40 }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')} value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())} />
-          <button type="button" className="btn btn-secondary btn-sm" style={{ height: 40 }} disabled={!/^https?:\/\//i.test(link.trim())} onClick={addLink}>{t('ask.addLink')}</button>
+          <input className="input grow" style={{ height: '2.5rem' }} type="url" placeholder={t('ask.linkPh')} aria-label={t('ask.addLink')} value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())} />
+          <button type="button" className="btn btn-secondary btn-sm" style={{ height: '2.5rem' }} disabled={!/^https?:\/\//i.test(link.trim())} onClick={addLink}>{t('ask.addLink')}</button>
         </div>
       </div>
 
@@ -161,7 +161,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
 
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{t('ask.error')}</p>}
       <div className="row between g12 wrap">
-        <span className="t-xs t-mute" style={{ maxWidth: 300 }}>{missing.length ? t('as.missingNote', { what: missing.map((k) => t(`as.c.${k}`).toLowerCase()).join(', ') }) : t('as.allClear')}</span>
+        <span className="t-xs t-mute" style={{ maxWidth: '18.75rem' }}>{missing.length ? t('as.missingNote', { what: missing.map((k) => t(`as.c.${k}`).toLowerCase()).join(', ') }) : t('as.allClear')}</span>
         <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={submit}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
       </div>
     </div>

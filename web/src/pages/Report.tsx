@@ -3,10 +3,15 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { useReports } from '../report/useReports';
-import { ReportEditor } from '../report/ReportEditor';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
+import { useSocialStats } from '../report/useSocialStats';
+import { useWebStats } from '../report/useWebStats';
+import { useSearchStats } from '../report/useSearchStats';
+import { ResultsView } from '../report/ResultsView';
+import { useAdStats } from '../report/useAdStats';
+import { Scan } from '../components/Scan';
 
-/** Monthly report (design 19): sales, not likes. Made by the four Brains, signed by Nicolas. */
+/** Results: the website (Google Analytics) and social media (Metricool) numbers (where Results is on) and the monthly report (design 19), signed by Nicolas. */
 export function Report() {
   const wa = useNicoWhatsApp();
   const { current } = useBrands();
@@ -15,6 +20,11 @@ export function Report() {
   const admin = profile?.role === 'admin';
   const list = useReports(current?.id, admin);
   const [month, setMonth] = useState<string | null>(null);
+  const social = useSocialStats(current?.id, !!current?.resultsOn);
+  const web = useWebStats(current?.id, !!current?.resultsOn);
+  const search = useSearchStats(current?.id, !!current?.resultsOn);
+  const paid = useAdStats(current?.id, !!current?.resultsOn);
+  const any = social.list.length > 0 || !!web || !!search || paid.ads.length > 0 || paid.sales.length > 0;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const shown = list.filter((r) => admin || r.published);
   const r = shown.find((x) => x.month === month) ?? shown[0];
@@ -26,9 +36,9 @@ export function Report() {
     <div className="col g32">
       <div className="row between g16 wrap">
         <div className="col g8">
-          <p className="label">{t('rep.kicker')}{r ? ` · ${monthName(r.month)}` : ''}</p>
+          {r && <p className="label">{t('rep.kicker')} · {monthName(r.month)}</p>}
           <h1 className="h1">{t('rep.title')}</h1>
-          <p className="t-mute">{t('rep.tagline')}</p>
+          {r && <p className="t-mute">{t('rep.tagline')}</p>}
         </div>
         {r && (
           <div className="row g8 wrap print:hidden">
@@ -42,9 +52,10 @@ export function Report() {
           </div>
         )}
       </div>
-      {!r ? <div className="card t-mute">{t('rep.none')}</div> : (
+      {any && <ResultsView key={current.id} social={social.list} web={web} search={search} ads={paid.ads} sales={paid.sales} />}
+      {!r ? (any || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
-          {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
+          {!r.published && <div className="card t-sm" style={{ background: 'var(--warning-bg)', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.sales')}</span><span className="h1">{money(r.salesAttributed)}</span><span className="t-xs t-mute">{t('rep.salesSub', { prev: money(r.salesPrev) })}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.leads')}</span><span className="h1">{r.leads ?? '—'}</span><span className="t-xs t-mute">{t('rep.leadsSub')}</span></div>
@@ -55,21 +66,21 @@ export function Report() {
             <section className="card col g16">
               <h2 className="h3">{t('rep.byMonth')}</h2>
               {(r.leadsByMonth ?? []).length === 0 ? <p className="t-sm t-mute">{t('rep.noSeries')}</p> : (
-                <div className="row g12" style={{ alignItems: 'flex-end', height: 180 }} role="img" aria-label={(r.leadsByMonth ?? []).map((x) => `${x.month}: ${x.n}`).join(', ')}>
+                <div className="row g12" style={{ alignItems: 'flex-end', height: '11.25rem' }} role="img" aria-label={(r.leadsByMonth ?? []).map((x) => `${x.month}: ${x.n}`).join(', ')}>
                   {r.leadsByMonth.map((x) => (
                     <div key={x.month} className="col g4 grow" style={{ alignItems: 'center' }}>
                       <span className="t-xs w7">{x.n}</span>
-                      <div style={{ width: '100%', maxWidth: 56, height: `${(x.n / max) * 130}px`, background: '#2F4DE0', borderRadius: 8 }} />
+                      <div style={{ width: '100%', maxWidth: '3.5rem', height: `${(x.n / max) * 130}px`, background: '#2F4DE0', borderRadius: '0.5rem' }} />
                       <span className="t-xs t-mute">{new Date(`${x.month}-15`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short' })}</span>
                     </div>
                   ))}
                 </div>
               )}
-              {r.whatMoved && <div className="col g4"><p className="label">{t('rep.whatMoved')}</p><p className="t-sm">{r.whatMoved}</p></div>}
+              {r.whatMoved && <div className="col g4"><p className="label">{t('rep.whatMoved')}</p><Scan text={r.whatMoved} points tone="ink" /></div>}
               <p className="t-xs t-mute">{t('rep.likesNote')}</p>
             </section>
             <aside className="col g16">
-              <div className="card col g8"><h2 className="h3">{t('rep.next')}</h2><p className="t-xs t-mute">{t('rep.nextSub')}</p><p className="t-sm" style={{ whiteSpace: 'pre-wrap' }}>{r.nextMonth || '—'}</p></div>
+              <div className="card col g8"><h2 className="h3">{t('rep.next')}</h2><p className="t-xs t-mute">{t('rep.nextSub')}</p>{r.nextMonth ? <Scan text={r.nextMonth} points tone="ink" /> : <p className="t-sm">—</p>}</div>
               <div className="card row g12">
                 <img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-12 w-12 rounded-full object-cover" />
                 <div className="col grow"><span className="t-sm w7">{t('rep.reviewed')}</span><span className="t-xs t-mute">{t('rep.book20')}</span></div>
@@ -79,7 +90,6 @@ export function Report() {
           </div>
         </>
       )}
-      {admin && <div className="print:hidden"><ReportEditor brandId={current.id} existing={list} /></div>}
     </div>
   );
 }

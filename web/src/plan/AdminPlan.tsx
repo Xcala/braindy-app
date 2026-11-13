@@ -6,6 +6,7 @@ import { tidy } from './formFields';
 import { EMPTY_PLAN, PlanForm } from './PlanForm';
 import { StackForm } from './StackForm';
 import type { BrandPlan, StackItem } from './types';
+import { Scan } from '../components/Scan';
 
 interface AdminProps<T> {
   title: string; help: string; value: T | null; empty: T; example: T;
@@ -48,7 +49,7 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
       </div>
       {open && (
         <>
-          <p className="t-sm t-mute" style={{ margin: 0 }}>{help}</p>
+          <Scan text={help} />
           {msg && <p role="status" className="t-sm w7" style={{ margin: 0, color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
           {form(v, set)}
           {msg && !msg.ok && <p role="status" className="t-sm w7" style={{ margin: 0, color: 'var(--danger)' }}>{msg.text}</p>}

@@ -1,4 +1,4 @@
-import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import { BottomNav } from './BottomNav';
 import { Toaster } from '../components/Toaster';
 import { useAuth } from '../auth/AuthProvider';
@@ -9,24 +9,14 @@ import { CommandK } from '../components/CommandK';
 import { Notifications } from '../components/Notifications';
 import { AccountMenu } from './AccountSheet';
 import { useI18n } from '../i18n/I18nProvider';
-import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { SubNav } from './SubNav';
+import { HowItWorks } from '../learn/tutorials';
 import { Sidebar } from './Sidebar';
 import { useEffect, useRef } from 'react';
-
-const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
-  { to: '/admin/today', label: 'today.title' },
-  { to: '/admin/studio', label: 'st.nav' },
-  { to: '/admin/brands', label: 'nav.brands' },
-  { to: '/admin/proposals', label: 'nav.proposals' },
-  { to: '/admin/onboarding', label: 'nav.onboarding' },
-  { to: '/admin/billing', label: 'nav.billing' },
-  { to: '/admin/costs', label: 'cost.nav' },
-  { to: '/team', label: 'nav.team' },
-  { to: '/admin/whatsapp', label: 'waa.nav' },
-  { to: '/admin/criterio', label: 'cra.nav' },
-];
+import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
+import { HelpChat } from '../help/HelpChat';
+import { IdeasPanel } from '../wishes/IdeasPanel';
 
 export function AppShell() {
   const { profile } = useAuth();
@@ -44,7 +34,7 @@ export function AppShell() {
     return () => ro.disconnect();
   }, []);
   // Admin is its own space (design 24): never mixed with the client tabs.
-  const adminSpace = isAdmin && (pathname.startsWith('/admin') || pathname === '/team');
+  const adminSpace = isAdmin && pathname.startsWith('/admin');
 
   return (
     <BrandProvider>
@@ -52,18 +42,19 @@ export function AppShell() {
       <div className="flex min-h-full">
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="flex min-h-full min-w-0 flex-1 flex-col">
-        <header ref={head} className="topbar" style={{ height: 'auto', minHeight: 56, flexWrap: 'nowrap', padding: '8px 12px', paddingTop: 'max(8px, env(safe-area-inset-top))', gap: 8, position: 'sticky', top: 0 }}>
+        <header ref={head} className="topbar" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
           <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
-          <div className="vsep hidden sm:block md:hidden" style={{ height: 32, margin: 0 }} />
+          <div className="vsep hidden sm:block md:hidden" style={{ height: '2rem', margin: 0 }} />
           {adminSpace ? (
             <>
               <Link to="/admin/today" className="ws" aria-label="Braindy admin" style={{ textDecoration: 'none' }}><span className="wsm"><img src="/brand/braindy-mark.svg" alt="" /></span><span className="hidden sm:inline">Braindy admin</span></Link>
-              <span className="hidden sm:inline-flex"><BrandMenu isAdmin onPicked={() => navigate('/home')} /></span>
+              {/* Picking a brand enters it, on phones too: the way into the client view. */}
+              <span className="min-w-0 shrink"><BrandMenu isAdmin enter onPicked={() => navigate('/home')} /></span>
             </>
           ) : (
             <>
               <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
-              {isAdmin && <span className="hidden sm:inline-flex"><Link to="/admin/today" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
+              {isAdmin && <Link to="/admin/today" className="btn btn-secondary btn-sm shrink-0" aria-label={t('nav.backToAdmin')}><span className="sm:hidden">{t('anav.admin')}</span><span className="hidden sm:inline">{t('nav.backToAdmin')}</span></Link>}
             </>
           )}
           <div className="grow" />
@@ -72,16 +63,11 @@ export function AppShell() {
           <Notifications />
           <AccountMenu />
         </header>
-        {/* Admin on a phone: its pages as tabs (the client has the bottom bar; desktop has the sidebar). */}
-        {adminSpace && (
-          <div className="md:hidden"><nav className="tabs overflow-x-auto" aria-label={t('nav.sections')} style={{ paddingLeft: 16, paddingRight: 16 }}>
-            {ADMIN_TABS.map((tab) => <Tab key={tab.to} to={tab.to} label={t(tab.label)} admin />)}
-          </nav></div>
-        )}
-        <main className={`mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 sm:px-8 lg:px-10 ${adminSpace ? 'pb-16' : 'pb-28 md:pb-16'}`}>
-          <SectionGate>{!adminSpace && <SubNav />}<Outlet /></SectionGate>
+        <main className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
+          <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
-        {!adminSpace && <BottomNav />}
+        {adminSpace ? <AdminBottomNav /> : <BottomNav />}
+        {!adminSpace && <><IdeasPanel /><HelpChat /></>}
       </div>
       </div>
       </Toaster>
@@ -95,12 +81,4 @@ function SectionGate({ children }: { children: React.ReactNode }) {
   const { ready, can } = useMySections();
   if (ready && !can(sectionOfPath(pathname))) return <Navigate to="/home" replace />;
   return <>{children}</>;
-}
-
-function Tab({ to, label, admin, on }: { to: string; label: string; admin?: boolean; on?: boolean }) {
-  return (
-    <NavLink to={to} data-tour={to === '/requests' ? 'ask-nav' : undefined} className={({ isActive }) => `tab ${admin ? 'tab-admin' : ''} ${on ?? isActive ? 'is-active' : ''}`}>
-      {label}
-    </NavLink>
-  );
 }

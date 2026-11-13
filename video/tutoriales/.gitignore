@@ -1,0 +1,10 @@
+node_modules/
+# media and work folders stay local (the videos live in Storage, the voices are regenerated with voz/bajar.mjs)
+clips/
+out/
+tmp-*/
+muestras/
+voz/es/
+voz/en/
+*.mp3
+*.mp4

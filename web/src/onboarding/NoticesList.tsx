@@ -16,7 +16,7 @@ export function NoticesList({ brandId }: { brandId: string }) {
     <div className="card col g8">
       <h2 className="h3">{t('ob.n.title')}</h2>
       {list.map((n) => (
-        <div key={n.id} className="row between g12 wrap t-sm" style={{ padding: '6px 0', borderTop: '1px solid var(--line)' }}>
+        <div key={n.id} className="row between g12 wrap t-sm" style={{ padding: '0.375rem 0', borderTop: '1px solid var(--line)' }}>
           <span className="w7">{t(`ob.n.${n.kind}` as never)}</span>
           <span className="t-xs t-mute">{n.at?.toDate().toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}</span>
           {n.sent ? <span className="chip c-approved">{t('ob.n.sent')}</span>

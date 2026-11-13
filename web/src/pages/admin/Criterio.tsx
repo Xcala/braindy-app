@@ -44,7 +44,7 @@ export function AdminCriterio() {
       {tab === 'lessons' && (editL ? <LessonEditor l={editL === 'new' ? undefined : editL} onClose={() => setEditL(null)} /> : (
         <div className="table">
           {lessons.map((l) => (
-            <div key={l.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 180px 110px 90px' }}>
+            <div key={l.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 11.25rem 6.875rem 5.625rem' }}>
               <Link to={`/learn/${l.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{l.title[lang]}</Link>
               <span className="t-sm t-mute truncate">{t(`cr.area.${l.area}`)}</span>
               <span><span className={`chip ${l.status === 'published' ? 'c-approved' : 'c-draft'}`}>{l.status === 'published' ? t('cra.published') : t('cr.draft')}</span>{l.videoUrl ? ' ▶' : ''}</span>
@@ -56,7 +56,7 @@ export function AdminCriterio() {
       {tab === 'objections' && (editO ? <ObjectionEditor o={editO === 'new' ? undefined : editO} lessons={lessons} onClose={() => setEditO(null)} /> : (
         <div className="table">
           {objections.map((o) => (
-            <div key={o.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr) 110px 90px' }}>
+            <div key={o.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr) 6.875rem 5.625rem' }}>
               <span className="w7 truncate">«{o.phrase[lang]}»</span>
               <span className="t-sm t-mute truncate">{o.answer[lang]}</span>
               <span><span className={`chip ${o.status === 'published' ? 'c-approved' : 'c-draft'}`}>{o.status === 'published' ? t('cra.published') : t('cr.draft')}</span></span>

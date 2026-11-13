@@ -15,15 +15,15 @@ export function BrandHero({ brand, logo, essence, tags, accent }: {
 
   return (
     <section className="relative flex flex-wrap items-end justify-between gap-6 overflow-hidden p-6 text-white sm:gap-8 sm:p-14"
-      style={{ borderRadius: 28, background: `radial-gradient(40% 70% at 88% 20%, ${tint}8C, transparent 70%), radial-gradient(30% 60% at 10% 110%, ${tint}59, transparent 70%), #060D1E` }}>
-      <div className="col g16" style={{ maxWidth: 760 }}>
+      style={{ borderRadius: '1.75rem', background: `radial-gradient(40% 70% at 88% 20%, ${tint}8C, transparent 70%), radial-gradient(30% 60% at 10% 110%, ${tint}59, transparent 70%), #060D1E` }}>
+      <div className="col g16" style={{ maxWidth: '47.5rem' }}>
         <div className="row g8 wrap">
           <p className="label" style={{ color: '#C9D0DE' }}>{t('brand.heroLabel')}</p>
           {brand.kind === 'group' && <span className="chip c-group">{t('brand.group')}</span>}
           {brand.status === 'archived' && <span className="chip c-archived">{t('status.archived')}</span>}
         </div>
         {logo ? (
-          <img src={logo} alt={brand.name} className="h-10 sm:h-14" style={{ width: 'auto', maxWidth: 'min(320px, 100%)', alignSelf: 'flex-start', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <img src={logo} alt={brand.name} className="h-10 sm:h-14" style={{ width: 'auto', maxWidth: 'min(20rem, 100%)', alignSelf: 'flex-start', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         ) : (
           <h1 className="d-lg" style={{ color: '#fff' }}><span className="w9">{brand.name}.</span></h1>
         )}

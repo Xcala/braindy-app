@@ -29,7 +29,7 @@ export function SessionPicker({ brandId, brandName, bookedAt, kind = 'strategy' 
   };
 
   return (
-    <div className="card col g12" style={{ padding: 22 }}>
+    <div className="card col g12" style={{ padding: '1.375rem' }}>
       <div className="row between g8 wrap"><h2 className="h3">{kind === 'kickoff' ? (bookedAt ? t('ctr.kickoffBooked') : t('ctr.kickoffPick')) : bookedAt ? t('ob.sessionBooked') : t('ob.pickSlot')}</h2><span className="t-xs t-mute">{t('ob.timezone')}</span></div>
       {bookedAt ? (
         <div className="row g12 wrap">

@@ -1,26 +1,26 @@
 /* Third party apps: toolbar, groups, grid cards and dragging. */
-.apps-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
-.apps-search { position: relative; flex: 1 1 280px; min-width: 0; }
-.apps-search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--graphite); pointer-events: none; }
-.apps-search .input { width: 100%; padding-left: 40px; }
-.apps-select { display: flex; flex-direction: column; gap: 4px; flex: 0 1 170px; }
-.apps-seg { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: #fff; }
-.apps-seg button { display: grid; place-items: center; width: 40px; height: 36px; border: 0; border-radius: 999px; background: none; color: var(--graphite); cursor: pointer; }
-.apps-seg button[aria-checked='true'] { background: var(--azul); color: #fff; }
+.apps-bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75rem; }
+.apps-search { position: relative; flex: 1 1 17.5rem; min-width: 0; }
+.apps-search svg { position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%); color: var(--graphite); pointer-events: none; }
+.apps-search .input { width: 100%; padding-left: 2.5rem; }
+.apps-select { display: flex; flex-direction: column; gap: 0.25rem; flex: 0 1 10.625rem; }
+.apps-seg { display: inline-flex; padding: 0.1875rem; border: 1px solid var(--line); border-radius: 999px; background: var(--white); }
+.apps-seg button { display: grid; place-items: center; width: 2.5rem; height: 2.25rem; border: 0; border-radius: 999px; background: none; color: var(--graphite); cursor: pointer; }
+.apps-seg button[aria-checked='true'] { background: var(--azul-fill); color: #fff; }
 .apps-n { opacity: .7; font-weight: 600; margin-left: 2px; }
 
-.apps-ghead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 4px 4px 0; }
-.apps-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.apps-ghead { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; padding: 0.25rem 0.25rem 0; }
+.apps-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18.75rem, 1fr)); }
 .acc-card { min-width: 0; }
-.acc-card-fields { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px 12px; margin: 0; }
-.acc-card-fields dt { font: 700 11px/14px var(--f-text); letter-spacing: .08em; text-transform: uppercase; color: var(--graphite); }
+.acc-card-fields { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.5rem 0.75rem; margin: 0; }
+.acc-card-fields dt { font: 700 0.6875rem/0.875rem var(--f-text); letter-spacing: .08em; text-transform: uppercase; color: var(--graphite); }
 .acc-card-fields dd { margin: 0; min-width: 0; }
-.acc-card-fields dd > .row { flex-wrap: wrap; row-gap: 4px; }
+.acc-card-fields dd > .row { flex-wrap: wrap; row-gap: 0.25rem; }
 .acc-card-foot { margin-top: auto; }
 
-.acc-handle { display: grid; place-items: center; flex: none; width: 22px; height: 32px; margin-left: -8px; border: 0; border-radius: 6px; background: none; color: var(--graphite); cursor: grab; opacity: .55; }
+.acc-handle { display: grid; place-items: center; flex: none; width: 1.375rem; height: 2rem; margin-left: -0.5rem; border: 0; border-radius: 0.375rem; background: none; color: var(--graphite); cursor: grab; opacity: .55; }
 .acc-handle:hover, .acc-handle:focus-visible { opacity: 1; background: var(--niebla); }
-.acc-card .acc-handle { margin: 0 -6px 0 0; }
+.acc-card .acc-handle { margin: 0 -0.375rem 0 0; }
 [draggable='true'] { cursor: grab; }
 [draggable='true'] :is(button, a, input) { cursor: pointer; }
 .is-dragging { opacity: .4; }

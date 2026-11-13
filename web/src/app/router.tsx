@@ -23,15 +23,20 @@ import { AdminTeam } from '../pages/admin/Team';
 import { AdminWhatsapp } from '../pages/admin/Whatsapp';
 import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
+import { PublicUpload } from '../pages/PublicUpload';
+import { PublicShowcase } from '../pages/PublicShowcase';
 import { Settings } from '../pages/Settings';
 import { Onboarding } from '../pages/Onboarding';
 import { Report } from '../pages/Report';
 import { AdminOnboarding } from '../pages/admin/Onboarding';
 import { AdminBilling } from '../pages/admin/Billing';
 import { AdminCosts } from '../pages/admin/Costs';
+import { AdminAiHealth } from '../pages/admin/AiHealth';
 import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
+import { Resources } from '../pages/Resources';
+import { Wishlist } from '../pages/Wishlist';
 import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
@@ -42,6 +47,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <Login />, errorElement: <RouteError /> },
   { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
   { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
+  { path: '/u/:token', element: <PublicUpload />, errorElement: <RouteError /> },
+  { path: '/s/:token', element: <PublicShowcase />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
     errorElement: <RouteError />,
@@ -59,6 +66,7 @@ export const router = createBrowserRouter([
           { path: 'brand/brain', element: <BrandBrain /> },
           { path: 'brand/:view', element: <MyBrand /> },
           { path: 'assets', element: <MyAssets /> },
+          { path: 'deliveries', element: <MyAssets deliveries /> },
           { path: 'apps', element: <MyApps /> },
           { path: 'calendar', element: <Calendar /> },
           { path: 'research', element: <MyResearch /> },
@@ -72,6 +80,8 @@ export const router = createBrowserRouter([
           { path: 'report', element: <Report /> },
           { path: 'learn', element: <Learn /> },
           { path: 'learn/:id', element: <LearnLesson /> },
+          { path: 'resources', element: <Resources /> },
+          { path: 'wishlist', element: <Wishlist /> },
           { path: 'plan', element: <MyPlan /> },
           { path: 'account', element: <Account /> },
           { path: 'pay', element: <Pay /> },
@@ -90,6 +100,7 @@ export const router = createBrowserRouter([
               { path: 'admin/onboarding', element: <AdminOnboarding /> },
               { path: 'admin/billing', element: <AdminBilling /> },
               { path: 'admin/costs', element: <AdminCosts /> },
+              { path: 'admin/ai', element: <AdminAiHealth /> },
             ],
           },
         ],
