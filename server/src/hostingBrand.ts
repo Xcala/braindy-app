@@ -40,7 +40,7 @@ brandHosting.post('/brands/:brandId/billing/hosting', async (c) => {
   try {
     // Unpaid charge on the same plan: the Stripe portal updates the card and pays the open invoice (the webhook resumes the site).
     if (current.hostingSubscriptionId && current.hostingStatus === 'past_due' && current.hosting === plan && current.stripeCustomerId) {
-      const p = await stripe<{ url: string }>('POST', 'billing_portal/sessions', { customer: current.stripeCustomerId, return_url: `${PUBLIC_BASE}/plan` });
+      const p = await stripe<{ url: string }>('POST', 'billing_portal/sessions', { customer: current.stripeCustomerId, return_url: `${PUBLIC_BASE}/plan?tab=site` });
       return c.json({ url: p.url });
     }
     if (current.hostingSubscriptionId && ['active', 'past_due'].includes(current.hostingStatus)) {
@@ -59,7 +59,7 @@ brandHosting.post('/brands/:brandId/billing/hosting', async (c) => {
     const customer = await customerFor(brandId, current);
     const session = await stripe<{ url: string }>('POST', 'checkout/sessions', {
       mode: 'subscription', customer, locale: 'auto', allow_promotion_codes: true,
-      success_url: `${PUBLIC_BASE}/plan?hosting=ok`, cancel_url: `${PUBLIC_BASE}/plan?hosting=canceled`,
+      success_url: `${PUBLIC_BASE}/plan?tab=site&hosting=ok`, cancel_url: `${PUBLIC_BASE}/plan?tab=site&hosting=canceled`,
       metadata: meta, subscription_data: { metadata: meta },
       line_items: [{ quantity: 1, price_data: { ...lineFor(plan, cur, bill), product_data: { name: productName(plan) } } }],
     });
