@@ -1,5 +1,9 @@
 import type { CSSProperties } from 'react';
 import { DaySun } from './DaySections';
+import { SiteVideo } from './SiteVideo';
+
+// The explainer loop on top of each phase card (braindy.co solution and case films).
+const PHASE_FILM = { strategy: ['/video/solutions/sol-1-{l}.mp4', '/video/solutions/sol-1-poster.webp'], image: ['/video/milohas-hover-{l}.mp4', '/video/milohas-case-{l}-poster.webp'], web: ['/video/solutions/sol-3-{l}.mp4', '/video/solutions/sol-3-poster.webp'] } as const;
 import { BOS, BOS_KEYS, PHASES, PHASE_KEYS, ADDONS, money, phaseBlocks, projectTotal, tr, type Block, type Lang, type Offer } from '../offer/catalog';
 
 const S = (lang: Lang) => (es: string, en: string) => (lang === 'es' ? es : en);
@@ -32,17 +36,19 @@ export function HowWeWork({ lang, offer }: { lang: Lang; offer: Offer }) {
       <p className="label">{offer.kind === 'rebuild' ? s('ReBuild your Brand · renovar', 'ReBuild your Brand · renew') : s('Build your Brand · marca nueva', 'Build your Brand · new brand')}</p>
       <div className="grid gap-5 lg:grid-cols-3">
         {PHASE_KEYS.map((k, i) => (
-          <article key={k} className="card col g16 offer-phase" style={brainColor(PHASES[k].brain)}>
+          <article key={k} className="card col g16 offer-phase" style={brainColor(PHASES[k].brain)} data-reveal>
+            <SiteVideo className="phase-film" src={PHASE_FILM[k][0].replace('{l}', lang)} poster={PHASE_FILM[k][1].replace('{l}', lang)} />
             <div className="row between"><span className="sec-num">{s('Fase', 'Phase')} {i + 1}</span><span className="t-xs t-mute">{tr(PHASES[k].weeks, lang)}</span></div>
             <h3 className="h2 w9">{PHASES[k].name}</h3>
             <Blocks blocks={phaseBlocks(k, offer.kind)} lang={lang} />
           </article>
         ))}
       </div>
-      <div className="day-suncard col g24 rounded-[1.75rem] p-6 sm:p-10">
-        <div className="col g8"><p className="label">BOS · Brand Operating System</p>
+      <div className="day-suncard col g24 rounded-[1.75rem] p-6 sm:p-10" data-reveal>
+        <div className="grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,.8fr)]"><div className="col g8"><p className="label">BOS · Brand Operating System</p>
           <h3 className="d-lg" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.1 }}><span className="w9">{s('NicoMarca al frente de tu marca,', 'NickMark running your brand,')}</span> {s('cada mes.', 'every month.')}</h3>
           <p className="t-mute" style={{ margin: 0, maxWidth: '42rem' }}>{s('Diseño, web, apps, redes, pauta, empaques y espacios: lo que la marca necesite, hecho por él con sus Brains. Tú apruebas.', 'Design, web, apps, social, ads, packaging and spaces: whatever the brand needs, done by him with his Brains. You approve.')}</p></div>
+          <SiteVideo className="phase-film" src={`/video/solutions/sol-2-${lang}.mp4`} poster="/video/solutions/sol-2-poster.webp" /></div>
         <div className="grid gap-4 md:grid-cols-3">
           {BOS_KEYS.map((k) => (
             <div key={k} className="col g8 rounded-2xl p-4" style={{ background: '#fff', border: offer.bos === k ? '1.5px solid var(--azul)' : '1px solid var(--line)' }}>

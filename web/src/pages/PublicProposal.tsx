@@ -10,6 +10,9 @@ import type { OptionKey } from '../proposals/types';
 import { HowWeWork, OfferSummary } from '../proposals/public/OfferSections';
 import { DeckBar, useDeck } from '../proposals/public/DeckBar';
 import { DayBraintrust, DayHero } from '../proposals/public/DaySections';
+import { WorkReel } from '../proposals/public/WorkReel';
+import { AppTour, StartSteps } from '../proposals/public/StartAndApp';
+import { useReveal } from '../proposals/public/useReveal';
 import '../proposals/public/day.css';
 import { BOS, PHASES, PHASE_KEYS, pathOf, type Offer } from '../proposals/offer/catalog';
 
@@ -30,7 +33,8 @@ export function PublicProposal() {
   }, [token]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   usePublicTracking(token, data?.sessionId);
-  const [deck, setDeck] = useDeck();
+  const deck = useDeck();
+  useReveal(!!data);
 
   const c = PUBLIC_COPY[lang];
   if (failed) return <div className="flex min-h-full items-center justify-center p-6"><p className="t-lg t-mute">{c.notFound}</p></div>;
@@ -47,15 +51,17 @@ export function PublicProposal() {
 
   return (
     <div className={offer ? 'pp-day' : undefined} style={offer ? undefined : { background: '#fff' }}>
-      <div className={`mx-auto max-w-[90rem]${deck ? ' deck' : ''}`}>
+      <div className={`mx-auto max-w-[90rem]${deck.on ? ' deck' : ''}`}>
         {offer ? <DayHero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
           : <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />}
-        <Proof c={c} />
+        {offer ? <WorkReel c={c} lang={lang} /> : <Proof c={c} />}
         <FromAtoB c={c} p={data} />
         {offer ? <DayBraintrust c={c} /> : <Braintrust c={c} />}
         {offer ? <HowWeWork lang={lang} offer={offer} /> : <Days c={c} />}
         {offer ? <OfferSummary lang={lang} offer={offer} cur={data.currency ?? 'cop'} accepted={!!data.acceptance} onAccept={pick} />
           : <Options c={c} p={data} onPick={setAccepting} />}
+        {offer && <StartSteps c={c} />}
+        {offer && <AppTour lang={lang} />}
         {data.acceptance && <Signed c={c} acceptance={data.acceptance} locale={locale} paid={new URLSearchParams(window.location.search).get('paid')}
           onPayAgain={() => publicApi.pay(token).then((r) => { if (r.payUrl) window.location.href = r.payUrl; }).catch(() => undefined)} />}
         <Talk c={c} files={data.files} onFile={openFile} onAccept={pick} />
@@ -64,7 +70,7 @@ export function PublicProposal() {
           <p className="t-sm t-mute">{c.footer}</p>
         </footer>
       </div>
-      <DeckBar on={deck} setOn={setDeck} lang={lang} />
+      <DeckBar on={deck.on} setOn={deck.setOn} at={deck.at} lang={lang} />
       {accepting && (
         <AcceptDialog c={c} token={token} option={accepting} label={offerLabel} validLabel={validLabel}
           prospectName={data.prospect.company || data.prospect.name || ''} onClose={() => setAccepting(null)} />

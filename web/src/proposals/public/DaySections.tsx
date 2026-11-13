@@ -1,5 +1,6 @@
 import { fill, type PublicCopy } from './copy';
 import type { PublicProposal } from './Sections';
+import { SiteVideo } from './SiteVideo';
 
 // The daylight look of braindy.co (Nov 2026) for proposals built on the new offer: San Francisco photo under a white
 // scrim, ink type with 300/900 contrast, the sky gradient, white cards and the Braindy sun as an accent.
@@ -12,6 +13,7 @@ export function DayHero({ c, p, dateLabel, validLabel, onLang, lang }: { c: Publ
   return (
     <section className="day-hero" data-section="0">
       <img className="day-hero-photo" src={`${SITE}/hero-spring-poster.webp`} srcSet={`${SITE}/hero-spring-poster_sm.webp 800w, ${SITE}/hero-spring-poster.webp 1920w`} sizes="100vw" alt="" fetchPriority="high" />
+      <SiteVideo className="day-hero-photo day-hero-video" src="/video/hero-bay-720.mp4" poster="/video/hero-spring-poster.webp" />
       <div className="day-hero-scrim" aria-hidden="true" />
       <div className="day-hero-in col g40 px-5 py-8 sm:px-14 sm:py-10">
         <div className="day-nav row between g16">
@@ -29,7 +31,7 @@ export function DayHero({ c, p, dateLabel, validLabel, onLang, lang }: { c: Publ
           <p className="day-lede"><b>{s('Lo hace NicoMarca. Sus Brains lo aceleran.', 'Made by NickMark. Powered by his Brains.')}</b> {s('Sin herramientas que aprender: los Brains hacen el volumen, una persona lo dirige y tú apruebas.', 'No tools to learn: the Brains do the volume, a human leads it, you approve.')}</p>
           <div className="row g12 wrap"><a className="btn btn-primary" href="#options">{s('Ver tu propuesta', 'See your proposal')}</a><a className="btn btn-ghost day-link" href="#talk">{c.talk} →</a></div>
         </div>
-        <div className="day-stats row g40 wrap">{c.stats.map(([n, l]) => <span key={l}><b>{n}</b> {l}</span>)}</div>
+        <div className="day-stats row g40 wrap">{c.stats.map(([n, l]) => <span key={l}><b data-count={n}>{n}</b> {l}</span>)}</div>
       </div>
     </section>
   );
