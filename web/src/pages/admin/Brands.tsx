@@ -13,6 +13,7 @@ import { daysFrom } from '../../lib/dates';
 import { CityInput } from '../../brands/CityInput';
 import { BrandCards } from './BrandCards';
 import { BrandManage } from './BrandManage';
+import { NewBrand } from './NewBrand';
 
 type Health = { open: number; late: number; last: number };
 
@@ -25,6 +26,7 @@ export function AdminBrands() {
   const [q, setQ] = useState('');
   const [status, setStatus] = useState<Status>('all');
   const [groupsOnly, setGroupsOnly] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const toast = useToast();
   // The brand being managed lives in the URL (?manage=id), so other pages can link straight to it.
@@ -97,6 +99,7 @@ export function AdminBrands() {
         </div>
         <span className="grow" />
         <span className="t-sm t-mute">{t('admin.brands.count', { n: rows.length })}</span>
+        <button type="button" className="btn btn-primary" onClick={() => setAdding(true)}><Icon name="plus" size={16} /> {t('anav.new')}</button>
       </div>
 
       <BrandCards rows={rows} health={health} onManage={manage} />
@@ -109,6 +112,7 @@ export function AdminBrands() {
             onCollapse={() => toggleCollapse(brand.id)} onToggle={() => toggle(brand)} onManage={() => manage(brand.id)} />
         ))}
       </div></div>
+      {adding && <NewBrand onClose={() => setAdding(false)} onCreated={(id) => { setAdding(false); manage(id); }} />}
       {managing && <BrandManage brand={managing} onToggle={() => toggle(managing)} onClose={() => manage(null)} />}
     </section>
   );
