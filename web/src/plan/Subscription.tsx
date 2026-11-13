@@ -16,7 +16,7 @@ export function Subscription({ current, part }: { current: Brand; part: 'design'
   const next = plan?.nextChargeAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', day: 'numeric' });
   const services = design ? [...(design.path === 'launch' ? [] : ['bill.s.social', 'bill.s.web', 'bill.s.report'] as const), ...((design.addons ?? []).includes('agents') ? ['bill.s.agents'] as const : [])] : [];
 
-  if (part === 'hosting') return <HostingPlans current={plan?.hosting} brandName={current.name} brandId={current.id} paid={plan?.hostingStatus === 'active' || plan?.hostingStatus === 'past_due'} />;
+  if (part === 'hosting') return <HostingPlans current={plan?.hosting} brandName={current.name} brandId={current.id} paid={plan?.hostingStatus === 'active'} />;
   return (
     <div className="col g24">
 

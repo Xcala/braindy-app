@@ -75,6 +75,28 @@ p{margin:0;color:#A4ADC2;font-size:18px;line-height:1.55}.btn{align-self:flex-st
 <body><main><h1><b>${title}</b></h1><p>${body}</p>${cta}<p class="sign">Lo hace NicoMarca. Sus Br<b>ai</b>ns lo aceleran.</p></main></body></html>`);
 });
 
+/** Where a paused client site redirects (sitePause.ts). Says what happened and how to bring it back; nothing is deleted. */
+hostingCheckout.get('/hosting/pausa', async (c) => {
+  const id = (c.req.query('b') ?? '').slice(0, 80);
+  const brand = /^[\w-]+$/.test(id) ? await db.doc(`brands/${id}`).get() : null;
+  const name = brand?.exists ? String(brand.get('name') ?? '') : '';
+  const esc = (t: string) => t.replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
+  const appUrl = process.env.PUBLIC_BASE_URL ?? 'https://app.braindy.co';
+  c.header('Cache-Control', 'no-store');
+  return c.html(`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Sitio en pausa${name ? ` · ${esc(name)}` : ''}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;700;900&display=swap">
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0B1220;color:#EEF1F8;font-family:"Red Hat Display",system-ui,sans-serif;padding:24px}
+main{max-width:520px;display:flex;flex-direction:column;gap:18px}h1{margin:0;font-weight:300;font-size:40px;line-height:1.1}h1 b{font-weight:900}
+p{margin:0;color:#A4ADC2;font-size:18px;line-height:1.55}.btn{align-self:flex-start;background:#2A7FFF;color:#fff;font-weight:700;padding:12px 20px;border-radius:999px;text-decoration:none}
+.sign{font-size:15px}.sign b{font-weight:900}</style></head>
+<body><main><h1>${name ? `${esc(name)}: ` : ''}<b>sitio en pausa</b></h1>
+<p>Este sitio está pausado mientras se pone al día el pago de su hosting. No se borró nada: vuelve en minutos apenas se pague.</p>
+<p>Si eres del equipo de ${name ? esc(name) : 'esta marca'}, entra a Braindy y paga desde Mi plan.</p>
+<a class="btn" href="${appUrl}/plan">Pagar en Braindy</a>
+<p class="sign">Lo hace NicoMarca. Sus Br<b>ai</b>ns lo aceleran.</p></main></body></html>`);
+});
+
 /** Webhook side: a paid hosting checkout (no brand yet) becomes a signup for Nicolas. Idempotent per session. */
 export async function recordHostingSignup(o: Record<string, any>) {
   const d = o.customer_details ?? {};
