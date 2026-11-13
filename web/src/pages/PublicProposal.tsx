@@ -11,6 +11,7 @@ import { HowWeWork, OfferSummary } from '../proposals/public/OfferSections';
 import { DeckBar, useDeck } from '../proposals/public/DeckBar';
 import { DayBraintrust, DayHero } from '../proposals/public/DaySections';
 import { WorkReel } from '../proposals/public/WorkReel';
+import { Credentials } from '../proposals/public/Credentials';
 import { AppTour, StartSteps } from '../proposals/public/StartAndApp';
 import { useReveal } from '../proposals/public/useReveal';
 import '../proposals/public/day.css';
@@ -33,7 +34,7 @@ export function PublicProposal() {
   }, [token]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   usePublicTracking(token, data?.sessionId);
-  const deck = useDeck();
+  const deck = useDeck(!!data);
   useReveal(!!data);
 
   const c = PUBLIC_COPY[lang];
@@ -51,10 +52,10 @@ export function PublicProposal() {
 
   return (
     <div className={offer ? 'pp-day' : undefined} style={offer ? undefined : { background: '#fff' }}>
-      <div className={`mx-auto max-w-[90rem]${deck.on ? ' deck' : ''}`}>
+      <div className={`mx-auto max-w-[90rem]`}>
         {offer ? <DayHero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
           : <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />}
-        {offer ? <WorkReel c={c} lang={lang} /> : <Proof c={c} />}
+        {offer ? <><WorkReel c={c} lang={lang} /><Credentials lang={lang} /></> : <Proof c={c} />}
         <FromAtoB c={c} p={data} />
         {offer ? <DayBraintrust c={c} /> : <Braintrust c={c} />}
         {offer ? <HowWeWork lang={lang} offer={offer} /> : <Days c={c} />}
@@ -70,7 +71,7 @@ export function PublicProposal() {
           <p className="t-sm t-mute">{c.footer}</p>
         </footer>
       </div>
-      <DeckBar on={deck.on} setOn={deck.setOn} at={deck.at} lang={lang} />
+      <DeckBar deck={deck} lang={lang} />
       {accepting && (
         <AcceptDialog c={c} token={token} option={accepting} label={offerLabel} validLabel={validLabel}
           prospectName={data.prospect.company || data.prospect.name || ''} onClose={() => setAccepting(null)} />

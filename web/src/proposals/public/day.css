@@ -66,9 +66,50 @@
 @media (prefers-reduced-motion: reduce) { .day-hero .day-display, .day-hero .day-lede, .day-hero .day-pill { animation: none; } }
 
 /* Slides */
+/* Slides: one section per screen, sliding in from the right; the rest wait off screen (so their videos stay paused). */
+html.deck-on, html.deck-on body { overflow: hidden; height: 100%; }
+html.deck-on [data-section], html.deck-on .pp-day > div > section { position: fixed; inset: 0; z-index: 30; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; justify-content: safe center; min-height: 0; margin: 0;
+  background-color: #F4F6FB;
+  transform: translateX(100%); opacity: 0; visibility: hidden;
+  transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s cubic-bezier(.16,1,.3,1), visibility 0s .6s; }
+html.deck-on [data-section].slide-past { transform: translateX(-100%); }
+html.deck-on [data-section].slide-on { transform: none; opacity: 1; visibility: visible; transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s cubic-bezier(.16,1,.3,1), visibility 0s; }
+html.deck-on [data-section].day-hero { justify-content: stretch; }
+html.deck-on .pp-day > div.mx-auto > :not([data-section]) { display: none; }
+html.deck-on .slide-on [data-reveal] { animation: deck-rise .7s cubic-bezier(.22,.8,.24,1) both; animation-delay: calc(.12s + var(--i, 0) * 70ms); }
+@keyframes deck-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html.deck-on [data-section] { transition: none !important; } html.deck-on .slide-on [data-reveal] { animation: none; } }
 .deck-progress { position: fixed; inset: 0 0 auto; height: 3px; z-index: 41; background: rgba(11,18,32,.08); }
-.deck-progress span { display: block; height: 100%; background: var(--azul, #2F4DE0); transition: width .4s ease; }
+.deck-progress span { display: block; height: 100%; background: linear-gradient(90deg, #2F4DE0, #2A7FFF); transition: width .5s cubic-bezier(.16,1,.3,1); }
 .deck-dots { position: fixed; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: .5rem; }
-.deck-dots button { width: .625rem; height: .625rem; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: rgba(11,18,32,.22); }
-.deck-dots button[aria-current] { background: var(--azul, #2F4DE0); transform: scale(1.3); }
-.deck-count { font: 700 .8125rem/1 'Red Hat Display', sans-serif; padding: 0 .25rem; color: #0B1220; background: rgba(255,255,255,.8); border-radius: 999px; padding: .5rem .625rem; }
+.deck-dots button { width: .5rem; height: .5rem; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: rgba(11,18,32,.22); transition: transform .2s, background .2s; }
+.deck-dots button[aria-current] { background: #2F4DE0; transform: scale(1.4); }
+.deck-nav { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: .75rem;
+  background: rgba(255,255,255,.82); backdrop-filter: blur(18px); border-radius: 999px; padding: .4rem .5rem; box-shadow: 0 12px 32px rgba(11,18,32,.14); }
+.deck-btn { width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid rgba(11,18,32,.12); background: #fff; color: #0B1220; font-size: 1rem; cursor: pointer; transition: background .2s, color .2s, transform .2s; }
+.deck-btn:hover:not(:disabled) { background: #2F4DE0; color: #fff; transform: scale(1.06); }
+.deck-btn:disabled { opacity: .3; cursor: default; }
+.deck-count { font: 700 .75rem/1 'Red Hat Display', sans-serif; letter-spacing: .06em; color: #0B1220; min-width: 3.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+.deck-exit { border: 0; background: transparent; color: #5C6375; font: 600 .75rem/1 'Red Hat Display', sans-serif; padding: .5rem .75rem; cursor: pointer; border-radius: 999px; }
+.deck-exit:hover { background: rgba(11,18,32,.06); color: #0B1220; }
+@media (max-width: 640px) { .deck-dots { display: none; } .deck-nav { bottom: .75rem; } }
+
+/* Credentials: the reality (photo, play), the London recognition and the client quotes with their number. */
+.cred-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 1024px) { .cred-grid { grid-template-columns: 1.25fr .9fr 1fr; } }
+.cred-reality { position: relative; overflow: hidden; padding: 0; min-height: 22rem; color: #fff; text-decoration: none; display: block; }
+.cred-reality img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 30% 30%; transition: transform .8s cubic-bezier(.22,.8,.24,1); }
+.cred-reality:hover img { transform: scale(1.04); }
+.cred-reality::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11,18,32,.88) 0%, rgba(11,18,32,.35) 55%, rgba(11,18,32,0) 80%); }
+.cred-over { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 1.5rem; }
+.cred-over .day-pill { align-self: flex-start; }
+.cred-play { position: absolute; z-index: 1; top: 1.25rem; right: 1.25rem; width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.92); color: #2F4DE0; font-size: 1.1rem; box-shadow: 0 8px 24px rgba(11,18,32,.25); transition: transform .3s; }
+.cred-reality:hover .cred-play { transform: scale(1.1); }
+.cred-award-img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: .875rem; }
+.cred-award-logo { width: 100%; max-width: 15rem; height: auto; mix-blend-mode: multiply; }
+.cred-quote { flex: 1; justify-content: space-between; }
+.cred-brands { align-items: center; }
+.day-hero > .day-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; }
+.day-hero > .day-hero-video video { width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }

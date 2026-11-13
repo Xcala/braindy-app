@@ -385,8 +385,6 @@ textarea.input{height:auto;min-height:3rem;padding:0.875rem 1rem;line-height:1.3
 .offer-sub li::before{content:'–';position:absolute;left:0;color:var(--c,var(--azul))}
 .stage .offer-sub li{color:#AEB6C8}
 .offer-phase{border-top:4px solid var(--c)}
-html.deck-on{scroll-snap-type:y proximity}
-.deck [data-section]{min-height:100vh;min-height:100dvh;scroll-snap-align:start;justify-content:center;align-content:center}
 .deck-bar{position:fixed;right:1rem;bottom:1rem;z-index:40;display:flex;gap:.5rem;align-items:center}
 
 /* v2.1 · Liquid Glass pass (Liquid Layer v3.1: blur 22, saturate 180, no rim, specular highlight) */
