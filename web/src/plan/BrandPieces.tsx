@@ -5,6 +5,7 @@ import { inkOn } from '../brands/identity/useCopy';
 import type { Cur } from './hostingData';
 import { Featured, useL } from './HostingParts';
 import { Explainer, ExampleRow, useBrandKit, type Kit } from './Explainer';
+import { OnceIntro } from './OnceIntro';
 import './hosting.css';
 
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
@@ -30,12 +31,14 @@ export function BrandPieces({ brand }: { brand: Brand }) {
 
   return (
     <div className="col g32">
+      <OnceIntro id="brand">
       <Explainer label={L(['Diseño de piezas on-brand', 'On-brand piece design'])} title={L(['Pides una pieza. ', 'Ask for a piece. '])} strong={L(['Sale con tu marca.', 'It comes out on-brand.'])}
         lead={L(['Carruseles, posts, historias, videos e investigaciones hechos por los Brains con tu identidad ya cargada, y revisados por NicoMarca antes de llegar a ti.', 'Carousels, posts, stories, videos and research made by the Brains with your identity already loaded, and reviewed by NickMark before they reach you.'])}
         stage={<Stage kit={kit} head={L(['Gran lanzamiento', 'Big launch'])} ask={L(['Un carrusel para el lanzamiento', 'A carousel for the launch'])} done={L(['Entregado', 'Delivered'])} />} steps={steps}>
         {/* Same compact strip as the other tabs: the examples live inside the explainer card. */}
         <ExampleRow title={L(['Así se vería con tu marca', 'How it looks with your brand'])} items={examples(kit, L)} />
       </Explainer>
+      </OnceIntro>
 
       <div className="hp">
         <div className="hp-bar">
