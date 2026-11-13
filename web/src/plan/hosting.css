@@ -188,3 +188,10 @@
   .hp .hp-feature { padding: 1.5rem 1.25rem; }
 }
 @media (prefers-reduced-motion: reduce) { .hp summary::after, .hp .hp-terms details { transition: none; } }
+
+/* Payment result in Mi plan (signed-in hosting checkout). */
+.hp .hp-msg { margin: 0; align-self: center; text-align: center; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--line); font-size: 0.9375rem; }
+.hp .hp-msg.ok { border-color: #10B981; }
+.hp .hp-msg a { font-weight: 700; color: inherit; }
+.hp button.hp-btn { cursor: pointer; }
+.hp button.hp-btn:disabled { opacity: 0.6; cursor: progress; }

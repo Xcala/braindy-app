@@ -10,6 +10,7 @@ export const HOSTING_USD: Record<Hosting, number> = { esencial: 5, pro: 15, ultr
 
 export type Plan = {
   path?: 'transform' | 'continuity' | 'launch'; monthly?: number | null; project?: number | null; currency?: string; addons?: string[]; agentsMonthly?: number | null; addonRequests?: string[]; hosting?: Hosting | null;
+  hostingStatus?: 'active' | 'past_due' | 'canceled'; hostingCur?: 'usd' | 'cop'; hostingBill?: 'm' | 'y'; hostingNextChargeAt?: Timestamp;
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; nextChargeAt?: Timestamp; stripeCustomerId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string }; cancelRequestedAt?: Timestamp;
 };
@@ -43,6 +44,7 @@ export const billingApi = {
   portal: (brandId: string) => api<{ url: string }>(`${b(brandId)}/portal`, post()),
   transfer: (brandId: string, reference: string, amount?: number) => api(`${b(brandId)}/transfer`, post({ reference, amount })),
   addon: (brandId: string) => api<{ ok: true; added?: boolean; requested?: boolean; already?: boolean }>(`${b(brandId)}/addon`, post({ addon: 'agents' })),
+  hosting: (brandId: string, h: { plan: Hosting; cur: 'usd' | 'cop'; bill: 'm' | 'y' }) => api<{ url?: string; switched?: boolean }>(`${b(brandId)}/hosting`, post(h)),
   cancelRequest: (brandId: string) => api(`${b(brandId)}/cancel-request`, post()),
   setPlan: (brandId: string, p: Plan) => api(`${a(brandId)}/plan`, { method: 'PUT', body: JSON.stringify(p) }),
   confirmTransfer: (brandId: string, id: string) => api(`${a(brandId)}/transfers/${id}/confirm`, post()),
