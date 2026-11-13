@@ -1,0 +1,40 @@
+/* Proposals on the new offer, in the daylight look of braindy.co (tokens copied from its global.css). */
+.pp-day { --day-ink: #0B1220; --day-graphite: #5C6375; --day-azul: #2F4DE0;
+  --day-shadow: 0 24px 64px rgba(11,18,32,.18), 0 8px 20px rgba(11,18,32,.08);
+  color: var(--day-ink); overflow-x: clip;
+  background: radial-gradient(45% 60% at 10% 0%, rgba(244,200,202,.35), transparent 70%),
+    radial-gradient(40% 55% at 95% 30%, rgba(42,127,255,.12), transparent 70%), #F4F6FB; }
+.pp-day > div > section { position: relative; }
+.pp-day .d-lg { font-size: clamp(2.25rem, 4.5vw, 3.75rem); line-height: 1.04; letter-spacing: -.04em; }
+.pp-day .card { border-radius: 1.25rem; border-color: transparent; box-shadow: 0 8px 24px rgba(11,18,32,.08), 0 2px 6px rgba(11,18,32,.04); }
+.pp-day .sec-num { letter-spacing: .08em; text-transform: uppercase; }
+
+.day-hero { position: relative; overflow: hidden; min-height: min(100vh, 56rem); display: flex; }
+.day-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }
+.day-hero-scrim { position: absolute; inset: 0; background:
+  linear-gradient(to bottom, rgb(255 255 255 / .55) 0%, rgb(255 255 255 / 0) 18%),
+  linear-gradient(to top, rgb(244 246 251) 0%, rgb(255 255 255 / .55) 22%, rgb(255 255 255 / 0) 40%),
+  linear-gradient(90deg, rgb(255 255 255 / .92) 0%, rgb(255 255 255 / .74) 36%, rgb(255 255 255 / .15) 60%, rgb(255 255 255 / 0) 74%); }
+@media (max-width: 1023px) { .day-hero-scrim { background: linear-gradient(to bottom, rgb(255 255 255 / .7), rgb(255 255 255 / .82) 50%, rgb(244 246 251)); } }
+.day-hero-in { position: relative; width: 100%; justify-content: space-between; }
+.day-nav { background: rgba(255,255,255,.7); backdrop-filter: blur(14px); border-radius: 999px; padding: .5rem .5rem .5rem 1.25rem; box-shadow: 0 8px 24px rgba(11,18,32,.08); }
+.day-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .375rem .875rem; border-radius: 999px; background: rgba(255,255,255,.78); backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(11,18,32,.06); font: 600 .8125rem/1.2 'Red Hat Display', sans-serif; color: var(--day-ink); }
+.day-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #10B981; }
+.day-display { margin: 0; font-family: 'Red Hat Display', sans-serif; font-size: clamp(2.75rem, 6vw, 5rem); line-height: 1.02; letter-spacing: -.045em; color: var(--day-ink); }
+.day-azul { color: var(--day-azul); }
+.day-lede { margin: 0; font-size: 1.125rem; line-height: 1.65; color: var(--day-graphite); max-width: 36rem; }
+.day-lede b { color: var(--day-ink); }
+.day-link { color: var(--day-azul); font-weight: 700; }
+.day-stats { padding-top: 1.5rem; border-top: 1px solid rgba(11,18,32,.1); font-family: 'Red Hat Display', sans-serif; font-weight: 300; font-size: 1.125rem; color: var(--day-graphite); }
+.day-stats b { font-weight: 900; font-size: 2.25rem; letter-spacing: -.03em; color: var(--day-ink); margin-right: .25rem; }
+.day-sky { background: radial-gradient(55% 45% at 88% 0%, rgba(255,214,130,.42), transparent 70%),
+  radial-gradient(50% 55% at 0% 15%, rgba(150,190,255,.32), transparent 70%), linear-gradient(180deg, #EAF2FF 0%, #F6F9FF 55%, #FFFFFF 100%); }
+.day-suncard, .pp-day .card.day-suncard { background: linear-gradient(160deg, #FFF4D6 0%, #F6F9FF 55%, #EAF0FF 100%); box-shadow: inset 0 0 0 1px rgba(47,77,224,.2), 0 8px 24px rgba(11,18,32,.08); }
+.day-brain img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 1rem; box-shadow: 0 8px 24px rgba(11,18,32,.12); }
+.day-sun { position: absolute; z-index: 0; width: clamp(9rem, 18vw, 15rem); aspect-ratio: 1; pointer-events: none;
+  -webkit-mask: url(/brand/site/logo_simbolo_azul.svg) center / contain no-repeat; mask: url(/brand/site/logo_simbolo_azul.svg) center / contain no-repeat; }
+.day-sun-azul { background: #6F8BFF; } .day-sun-sol { background: #F5B301; }
+.day-sun-right { right: -6rem; top: 9rem; } .day-sun-left { left: -7rem; bottom: -3rem; }
+.pp-day section:not(.day-hero) > :not(.day-sun) { position: relative; z-index: 1; }
+@media (max-width: 767px) { .day-sun { opacity: .35; } }

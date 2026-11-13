@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { DaySun } from './DaySections';
 import { BOS, BOS_KEYS, PHASES, PHASE_KEYS, ADDONS, money, phaseBlocks, projectTotal, tr, type Block, type Lang, type Offer } from '../offer/catalog';
 
 const S = (lang: Lang) => (es: string, en: string) => (lang === 'es' ? es : en);
@@ -22,6 +23,7 @@ export function HowWeWork({ lang, offer }: { lang: Lang; offer: Offer }) {
   const s = S(lang);
   return (
     <section className="col g32 px-5 py-16 sm:px-14" data-section="4">
+      <DaySun side="right" tone="sol" />
       <div className="row between g16 wrap" style={{ alignItems: 'flex-end' }}>
         <div className="col g12"><span className="sec-num">04</span>
           <h2 className="d-lg"><span className="w9">{s('Cómo lo hacemos.', 'How we do it.')}</span> {s('Primero construimos, luego operamos.', 'First we build, then we run it.')}</h2></div>
@@ -37,15 +39,15 @@ export function HowWeWork({ lang, offer }: { lang: Lang; offer: Offer }) {
           </article>
         ))}
       </div>
-      <div className="stage col g24 rounded-[1.75rem] p-6 sm:p-10">
+      <div className="day-suncard col g24 rounded-[1.75rem] p-6 sm:p-10">
         <div className="col g8"><p className="label">BOS · Brand Operating System</p>
-          <h3 className="d-lg" style={{ color: '#fff', fontSize: '2.25rem', lineHeight: '2.5rem' }}><span className="w9">{s('NicoMarca al frente de tu marca,', 'NickMark running your brand,')}</span> {s('cada mes.', 'every month.')}</h3>
-          <p className="muted" style={{ margin: 0, maxWidth: '42rem' }}>{s('Diseño, web, apps, redes, pauta, empaques y espacios: lo que la marca necesite, hecho por él con sus Brains. Tú apruebas.', 'Design, web, apps, social, ads, packaging and spaces: whatever the brand needs, done by him with his Brains. You approve.')}</p></div>
+          <h3 className="d-lg" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', lineHeight: 1.1 }}><span className="w9">{s('NicoMarca al frente de tu marca,', 'NickMark running your brand,')}</span> {s('cada mes.', 'every month.')}</h3>
+          <p className="t-mute" style={{ margin: 0, maxWidth: '42rem' }}>{s('Diseño, web, apps, redes, pauta, empaques y espacios: lo que la marca necesite, hecho por él con sus Brains. Tú apruebas.', 'Design, web, apps, social, ads, packaging and spaces: whatever the brand needs, done by him with his Brains. You approve.')}</p></div>
         <div className="grid gap-4 md:grid-cols-3">
           {BOS_KEYS.map((k) => (
-            <div key={k} className="col g8 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,.06)', border: offer.bos === k ? '1.5px solid #fff' : '1px solid rgba(255,255,255,.14)' }}>
+            <div key={k} className="col g8 rounded-2xl p-4" style={{ background: '#fff', border: offer.bos === k ? '1.5px solid var(--azul)' : '1px solid var(--line)' }}>
               <span className="row between"><b>{BOS[k].name}</b>{offer.bos === k && <span className="chip c-sent">{s('Tu plan', 'Your plan')}</span>}</span>
-              <span className="t-sm muted">{tr(BOS[k].focus, lang)}</span>
+              <span className="t-sm t-mute">{tr(BOS[k].focus, lang)}</span>
             </div>
           ))}
         </div>
@@ -81,7 +83,7 @@ export function OfferSummary({ lang, offer, cur, onAccept, accepted }: { lang: L
           </div>
         )}
         {offer.bos && (
-          <div className="card col g16" style={{ borderColor: 'var(--azul)', boxShadow: '0 0 0 1px var(--azul)' }}>
+          <div className="card day-suncard col g16">
             <p className="label">BOS · {BOS[offer.bos].name}</p>
             <div className="row between g12 wrap"><span className="h2 w9">{m(offer.bosMonthly)}<span className="t-sm t-mute w4"> / {s('mes', 'month')}</span></span>
               {offer.bosMonths ? <span className="chip">{offer.bosMonths} {s('meses', 'months')}</span> : null}</div>

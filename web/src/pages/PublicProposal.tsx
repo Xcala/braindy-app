@@ -9,6 +9,8 @@ import { Braintrust, Days, FromAtoB, Hero, Options, Proof, Talk, type PublicProp
 import type { OptionKey } from '../proposals/types';
 import { HowWeWork, OfferSummary } from '../proposals/public/OfferSections';
 import { DeckBar, useDeck } from '../proposals/public/DeckBar';
+import { DayBraintrust, DayHero } from '../proposals/public/DaySections';
+import '../proposals/public/day.css';
 import { BOS, PHASES, PHASE_KEYS, pathOf, type Offer } from '../proposals/offer/catalog';
 
 /** The page a prospect opens from a tracked link. No login; every open and reading time is recorded. */
@@ -44,12 +46,13 @@ export function PublicProposal() {
   const openFile = async (id: string) => window.open(await publicApi.fileUrl(token, id), '_blank', 'noopener');
 
   return (
-    <div style={{ background: '#fff' }}>
+    <div className={offer ? 'pp-day' : undefined} style={offer ? undefined : { background: '#fff' }}>
       <div className={`mx-auto max-w-[90rem]${deck ? ' deck' : ''}`}>
-        <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
+        {offer ? <DayHero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />
+          : <Hero c={c} p={data} dateLabel={dateLabel} validLabel={validLabel} lang={lang} onLang={setLang} />}
         <Proof c={c} />
         <FromAtoB c={c} p={data} />
-        <Braintrust c={c} />
+        {offer ? <DayBraintrust c={c} /> : <Braintrust c={c} />}
         {offer ? <HowWeWork lang={lang} offer={offer} /> : <Days c={c} />}
         {offer ? <OfferSummary lang={lang} offer={offer} cur={data.currency ?? 'cop'} accepted={!!data.acceptance} onAccept={pick} />
           : <Options c={c} p={data} onPick={setAccepting} />}
