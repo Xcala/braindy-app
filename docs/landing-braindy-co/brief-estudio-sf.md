@@ -25,6 +25,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 - Monitor de escritorio fotorrealista de 27", plano (no curvo), 16:9, negro mate, pantalla mate antirreflejo, bordes finos en los cuatro lados, base delgada, sin logos ni Apple (referencia: Samsung ViewFinity S8 de 27"). Apoyado sobre la mesa a ~25 cm del borde. El borde de arriba queda a la altura de los ojos de Nico y el de abajo ~12 cm sobre la mesa. Es 16:9 para que, cuando la pantalla llena el cuadro en P2, coincida exacto con el formato de la web. Teclado y mouse negros. Taza blanca lisa.
 - Los Brains fieles a sus renders 3D, con pantallas holográficas de su color.
 - Lo que va encima después: el contenido de la pantalla, la hora del reloj, el logo del letrero y el texto de la taza.
+- Reloj en vivo: a la izquierda siempre San Francisco; a la derecha, la ciudad de quien visita, según la zona horaria de su navegador (sin pedir permisos). Si la visita es desde SF, la derecha muestra Bogotá.
 
 ## Prompts
 
