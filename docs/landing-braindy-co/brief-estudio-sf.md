@@ -116,4 +116,10 @@ Se aparta del brief (por haber elegido la variante A):
 - En mobile (9:16), el recorte que mejor funciona va centrado entre el monitor y Nico; el Builder queda en el borde.
 - Debajo del reloj hay un círculo y no una placa. Ahí va el logo de Braindy (es un sol circular), montado en post.
 
-Pendiente: logo en el círculo, "Café de Colombia" en la taza, variante atardecer (Magnific relight), loop de 10 s y la toma propia del Golden Gate.
+Hecho después de la revisión:
+- Logo de Braindy (SVG oficial) retroiluminado en el círculo bajo el reloj, con el mismo desenfoque de la pared.
+- "CAFÉ DE COLOMBIA" en la taza, curvado a su forma y con su sombra.
+- Variante atardecer (`keyframes/f2-atardecer-*.jpg`, `scripts/dusk-variant.py`): la misma imagen que P0, con la sala más oscura y cálida, los hologramas y el logo brillando y la vista en hora azul. No se hizo con Magnific relight porque entrega 2K y puede mover detalles; el cierre es la reversa de P0 y tiene que coincidir pixel a pixel.
+- Loop de 10 s: Kling 3.0 en Magnific, 1080p, con el primer y el último frame iguales a P0.
+
+Pendiente: la toma propia del Golden Gate (Nicolas).
