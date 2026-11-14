@@ -77,7 +77,7 @@ Relight the same scene to dusk, about 10 minutes after sunset: deep orange and p
 - Los Brains de fieltro, sin ojos ni nariz (la misma versión de los close-ups). La cara es solo la sonrisa negra y la cabeza tiene puntas suaves como un sol.
 - Golden hour al abrir y atardecer al cerrar.
 - La taza lleva "Café de Colombia", agregado en post.
-- La vista de la ventana es real, grabada por Nicolas.
+- La vista de la ventana es una foto real de stock del Golden Gate (no se graba una toma propia).
 
 ## La ventana y la textura
 La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, colores en escalones, halos y un velo rosado. Viene de generar pequeño y escalar en modo creativo. En la escena nueva:
@@ -106,7 +106,7 @@ Cumple:
 - Monitor de 27" negro, sin logo y sin Apple. Está casi de frente; el zoom termina de enderezarlo. La pantalla va en negro, lista para el túnel.
 - Nicolas de espaldas, con camisa camel y sin cara (asoma un poco la oreja).
 - Los cuatro Brains de fieltro, sin ojos, con sus colores y en sus puestos.
-- Ventana con una foto real del Golden Gate (temporal, hasta que se grabe la toma propia), llevada a golden hour.
+- Ventana con una foto real del Golden Gate ("Beautiful sunset view of the Golden Gate Bridge", Freepik/Magnific), llevada a golden hour. Es definitiva (decisión de Nicolas, 14-nov).
 - Sin letras inventadas: el reloj está en blanco y la taza es lisa.
 - 5504 px de ancho.
 - Acabado fotográfico: HDR bajado (menos contraste local y saturación, altas luces suaves) y profundidad de campo real a partir de un mapa de profundidad (`scripts/photo-finish.py`). El piso perdió los rayones pintados.
@@ -122,4 +122,4 @@ Hecho después de la revisión:
 - Variante atardecer (`keyframes/f2-atardecer-*.jpg`, `scripts/dusk-variant.py`): la misma imagen que P0, con la sala más oscura y cálida, los hologramas y el logo brillando y la vista en hora azul. No se hizo con Magnific relight porque entrega 2K y puede mover detalles; el cierre es la reversa de P0 y tiene que coincidir pixel a pixel.
 - Loop de 10 s: Kling 3.0 en Magnific, 1080p, con el primer y el último frame iguales a P0.
 
-Pendiente: la toma propia del Golden Gate (Nicolas).
+Pendiente: nada en la escena. Antes de publicar, confirmar en la cuenta de Magnific/Freepik que la licencia de la foto del Golden Gate no exige atribución.
