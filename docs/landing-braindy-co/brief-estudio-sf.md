@@ -22,7 +22,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 - 16:9, mínimo 3840 × 2160 (6K si se puede).
 - Golden hour, ~40 min antes del atardecer. Sin HDR, con grano leve. Acabado de referencia: `docs/el-estudio/closeups/cu-nico.mp4`.
 - Nicolas de espaldas, con camisa camel de gamuza (igual que cu-nico), sin cara.
-- Monitor de escritorio fotorrealista de 27", negro mate, sin logos, sin Apple, apoyado sobre la mesa a ~25 cm del borde. Teclado y mouse negros. Taza blanca lisa.
+- Monitor de escritorio fotorrealista de 27", plano (no curvo), 16:9, negro mate, pantalla mate antirreflejo, bordes finos en los cuatro lados, base delgada, sin logos ni Apple (referencia: Samsung ViewFinity S8 de 27"). Apoyado sobre la mesa a ~25 cm del borde. El borde de arriba queda a la altura de los ojos de Nico y el de abajo ~12 cm sobre la mesa. Es 16:9 para que, cuando la pantalla llena el cuadro en P2, coincida exacto con el formato de la web. Teclado y mouse negros. Taza blanca lisa.
 - Los Brains fieles a sus renders 3D, con pantallas holográficas de su color.
 - Lo que va encima después: el contenido de la pantalla, la hora del reloj, el logo del letrero y el texto de la taza.
 
@@ -33,7 +33,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 Photorealistic interior photograph of a modern brand studio in San Francisco at golden hour, about 40 minutes before sunset. One-point perspective, camera at 1.3 m height, 35 mm lens, looking straight at a floor-to-ceiling window centered on the back wall that frames the Golden Gate Bridge and the bay. Vertical lines perfectly straight, horizon at 44% of the frame height.
 
 A round white marble table with grey veins stands in the middle of the room. Five seats around it:
-- Near-right seat: a man seen from behind (dark short hair, short beard, camel suede overshirt), hands on a black keyboard. In front of him, standing firmly on the table about 25 cm in from the edge, a photorealistic 27-inch black desktop monitor with thin bezels and a black stand, no logos, facing the camera perfectly frontally, its edges parallel to the frame. The screen shows a clean, bright, white app interface. A plain white espresso cup on a saucer to his left.
+- Near-right seat: a man seen from behind (dark short hair, short beard, camel suede overshirt), hands on a black keyboard. In front of him, standing firmly on the table about 25 cm in from the edge, a photorealistic 27-inch flat (not curved) 16:9 desktop monitor, matte black, matte anti-glare screen, thin bezels on all four sides, slim black stand, no logos, facing the camera perfectly frontally, its edges parallel to the frame. The top edge of the screen is at his eye level and the bottom edge about 12 cm above the table. The screen shows a clean, bright, white app interface. A plain white espresso cup on a saucer to his left.
 - Near-left seat: a cyan plush furry character seen from behind.
 - Far-left seat: an amber plush furry character holding a magnifying glass, facing the camera.
 - Head of the table, far center: a blue plush furry character, facing the camera.
@@ -55,7 +55,7 @@ Same scene and lighting. The camera is now very close behind the man's shoulder,
 
 ### Negativo
 ```
-Apple products, apple logo, MacBook, iMac, laptop, tilted or angled monitor, readable text, letters, logos, garbled writing, HDR look, oversharpening, halos, plastic skin, CGI render look, fisheye, wide-angle distortion, converging verticals, the man's face, extra characters, extra people, cluttered table.
+Apple products, apple logo, MacBook, iMac, laptop, curved monitor, ultrawide monitor, glossy screen reflections, tilted or angled monitor, readable text, letters, logos, garbled writing, HDR look, oversharpening, halos, plastic skin, CGI render look, fisheye, wide-angle distortion, converging verticals, the man's face, extra characters, extra people, cluttered table.
 ```
 
 ### D · Variante atardecer (final F2) · Magnific relight
