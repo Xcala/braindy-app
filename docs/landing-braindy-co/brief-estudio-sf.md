@@ -41,7 +41,7 @@ A round white marble table with grey veins stands in the middle of the room. Fiv
 - Far-right seat: a violet plush furry character, facing the camera.
 The four characters match the attached 3D renders exactly: round sun-like heads with soft spikes and wide smiles, soft believable fur. Each one works on a translucent holographic screen glowing in its own color.
 
-Back wall, right of the window, facing the camera: a dark digital wall clock and, below it, a plain backlit sign plate. Left of the window: warm walnut shelves with plants and books. Warm low ceiling lights, soft natural window light, gentle contrast, realistic materials, subtle film grain. Editorial architecture photography, not CGI.
+Back wall, right of the window, facing the camera: a dark digital wall clock and, below it, a plain backlit sign plate. Left of the window: warm walnut shelves with plants and books. The view through the window looks like a real photograph: slight atmospheric haze, the bridge a little softer than the table because focus is on the interior, the window slightly brighter than the room. Warm low ceiling lights, soft natural window light, gentle contrast, realistic materials, subtle film grain. Editorial architecture photography, not CGI.
 ```
 
 ### B · Sobre el hombro (P1)
@@ -56,7 +56,7 @@ Same scene and lighting. The camera is now very close behind the man's shoulder,
 
 ### Negativo
 ```
-Apple products, apple logo, MacBook, iMac, laptop, curved monitor, ultrawide monitor, glossy screen reflections, tilted or angled monitor, readable text, letters, logos, garbled writing, HDR look, oversharpening, halos, plastic skin, CGI render look, fisheye, wide-angle distortion, converging verticals, the man's face, extra characters, extra people, cluttered table.
+Apple products, apple logo, MacBook, iMac, laptop, curved monitor, ultrawide monitor, glossy screen reflections, tilted or angled monitor, readable text, letters, logos, garbled writing, HDR look, oversharpening, halos, plastic skin, CGI render look, fisheye, wide-angle distortion, converging verticals, the man's face, extra characters, extra people, cluttered table, painterly texture, oil painting look, smeared water, posterization, banding, crunchy detail, halos around edges, pink haze, hyper-detailed background.
 ```
 
 ### D · Variante atardecer (final F2) · Magnific relight
@@ -66,7 +66,7 @@ Relight the same scene to dusk, about 10 minutes after sunset: deep orange and p
 
 ## Orden de producción
 1. Maestra P0 en Higgsfield: prompt A con referencias (fotos de Nicolas, renders de los Brains, `braindy-background-SF-big.jpg`, studio-sf.jpg y un fotograma de cu-nico), con 3–4 variantes. Nicolas elige.
-2. Magnific: escalar a 4K/6K y retocar el pelaje y el HDR.
+2. Magnific: una sola pasada en modo Precision (`ultra-photo` o `ultra-sublime` a 2x, nitidez 5–7, grano 8–10, sin HDR), en PNG. Nunca el modo Creative: es el que deja la textura de óleo de la ventana actual.
 3. Keyframes P1 y P2 desde la maestra (prompts B y C) y escalarlos igual.
 4. Variante atardecer con Magnific relight (prompt D).
 5. Kling 3.0: dos clips con primer y último frame fijos, P0 → P1 y P1 → P2.
@@ -76,3 +76,11 @@ Relight the same scene to dusk, about 10 minutes after sunset: deep orange and p
 - ¿Los Brains siguen con pantallas holográficas? Recomendado: sí. Nicolas trabaja con un computador real y sus Brains con hologramas.
 - ¿Golden hour al abrir y atardecer al cerrar? Recomendado: sí.
 - ¿La taza lleva "Café de Colombia"? Se puede agregar en post.
+
+## La ventana y la textura
+La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, colores en escalones, halos y un velo rosado. Viene de generar pequeño y escalar en modo creativo. En la escena nueva:
+- Generar grande desde el inicio.
+- Escalar una sola vez en modo Precision, nunca Creative, sin HDR y trabajando en PNG.
+- Pedir la vista como en una foto real de interiores: algo de bruma, el puente un poco más suave que la mesa y la ventana algo más luminosa.
+- Usar una foto real de la vista como referencia.
+- Opción máxima: reemplazar la vista por una foto o un video real en 4K (grabado por Nicolas con trípode). La ventana está de frente, así que es posible; requiere recortar a los Brains que la tapan.
