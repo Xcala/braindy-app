@@ -8,7 +8,7 @@ Lo que se reutiliza es la técnica. No se copian sus textos, sus assets ni su es
 
 ## 1. La idea en una línea
 
-Arrancamos en el estudio de SF con la mesa redonda, Nicolas y sus cuatro Brains. La cámara se acerca al puesto de Nico, su laptop se abre y entramos en su pantalla. Adentro está el mundo de Braindy, recorrido capítulo por capítulo con los colores de cada Brain. Al final salimos de la pantalla de vuelta al estudio, para el CTA.
+Arrancamos en el estudio de SF con la mesa redonda, Nicolas y sus cuatro Brains. La cámara se acerca por detrás de Nico y entramos en la pantalla que él está mirando. Adentro está el mundo de Braindy, recorrido capítulo por capítulo con los colores de cada Brain. Al final salimos de la pantalla de vuelta al estudio, para el CTA.
 
 Esto cuenta exactamente lo que hacemos: todo pasa por la pantalla de Nicolas. Por eso el inicio y el final ocurren en su mesa.
 
@@ -20,7 +20,7 @@ Esto cuenta exactamente lo que hacemos: todo pasa por la pantalla de Nicolas. Po
 |---|---|---|
 | Framework | Sigue siendo **Astro**, que es lo que ya usa braindy.co. El viaje 3D es una isla `client:only` en vanilla TS | Igual que aibuilders: Three.js sin React. No hace falta Next. El resto del sitio (blog, work, ES/EN) no se toca |
 | 3D | **Three.js** (versión fija), GSAP + ScrollTrigger (ticker), **Lenis** | El mismo stack probado. Liviano y con control total |
-| Prólogo (estudio → laptop → pantalla) | **Secuencia de imágenes fotorreal scrubbeada por scroll** (técnica Apple), no 3D en tiempo real | El estudio es fotorreal y un estudio 3D procedural se vería más pobre. La secuencia mantiene el nivel de `studio-sf.jpg` |
+| Prólogo (estudio → hombro de Nico → su pantalla) | **Secuencia de imágenes fotorreal scrubbeada por scroll** (técnica Apple), no 3D en tiempo real | El estudio es fotorreal y un estudio 3D procedural se vería más pobre. La secuencia mantiene el nivel de `studio-sf.jpg` |
 | Paso al mundo 3D | Corte en el instante en que **la pantalla de Nico llena el cuadro**. Es una superficie plana y luminosa, así que el empalme no se nota | Es el mismo "cross" que usa aibuilders entre los mundos `room` y `uni` |
 | Letras 3D | **Red Hat Display 900** convertida en build a geometría (opentype.js → JSON de shapes → `ExtrudeGeometry`) | No parseamos la fuente en el navegador como ellos (por eso les salía el error de GSUB). Así carga más rápido |
 | Texto | Todo el copy son **overlays HTML reales**, con i18n ES/EN | SEO, accesibilidad y traducción. El canvas solo es decoración |
@@ -47,10 +47,8 @@ Cada fila es un tramo de la cámara. El color es la atmósfera (fondo, niebla y 
 | # | Cámara | Overlay (EN, con ES en i18n) | Atmósfera |
 |---|---|---|---|
 | P0 | Plano amplio del estudio SF: Golden Gate, mesa redonda, los 4 Brains, Nicolas de espaldas. Loop vivo de 10 s (`studio-loop.mp4`) mientras no hay scroll | Eyebrow "From Silicon Valley, for Latino-owned brands" · H1 **"Let's make your brand matter to buyers / people / culture / business."** (la palabra rota como hoy) · CTA "Start the brief" · reloj en vivo SF / Bogotá sobre el letrero | Golden hour cálido |
-| P1 | Dolly lento por detrás de Nicolas. Los Brains salen de cuadro a los lados | Pill: "Every brand we've made started at this table." | Cálido |
-| P2 | Plano sobre el hombro: su laptop **PC (sin manzana, tipo Samsung/Galaxy Book)** cerrada sobre el mármol, al lado del café de Colombia | "Scroll to open" | Cálido, el fondo se desenfoca |
-| P3 | **La laptop se abre** (la bisagra gira) y la pantalla se enciende con el logo de Braindy | — | La pantalla ilumina la cara de la escena |
-| P4 | Push-in hasta que la pantalla llena el cuadro | Big line: **"Step inside."** | Fundido a azul Braindy |
+| P1 | Dolly lento por detrás de Nicolas, hasta quedar sobre su hombro. Los Brains salen de cuadro a los lados | Pill: "Every brand we've made started at this table." | Cálido |
+| P2 | Sin cortes desde P1: sobre el hombro de Nicolas, la cámara entra en **la pantalla que él está mirando** (la de Braindy, con la paleta y el check) hasta que llena el cuadro. No hay laptop: es su pantalla de la escena | Big line: **"Step inside."** | Fundido a azul Braindy |
 
 ### Cruce · El túnel (desde aquí todo es 3D en tiempo real)
 | # | Cámara | Overlay | Atmósfera |
@@ -167,8 +165,8 @@ La pieza que más tiempo ahorra es el **editor de cámara de debug**. Componer ~
 |---|---|---|
 | Plano amplio del estudio + loop | `studio-sf.jpg` / `studio-loop.mp4` | **Existen** |
 | Close-ups por puesto (Brains + Nico) | `closeups/cu-*.mp4` | **Existen** |
-| **Secuencia del prólogo** (estudio → hombro de Nico → laptop PC que se abre → push-in a la pantalla) | Higgsfield/Kling encadenando keyframes: (1) studio-sf, (2) sobre el hombro, (3) laptop cerrada, (4) laptop abierta, (5) pantalla llenando el cuadro. Cámara controlada y 3–4 clips empalmados por frame común | **Nuevo**. Es el asset crítico |
-| Contenido de la pantalla de Nico | Captura o video real de app.braindy.co, que se "enciende" en P3 | Nuevo (fácil) |
+| **Secuencia del prólogo** (estudio → hombro de Nico → su pantalla llenando el cuadro) | Higgsfield/Kling con 3 keyframes: (1) studio-sf, (2) sobre el hombro, (3) su pantalla llenando el cuadro. Cámara controlada y 2 clips empalmados por un frame común | **Nuevo**. Es el asset crítico |
+| Contenido de la pantalla de Nico en alta | La UI de Braindy que se ve en su pantalla, rehecha en alta. Es el último frame del video y el primero del túnel | Nuevo (fácil) |
 | Mapa de profundidad del estudio (parallax en P0 con el mouse) | Magnific `images_depth_map` | Nuevo (opcional) |
 | Glifos 3D Red Hat Display 900 | Script de build | Nuevo |
 | Avatares 3D de los Brains con loop | Ya están en las URLs de assets de Brains | **Existen** |
@@ -176,7 +174,7 @@ La pieza que más tiempo ahorra es el **editor de cámara de debug**. Componer ~
 | Caobos 2014–2026 | `/img/caobos-years/*` | **Existen** |
 | Fotos de Silicon Valley | De braindy.co actual | **Existen** |
 
-Reglas de imagen: Nicolas siempre de espaldas o de perfil (como en `studio-sf`) y reconocible si aparece. **Sin productos Apple**: laptop PC/Samsung sin logo de manzana.
+Reglas de imagen: Nicolas siempre de espaldas o de perfil (como en `studio-sf`) y reconocible si aparece. **Sin productos Apple**. No se agrega ninguna laptop: entramos en la pantalla que ya está en la escena.
 
 ---
 
