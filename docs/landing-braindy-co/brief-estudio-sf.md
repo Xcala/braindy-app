@@ -97,4 +97,4 @@ La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, color
 - La perspectiva no tiene que coincidir: a ~2 km, la vista se mueve unos 3 px en todo el recorrido.
 
 ## Contenido de la pantalla de Nico (14-nov-2026)
-No lleva la UI de Braindy. Muestra en vivo el mismo túnel 3D de marcos luminosos, en los colores de los Brains, con el que empieza el mundo de Braindy. El zoom endereza la pantalla y entra en el túnel sin cortes, con "Step inside." encima. Prototipo: `scripts/zoom-to-screen.py` y `keyframes/zoom-p0-p2.mp4`.
+No lleva la UI de Braindy: en la imagen base la pantalla va completamente en negro y sin elementos (`keyframes/p0-escena-maestra-*.jpg`). Encima se muestra en vivo el mismo túnel 3D de marcos luminosos, en los colores de los Brains, con el que empieza el mundo de Braindy. El zoom endereza la pantalla y entra en el túnel sin cortes, con "Step inside." encima. Prototipo: `scripts/zoom-to-screen.py` y `keyframes/zoom-p0-p2.mp4`.
