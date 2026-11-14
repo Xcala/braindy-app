@@ -9,7 +9,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 - Ventanal centrado al fondo, con el Golden Gate. Reloj y placa del letrero a la derecha del ventanal, de frente. Repisas a la izquierda.
 - Mesa redonda de mármol blanco al centro.
 - Puestos: Builder en la cabecera; Researcher al fondo a la izquierda y Marketer al fondo a la derecha, los tres de frente. Creator adelante a la izquierda y Nicolas adelante a la derecha, los dos de espaldas.
-- El monitor de 27" de Nico, de frente a la cámara y a la derecha del eje, sin tapar al Builder.
+- El monitor de 27" de Nico va bien apoyado sobre la mesa, a unos 25 cm del borde, de frente a la cámara y a la derecha del eje, sin tapar al Builder. El teclado queda entre el monitor y Nico.
 
 ## Encuadres
 | Keyframe | Lente / altura | Composición |
@@ -22,7 +22,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 - 16:9, mínimo 3840 × 2160 (6K si se puede).
 - Golden hour, ~40 min antes del atardecer. Sin HDR, con grano leve. Acabado de referencia: `docs/el-estudio/closeups/cu-nico.mp4`.
 - Nicolas de espaldas, con camisa camel de gamuza (igual que cu-nico), sin cara.
-- Monitor de escritorio fotorrealista de 27", negro mate, sin logos, sin Apple. Teclado y mouse negros. Taza blanca lisa.
+- Monitor de escritorio fotorrealista de 27", negro mate, sin logos, sin Apple, apoyado sobre la mesa a ~25 cm del borde. Teclado y mouse negros. Taza blanca lisa.
 - Los Brains fieles a sus renders 3D, con pantallas holográficas de su color.
 - Lo que va encima después: el contenido de la pantalla, la hora del reloj, el logo del letrero y el texto de la taza.
 
@@ -33,7 +33,7 @@ Todo va de frente y paralelo a la cámara (perspectiva de un punto). La cámara 
 Photorealistic interior photograph of a modern brand studio in San Francisco at golden hour, about 40 minutes before sunset. One-point perspective, camera at 1.3 m height, 35 mm lens, looking straight at a floor-to-ceiling window centered on the back wall that frames the Golden Gate Bridge and the bay. Vertical lines perfectly straight, horizon at 44% of the frame height.
 
 A round white marble table with grey veins stands in the middle of the room. Five seats around it:
-- Near-right seat: a man seen from behind (dark short hair, short beard, camel suede overshirt), hands on a black keyboard. In front of him, on the table, a photorealistic 27-inch black desktop monitor with thin bezels and a black stand, no logos, facing the camera perfectly frontally, its edges parallel to the frame. The screen shows a clean, bright, white app interface. A plain white espresso cup on a saucer to his left.
+- Near-right seat: a man seen from behind (dark short hair, short beard, camel suede overshirt), hands on a black keyboard. In front of him, standing firmly on the table about 25 cm in from the edge, a photorealistic 27-inch black desktop monitor with thin bezels and a black stand, no logos, facing the camera perfectly frontally, its edges parallel to the frame. The screen shows a clean, bright, white app interface. A plain white espresso cup on a saucer to his left.
 - Near-left seat: a cyan plush furry character seen from behind.
 - Far-left seat: an amber plush furry character holding a magnifying glass, facing the camera.
 - Head of the table, far center: a blue plush furry character, facing the camera.
