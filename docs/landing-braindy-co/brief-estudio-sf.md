@@ -72,10 +72,12 @@ Relight the same scene to dusk, about 10 minutes after sunset: deep orange and p
 5. Kling 3.0: dos clips con primer y último frame fijos, P0 → P1 y P1 → P2.
 6. Seguir los rectángulos de la pantalla, el reloj y el letrero en cada frame y montar el contenido en vivo.
 
-## Para decidir antes de generar
-- ¿Los Brains siguen con pantallas holográficas? Recomendado: sí. Nicolas trabaja con un computador real y sus Brains con hologramas.
-- ¿Golden hour al abrir y atardecer al cerrar? Recomendado: sí.
-- ¿La taza lleva "Café de Colombia"? Se puede agregar en post.
+## Decisiones (14-nov-2026)
+- Los Brains con pantallas holográficas de su color; Nicolas con un computador real.
+- Los Brains de fieltro, sin ojos ni nariz (la misma versión de los close-ups). La cara es solo la sonrisa negra y la cabeza tiene puntas suaves como un sol.
+- Golden hour al abrir y atardecer al cerrar.
+- La taza lleva "Café de Colombia", agregado en post.
+- La vista de la ventana es real, grabada por Nicolas.
 
 ## La ventana y la textura
 La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, colores en escalones, halos y un velo rosado. Viene de generar pequeño y escalar en modo creativo. En la escena nueva:
@@ -84,3 +86,12 @@ La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, color
 - Pedir la vista como en una foto real de interiores: algo de bruma, el puente un poco más suave que la mesa y la ventana algo más luminosa.
 - Usar una foto real de la vista como referencia.
 - Opción máxima: reemplazar la vista por una foto o un video real en 4K (grabado por Nicolas con trípode). La ventana está de frente, así que es posible; requiere recortar a los Brains que la tapan.
+
+## Cómo grabar la vista real
+- Dónde: Baker Beach o el mirador de Lands End, mirando al norte, con el puente de lado y Marin detrás.
+- Cuándo: golden hour (~40 min antes del atardecer). Si se puede, otra toma 10 min después del atardecer, para el cierre.
+- Equipo: Samsung en trípode (obligatorio).
+- Encuadre: horizontal 16:9, teléfono nivelado (grilla y nivel activos), horizonte al centro, puente completo y aire arriba y abajo. Lente 1x, sin zoom digital.
+- Ajustes: video 4K 30 fps, exposición y foco bloqueados sobre el puente, sin estabilización por software y sin HDR.
+- Qué grabar: una toma fija de 30 s y una foto RAW (modo Pro) del mismo encuadre como plan B.
+- La perspectiva no tiene que coincidir: a ~2 km, la vista se mueve unos 3 px en todo el recorrido.
