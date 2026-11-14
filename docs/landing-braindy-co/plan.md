@@ -48,7 +48,7 @@ Cada fila es un tramo de la cámara. El color es la atmósfera (fondo, niebla y 
 |---|---|---|---|
 | P0 | Plano amplio del estudio SF: Golden Gate, mesa redonda, los 4 Brains, Nicolas de espaldas. Loop vivo de 10 s (`studio-loop.mp4`) mientras no hay scroll | Eyebrow "From Silicon Valley, for Latino-owned brands" · H1 **"Let's make your brand matter to buyers / people / culture / business."** (la palabra rota como hoy) · CTA "Start the brief" · reloj en vivo SF / Bogotá sobre el letrero | Golden hour cálido |
 | P1 | Dolly lento por detrás de Nicolas, hasta quedar sobre su hombro. Los Brains salen de cuadro a los lados | Pill: "Every brand we've made started at this table." | Cálido |
-| P2 | Sin cortes desde P1: sobre el hombro de Nicolas, la cámara entra en **la pantalla que él está mirando** (la de Braindy, con la paleta y el check) y su pantalla se funde a negro con **"Step inside."** escrito en ella, en la perspectiva real de la pantalla (keyframe: `keyframes/p2-step-inside.jpg`). La cámara sigue hasta que la pantalla negra llena el cuadro. No hay laptop: es su pantalla de la escena | "Step inside." sobre su pantalla | Negro |
+| P2 | Sin cortes desde P1: sobre el hombro de Nicolas, la cámara entra en **la pantalla que él está mirando** y su pantalla muestra **el túnel de marcos luminosos** en los colores de los Brains (el mismo túnel 3D que sigue), con **"Step inside."** encima (keyframe: `keyframes/p2-step-inside.jpg`). La cámara sigue hasta que la pantalla negra llena el cuadro. No hay laptop: es su pantalla de la escena | "Step inside." sobre su pantalla | Negro |
 
 ### Cruce · El túnel (desde aquí todo es 3D en tiempo real)
 | # | Cámara | Overlay | Atmósfera |
@@ -166,7 +166,7 @@ La pieza que más tiempo ahorra es el **editor de cámara de debug**. Componer ~
 | Plano amplio del estudio + loop | `studio-sf.jpg` / `studio-loop.mp4` | **Existen** |
 | Close-ups por puesto (Brains + Nico) | `closeups/cu-*.mp4` | **Existen** |
 | **Secuencia del prólogo** (estudio → hombro de Nico → su pantalla llenando el cuadro) | Higgsfield/Kling con 3 keyframes: (1) studio-sf, (2) sobre el hombro, (3) su pantalla llenando el cuadro. Cámara controlada y 2 clips empalmados por un frame común | **Nuevo**. Es el asset crítico |
-| Contenido de la pantalla de Nico en alta | La UI de Braindy que se ve en su pantalla, rehecha en alta. Es el último frame del video y el primero del túnel | Nuevo (fácil) |
+| Contenido de la pantalla de Nico | El túnel 3D renderizado en vivo dentro de su pantalla (con la perspectiva de sus 4 esquinas). El zoom entra en él sin cortes | Nuevo (fácil) |
 | Mapa de profundidad del estudio (parallax en P0 con el mouse) | Magnific `images_depth_map` | Nuevo (opcional) |
 | Glifos 3D Red Hat Display 900 | Script de build | Nuevo |
 | Avatares 3D de los Brains con loop | Ya están en las URLs de assets de Brains | **Existen** |
