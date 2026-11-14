@@ -35,3 +35,10 @@ Regla (Nicolas, 14 nov 2026): /studio narra **exactamente el mismo contenido** q
 - Atmósfera: se abandonan NIGHT / PAPER / AMBER inventados; se usan los tonos de `World.astro`.
 - Overlays: se borra toda la copy placeholder; todo sale de `copy(lang)` y de los JSON.
 - i18n: /studio y /es/studio.
+
+## Decisiones aprobadas (storyboard v3, 14 nov 2026)
+- Palabras 3D: OUR WORK, SOLUTIONS, BRAINTRUST. Nunca llevan card: la palabra es el título.
+- Navegación como el referente: nuestros elementos reales (films, piezas, clips, citas, fotos, capturas, Brains) sueltos, sin fondo ni marco, flotando en perspectiva a distintas profundidades; la cámara pasa entre ellos.
+- Texto en medio del recorrido: card blanca con kicker y su línea. En las tomas del estudio (P0 y el cierre) el texto va directo sobre la foto, sin card.
+- Never one and done: más corto (2014, 2018, 2022, 2026), sin card ni regla; las piezas vienen hacia la cámara. Pendiente: recortar las piezas sin su fondo desenfocado.
+- Hecho en /studio (rama studio-3d de braindy-co): hero, túnel y capítulo 1 (Our work).
