@@ -1,13 +1,13 @@
 # Prototype: zoom from the studio master shot into Nico's screen (P0 -> P2). The screen shows a glowing tunnel in the Brain colors.
-# Usage: python3 zoom-to-screen.py master.png out_dir [frames] [font.woff]
-# The screen quad (4 corners in the source image) is hand-measured; the web version does the same with a CSS/WebGL homography.
+# Usage: python3 zoom-to-screen.py master.jpg out_dir [frames] [font.woff]
+# The screen quad was measured on the 1376 px master and is scaled to the input size; the web version does the same with a CSS/WebGL homography.
 import sys, numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 src=Image.open(sys.argv[1]).convert('RGB'); out_dir=sys.argv[2]
 FONT=sys.argv[4] if len(sys.argv)>4 else 'red-hat-display-latin-900-normal.woff'  # Red Hat Display 900 (@fontsource/red-hat-display)
-OW,OH=1280,720
+OW,OH=(1920,1080) if src.size[0]>3000 else (1280,720)
 SW,SH=src.size
-quad=np.array([(747,379.5),(962,368),(967,503),(752,530)],float)   # screen glass TL TR BR BL in source
+quad=np.array([(747,379.5),(962,368),(967,503),(752,530)],float)*(src.size[0]/1376)   # screen glass TL TR BR BL (measured on the 1376 px master)
 sx,sy=OW/SW,OH/SH
 start=quad*[sx,sy]                         # where the screen sits when we see the whole frame
 w=OW*0.90; h=w*9/16
