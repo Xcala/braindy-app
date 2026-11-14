@@ -98,3 +98,22 @@ La ventana actual se ve pintada al óleo: manchas en el agua y los cerros, color
 
 ## Contenido de la pantalla de Nico (14-nov-2026)
 No lleva la UI de Braindy: en la imagen base la pantalla va completamente en negro y sin elementos (`keyframes/p0-escena-maestra-*.jpg`). Encima se muestra en vivo el mismo túnel 3D de marcos luminosos, en los colores de los Brains, con el que empieza el mundo de Braindy. El zoom endereza la pantalla y entra en el túnel sin cortes, con "Step inside." encima. Prototipo: `scripts/zoom-to-screen.py` y `keyframes/zoom-p0-p2.mp4`.
+
+## Revisión de la escena maestra (14-nov-2026)
+Archivo: `keyframes/p0-escena-maestra-5504.jpg` (web: `-3840.jpg`).
+
+Cumple:
+- Monitor de 27" negro, sin logo y sin Apple. Está casi de frente; el zoom termina de enderezarlo. La pantalla va en negro, lista para el túnel.
+- Nicolas de espaldas, con camisa camel y sin cara (asoma un poco la oreja).
+- Los cuatro Brains de fieltro, sin ojos, con sus colores y en sus puestos.
+- Ventana con una foto real del Golden Gate (temporal, hasta que se grabe la toma propia), llevada a golden hour.
+- Sin letras inventadas: el reloj está en blanco y la taza es lisa.
+- 5504 px de ancho.
+- Acabado fotográfico: HDR bajado (menos contraste local y saturación, altas luces suaves) y profundidad de campo real a partir de un mapa de profundidad (`scripts/photo-finish.py`). El piso perdió los rayones pintados.
+
+Se aparta del brief (por haber elegido la variante A):
+- El ventanal no está centrado y la cámara no está en perspectiva de un punto. No afecta el recorrido P0 → P2.
+- En mobile (9:16), el recorte que mejor funciona va centrado entre el monitor y Nico; el Builder queda en el borde.
+- Debajo del reloj hay un círculo y no una placa. Ahí va el logo de Braindy (es un sol circular), montado en post.
+
+Pendiente: logo en el círculo, "Café de Colombia" en la taza, variante atardecer (Magnific relight), loop de 10 s y la toma propia del Golden Gate.
