@@ -3,7 +3,7 @@ import type { StringKey } from '../i18n/strings';
 /**
  * The client navigation: four sections, each one row in the menu; their pages show as tabs at the top of the page
  * (2026-11-12, after research on brand portals: «Kit de marca», «Entregas», «Biblioteca» read better than «Visual» or «Archivos»).
- * My brand also holds what used to be Deliveries; Strategy groups essence, Brain and research under one tab.
+ * My brand also holds what used to be Deliveries. Essence, Brain and Research sit in the same row (2026-11-16; before, under a «Strategy» tab).
  * Routes and section permissions stay the same, so old links keep working.
  */
 export type NavPage = { to: string; label: StringKey; tab?: StringKey };
@@ -17,9 +17,9 @@ export const NAV: NavGroup[] = [
     { to: '/deliveries', label: 'sub.deliveries' },
     { to: '/assets', label: 'sub.library' },
     { to: '/apps', label: 'sub.sites' },
-    { to: '/brand', label: 'sub.essence', tab: 'sub.strategy' },
-    { to: '/brand/brain', label: 'sub.brain', tab: 'sub.strategy' },
-    { to: '/research', label: 'sub.research', tab: 'sub.strategy' },
+    { to: '/brand', label: 'sub.essence' },
+    { to: '/brand/brain', label: 'sub.brain' },
+    { to: '/research', label: 'sub.research' },
   ] },
   // Results shows only on brands with resultsOn; the social calendar lives here next to its numbers.
   { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }, { to: '/calendar', label: 'sub.socialCal' }] },
