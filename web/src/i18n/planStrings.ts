@@ -1,6 +1,6 @@
 /** Strings for "My plan": what the brand contracted (packs, contract, weekly schedule, care, apps stack), its design plan and site hosting plan. */
 export const planEn = {
-  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'Brand', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Payments',
+  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Payments',
   'nav.plan': 'My plan', 'nav.planShort': 'My plan', 'nav.appsShort': 'Apps',
   'plan.title': 'My plan', 'plan.sub': 'What you have with Braindy: the design of your brand and the hosting of your site.',
   'plan.design': 'Design plan', 'plan.hosting': 'Site hosting',
@@ -121,7 +121,7 @@ export const planEn = {
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
-  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'Marca', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Pagos',
+  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Pagos',
   'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan', 'nav.appsShort': 'Mis apps',
   'plan.title': 'Mi plan', 'plan.sub': 'Lo que tienes con Braindy: el diseño de tu marca y el hosting de tu sitio.',
   'plan.design': 'Plan de diseño', 'plan.hosting': 'Hosting del sitio',
