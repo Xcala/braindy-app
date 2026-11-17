@@ -29,7 +29,7 @@ export function MyPlan() {
   const kickoff = useBrandDoc(current?.id, 'context/kickoff').data as { start: string; items: ChecklistItem[] } | null;
   const stack = (useBrandDoc(current?.id, 'billing/stack').data as { items?: StackItem[] } | null)?.items ?? null;
   const admin = profile?.role === 'admin';
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (plan === undefined || (contractId && contractDoc.loading)) return <p className="t-mute">{t('common.loading')}…</p>;
 
@@ -45,19 +45,14 @@ export function MyPlan() {
     void (editable === 'live' ? contractsApi.saveSchedule(id, next) : contractsApi.save(id, contract!.id, { schedule: next }));
   }
 
-  // Tabs instead of one long page; the schedule tab only when there is a schedule or a kickoff checklist.
+  // Tabs instead of one long page (they sit in the section's top row, see app/planTabs); the schedule tab only when there is a schedule or a kickoff checklist.
   const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'brand', 'site', 'payments'];
   const asked = params.get('tab') as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
-  const switcher = (
-    <nav className="seg seg-scroll" aria-label={t('plan.title')}>
-      {tabs.map((k) => <button key={k} type="button" className={tab === k ? 'is-on' : ''} aria-pressed={tab === k} onClick={() => setParams(k === 'summary' ? {} : { tab: k }, { replace: true })}>{t(`plan.tab.${k}`)}</button>)}
-    </nav>
-  );
 
   return (
     <div className="col g32">
-      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
+      <PlanView tab={tab} tabs={null} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
         payments={<PaymentsTab brand={current} />}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}

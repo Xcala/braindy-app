@@ -8,6 +8,7 @@ import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { groupOfPath, pageMatch, type NavPage } from './navGroups';
+import { usePlanTabs } from './planTabs';
 
 /**
  * The tabs of a section, at the top of each of its pages (phones and desktop): My brand → Brand kit · Deliveries · Library ·
@@ -25,12 +26,15 @@ export function SubNav() {
   const here = pages.find((p) => pageMatch(pathname, p.to));
   const tabs = pages.filter((p, i) => !p.tab || pages.findIndex((q) => q.tab === p.tab) === i);
   const inTab = here?.tab ? pages.filter((p) => p.tab === here.tab) : [];
-  if (tabs.length < 2 && inTab.length < 2) return null;
-  const on = (p: NavPage) => (p.tab ? here?.tab === p.tab : here?.to === p.to);
+  // Mi plan's own tabs join the row where /plan is: one bar, not two.
+  const plan = usePlanTabs(tabs.some((p) => p.to === '/plan'));
+  const row = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : [p]));
+  if (row.length < 2 && inTab.length < 2) return null;
+  const on = (p: NavPage) => (p.to.startsWith('/plan') ? pathname === '/plan' && plan.isOn(p.to) : p.tab ? here?.tab === p.tab : here?.to === p.to);
   return (
     <div className="col g8" style={{ marginBottom: '1.5rem' }}>
-      {tabs.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>
-        {tabs.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined}>{t(p.tab ?? p.label)}</Link>)}
+      {row.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>
+        {row.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined}>{t(p.tab ?? p.label)}</Link>)}
       </nav>}
       {inTab.length > 1 && <nav className="seg seg-scroll seg-sm" aria-label={t(here!.tab!)}>
         {inTab.map((p) => <Link key={p.to} to={p.to} className={here?.to === p.to ? 'is-on' : ''} aria-current={here?.to === p.to ? 'page' : undefined}>{t(p.label)}</Link>)}
