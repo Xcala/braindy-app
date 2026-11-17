@@ -8,6 +8,7 @@ import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
 import { Stack } from './Stack';
 import { OnceIntro } from './OnceIntro';
+import { Fold } from '../components/Fold';
 import type { BrandPlan, PackStatus, StackItem } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
@@ -27,6 +28,10 @@ export interface PlanViewProps {
   /** The explainer at the top of the summary, site and payments tabs. */
   intros?: Partial<Record<PlanTab, ReactNode>>;
   payments?: ReactNode;
+  /** Third-party apps, folded at the end of the Hosting and access tab. */
+  apps?: ReactNode;
+  /** A fold to open on arrival (?open=schedule|apps). */
+  openFold?: string;
   brandName: string;
   plan: BrandPlan | null;
   /** Third-party apps the brand runs on. */
@@ -42,7 +47,7 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, intros, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -83,7 +88,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
       {intros?.[tab] && <OnceIntro key={tab} id={tab}>{intros[tab]}</OnceIntro>}
       {tab === 'summary' && contract}
       {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
-      {tab === 'schedule' && schedule && (
+      {tab === 'summary' && (schedule || (kickoff && kickoff.items.length > 0)) && (
+        <Fold id="schedule" title={t('plan.foldSchedule')} sub={t('plan.foldScheduleSub')} open={openFold === 'schedule'}>
+      {schedule && (
         <section className="col g16" aria-labelledby="plan-gantt">
           <div className="col g4">
             <p className="label">{t('plan.b2')}</p>
@@ -94,7 +101,7 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           <Gantt schedule={schedule} onStatus={onRowStatus} />
         </section>
       )}
-      {tab === 'schedule' && kickoff && kickoff.items.length > 0 && (
+      {kickoff && kickoff.items.length > 0 && (
         <section className="card card-tight col g12" aria-labelledby="plan-kickoff">
           <div className="row g8" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <div className="col g4"><p className="label">{t('plan.bKickoff')}</p><h2 id="plan-kickoff" className="h2">{t('ctr.checklist')}</h2></div>
@@ -104,10 +111,13 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           <Checklist items={kickoff.items} start={kickoff.start} onToggle={onTick} />
         </section>
       )}
+        </Fold>
+      )}
       {tab === 'brand' && brand}
       {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
       {tab === 'site' && stack && <Stack items={stack} />}
+      {tab === 'site' && apps && <Fold id="apps" title={t('plan.foldApps')} sub={t('plan.foldAppsSub')} open={openFold === 'apps'}>{apps}</Fold>}
       {tab === 'payments' && payments}
     </div>
   );

@@ -15,6 +15,8 @@ import { Subscription } from '../plan/Subscription';
 import { BrandPieces } from '../plan/BrandPieces';
 import { PaymentsIntro, SiteIntro, SummaryIntro } from '../plan/PlanIntros';
 import { planApi, usePlan } from '../plan/usePlan';
+import { Accesses } from './Accesses';
+import { useMySections } from '../team/sections';
 
 /** Mi plan: everything the client contracted in one place. What they bought, the contract (sign it here, download it
  *  signed), the schedule by week with its deliveries, the kickoff checklist, the website's hosting and maintenance, the apps the brand runs on,
@@ -31,6 +33,7 @@ export function MyPlan() {
   const stack = (useBrandDoc(current?.id, 'billing/stack').data as { items?: StackItem[] } | null)?.items ?? null;
   const admin = profile?.role === 'admin';
   const [params] = useSearchParams();
+  const { can } = useMySections();
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (plan === undefined || (contractId && contractDoc.loading)) return <p className="t-mute">{t('common.loading')}…</p>;
 
@@ -47,15 +50,18 @@ export function MyPlan() {
   }
 
   // Tabs instead of one long page (they sit in the section's top row, see app/planTabs); the schedule tab only when there is a schedule or a kickoff checklist.
-  const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'brand', 'site', 'payments'];
+  // The schedule folds inside the summary (2026-11-17); old ?tab=schedule links land there with it open.
+  const tabs: PlanTab[] = ['summary', 'brand', 'site', 'payments'];
   const asked = params.get('tab') as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
+  const openFold = asked === 'schedule' ? 'schedule' : params.get('open') ?? undefined;
 
   return (
     <div className="col g32">
       <PlanView tab={tab} tabs={null} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
-        payments={<PaymentsTab brand={current} />}
+        payments={<PaymentsTab brand={current} />} openFold={openFold}
+        apps={can('accesses') ? <Accesses embedded /> : undefined}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
         contract={<><ProposalCard brandId={id} admin={admin} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}

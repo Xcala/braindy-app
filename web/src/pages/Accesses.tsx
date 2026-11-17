@@ -10,8 +10,8 @@ import { useAccessLog, useAccesses, type Access } from '../accesses/useAccesses'
 import { BackToAccount } from './Account';
 import { Scan } from '../components/Scan';
 
-/** Third party apps (design 07): encrypted credentials, reveal on demand, search, groups, grid, read-only log. */
-export function Accesses() {
+/** Third party apps (design 07; since 2026-11-17 folded inside Mi plan › Hosting and access, `embedded`): encrypted credentials, reveal on demand, search, groups, grid, read-only log. */
+export function Accesses({ embedded = false }: { embedded?: boolean }) {
   const { current } = useBrands();
   const { t, lang } = useI18n();
   const { list, loading, denied } = useAccesses(current?.id);
@@ -39,12 +39,12 @@ export function Accesses() {
 
   return (
     <div className="col g32">
-      <BackToAccount />
+      {!embedded && <BackToAccount />}
       <div className="row between g16 wrap">
         <div className="col g8">
-          <p className="label">{current.name}</p>
-          <h1 className="h1">{t('nav.accesses')}</h1>
-          <p className="t-mute">{t('acc.tagline')}</p>
+          {!embedded && <p className="label">{current.name}</p>}
+          {!embedded && <h1 className="h1">{t('nav.accesses')}</h1>}
+          <p className="t-mute" style={{ margin: 0 }}>{t('acc.tagline')}</p>
         </div>
         {!denied && <button className="btn btn-primary" onClick={() => setEditing('new')}>{t('acc.addAccess')}</button>}
       </div>
