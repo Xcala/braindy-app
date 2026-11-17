@@ -1,9 +1,9 @@
-import { dateLabel, dayLabel, isOverdue } from '../lib/dates';
+import { dateLabel, dayLabel, daysFrom, isOverdue } from '../lib/dates';
 import { findCategory, findSub } from './taxonomy';
 import type { BrandRequest } from './types';
 
 type Lang = 'es' | 'en';
-type T = (k: 'rr.dueOn' | 'rr.lateWas' | 'rr.deliveredOn' | 'rr.noDate', v?: Record<string, string>) => string;
+type T = (k: 'rr.dueOn' | 'rr.dueNear' | 'rr.lateWas' | 'rr.deliveredOn' | 'rr.noDate', v?: Record<string, string>) => string;
 
 /** The piece in a few words ("Tarjetas", "Carrusel"), not the long category. */
 export function pieceLabel(r: BrandRequest, lang: Lang) {
@@ -19,7 +19,9 @@ export function smartDate(r: BrandRequest, lang: Lang, t: T): { text: string; la
   }
   if (!r.dueDate) return { text: t('rr.noDate'), late: false };
   const late = r.status === 'in_production' && isOverdue(r.dueDate);
-  return { text: t(late ? 'rr.lateWas' : 'rr.dueOn', { day: dayLabel(r.dueDate, lang) }), late };
+  // «Para hoy / mañana», «Para el viernes»: today, tomorrow and yesterday take no article.
+  const near = Math.abs(daysFrom(r.dueDate) ?? 9) <= 1;
+  return { text: t(late ? 'rr.lateWas' : near ? 'rr.dueNear' : 'rr.dueOn', { day: dayLabel(r.dueDate, lang) }), late };
 }
 
 export type Missing = 'when' | 'where' | 'material';

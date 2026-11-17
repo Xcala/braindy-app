@@ -2,7 +2,7 @@
 export const askPanelEn = {
   'rf.filters': 'Filters', 'rf.done': 'Done', 'rf.more': 'More', 'rf.excelLong': 'Download Excel', 'rf.pdfLong': 'Download PDF',
   'rf.tab.active': 'Active', 'rf.tab.done': 'Delivered', 'rf.sort.action': 'Needs action first',
-  'rr.dueOn': 'Due {day}', 'rr.lateWas': 'Late · was due {day}', 'rr.deliveredOn': 'Delivered {day}', 'rr.noDate': 'No date',
+  'rr.dueOn': 'Due {day}', 'rr.dueNear': 'Due {day}', 'rr.lateWas': 'Late · was due {day}', 'rr.deliveredOn': 'Delivered {day}', 'rr.noDate': 'No date',
   'rr.missing': 'Missing: {what}', 'rr.miss.when': 'date', 'rr.miss.where': 'where', 'rr.miss.material': 'material',
   'rr.piece': 'Piece', 'rr.date': 'Date', 'rr.askedOn': 'Asked {day}',
   'rp.line': 'Your pieces are approved in {days} (typical) · {pct}% at the first version',
@@ -25,7 +25,7 @@ export const askPanelEn = {
 export const askPanelEs: Record<keyof typeof askPanelEn, string> = {
   'rf.filters': 'Filtros', 'rf.done': 'Listo', 'rf.more': 'Más', 'rf.excelLong': 'Descargar Excel', 'rf.pdfLong': 'Descargar PDF',
   'rf.tab.active': 'Activas', 'rf.tab.done': 'Entregadas', 'rf.sort.action': 'Lo que pide acción primero',
-  'rr.dueOn': 'Para el {day}', 'rr.lateWas': 'Atrasada · era para {day}', 'rr.deliveredOn': 'Entregada el {day}', 'rr.noDate': 'Sin fecha',
+  'rr.dueOn': 'Para el {day}', 'rr.dueNear': 'Para {day}', 'rr.lateWas': 'Atrasada · era para {day}', 'rr.deliveredOn': 'Entregada el {day}', 'rr.noDate': 'Sin fecha',
   'rr.missing': 'Le falta: {what}', 'rr.miss.when': 'fecha', 'rr.miss.where': 'dónde se usa', 'rr.miss.material': 'material',
   'rr.piece': 'Pieza', 'rr.date': 'Fecha', 'rr.askedOn': 'Pedida el {day}',
   'rp.line': 'Tus piezas se aprueban en {days} (lo normal) · {pct}% a la primera versión',

@@ -9,6 +9,7 @@ export const NAV_ICON: Record<string, ReactNode> = {
   '/requests': svg(<><circle cx="12" cy="12" r="9" /><path d="M12 8v8M8 12h8" /></>),
   '/assets': svg(<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />),
   '/report': svg(<path d="M4 20V10M10 20V4M16 20v-7M20 20H3" />),
+  '/resources': svg(<><path d="M12 3l2.2 5.6L20 10l-5.8 1.6L12 17l-2.2-5.4L4 10l5.8-1.4z" /><path d="M19 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" /></>),
   '/learn': svg(<><path d="M2 8l10-5 10 5-10 5z" /><path d="M6 10v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" /></>),
   '/accesses': svg(<><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></>),
   '/plan': svg(<><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /></>),
@@ -37,3 +38,7 @@ NAV_ICON['/brand/brain'] = svg(<><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0
 NAV_ICON['/research'] = svg(<><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></>);
 NAV_ICON['/apps'] = svg(<><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>);
 NAV_ICON['/calendar'] = svg(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>);
+NAV_ICON['/deliveries'] = NAV_ICON['/assets'];
+// Bottom of the menu: Wishlist (a star) and Account (a person).
+NAV_ICON['/wishlist'] = svg(<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />);
+NAV_ICON['nav.account'] = svg(<><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>);

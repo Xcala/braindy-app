@@ -7,6 +7,7 @@ import { brandAccess } from './access.js';
 import { stripe, stripeConfigured, toMinor, verifyWebhook } from './stripe.js';
 import { notify } from './notify.js';
 import { recordHostingSignup } from './hosting.js';
+import { isHostingEvent, onHostingEvent } from './hostingBrand.js';
 import type { AuthEnv } from './auth.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
@@ -18,10 +19,10 @@ type Plan = {
   status?: 'pending' | 'active' | 'past_due' | 'transfer_review' | 'canceled'; stripeCustomerId?: string; stripeSubscriptionId?: string;
   invoiceDetails?: { company?: string; taxId?: string; email?: string; whatsapp?: string };
 };
-const planRef = (b: string) => db.doc(`brands/${b}/billing/plan`);
+export const planRef = (b: string) => db.doc(`brands/${b}/billing/plan`);
 const txt = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
 
-async function ownerOrAdmin(uid: string, brandId: string) {
+export async function ownerOrAdmin(uid: string, brandId: string) {
   const a = await brandAccess(uid, brandId);
   return a.admin || a.sections.includes('billing');
 }
@@ -39,7 +40,7 @@ async function activate(brandId: string, via: string) {
   if (Object.keys(patch).length) await notify(brandId, 'welcome');
 }
 
-async function customerFor(brandId: string, plan: Plan) {
+export async function customerFor(brandId: string, plan: Plan) {
   if (plan.stripeCustomerId) return plan.stripeCustomerId;
   const brand = await db.doc(`brands/${brandId}`).get();
   const c = await stripe<{ id: string }>('POST', 'customers', {
@@ -218,8 +219,10 @@ stripeWebhook.post('/stripe', async (c) => {
   if (!brandId && o.metadata?.kind === 'hosting' && evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
     await recordHostingSignup(o);
   }
+  const hosting = !!brandId && isHostingEvent(o, (await planRef(brandId).get()).data() ?? {});
+  if (brandId && hosting) await onHostingEvent(brandId, evt.type, o);
   if (brandId) {
-    if (evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
+    if (!hosting && evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
       if (o.subscription) await planRef(brandId).set({ stripeSubscriptionId: o.subscription }, { merge: true });
       if (o.customer) await Promise.all([planRef(brandId).set({ stripeCustomerId: o.customer }, { merge: true }), db.doc(`stripeCustomers/${o.customer}`).set({ brandId })]);
       await activate(brandId, 'stripe');
@@ -230,9 +233,9 @@ stripeWebhook.post('/stripe', async (c) => {
         status: evt.type === 'invoice.paid' ? 'paid' : 'failed', date: new Date((o.created ?? Date.now() / 1000) * 1000),
         pdfUrl: o.invoice_pdf ?? null, hostedUrl: o.hosted_invoice_url ?? null, source: 'stripe',
       }, { merge: true });
-      await planRef(brandId).set({ status: evt.type === 'invoice.paid' ? 'active' : 'past_due', ...(o.period_end ? { nextChargeAt: new Date(o.period_end * 1000) } : {}) }, { merge: true });
+      if (!hosting) await planRef(brandId).set({ status: evt.type === 'invoice.paid' ? 'active' : 'past_due', ...(o.period_end ? { nextChargeAt: new Date(o.period_end * 1000) } : {}) }, { merge: true });
     }
-    if (evt.type === 'customer.subscription.updated' || evt.type === 'customer.subscription.deleted') {
+    if (!hosting && (evt.type === 'customer.subscription.updated' || evt.type === 'customer.subscription.deleted')) {
       await planRef(brandId).set({
         status: evt.type === 'customer.subscription.deleted' ? 'canceled' : o.status === 'past_due' ? 'past_due' : 'active',
         ...(o.current_period_end ? { nextChargeAt: new Date(o.current_period_end * 1000) } : {}),

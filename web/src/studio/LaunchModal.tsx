@@ -16,7 +16,7 @@ export function LaunchModal({ w, sub, onClose, children }: { w: Work; sub: strin
   }, [onClose]);
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={box} className="modal col g12 w-full max-w-[880px]" role="dialog" aria-modal="true" aria-labelledby="launch-title">
+      <div ref={box} className="modal col g12 w-full max-w-[55rem]" role="dialog" aria-modal="true" aria-labelledby="launch-title">
         <div className="row between g8">
           <div className="col min-w-0">
             <h2 className="h3 truncate" id="launch-title">{w.title}</h2>

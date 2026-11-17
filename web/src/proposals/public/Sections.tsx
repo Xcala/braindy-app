@@ -11,6 +11,7 @@ export interface PublicProposal {
   toB?: { target?: string; changes?: string };
   options?: Partial<Record<OptionKey | 'aiAgents', { price?: string }>>;
   recommended?: OptionKey;
+  currency?: string;
   files: Array<{ id: string; title: string }>;
   acceptance?: { name: string; role?: string; email?: string; at?: { _seconds?: number; seconds?: number } };
 }
@@ -23,7 +24,7 @@ export function Hero({ c, p, dateLabel, validLabel, onLang, lang }: { c: PublicC
   return (
     <section className="stage flex flex-col gap-12 px-5 py-8 sm:px-14 sm:py-12" data-section="0">
       <div className="row between g16 wrap">
-        <img src="/brand/braindy-logo-light.svg" alt="Braindy" style={{ height: 32 }} />
+        <img src="/brand/braindy-logo-light.svg" alt="Braindy" style={{ height: '2rem' }} />
         <div className="lang" role="group" aria-label="Language" style={{ borderColor: 'rgba(255,255,255,.3)' }}>
           {(['en', 'es'] as const).map((l) => <button key={l} aria-pressed={lang === l} className={lang === l ? 'is-on' : ''} style={lang === l ? { background: '#fff', color: 'var(--ink)' } : { color: '#fff' }} onClick={() => onLang(l)}>{l.toUpperCase()}</button>)}
         </div>
@@ -35,7 +36,7 @@ export function Hero({ c, p, dateLabel, validLabel, onLang, lang }: { c: PublicC
           <p className="t-lg muted">{c.heroBody}</p>
           <div className="row g12 wrap"><a className="btn btn-white" href="#options">{c.seeOptions}</a><a className="btn btn-outline-light" href="#talk">{c.talk}</a></div>
         </div>
-        <div className="shot overflow-hidden rounded-[20px]"><img src={img('ipark-film')} alt="iPark" className="w-full" /><span className="tag">{c.watch}</span></div>
+        <div className="shot overflow-hidden rounded-[1.25rem]"><img src={img('ipark-film')} alt="iPark" className="w-full" /><span className="tag">{c.watch}</span></div>
       </div>
       <div className="col g16">
         <div className="rule-line" />
@@ -51,7 +52,7 @@ export function Hero({ c, p, dateLabel, validLabel, onLang, lang }: { c: PublicC
 /** One brief in, everything back: the iPark case (also shown on Home). */
 export function IparkCase({ c }: { c: PublicCopy }) {
   return (
-    <div className="stage col g32 rounded-[28px] p-6 sm:p-12">
+    <div className="stage col g32 rounded-[1.75rem] p-6 sm:p-12">
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="col g16"><p className="label" style={{ color: '#C9D0DE' }}>{c.caseLabel}</p><h3 className="d-lg" style={{ color: '#fff' }}><span className="w9">{c.case1}</span> {c.case2}</h3></div>
         <p className="t-lg muted self-end">{c.caseBody}</p>
@@ -60,11 +61,11 @@ export function IparkCase({ c }: { c: PublicCopy }) {
         {c.caseShots.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-[4/3] w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
       </div>
       <div className="rule-line" />
-      <h3 className="kicker" style={{ fontSize: 22 }}><b>{c.caseAfter1}</b> {c.caseAfter2}</h3>
+      <h3 className="kicker" style={{ fontSize: '1.375rem' }}><b>{c.caseAfter1}</b> {c.caseAfter2}</h3>
       <div className="grid gap-3 md:grid-cols-2">
         {c.caseEnd.map(([f, label]) => <div key={f} className="shot overflow-hidden rounded-2xl"><img src={img(f)} alt={label} className="aspect-video w-full object-cover" loading="lazy" /><span className="tag">{label}</span></div>)}
       </div>
-      <p className="kicker" style={{ fontSize: 24 }}><span className="w3">{c.caseKicker1}</span> <b>{c.caseKicker2}</b></p>
+      <p className="kicker" style={{ fontSize: '1.5rem' }}><span className="w3">{c.caseKicker1}</span> <b>{c.caseKicker2}</b></p>
     </div>
   );
 }
@@ -102,7 +103,7 @@ export function FromAtoB({ c, p }: { c: PublicCopy; p: PublicProposal }) {
 export function Braintrust({ c }: { c: PublicCopy }) {
   return (
     <section className="stage grid gap-10 px-5 py-16 sm:px-14 lg:grid-cols-[420px_1fr]" data-section="3">
-      <div className="relative overflow-hidden rounded-[24px]">
+      <div className="relative overflow-hidden rounded-[1.5rem]">
         <img src={img('nicolas')} alt={c.sigCard} className="h-full w-full object-cover" loading="lazy" />
         <div className="glass-dark absolute bottom-4 left-4 right-4 rounded-2xl p-4"><p className="w7">{c.sigCard}</p><p className="t-sm">{c.founderRole}</p></div>
       </div>
@@ -142,7 +143,7 @@ export function Options({ c, p, onPick }: { c: PublicCopy; p: PublicProposal; on
   return (
     <section id="options" className="col g32 px-5 py-16 sm:px-14" data-section="5">
       <div className="col g12"><span className="sec-num">05</span><h2 className="d-lg"><span className="w9">{c.opt1}</span> {c.opt2}</h2><p className="t-mute">{c.optSub}</p></div>
-      <div className="stage row g12 rounded-2xl p-4"><img className="lighten" src="/brand/brains/four-brains.jpg" alt="" style={{ height: 48 }} /><span className="t-sm"><b>{c.allBrains1}</b> {c.allBrains2}</span></div>
+      <div className="stage row g12 rounded-2xl p-4"><img className="lighten" src="/brand/brains/four-brains.jpg" alt="" style={{ height: '3rem' }} /><span className="t-sm"><b>{c.allBrains1}</b> {c.allBrains2}</span></div>
       <div className="grid items-stretch gap-5 lg:grid-cols-3">
         {(['launch', 'transform', 'continuity'] as OptionKey[]).map((k) => {
           const o = c.options[k];
@@ -150,9 +151,9 @@ export function Options({ c, p, onPick }: { c: PublicCopy; p: PublicProposal; on
           return (
             <div key={k} className="card col g16" style={isRec ? { borderColor: 'var(--azul)', boxShadow: '0 0 0 1px var(--azul)' } : undefined}>
               <div className="row between"><span className="sec-num">{o.num}</span>{isRec && <span className="chip c-sent">{c.recommended}</span>}</div>
-              <div className="col" style={{ gap: 6 }}><h3 className="d-lg w9">{o.name}</h3><p>{o.lead}</p></div>
+              <div className="col" style={{ gap: '0.375rem' }}><h3 className="d-lg w9">{o.name}</h3><p>{o.lead}</p></div>
               {o.groups.map(([g, items]) => <div key={g} className="col g8"><p className="label">{g}</p><div className="row g8 wrap">{items.map((i) => <span key={i} className="chip chip-plain c-type">{i}</span>)}</div></div>)}
-              <div className="col g4" style={{ marginTop: 'auto' }}><span className="d-lg w9" style={{ fontSize: 36 }}>{p.options?.[k]?.price || c.price}</span><span className="t-sm t-mute">{o.per}</span></div>
+              <div className="col g4" style={{ marginTop: 'auto' }}><span className="d-lg w9" style={{ fontSize: '2.25rem' }}>{p.options?.[k]?.price || c.price}</span><span className="t-sm t-mute">{o.per}</span></div>
               <p className="t-sm t-mute">{o.note}</p>
               <button className={`btn ${isRec ? 'btn-primary' : 'btn-secondary'} btn-block`} onClick={() => onPick(k)}>{o.cta}</button>
             </div>

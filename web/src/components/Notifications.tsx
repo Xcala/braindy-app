@@ -60,13 +60,13 @@ export function Notifications() {
       </button>
       {open && (
         <div className="menu notif-panel" role="dialog" aria-label={t('notif.title')}>
-          <p className="w7" style={{ padding: '8px 12px 4px' }}>{t('notif.title')}</p>
-          {all.length === 0 && <p className="t-sm t-mute" style={{ padding: '8px 12px 12px' }}>{t('notif.empty')}</p>}
-          {toApprove.length > 0 && <p className="label" style={{ padding: '8px 12px 2px' }}>{t('notif.toApprove')} · {toApprove.length}</p>}
+          <p className="w7" style={{ padding: '0.5rem 0.75rem 0.25rem' }}>{t('notif.title')}</p>
+          {all.length === 0 && <p className="t-sm t-mute" style={{ padding: '0.5rem 0.75rem 0.75rem' }}>{t('notif.empty')}</p>}
+          {toApprove.length > 0 && <p className="label" style={{ padding: '0.5rem 0.75rem 2px' }}>{t('notif.toApprove')} · {toApprove.length}</p>}
           {toApprove.map(item)}
-          {recent.length > 0 && <p className="label" style={{ padding: '12px 12px 2px' }}>{t('notif.recent')}</p>}
+          {recent.length > 0 && <p className="label" style={{ padding: '0.75rem 0.75rem 2px' }}>{t('notif.recent')}</p>}
           {recent.map(item)}
-          <Link to="/requests" onClick={() => setOpen(false)} className="t-sm w7 row g4" style={{ padding: '10px 12px 6px' }}>{t('notif.all')} <Icon name="chevronRight" size={14} /></Link>
+          <Link to="/requests" onClick={() => setOpen(false)} className="t-sm w7 row g4" style={{ padding: '0.625rem 0.75rem 0.375rem' }}>{t('notif.all')} <Icon name="chevronRight" size={14} /></Link>
         </div>
       )}
     </div>

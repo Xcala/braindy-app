@@ -4,12 +4,11 @@ import { NavLink, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
-import { NAV } from './navGroups';
+import { FOOT_NAV, NAV } from './navGroups';
 import { NAV_ICON } from './navIcons';
-import { FOOT } from './Sidebar';
 import { useFilled } from './SubNav';
 
-/** Phones: the «More» tab opens every page this person may use (each tab's pages, then learning, accesses, plan, settings). */
+/** Phones: the «More» tab opens every page this person may use (each section's pages, then Learn, Wishlist and Account). */
 export function MoreButton() {
   const { t } = useI18n();
   const { pathname } = useLocation();
@@ -57,9 +56,8 @@ function MoreList() {
   const filled = useFilled();
   const isAdmin = useAuth().profile?.role === 'admin';
   // Same rule as the sidebar: a page with nothing in it stays out for the client.
-  const groups = NAV.map((g) => ({ g, pages: g.pages.filter((p) => can(sectionOfPath(p.to)) && (isAdmin || g.pages.length === 1 || filled(p.to))) }))
+  const groups = [...NAV, ...FOOT_NAV].map((g) => ({ g, pages: g.pages.filter((p) => can(sectionOfPath(p.to)) && (isAdmin || g.pages.length === 1 || filled(p.to))) }))
     .filter((x) => x.pages.length);
-  const foot = FOOT.filter((i) => can(sectionOfPath(i.to)));
   const link = (to: string, label: string) => (
     <NavLink key={to} to={to} end className={({ isActive }) => `more-link${isActive ? ' is-on' : ''}`}>
       <span className="more-ico">{NAV_ICON[to] ?? NAV_ICON['/home']}</span><span className="grow">{label}</span>
@@ -73,7 +71,6 @@ function MoreList() {
           <div className="more-card">{pages.map((p) => link(p.to, t(pages.length > 1 ? p.label : g.label)))}</div>
         </section>
       ))}
-      {foot.length > 0 && <div className="more-card">{foot.map((i) => link(i.to, t(i.label)))}</div>}
     </>
   );
 }

@@ -26,12 +26,12 @@ export function NewVersionDialog({ brand, onClose }: { brand: Brand; onClose: ()
   );
   return (
     <ConfirmDialog title={t('ver.newTitle')} confirmLabel={t('ver.create')} busy={busy || !name.trim()} onCancel={onClose} onConfirm={go}>
-      <form className="col g12" style={{ marginTop: 4 }} onSubmit={(e) => { e.preventDefault(); void go(); }}>
+      <form className="col g12" style={{ marginTop: '0.25rem' }} onSubmit={(e) => { e.preventDefault(); void go(); }}>
         <p className="t-sm t-mute">{t('ver.newIntro', { name: brand.name })}</p>
         <label className="t-sm w7" htmlFor="ver-name" style={{ color: 'var(--ink)' }}>{t('ver.name')}</label>
         <input id="ver-name" className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} data-autofocus />
         <fieldset className="col g8" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="t-sm w7" style={{ color: 'var(--ink)', marginBottom: 8 }}>{t('ver.restart')}</legend>
+          <legend className="t-sm w7" style={{ color: 'var(--ink)', marginBottom: '0.5rem' }}>{t('ver.restart')}</legend>
           {box('voice', t('ver.restartVoice'))}
           {box('strategy', t('ver.restartStrategy'))}
           {box('primal', t('ver.restartPrimal'))}

@@ -17,14 +17,14 @@ export function BrandCards({ rows, health, onManage }: { rows: Array<{ brand: Br
         const h = health.get(brand.id);
         const on = brand.status === 'active';
         return (
-          <div key={brand.id} className="card col g12" style={{ padding: 16, marginLeft: Math.min(depth, 2) * 16, opacity: on ? 1 : 0.7 }}>
+          <div key={brand.id} className="card col g12" style={{ padding: '1rem', marginLeft: Math.min(depth, 2) * 16, opacity: on ? 1 : 0.7 }}>
             <button type="button" onClick={() => open(brand)} className="row g12" style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer', color: 'inherit', minWidth: 0 }}>
               <span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none', flex: 'none' }}><BrandMark brand={brand} /></span>
               <span className="col grow" style={{ minWidth: 0 }}>
                 <span className="w7 truncate">{brand.name}</span>
                 <span className="t-xs t-mute">{brand.kind === 'group' ? t('brand.group') : t(`status.${brand.status}`)}{h?.open ? ` · ${h.open} ${t('brands.open').toLowerCase()}` : ''}</span>
               </span>
-              {h?.late && on ? <span className="chip" style={{ background: '#FDECEA', color: '#C0362C' }}>{t('brands.lateN', { n: h.late })}</span> : null}
+              {h?.late && on ? <span className="chip" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>{t('brands.lateN', { n: h.late })}</span> : null}
             </button>
             <div className="row g8">
               <button type="button" className="btn btn-secondary btn-sm grow" onClick={() => open(brand)}>{t('anav.openBrand')}</button>

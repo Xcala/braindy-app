@@ -29,12 +29,12 @@ export function TrashView({ brandId, onBack }: { brandId: string; onBack: () => 
         <button type="button" className="btn btn-secondary btn-sm" onClick={onBack}><Icon name="arrowLeft" size={14} /> {t('files.back')}</button>
       </div>
       {error && <p role="alert" className="t-sm" style={{ color: 'var(--danger)' }}>{t('files.actionError')}</p>}
-      {!list ? <div className="skel" style={{ height: 120 }} />
+      {!list ? <div className="skel" style={{ height: '7.5rem' }} />
         : !list.length ? <div className="empty"><Icon name="trash" size={32} /><p className="t-mute">{t('files.trashEmpty')}</p></div>
         : (
           <div className="list overflow-x-auto">
             {list.map((f) => (
-              <div key={f.id} className="lrow trow min-w-[640px]">
+              <div key={f.id} className="lrow trow min-w-[40rem]">
                 <span className="col" style={{ minWidth: 0 }}>
                   <span className="w7 truncate">{f.title}</span>
                   <span className="t-xs t-mute truncate">{f.folder || t('files.rootFolder')} · {formatBytes(f.size)}</span>

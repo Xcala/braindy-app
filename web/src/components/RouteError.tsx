@@ -10,8 +10,8 @@ export function RouteError() {
   useEffect(() => { reportError(err); }, [err]);
   return (
     <div className="flex min-h-full items-center justify-center p-6">
-      <div className="card col g12" style={{ maxWidth: 480 }}>
-        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: 24, alignSelf: 'flex-start' }} />
+      <div className="card col g12" style={{ maxWidth: '30rem' }}>
+        <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.5rem', alignSelf: 'flex-start' }} />
         <h1 className="h2">{t('err.title')}</h1>
         <p className="t-mute">{t('err.body')}</p>
         <div className="row g12 wrap">

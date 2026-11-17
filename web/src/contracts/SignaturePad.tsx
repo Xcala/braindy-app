@@ -61,7 +61,7 @@ export function SignaturePad({ onChange, label }: { onChange: (png: string | nul
       <canvas
         ref={ref} role="img" aria-label={label}
         onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up}
-        style={{ width: '100%', height: 160, borderRadius: 14, border: '1.5px dashed #C9D0DE', background: '#fff', touchAction: 'none', cursor: 'crosshair' }}
+        style={{ width: '100%', height: '10rem', borderRadius: '0.875rem', border: '1.5px dashed #C9D0DE', background: '#fff', touchAction: 'none', cursor: 'crosshair' }}
       />
       <div className="row between">
         <span className="t-xs t-mute">{empty ? t('ctr.padHint') : t('ctr.padDone')}</span>

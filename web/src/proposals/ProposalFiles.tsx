@@ -32,9 +32,9 @@ export function ProposalFiles({ id }: { id: string }) {
         </div>
       </div>
       {files.length === 0 ? <p className="t-sm t-mute">{t('proposals.noFiles')}</p> : (
-        <div className="list" style={{ borderRadius: 16 }}>
+        <div className="list" style={{ borderRadius: '1rem' }}>
           {files.map((f) => (
-            <div key={f.id} className="lrow" style={{ gridTemplateColumns: 'minmax(0,1fr) 100px 96px' }}>
+            <div key={f.id} className="lrow" style={{ gridTemplateColumns: 'minmax(0,1fr) 6.25rem 6rem' }}>
               <span className="row g12 min-w-0"><span className="ficon th-pdf"><Icon name="file" /></span><span className="w7 truncate">{f.title}</span></span>
               <span className="t-sm t-mute">{formatBytes(f.size)}</span>
               <button className="btn btn-ghost btn-sm" onClick={async () => window.open(await proposalFileUrl(id, f.id), '_blank', 'noopener')}>{t('common.open')}</button>

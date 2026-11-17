@@ -55,7 +55,7 @@ export function Report() {
       {any && <ResultsView key={current.id} social={social.list} web={web} search={search} ads={paid.ads} sales={paid.sales} />}
       {!r ? (any || social.loading ? null : <div className="card t-mute">{t('rep.none')}</div>) : (
         <>
-          {!r.published && <div className="card t-sm" style={{ background: '#FFFBF0', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
+          {!r.published && <div className="card t-sm" style={{ background: 'var(--warning-bg)', borderColor: '#F5D98A' }}>{t('rep.draftNote')}</div>}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.sales')}</span><span className="h1">{money(r.salesAttributed)}</span><span className="t-xs t-mute">{t('rep.salesSub', { prev: money(r.salesPrev) })}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('rep.leads')}</span><span className="h1">{r.leads ?? '—'}</span><span className="t-xs t-mute">{t('rep.leadsSub')}</span></div>
@@ -66,11 +66,11 @@ export function Report() {
             <section className="card col g16">
               <h2 className="h3">{t('rep.byMonth')}</h2>
               {(r.leadsByMonth ?? []).length === 0 ? <p className="t-sm t-mute">{t('rep.noSeries')}</p> : (
-                <div className="row g12" style={{ alignItems: 'flex-end', height: 180 }} role="img" aria-label={(r.leadsByMonth ?? []).map((x) => `${x.month}: ${x.n}`).join(', ')}>
+                <div className="row g12" style={{ alignItems: 'flex-end', height: '11.25rem' }} role="img" aria-label={(r.leadsByMonth ?? []).map((x) => `${x.month}: ${x.n}`).join(', ')}>
                   {r.leadsByMonth.map((x) => (
                     <div key={x.month} className="col g4 grow" style={{ alignItems: 'center' }}>
                       <span className="t-xs w7">{x.n}</span>
-                      <div style={{ width: '100%', maxWidth: 56, height: `${(x.n / max) * 130}px`, background: '#2F4DE0', borderRadius: 8 }} />
+                      <div style={{ width: '100%', maxWidth: '3.5rem', height: `${(x.n / max) * 130}px`, background: '#2F4DE0', borderRadius: '0.5rem' }} />
                       <span className="t-xs t-mute">{new Date(`${x.month}-15`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short' })}</span>
                     </div>
                   ))}

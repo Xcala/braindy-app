@@ -5,7 +5,8 @@ import { db } from './firebase.js';
 import { normalizePhone, sendTemplate, waMeLink } from './whatsapp.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
-export type NoticeKind = 'contract_ready' | 'contract_signed' | 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live' | 'due_tomorrow';
+export type NoticeKind = 'contract_ready' | 'contract_signed' | 'welcome' | 'brain_ready' | 'session_confirmed' | 'brain_signed' | 'live' | 'due_tomorrow'
+  | 'hosting_failed' | 'hosting_pause_soon' | 'hosting_paused' | 'hosting_resumed';
 
 // Template name in Meta → body text (ES / EN) used for the wa.me fallback. {name} = brand, {when} = session (or the request title for due_tomorrow).
 const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string; en: string }> = {
@@ -16,6 +17,10 @@ const TEMPLATES: Record<NoticeKind, { template: string; path: string; es: string
   session_confirmed: { template: 'session_confirmed', path: '/onboarding', es: '{name}: sesión con Nicolas confirmada para {when}. Traigan preguntas, no tareas.', en: '{name}: session with Nicolas confirmed for {when}. Bring questions, not homework.' },
   brain_signed: { template: 'brand_brain_signed', path: '/brand', es: '{name}: su Brand Brain está firmado por NicoMarca. Su equipo arranca ya.', en: '{name}: your Brand Brain is signed by NickMark. His team starts now.' },
   due_tomorrow: { template: 'request_due_tomorrow', path: '/requests', es: '{name}: mañana se entrega «{when}». Lo puedes seguir aquí:', en: '{name}: "{when}" is due tomorrow. Follow it here:' },
+  hosting_failed: { template: 'hosting_payment_failed', path: '/plan', es: '{name}: no pudimos cobrar el hosting de tu sitio web. Revisa tu tarjeta aquí; tu sitio sigue en línea:', en: '{name}: we could not charge your website hosting. Check your card here; your site stays online:' },
+  hosting_pause_soon: { template: 'hosting_pause_soon', path: '/plan', es: '{name}: el hosting de tu sitio sigue pendiente. Si no se paga, el sitio se pausa en 8 días. Págalo aquí:', en: '{name}: your site hosting is still unpaid. If it is not paid, the site pauses in 8 days. Pay here:' },
+  hosting_paused: { template: 'hosting_site_paused', path: '/plan', es: '{name}: pausamos tu sitio web por el pago pendiente. No se borró nada: vuelve solo en minutos cuando pagues aquí:', en: '{name}: we paused your website for the unpaid hosting. Nothing was deleted: it comes back in minutes once you pay here:' },
+  hosting_resumed: { template: 'hosting_site_resumed', path: '/plan', es: '{name}: recibimos tu pago. Tu sitio web está en línea otra vez:', en: '{name}: we got your payment. Your website is online again:' },
   live: { template: 'system_live', path: '/home', es: '{name}: su sistema de marca está vivo. Todo en marca, en un solo lugar:', en: '{name}: your brand system is live. Everything on brand, in one place:' },
 };
 

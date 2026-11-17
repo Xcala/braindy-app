@@ -18,7 +18,7 @@ export function AttachedFiles({ brandId, files }: { brandId: string; files?: Att
       <span className="label">{t('req.attached', { n: files.length })}</span>
       {files.map((f) => (
         <button key={f.assetId} type="button" className="row g8 t-sm text-left" onClick={() => open(f)}
-          style={{ background: 'none', border: 0, padding: '4px 0', cursor: 'pointer', color: 'var(--azul)' }}>
+          style={{ background: 'none', border: 0, padding: '0.25rem 0', cursor: 'pointer', color: 'var(--azul)' }}>
           <Icon name="file" size={16} />
           <span className="grow truncate">{f.name}</span>
           <span className="t-xs t-mute">{failed === f.assetId ? t('files.uploadError') : formatBytes(f.size)}</span>

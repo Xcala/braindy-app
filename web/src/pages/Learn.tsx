@@ -35,7 +35,7 @@ export function Learn() {
             <span style={{ color: AREA_ART[a].color }}>{AREA_ART[a].icon}</span> {t(`cr.area.${a}`)}</button>)}
         </nav>
       )}
-      {loading ? <div className="skel" style={{ height: 200 }} />
+      {loading ? <div className="skel" style={{ height: '12.5rem' }} />
         : shown.length === 0 ? <div className="card t-mute">{t('cr.empty')}</div>
         : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{shown.map((l) => <LessonTile key={l.id} l={l} />)}</div>}
     </div>
@@ -48,7 +48,7 @@ export function LearnLesson() {
   const { t, lang } = useI18n();
   const { list, loading } = useLessons();
   const l = list.find((x) => x.id === id);
-  if (loading) return <div className="skel" style={{ height: 320 }} />;
+  if (loading) return <div className="skel" style={{ height: '20rem' }} />;
   if (!l) return <div className="card col g12"><p className="t-mute">{t('cr.empty')}</p><Link to="/learn" className="t-sm w7">{t('cr.back')}</Link></div>;
   const embed = embedUrl(l.videoUrl);
   const video = videoOf(l, lang);
@@ -59,7 +59,7 @@ export function LearnLesson() {
     <div className="col g24">
       <nav className="crumbs" aria-label="Breadcrumb"><Link to="/learn">{t('cr.nav')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{l.kind ? t('tut.title') : t(`cr.area.${l.area}`)}</span></nav>
       <LessonCover l={l} big label={`${l.kind ? t(`tut.kind.${l.kind}`) : t(`cr.area.${l.area}`)} · ${t('cr.minutes', { n: l.minutes })}`} />
-      <div className="col g8" style={{ maxWidth: 820 }}>
+      <div className="col g8" style={{ maxWidth: '51.25rem' }}>
         {l.status === 'draft' && <span className="chip c-draft self-start">{t('cr.draft')}</span>}
         <h1 className="h1"><span className="w9">{l.title[lang]}</span></h1>
         <p className="t-lg t-mute">{l.summary[lang]}</p>
@@ -70,12 +70,12 @@ export function LearnLesson() {
           steps={sections.slice(0, 5).map((s, i) => [s, t('cr.part', { n: i + 1 })] as [string, string])} />
       )}
       {video && isVideoFile(video.wide) ? (
-        <video key={video.wide} controls playsInline preload="metadata" title={l.title[lang]} className="w-full rounded-[20px]" style={{ maxWidth: 960, background: '#05070D' }}>
+        <video key={video.wide} controls playsInline preload="metadata" title={l.title[lang]} className="w-full rounded-[1.25rem]" style={{ maxWidth: '60rem', background: '#05070D' }}>
           {video.tall && <source src={video.tall} type="video/mp4" media="(max-width: 640px)" />}
           <source src={video.wide} type="video/mp4" />
         </video>
       ) : embed ? (
-        <div className="overflow-hidden rounded-[20px]" style={{ aspectRatio: '16 / 9', maxWidth: 960, background: '#05070D' }}>
+        <div className="overflow-hidden rounded-[1.25rem]" style={{ aspectRatio: '16 / 9', maxWidth: '60rem', background: '#05070D' }}>
           <iframe src={embed} title={l.title[lang]} className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen style={{ border: 0 }} />
         </div>
       ) : l.videoUrl ? <a className="btn btn-primary self-start" href={l.videoUrl} target="_blank" rel="noreferrer">▶ {t('cr.watch')}</a>
@@ -90,7 +90,7 @@ export function LearnLesson() {
           {sections.map((s, i) => <a key={s} href={`#sec-${i + 1}`}><b style={{ background: accent }}>{i + 1}</b>{s}</a>)}
         </nav>
       )}
-      <article className="card" style={{ padding: 'clamp(20px, 4vw, 40px)' }}><Prose text={l.body[lang]} accent={accent} /></article>
+      <article className="card" style={{ padding: 'clamp(1.25rem, 4vw, 2.5rem)' }}><Prose text={l.body[lang]} accent={accent} /></article>
       {related.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{related.map((x) => <LessonTile key={x.id} l={x} />)}</div>}
     </div>
   );

@@ -22,9 +22,9 @@ export function BrandFiles({ brandId, files, isAdmin }: { brandId: string; files
         <div key={f.id} className="tile" style={{ padding: 0, position: 'relative' }}>
           {/* A real link to a new tab: the browser never blocks it. */}
           <a href={`/open/${brandId}/${f.id}`} target="_blank" rel="noopener" className="text-left" style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
-            <div className={`thumb ${thumbClass[kindOf(f)]}`} style={{ height: 140, width: '100%' }}>
+            <div className={`thumb ${thumbClass[kindOf(f)]}`} style={{ height: '8.75rem', width: '100%' }}>
               <Icon name="file" size={36} className="ico" />
-              <span className="chip chip-plain c-type badge" style={{ background: '#fff', zIndex: 1 }}>{extLabel(f)}</span>
+              <span className="chip chip-plain c-type badge" style={{ background: 'var(--white)', zIndex: 1 }}>{extLabel(f)}</span>
             </div>
             <div className="tile-meta w-full">
               <span className="tile-name">{f.title}</span>
@@ -32,7 +32,7 @@ export function BrandFiles({ brandId, files, isAdmin }: { brandId: string; files
             </div>
           </a>
           {isAdmin && (
-            <button type="button" className="btn btn-ghost btn-sm" style={{ position: 'absolute', top: 8, right: 8, background: '#fff' }}
+            <button type="button" className="btn btn-ghost btn-sm" style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--white)' }}
               aria-label={`${t('bf.unpin')}: ${f.title}`} title={t('bf.unpin')} onClick={() => window.confirm(t('bf.unpinConfirm')) && unpinBrandFile(brandId, f)}>
               <Icon name="x" size={14} />
             </button>

@@ -112,6 +112,15 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
     }
 
+    // Wishlist «Me too»: the only change is adding or removing one's own uid in votes.
+    function votesOnly() {
+      let before = resource.data.get('votes', []).toSet();
+      let after = request.resource.data.votes.toSet();
+      return onlyChanges(['votes']) && request.resource.data.votes is list
+        && request.resource.data.votes.size() == after.size()
+        && after.difference(before).union(before.difference(after)) == [uid()].toSet();
+    }
+
     // ---------- users ----------
     match /users/{userId} {
       allow read: if isAdmin() || (signedIn() && uid() == userId);
@@ -289,6 +298,31 @@ service cloud.firestore {
                 && request.resource.data.editedAt == request.time);
           allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid());
         }
+      }
+
+      // Wishlist: what the brand's people ask Braindy (the app) to improve or fix. Anyone of the brand writes one and
+      // «me too»s it; its author edits or deletes it while it is new; status and NickMark's answer are the admin's.
+      match /wishes/{wishId} {
+        allow read: if canReadBrand(brandId);
+        allow create: if (isAdmin() || isMember(brandId))
+          && request.resource.data.keys().hasOnly(['text', 'kind', 'status', 'author', 'authorName', 'votes', 'createdAt', 'audio'])
+          && request.resource.data.author == uid()
+          && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 120
+          && request.resource.data.text is string && request.resource.data.text.size() <= 2000
+          // A voice note (a file in the brand's Uploads) can stand in for the text.
+          && (request.resource.data.text.size() >= 3
+              || (request.resource.data.get('audio', null) is map && request.resource.data.audio.assetId is string))
+          && request.resource.data.kind in ['improve', 'fix']
+          && request.resource.data.status == 'new'
+          && request.resource.data.votes == []
+          && request.resource.data.createdAt == request.time;
+        allow update: if isAdmin()
+          || (isMember(brandId) && votesOnly())
+          || (isMember(brandId) && resource.data.author == uid() && resource.data.status == 'new'
+              && onlyChanges(['text', 'editedAt'])
+              && request.resource.data.text is string && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 2000
+              && request.resource.data.editedAt == request.time);
+        allow delete: if isAdmin() || (isMember(brandId) && resource.data.author == uid() && resource.data.status == 'new');
       }
 
       // Brand Brain feed: what taught the Brains about the brand (request, approval, change, Mi marca, file, session,
@@ -508,6 +542,28 @@ service cloud.firestore {
     }
     match /granolaNotes/{noteId} {
       allow read, write: if false;
+    }
+
+    // ---------- Wishlist history every client sees (public: true, no client names). The admin writes it;
+    // any signed-in person only adds or removes their own «me too». The admin reads every brand's wishes at once.
+    match /wishes/{wishId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.public == true);
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (signedIn() && resource.data.public == true && votesOnly());
+    }
+    match /{path=**}/wishes/{wishId} {
+      allow read: if isAdmin();
+    }
+    // Who asked for each history entry (brand and person): only NickMark sees it, so the history stays nameless for clients.
+    match /wishCredits/{wishId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ---------- Free resources (skills, scripts, prompts, templates): signed-in users read published ones; admin edits.
+    // Download and copy counters are written by the API only.
+    match /resources/{resourceId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.status == 'published');
+      allow write: if isAdmin();
     }
 
     // ---------- NickMark Taste: lessons and objection answers. Signed-in users read published ones; admin edits ----------

@@ -51,7 +51,7 @@ export function WhatsappProfileCard() {
           {field('about', 139)}
           <div className="field">
             <label htmlFor="wap-desc">{t('wap.description')}</label>
-            <textarea id="wap-desc" className="input" rows={4} maxLength={512} style={{ padding: '10px 12px', resize: 'vertical', lineHeight: 1.45 }} value={p.description} onChange={(e) => set('description', e.target.value)} />
+            <textarea id="wap-desc" className="input" rows={4} maxLength={512} style={{ padding: '0.625rem 0.75rem', resize: 'vertical', lineHeight: 1.45 }} value={p.description} onChange={(e) => set('description', e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="wap-vertical">{t('wap.vertical')}</label>

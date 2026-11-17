@@ -50,7 +50,7 @@ export function ShareLinks({ brandId }: { brandId: string }) {
               </div>
             ))}
             <label className="col g4"><span className="t-xs w7">{t('ul.label')}</span>
-              <input className="input" value={label} maxLength={60} placeholder={t('ul.labelPh')} onChange={(e) => setLabel(e.target.value)} style={{ height: 40 }} />
+              <input className="input" value={label} maxLength={60} placeholder={t('ul.labelPh')} onChange={(e) => setLabel(e.target.value)} style={{ height: '2.5rem' }} />
             </label>
             <button className="btn btn-secondary btn-sm self-start" disabled={busy} onClick={() => create('upload')}><Icon name="plus" size={16} />{t('ul.create')}</button>
           </div>

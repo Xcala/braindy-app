@@ -7,7 +7,7 @@ export function LangChooser({ onPick }: { onPick: (l: Lang) => void }) {
   useEffect(() => { first.current?.focus(); }, []);
   return (
     <div className="scrim fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div role="dialog" aria-modal="true" aria-labelledby="h-lang" className="card col g16" style={{ maxWidth: 380, width: '100%', textAlign: 'center' }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="h-lang" className="card col g16" style={{ maxWidth: '23.75rem', width: '100%', textAlign: 'center' }}>
         <img src="/brand/braindy-logo.svg" alt="Braindy" className="mx-auto h-7 w-auto" />
         <h2 className="h3" id="h-lang">Choose your language · Elige tu idioma</h2>
         <div className="grid grid-cols-2 gap-3">

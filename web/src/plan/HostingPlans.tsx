@@ -2,8 +2,10 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ADDONS, CHECKOUT, ENTERPRISE, MODULES, WEB_PLANS, type Bill, type Cur, type WebPlan } from './hostingData';
 import { Compare, Finder, Plan, PriceCards, useL } from './HostingParts';
-import { Faq, Glossary, Sign, Tech } from './HostingInfo';
+import { Faq, Glossary, Tech } from './HostingInfo';
 import { useNicoWhatsApp } from '../lib/nicoWhatsApp';
+import { billingApi, type Plan as Billing } from '../billing/useBilling';
+import { HostingStatus } from './HostingStatus';
 import './hosting.css';
 
 const STEP = 72;
@@ -28,7 +30,7 @@ function useLadder(dep: unknown) {
 
 /** In Mi plan · The website hosting offer with the pricing page's design: Sitios web and Enterprise tabs, currency and billing
  *  toggles, plan cards (the brand's current plan marked), plan finder, comparison, add-ons, agency note and modules. */
-export function HostingPlans({ current, brandName }: { current?: WebPlan | null; brandName: string }) {
+export function HostingPlans({ current, brandName, brandId, paid, billing }: { current?: WebPlan | null; brandName: string; brandId?: string; paid?: boolean; billing?: Billing | null }) {
   const { lang } = useI18n();
   const L = useL();
   const wa = useNicoWhatsApp();
@@ -37,21 +39,47 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
   const [bill, setBill] = useState<Bill>('m');
   // The plans stay in view; add-ons, the comparison and the questions open on request so Mi plan stays short.
   const [more, setMore] = useState(false);
+  // Paid: the status card is enough, the plans open on «Cambiar de plan». Unpaid or no plan: the plans show, to pay.
+  const [plans, setPlans] = useState(!paid);
+  const plansRef = useRef<HTMLDivElement>(null);
   const moreBtn = (
     <button type="button" className="btn btn-secondary btn-sm" style={{ alignSelf: 'center' }} aria-expanded={more} onClick={() => setMore((m) => !m)}>
       {more ? L(['Ver menos', 'See less']) : L(['Ver complementos, comparación y preguntas', 'See add-ons, comparison and questions'])}
     </button>
   );
-  const ref = useLadder(`${tab}${cur}${bill}${lang}`);
+  // Signed in: the payment is tied to the brand (Stripe Checkout, or a prorated switch if hosting is already paid).
+  const [busy, setBusy] = useState<WebPlan | null>(null);
+  const back = new URLSearchParams(window.location.search).get('hosting');
+  const [msg, setMsg] = useState<{ ok: boolean; text: string; plan: string } | null>(back === 'ok'
+    ? { ok: true, text: L(['Recibimos tu pago. Tu plan de hosting queda activo en unos segundos.', 'We got your payment. Your hosting plan turns active in a few seconds.']), plan: '' }
+    : back === 'canceled' ? { ok: false, text: L(['No se hizo ningún cobro. Puedes intentarlo de nuevo o escribirnos.', 'Nothing was charged. Try again or write us.']), plan: '' } : null);
+  const buy = async (p: WebPlan, name: string, c: Cur = cur, b: Bill = bill) => {
+    if (!brandId) return;
+    if (paid && current && !window.confirm(L(['¿Cambiar tu hosting al plan ' + name + '? La diferencia se ajusta en tu próximo cobro.', 'Switch your hosting to ' + name + '? The difference is adjusted on your next charge.']))) return;
+    setBusy(p); setMsg(null);
+    try {
+      const r = await billingApi.hosting(brandId, { plan: p, cur: c, bill: b });
+      if (r.url) { window.location.assign(r.url); return; }
+      setMsg({ ok: true, text: L(['Listo: tu hosting ahora es ' + name + '.', 'Done: your hosting is now ' + name + '.']), plan: name });
+    } catch {
+      setMsg({ ok: false, text: L(['No pudimos abrir el pago en línea. Escríbenos y lo activamos contigo.', 'We could not open online payment. Write us and we set it up with you.']), plan: name });
+    }
+    setBusy(null);
+  };
+  const ref = useLadder(`${tab}${cur}${bill}${lang}${plans}`);
+  const late = billing?.hostingPaused || billing?.hostingStatus === 'past_due';
+  // Overdue: straight to paying (Stripe portal) in the plan's own currency. Otherwise open the plans and bring them into view.
+  const onAct = () => {
+    if (late && current) { void buy(current, current, billing?.hostingCur ?? cur, billing?.hostingBill ?? bill); return; }
+    setPlans(true); setTimeout(() => plansRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
 
   return (
     <div ref={ref} className="hp" aria-labelledby="hp-title">
-      <header className="hp-hero">
-        <span className="hp-eyebrow">{L(['Braindy · Planes de sitio web y Enterprise', 'Braindy · Website and Enterprise plans'])}</span>
-        <h2 id="hp-title"><span>{L(['Tu sitio, ', 'Your site, '])}</span><b>{L(['en tus manos', 'in your hands'])}</b></h2>
-        <p>{L(['Diseñamos y publicamos tu sitio. Después, ', 'We design and publish your site. Then '])}<b>{L(['tu equipo lo edita por su cuenta', 'your team edits it on its own'])}</b>{L([', sin código, y nosotros nos encargamos de que siempre esté en línea, rápido y seguro.', ', no code, and we keep it always online, fast and secure.'])}</p>
-      </header>
+      {brandId && current && <HostingStatus plan={billing ?? null} onAct={onAct} />}
+      {late && !plans && msg && <p role="status" className={`hp-msg${msg.ok ? ' ok' : ''}`}>{msg.text}</p>}
 
+      {plans && <div ref={plansRef} className="col g24" style={{ scrollMarginTop: '5rem' }}>
       <div className="hp-bar">
         <div className="hp-seg hp-tabs" role="tablist">
           {(['web', 'ent'] as const).map((k) => <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{k === 'web' ? L(['Sitios web', 'Websites']) : 'Enterprise'}</button>)}
@@ -70,15 +98,18 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
           <div className="hp-plans">
             {WEB_PLANS.map((p) => (
               <Plan key={p.id} p={p} cur={cur} bill={bill} mine={current === p.id}>
-                {current !== p.id && (
+                {(current !== p.id || (brandId && !paid)) && (
                   <div className="hp-buy">
-                    <a className={`hp-btn${p.top ? ' primary' : ''}`} href={`${CHECKOUT}?plan=${p.id}&cur=${cur}&bill=${bill}`} target="_blank" rel="noreferrer">{current ? L(['Cambiar a este plan', 'Switch to this plan']) : L(['Quiero este plan', 'I want this plan'])}</a>
+                    {brandId
+                      ? <button type="button" className={`hp-btn${p.top || current === p.id ? ' primary' : ''}`} disabled={!!busy} onClick={() => void buy(p.id, p.name)}>{busy === p.id ? L(['Abriendo el pago…', 'Opening payment…']) : current === p.id ? L(['Activar el pago de mi plan', 'Start paying my plan']) : current ? L(['Cambiar a este plan', 'Switch to this plan']) : L(['Quiero este plan', 'I want this plan'])}</button>
+                      : <a className={`hp-btn${p.top ? ' primary' : ''}`} href={`${CHECKOUT}?plan=${p.id}&cur=${cur}&bill=${bill}`} target="_blank" rel="noreferrer">{current ? L(['Cambiar a este plan', 'Switch to this plan']) : L(['Quiero este plan', 'I want this plan'])}</a>}
                     <a className="hp-alt" href={wa(`Hosting ${p.name} · ${brandName}`)} target="_blank" rel="noreferrer">{L(['o escríbenos por WhatsApp', 'or write us on WhatsApp'])}</a>
                   </div>
                 )}
               </Plan>
             ))}
           </div>
+          {msg && <p role="status" className={`hp-msg${msg.ok ? ' ok' : ''}`}>{msg.text}{!msg.ok && <> <a href={wa(`Hosting ${msg.plan} · ${brandName}`)} target="_blank" rel="noreferrer">WhatsApp</a></>}</p>}
           {moreBtn}
           {more && <>
           <PriceCards title={[['Complementos ', 'Add-ons '], ['para cualquier plan', 'for any plan']]} lead={['Agrégalos cuando los necesites y quítalos cuando quieras. Se suman al valor mensual de tu plan.', 'Add them when you need them and remove them anytime. They add to your monthly plan.']} items={ADDONS} cur={cur} plus two />
@@ -110,7 +141,7 @@ export function HostingPlans({ current, brandName }: { current?: WebPlan | null;
       )}
 
       {more && <><Glossary /><Faq /><Tech /></>}
-      <Sign />
+      </div>}
     </div>
   );
 }

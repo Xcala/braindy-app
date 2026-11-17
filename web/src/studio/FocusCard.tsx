@@ -34,7 +34,7 @@ export function FocusCard({ id, view, open, allItems, readOnly = false, stateLab
     <aside className="sd-focus" aria-hidden={!open} aria-live="polite">
       <div className="row" style={{ borderBottom: 0, padding: 0 }}>
         <div className="flex items-center gap-2.5">
-          <i style={{ width: 12, height: 12, borderRadius: '50%', background: SEATS[id].c }} />
+          <i style={{ width: '0.75rem', height: '0.75rem', borderRadius: '50%', background: SEATS[id].c }} />
           <div className="flex flex-col"><h3>{SEAT_NAME[id]}</h3><span className="lbl">{t(`st.role.${id}` as StringKey)}</span></div>
         </div>
       </div>

@@ -31,7 +31,7 @@ export function AdminStudio() {
         {feed.length === 0 && <p className="t-sm t-mute">{t('st.feedEmpty')}</p>}
         {feed.map((e) => (
           <div key={e.id} className="row g12 t-sm" style={{ alignItems: 'flex-start' }}>
-            <i style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flex: 'none', background: SEATS[e.brain]?.c ?? '#888', border: '1px solid var(--line)' }} />
+            <i style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', marginTop: '0.375rem', flex: 'none', background: SEATS[e.brain]?.c ?? '#888', border: '1px solid var(--line)' }} />
             <div className="col min-w-0">
               <span><b>{SEAT_NAME[e.brain] ?? e.brain}</b> · {e.kind === 'note' ? `NicoMarca: ${e.text}` : e.text}</span>
               <span className="t-xs t-mute">{brand(e.brandId)}{e.brandId ? ' · ' : ''}{e.at ? `${time(e.at)} SF` : ''}</span>

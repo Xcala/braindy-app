@@ -60,7 +60,7 @@ export function ObjectionHint({ brandId, o }: { brandId: string; o: Objection | 
   }, [o, brandId]);
   if (!o) return null;
   return (
-    <div className="col g8" role="note" style={{ background: '#FFF8E6', borderRadius: 14, padding: 14 }}>
+    <div className="col g8" role="note" style={{ background: 'var(--warning-bg)', borderRadius: '0.875rem', padding: '0.875rem' }}>
       <span className="row g8"><img src="/brand/proposal/nicolas-face.jpg" alt="" className="h-6 w-6 rounded-full object-cover" /><span className="t-xs w7">{t('cr.hintTitle')}</span></span>
       <span className="t-sm w7">«{o.phrase[lang]}»</span>
       <span className="t-sm">{o.answer[lang]}</span>

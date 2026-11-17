@@ -7,6 +7,7 @@ import { FileStrip } from './FileStrip';
 import { FileBody } from './FileBody';
 import { Popover } from './Popover';
 import { VideoMarks } from './VideoMarks';
+import { ZoomView } from './ZoomView';
 import type { Annotation, RequestComment, Version } from './types';
 import './viewer.css';
 
@@ -23,6 +24,7 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
 }) {
   const { t, lang } = useI18n();
   const [marking, setMarking] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
   const [draft, setDraft] = useState<{ x0: number; y0: number; x: number; y: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const swipe = useRef<number | null>(null);
@@ -73,8 +75,8 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
   const getOne = async () => { if (current) window.location.assign(await versionFileUrl(brandId, requestId, current.id, fileIndex, true)); };
 
   return (
-    <div className="col min-w-0" style={{ background: 'var(--niebla)' }}>
-      <div className="row between g8 wrap" style={{ padding: '14px 20px', borderBottom: '1px solid var(--line)', background: '#fff' }}>
+    <div className="col min-w-0 vw-stage">
+      <div className="row between g8 wrap vw-bar" style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--line)' }}>
         <div className="seg" role="tablist" aria-label={t('req.versions')}>
           {versions.map((v) => {
             const st = state(v);
@@ -103,17 +105,17 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
           ) : <button className="btn btn-ghost btn-sm" onClick={getOne}><Icon name="download" />{t('common.download')}</button>)}
         </div>
       </div>
-      <div className="vw-stage flex min-h-[420px] flex-1 items-center justify-center p-4 sm:px-16 sm:py-7"
+      <div className="vw-stage flex min-h-[26.25rem] flex-1 items-center justify-center p-4 sm:px-16 sm:py-7"
         onTouchStart={(e) => { swipe.current = marking ? null : e.touches[0]!.clientX; }}
         onTouchEnd={(e) => { if (swipe.current === null) return; const dx = e.changedTouches[0]!.clientX - swipe.current; swipe.current = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
         {count > 1 && <button className="vw-arrow is-prev" aria-label={t('vw.prev')} disabled={fileIndex === 0} onClick={() => go(-1)}><Icon name="arrowLeft" size={18} /></button>}
-        {!url && kind !== 'text' ? <div className="skel" style={{ width: '60%', height: 360 }} /> : kind === 'image' ? (
-          <div ref={box} className="relative select-none" style={{ cursor: marking ? 'crosshair' : 'default', touchAction: marking ? 'none' : 'auto' }}
+        {!url && kind !== 'text' ? <div className="skel" style={{ width: '60%', height: '22.5rem' }} /> : kind === 'image' ? (
+          <div ref={box} className="relative select-none" style={{ cursor: marking ? 'crosshair' : 'zoom-in', touchAction: marking ? 'none' : 'auto' }}
             onPointerDown={(e) => { if (marking) { const p = pos(e); setDraft({ x0: p.x, y0: p.y, ...p }); } }}
             onPointerMove={(e) => draft && setDraft({ ...draft, ...pos(e) })} onPointerUp={up}>
-            <img src={url ?? undefined} alt={file?.name} draggable={false} className="block max-h-[70vh] max-w-full rounded-lg" style={{ boxShadow: 'var(--sh-2)' }} />
+            <img src={url ?? undefined} alt={file?.name} draggable={false} title={marking ? undefined : t('vw.zoomOpen')} onClick={() => { if (!marking && url) setZoomed(true); }} className="block max-h-[70vh] max-w-full rounded-lg" style={{ boxShadow: 'var(--sh-2)' }} />
             {pins.map((c, i) => <Pin key={c.id} a={c.annotation!} n={i + 1} resolved={c.resolved} />)}
-            {draft && <span className="absolute" style={{ left: `${Math.min(draft.x0, draft.x)}%`, top: `${Math.min(draft.y0, draft.y)}%`, width: `${Math.abs(draft.x - draft.x0)}%`, height: `${Math.abs(draft.y - draft.y0)}%`, border: '2px dashed var(--azul)', borderRadius: 10, background: 'rgba(47,77,224,.08)' }} />}
+            {draft && <span className="absolute" style={{ left: `${Math.min(draft.x0, draft.x)}%`, top: `${Math.min(draft.y0, draft.y)}%`, width: `${Math.abs(draft.x - draft.x0)}%`, height: `${Math.abs(draft.y - draft.y0)}%`, border: '2px dashed var(--azul)', borderRadius: '0.625rem', background: 'rgba(47,77,224,.08)' }} />}
           </div>
         ) : kind === 'video' ? (
           <div className="vm-wrap">
@@ -124,6 +126,7 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
           : current && file && <FileBody brandId={brandId} requestId={requestId} versionId={current.id} index={fileIndex} file={file} kind={kind} url={url ?? ''} onDownload={getOne} />}
         {count > 1 && <button className="vw-arrow is-next" aria-label={t('vw.next')} disabled={fileIndex === count - 1} onClick={() => go(1)}><Icon name="arrowRight" size={18} /></button>}
       </div>
+      {zoomed && url && kind === 'image' && <ZoomView url={url} name={file?.name} onClose={() => setZoomed(false)} />}
       {count > 1 && current && <FileStrip brandId={brandId} requestId={requestId} v={current} index={fileIndex} onPick={(i) => { onFile(i); setMarking(false); }} />}
     </div>
   );
@@ -133,8 +136,8 @@ function Pin({ a, n, resolved }: { a: Annotation; n: number; resolved?: boolean 
   const color = resolved ? 'var(--success)' : 'var(--azul)';
   return (
     <>
-      {a.w > 0 && <span className="pointer-events-none absolute" style={{ left: `${a.x}%`, top: `${a.y}%`, width: `${a.w}%`, height: `${a.h}%`, border: `2px dashed ${color}`, borderRadius: 10, background: resolved ? 'transparent' : 'rgba(47,77,224,.08)' }} />}
-      <span className="pointer-events-none absolute flex items-center justify-center" style={{ left: `calc(${a.x + a.w}% - 16px)`, top: `calc(${a.y}% - 16px)`, width: 32, height: 32, borderRadius: '50% 50% 50% 4px', background: color, color: '#fff', font: '800 13px/1 var(--f-text)', boxShadow: '0 0 0 3px #fff, var(--sh-2)' }}>
+      {a.w > 0 && <span className="pointer-events-none absolute" style={{ left: `${a.x}%`, top: `${a.y}%`, width: `${a.w}%`, height: `${a.h}%`, border: `2px dashed ${color}`, borderRadius: '0.625rem', background: resolved ? 'transparent' : 'rgba(47,77,224,.08)' }} />}
+      <span className="pointer-events-none absolute flex items-center justify-center" style={{ left: `calc(${a.x + a.w}% - 16px)`, top: `calc(${a.y}% - 16px)`, width: '2rem', height: '2rem', borderRadius: '50% 50% 50% 0.25rem', background: color, color: '#fff', font: '800 0.8125rem/1 var(--f-text)', boxShadow: '0 0 0 3px #fff, var(--sh-2)' }}>
         {resolved ? <Icon name="check" size={14} /> : n}
       </span>
     </>

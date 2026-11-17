@@ -16,10 +16,10 @@ export function ColorsEdit({ brandId, colors }: { brandId: string; colors: Color
     <div className="col g12">
       {list.map((c, i) => (
         <div key={i} className="row g8 wrap">
-          <input type="color" aria-label="Color" value={HEX.test(c.hex ?? '') ? c.hex : '#000000'} onChange={(e) => set(i, { hex: e.target.value.toUpperCase() })} style={{ width: 44, height: 40, border: 0, background: 'none' }} />
-          <input className="input" style={{ height: 40, width: 110 }} value={c.hex ?? ''} onChange={(e) => set(i, { hex: e.target.value })} aria-label="Hex" />
-          <input className="input grow" style={{ height: 40, minWidth: 140 }} placeholder={t('be.colorName')} value={c.name ?? ''} onChange={(e) => set(i, { name: e.target.value })} />
-          <input className="input" style={{ height: 40, width: 120 }} placeholder="Pantone" value={c.pantone ?? ''} onChange={(e) => set(i, { pantone: e.target.value })} />
+          <input type="color" aria-label="Color" value={HEX.test(c.hex ?? '') ? c.hex : '#000000'} onChange={(e) => set(i, { hex: e.target.value.toUpperCase() })} style={{ width: '2.75rem', height: '2.5rem', border: 0, background: 'none' }} />
+          <input className="input" style={{ height: '2.5rem', width: '6.875rem' }} value={c.hex ?? ''} onChange={(e) => set(i, { hex: e.target.value })} aria-label="Hex" />
+          <input className="input grow" style={{ height: '2.5rem', minWidth: '8.75rem' }} placeholder={t('be.colorName')} value={c.name ?? ''} onChange={(e) => set(i, { name: e.target.value })} />
+          <input className="input" style={{ height: '2.5rem', width: '7.5rem' }} placeholder="Pantone" value={c.pantone ?? ''} onChange={(e) => set(i, { pantone: e.target.value })} />
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setList((l) => l.filter((_, j) => j !== i))}>{t('be.remove')}</button>
         </div>
       ))}
@@ -39,10 +39,10 @@ export function FontsEdit({ brandId, fonts }: { brandId: string; fonts: Font[] }
     <div className="col g12">
       {list.map((f, i) => (
         <div key={i} className="row g8 wrap">
-          <input className="input grow" style={{ height: 40, minWidth: 160 }} placeholder={t('be.font')} value={f.fontFamily ?? ''} onChange={(e) => set(i, { fontFamily: e.target.value })} />
-          <input className="input" style={{ height: 40, width: 160 }} placeholder={t('be.fontRole')} value={f.role ?? ''} onChange={(e) => set(i, { role: e.target.value })} />
+          <input className="input grow" style={{ height: '2.5rem', minWidth: '10rem' }} placeholder={t('be.font')} value={f.fontFamily ?? ''} onChange={(e) => set(i, { fontFamily: e.target.value })} />
+          <input className="input" style={{ height: '2.5rem', width: '10rem' }} placeholder={t('be.fontRole')} value={f.role ?? ''} onChange={(e) => set(i, { role: e.target.value })} />
           <label className="row g4 t-sm"><input type="checkbox" checked={f.type === 'google'} onChange={(e) => set(i, { type: e.target.checked ? 'google' : 'custom' })} />{t('be.fontGoogle')}</label>
-          <input className="input" style={{ height: 40, minWidth: 180 }} placeholder={t('be.fontUrl')} value={f.url ?? f.downloadUrl ?? ''} onChange={(e) => set(i, { url: e.target.value })} />
+          <input className="input" style={{ height: '2.5rem', minWidth: '11.25rem' }} placeholder={t('be.fontUrl')} value={f.url ?? f.downloadUrl ?? ''} onChange={(e) => set(i, { url: e.target.value })} />
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => setList((l) => l.filter((_, j) => j !== i))}>{t('be.remove')}</button>
         </div>
       ))}

@@ -48,7 +48,7 @@ export function BookMeeting({ brandId, onClose }: { brandId: string; onClose: ()
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={box} className="modal col g16 w-full max-w-[520px]" role="dialog" aria-modal="true" aria-labelledby="bk-title">
+      <div ref={box} className="modal col g16 w-full max-w-[32.5rem]" role="dialog" aria-modal="true" aria-labelledby="bk-title">
         <div className="row between g8">
           <h2 className="h2" id="bk-title">{t('bk.title')}</h2>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('common.cancel')}>✕</button>

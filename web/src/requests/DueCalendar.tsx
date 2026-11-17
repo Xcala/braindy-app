@@ -30,7 +30,7 @@ export function DueCalendar({ shown }: { shown: BrandRequest[] }) {
   const move = (n: number) => { setSel(null); setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1)); };
   const weekdays = Array.from({ length: 7 }, (_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(locale, { weekday: 'short' }));
   const item = (r: BrandRequest, big = false) => (
-    <Link key={r.id} to={`/requests/${r.id}`} className={big ? 'card cal-row' : 'cal-post'} style={{ '--c': color(r), textDecoration: 'none', padding: big ? undefined : '4px 6px' } as React.CSSProperties}
+    <Link key={r.id} to={`/requests/${r.id}`} className={big ? 'card cal-row' : 'cal-post'} style={{ '--c': color(r), textDecoration: 'none', padding: big ? undefined : '0.25rem 0.375rem' } as React.CSSProperties}
       title={`${r.title} · ${t(`req.status.${r.status}`)}`}>
       <span className="col min-w-0" style={{ gap: 2 }}>
         <span className={`${big ? 't-sm' : 't-xs'} w7 truncate`}>{r.title}</span>

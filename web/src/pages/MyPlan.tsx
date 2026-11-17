@@ -1,4 +1,5 @@
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
+import { PaymentsTab } from '../plan/PaymentsTab';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -8,6 +9,7 @@ import type { StackItem } from '../plan/types';
 import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/types';
 import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
+import { ProposalCard } from '../plan/ProposalCard';
 import { AdminPlan } from '../plan/AdminPlan';
 import { Subscription } from '../plan/Subscription';
 import { BrandPieces } from '../plan/BrandPieces';
@@ -28,7 +30,7 @@ export function MyPlan() {
   const kickoff = useBrandDoc(current?.id, 'context/kickoff').data as { start: string; items: ChecklistItem[] } | null;
   const stack = (useBrandDoc(current?.id, 'billing/stack').data as { items?: StackItem[] } | null)?.items ?? null;
   const admin = profile?.role === 'admin';
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (plan === undefined || (contractId && contractDoc.loading)) return <p className="t-mute">{t('common.loading')}…</p>;
 
@@ -44,27 +46,21 @@ export function MyPlan() {
     void (editable === 'live' ? contractsApi.saveSchedule(id, next) : contractsApi.save(id, contract!.id, { schedule: next }));
   }
 
-  // Tabs instead of one long page; the schedule tab only when there is a schedule or a kickoff checklist.
+  // Tabs instead of one long page (they sit in the section's top row, see app/planTabs); the schedule tab only when there is a schedule or a kickoff checklist.
   const tabs: PlanTab[] = ['summary', ...(schedule || kickoff?.items.length ? ['schedule' as const] : []), 'brand', 'site', 'payments'];
   const asked = params.get('tab') as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
-  const switcher = (
-    <nav className="seg seg-scroll" aria-label={t('plan.title')}>
-      {tabs.map((k) => <button key={k} type="button" className={tab === k ? 'is-on' : ''} aria-pressed={tab === k} onClick={() => setParams(k === 'summary' ? {} : { tab: k }, { replace: true })}>{t(`plan.tab.${k}`)}</button>)}
-    </nav>
-  );
 
   return (
     <div className="col g32">
-      <PlanView tab={tab} tabs={switcher} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
+      <PlanView tab={tab} tabs={null} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
-        payments={<div className="col g16"><Subscription current={current} part="design" /><p className="t-sm t-mute" style={{ margin: 0 }}>{t('plan.paymentsIn')} <Link to="/settings?tab=billing" className="w7">{t('set.tab.billing')}</Link></p></div>}
+        payments={<PaymentsTab brand={current} />}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
-        contract={<ContractCard brandId={id} contract={contract} />}
+        contract={<><ProposalCard brandId={id} admin={admin} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
-      {!plan && !schedule && !stack?.length && <div className="card t-mute">{t('plan.empty')}</div>}
       {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
     </div>
   );

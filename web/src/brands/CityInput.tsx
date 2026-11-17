@@ -33,8 +33,8 @@ export function CityInput({ brand }: { brand: Brand }) {
     updateDoc(doc(db, 'brands', brand.id), { city: h ? { name: h.name, country: h.country, tz: h.tz } : null });
   };
   return (
-    <span className="relative block" style={{ minWidth: 160 }}>
-      <input className="input" style={{ height: 34, padding: '0 10px' }} value={q} placeholder={t('admin.brands.noCity')}
+    <span className="relative block" style={{ minWidth: '10rem' }}>
+      <input className="input" style={{ height: '2.125rem', padding: '0 0.625rem' }} value={q} placeholder={t('admin.brands.noCity')}
         aria-label={`${t('admin.brands.colCity')} ${brand.name}`} role="combobox" aria-expanded={open && hits.length > 0} aria-autocomplete="list"
         onChange={(e) => { typed.current = true; setQ(e.target.value); if (!e.target.value) pick(null); }}
         onBlur={() => setTimeout(() => { setOpen(false); if (typed.current) { typed.current = false; setQ(label); } }, 150)}
@@ -45,11 +45,11 @@ export function CityInput({ brand }: { brand: Brand }) {
           else if (e.key === 'Escape') setOpen(false);
         }} />
       {open && hits.length > 0 && (
-        <ul role="listbox" className="card absolute z-30 col" style={{ top: 38, left: 0, minWidth: 260, padding: 6, gap: 2 }}>
+        <ul role="listbox" className="card absolute z-30 col" style={{ top: '2.375rem', left: 0, minWidth: '16.25rem', padding: '0.375rem', gap: 2 }}>
           {hits.map((h, i) => (
             <li key={`${h.name}-${h.region}-${h.country}`} role="option" aria-selected={i === active}
               onMouseDown={(e) => { e.preventDefault(); pick(h); }} onMouseEnter={() => setActive(i)}
-              className="col" style={{ padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: i === active ? 'var(--hielo)' : 'transparent' }}>
+              className="col" style={{ padding: '0.375rem 0.5rem', borderRadius: '0.5rem', cursor: 'pointer', background: i === active ? 'var(--hielo)' : 'transparent' }}>
               <span className="t-sm w7">{h.name}</span>
               <span className="t-xs t-mute">{[h.region, h.country].filter(Boolean).join(', ')} · {h.tz}</span>
             </li>

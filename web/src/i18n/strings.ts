@@ -30,6 +30,9 @@ import { calendarEn, calendarEs } from './calendarStrings';
 import { socialStatsEn, socialStatsEs } from './socialStatsStrings';
 import { webStatsEn, webStatsEs } from './webStatsStrings';
 import { adStatsEn, adStatsEs } from './adStatsStrings';
+import { logoDlEn, logoDlEs } from './logoDlStrings';
+import { helpEn, helpEs } from './helpStrings';
+import { resEn, resEs } from './resourceStrings';
 import { searchStatsEn, searchStatsEs } from './searchStatsStrings';
 import { commentEditEn, commentEditEs } from './commentEditStrings';
 import { aiHealthEn, aiHealthEs } from './aiHealthStrings';
@@ -39,10 +42,13 @@ import { requestFilterEn, requestFilterEs } from './requestFilterStrings';
 import { askPanelEn, askPanelEs } from './askPanelStrings';
 import { brainMapEn, brainMapEs } from './brainMapStrings';
 import { brainLoopEn, brainLoopEs } from './brainLoopStrings';
+import { wishEn, wishEs } from './wishStrings';
+import { pageHeadEn, pageHeadEs } from './pageHeadStrings';
+import { planProposalEn, planProposalEs } from './planProposalStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
-  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps / Web',
+  'nav.orders': 'Requests', 'nav.deliveries': 'Deliveries', 'nav.deliveriesShort': 'Deliveries', 'nav.reportShort': 'Results', 'sub.identity': 'Identity', 'sub.essence': 'Essence', 'sub.visual': 'Visual', 'sub.docs': 'Documents', 'sub.research': 'Research', 'sub.files': 'Files', 'sub.apps': 'Apps / Web', 'sub.kit': 'Brand kit', 'sub.deliveries': 'Deliveries', 'sub.library': 'Library', 'sub.sites': 'Sites and apps', 'sub.strategy': 'Strategy', 'sub.stats': 'Stats', 'sub.socialCal': 'Social calendar',
   'nav.assets': 'My assets',
   'nav.ask': 'Ask for something',
   'nav.requests': 'Requests',
@@ -148,7 +154,7 @@ const baseEn = {
   'files.kind.pdf': 'PDF',
   'files.kind.design': 'Design',
   'files.kind.other': 'Other',
-  'assets.tagline': 'Every file of your brand.',
+  'assets.tagline': 'Photos, videos and documents of your brand, and what you upload.', 'assets.deliveriesTagline': 'Everything we delivered and you approved.',
   'assets.docs': 'Brand documents',
   'assets.docsSub': 'Hosted pages and decks',
   'assets.document': 'Document',
@@ -220,13 +226,13 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn, ...logoDlEn, ...helpEn, ...resEn, ...wishEn, ...pageHeadEn, ...planProposalEn } as const;
 
 export type StringKey = keyof typeof en;
 
 const baseEs: Record<keyof typeof baseEn, string> = {
   'nav.brand': 'Mi marca',
-  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps / Web',
+  'nav.orders': 'Pedidos', 'nav.deliveries': 'Entregas', 'nav.deliveriesShort': 'Entregas', 'nav.reportShort': 'Resultados', 'sub.identity': 'Identidad', 'sub.essence': 'Esencia', 'sub.visual': 'Visual', 'sub.docs': 'Documentos', 'sub.research': 'Investigación', 'sub.files': 'Archivos', 'sub.apps': 'Apps / Web', 'sub.kit': 'Kit de marca', 'sub.deliveries': 'Entregas', 'sub.library': 'Biblioteca', 'sub.sites': 'Sitios y apps', 'sub.strategy': 'Estrategia', 'sub.stats': 'Estadísticas', 'sub.socialCal': 'Calendario de redes',
   'nav.assets': 'Mis archivos',
   'nav.ask': 'Pedir algo',
   'nav.requests': 'Pedidos',
@@ -332,7 +338,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'files.kind.pdf': 'PDF',
   'files.kind.design': 'Diseño',
   'files.kind.other': 'Otros',
-  'assets.tagline': 'Todos los archivos de tu marca.',
+  'assets.tagline': 'Fotos, videos y documentos de tu marca, y lo que tú subes.', 'assets.deliveriesTagline': 'Todo lo que te entregamos y aprobaste.',
   'assets.docs': 'Documentos de marca',
   'assets.docsSub': 'Páginas y decks publicados',
   'assets.document': 'Documento',
@@ -404,4 +410,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs, ...logoDlEs, ...helpEs, ...resEs, ...wishEs, ...pageHeadEs, ...planProposalEs };

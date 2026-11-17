@@ -9,7 +9,7 @@ export function AiAlert() {
   const n = data?.totals.failedLastHour ?? 0;
   if (!n) return null;
   return (
-    <div className="card row between g12 wrap" role="alert" style={{ background: '#FDECEA', border: 0 }}>
+    <div className="card row between g12 wrap" role="alert" style={{ background: 'var(--danger-bg)', border: 0 }}>
       <span className="w7">⚠ {t('aih.alert', { n })}</span>
       <Link to="/admin/ai" className="btn btn-secondary btn-sm">{t('aih.alertLink')}</Link>
     </div>

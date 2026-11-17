@@ -73,7 +73,7 @@ function CampaignRow({ c, fmt }: { c: Campaign; fmt: ReturnType<typeof useFmt> }
   const { t } = useI18n();
   const status = c.status === 'ACTIVE' || c.status === 'PAUSED' ? t(`ads.c.${c.status}` as StringKey) : '';
   return (
-    <li className="row between g12 wrap" style={{ padding: '12px 0', borderTop: '1px solid var(--line)' }}>
+    <li className="row between g12 wrap" style={{ padding: '0.75rem 0', borderTop: '1px solid var(--line)' }}>
       <div className="col g4" style={{ minWidth: 0, flex: '1 1 220px' }}>
         <span className="w7">{c.name}</span>
         <span className="t-xs t-mute">{[status, c.objective].filter(Boolean).join(' · ')}</span>

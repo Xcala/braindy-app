@@ -12,6 +12,7 @@ import { draftReport } from './report.js';
 import { watchCompetitors } from './watch.js';
 import { analyzeGroup } from './group.js';
 import { remindDueTomorrow } from '../dueReminders.js';
+import { hostingDunning } from '../sitePause.js';
 
 export const adminBrains = new Hono<AuthEnv>();
 adminBrains.use('/brands/:brandId/brains/*', async (c, next) => {
@@ -85,4 +86,4 @@ cron.post('/weekly', async (c) => {
 });
 
 /** Daily: WhatsApp the brand the day before a request is due (once per due date). */
-cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()) }));
+cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()), hosting: await hostingDunning() }));

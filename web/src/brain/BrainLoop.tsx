@@ -36,7 +36,7 @@ export function HomeBrainLoop({ brandId }: { brandId: string }) {
   return (
     <section className="card bl-card col g16" aria-labelledby="h-bl">
       <div className="row between g12 wrap" style={{ alignItems: 'flex-start' }}>
-        <div className="col g4" style={{ maxWidth: 640 }}>
+        <div className="col g4" style={{ maxWidth: '40rem' }}>
           <h2 className="h3" id="h-bl"><span className="w9">{t('bl.line')}</span></h2>
           <p className="t-sm t-mute">{t('bl.lineSub')}</p>
         </div>

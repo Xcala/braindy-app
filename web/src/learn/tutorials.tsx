@@ -41,8 +41,17 @@ export function TutorialShelf({ list }: { list: Lesson[] }) {
   );
 }
 
-/** On each client page: "▶ How it works", when that section has its video. */
+/** On each client page: "▶ How it works", when that section has its video. Pages with a PageHeader show it there instead. */
 export function HowItWorks() {
+  const { pathname } = useLocation();
+  if (HEADER_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
+  return <HowLink row />;
+}
+/** Pages that carry their own header (PageHeader), with this link inside it. */
+export const HEADER_PAGES = ['/brand', '/deliveries', '/assets', '/apps', '/research'];
+
+/** The «▶ How it works · 1 min» link for the current page, or nothing when it has no video. */
+export function HowLink({ row = false }: { row?: boolean }) {
   const { pathname } = useLocation();
   const { t, lang } = useI18n();
   const { list } = useLessons();
@@ -52,9 +61,6 @@ export function HowItWorks() {
   const best = (x: Lesson) => Math.max(0, ...(x.paths ?? []).map(score));
   const l = list.filter((x) => x.kind === 'section' && x.status === 'published' && best(x) > 0).sort((a, b) => best(b) - best(a))[0];
   if (!l || pathname.startsWith('/learn')) return null;
-  return (
-    <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 8 }}>
-      <Link to={`/learn/${l.id}`} className="chip chip-plain t-sm" title={l.title[lang]}>▶ {t('tut.how')} · {t('cr.minutes', { n: l.minutes })}</Link>
-    </div>
-  );
+  const link = <Link to={`/learn/${l.id}`} className="chip chip-plain t-sm" title={l.title[lang]}>▶ {t('tut.how')} · {t('cr.minutes', { n: l.minutes })}</Link>;
+  return row ? <div className="row" style={{ justifyContent: 'flex-end', marginBottom: '0.5rem' }}>{link}</div> : link;
 }

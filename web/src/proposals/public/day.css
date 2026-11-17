@@ -1,0 +1,115 @@
+/* Proposals on the new offer, in the daylight look of braindy.co (tokens copied from its global.css). */
+.pp-day { --day-ink: #0B1220; --day-graphite: #5C6375; --day-azul: #2F4DE0;
+  --day-shadow: 0 24px 64px rgba(11,18,32,.18), 0 8px 20px rgba(11,18,32,.08);
+  color: var(--day-ink); overflow-x: clip;
+  background: radial-gradient(45% 60% at 10% 0%, rgba(244,200,202,.35), transparent 70%),
+    radial-gradient(40% 55% at 95% 30%, rgba(42,127,255,.12), transparent 70%), #F4F6FB; }
+.pp-day > div > section { position: relative; }
+.pp-day .d-lg { font-size: clamp(2.25rem, 4.5vw, 3.75rem); line-height: 1.04; letter-spacing: -.04em; }
+.pp-day .card { border-radius: 1.25rem; border-color: transparent; box-shadow: 0 8px 24px rgba(11,18,32,.08), 0 2px 6px rgba(11,18,32,.04); }
+.pp-day .sec-num { letter-spacing: .08em; text-transform: uppercase; }
+
+.day-hero { position: relative; overflow: hidden; min-height: min(100vh, 56rem); display: flex; }
+.day-hero-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }
+.day-hero-scrim { position: absolute; inset: 0; background:
+  linear-gradient(to bottom, rgb(255 255 255 / .55) 0%, rgb(255 255 255 / 0) 18%),
+  linear-gradient(to top, rgb(244 246 251) 0%, rgb(255 255 255 / .55) 22%, rgb(255 255 255 / 0) 40%),
+  linear-gradient(90deg, rgb(255 255 255 / .92) 0%, rgb(255 255 255 / .74) 36%, rgb(255 255 255 / .15) 60%, rgb(255 255 255 / 0) 74%); }
+@media (max-width: 1023px) { .day-hero-scrim { background: linear-gradient(to bottom, rgb(255 255 255 / .7), rgb(255 255 255 / .82) 50%, rgb(244 246 251)); } }
+.day-hero-in { position: relative; width: 100%; justify-content: space-between; }
+.day-nav { background: rgba(255,255,255,.7); backdrop-filter: blur(14px); border-radius: 999px; padding: .5rem .5rem .5rem 1.25rem; box-shadow: 0 8px 24px rgba(11,18,32,.08); }
+.day-pill { display: inline-flex; align-items: center; gap: .5rem; padding: .375rem .875rem; border-radius: 999px; background: rgba(255,255,255,.78); backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(11,18,32,.06); font: 600 .8125rem/1.2 'Red Hat Display', sans-serif; color: var(--day-ink); }
+.day-dot { width: .5rem; height: .5rem; border-radius: 50%; background: #10B981; }
+.day-display { margin: 0; font-family: 'Red Hat Display', sans-serif; font-size: clamp(2.75rem, 6vw, 5rem); line-height: 1.02; letter-spacing: -.045em; color: var(--day-ink); }
+.day-azul { color: var(--day-azul); }
+.day-lede { margin: 0; font-size: 1.125rem; line-height: 1.65; color: var(--day-graphite); max-width: 36rem; }
+.day-lede b { color: var(--day-ink); }
+.day-link { color: var(--day-azul); font-weight: 700; }
+.day-stats { padding-top: 1.5rem; border-top: 1px solid rgba(11,18,32,.1); font-family: 'Red Hat Display', sans-serif; font-weight: 300; font-size: 1.125rem; color: var(--day-graphite); }
+.day-stats b { font-weight: 900; font-size: 2.25rem; letter-spacing: -.03em; color: var(--day-ink); margin-right: .25rem; }
+.day-sky { background: radial-gradient(55% 45% at 88% 0%, rgba(255,214,130,.42), transparent 70%),
+  radial-gradient(50% 55% at 0% 15%, rgba(150,190,255,.32), transparent 70%), linear-gradient(180deg, #EAF2FF 0%, #F6F9FF 55%, #FFFFFF 100%); }
+.day-suncard, .pp-day .card.day-suncard { background: linear-gradient(160deg, #FFF4D6 0%, #F6F9FF 55%, #EAF0FF 100%); box-shadow: inset 0 0 0 1px rgba(47,77,224,.2), 0 8px 24px rgba(11,18,32,.08); }
+.day-brain img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 1rem; box-shadow: 0 8px 24px rgba(11,18,32,.12); }
+.day-sun { position: absolute; z-index: 0; width: clamp(9rem, 18vw, 15rem); aspect-ratio: 1; pointer-events: none;
+  -webkit-mask: url(/brand/site/logo_simbolo_azul.svg) center / contain no-repeat; mask: url(/brand/site/logo_simbolo_azul.svg) center / contain no-repeat; }
+.day-sun-azul { background: #6F8BFF; } .day-sun-sol { background: #F5B301; }
+.day-sun-right { right: -6rem; top: 9rem; } .day-sun-left { left: -7rem; bottom: -3rem; }
+.pp-day section:not(.day-hero) > :not(.day-sun) { position: relative; z-index: 1; }
+@media (max-width: 767px) { .day-sun { opacity: .35; } }
+
+/* Videos from braindy.co */
+.sv { position: relative; overflow: hidden; background: #0B1220; }
+.sv video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sv-sound { position: absolute; right: .75rem; top: .75rem; z-index: 2; padding: .375rem .75rem; border-radius: 999px; border: 0; cursor: pointer;
+  background: rgba(6,13,30,.55); backdrop-filter: blur(8px); color: #fff; font: 700 .8125rem/1 'Red Hat Display', sans-serif; }
+.sv-sound:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+.day-hero-video { background: transparent; }
+.day-hero-video video { object-position: 70% 50%; }
+.reel { display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: .5rem 3.5rem 1rem; scrollbar-width: thin; }
+.reel-item { flex: 0 0 min(52rem, 86vw); scroll-snap-align: center; }
+.reel-film { aspect-ratio: 16 / 9; border-radius: 1.25rem; box-shadow: var(--day-shadow); }
+.day-num { font: 900 clamp(2.25rem, 4vw, 3rem)/1 'Red Hat Display', sans-serif; letter-spacing: -.04em; color: var(--day-azul); }
+.phase-film { aspect-ratio: 16 / 9; border-radius: .875rem; margin: -.25rem -.25rem .25rem; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+.step-film { aspect-ratio: 4 / 5; border-radius: .875rem; }
+.app-film { aspect-ratio: 16 / 9; border-radius: 1.25rem; box-shadow: var(--day-shadow); }
+@media (max-width: 639px) { .reel { padding-inline: 1.25rem; } }
+
+/* Scroll motion: blocks rise in once (useReveal). */
+.reveal-on .pp-day [data-reveal] { opacity: 0; transform: translateY(1.5rem); transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); transition-delay: calc(var(--i, 0) * 70ms); }
+.reveal-on .pp-day [data-reveal].is-in { opacity: 1; transform: none; }
+.day-hero .day-display, .day-hero .day-lede, .day-hero .day-pill { animation: day-rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.day-hero .day-lede { animation-delay: .15s; }
+@keyframes day-rise { from { opacity: 0; transform: translateY(1.25rem); } }
+@media (prefers-reduced-motion: reduce) { .day-hero .day-display, .day-hero .day-lede, .day-hero .day-pill { animation: none; } }
+
+/* Slides */
+/* Slides: one section per screen, sliding in from the right; the rest wait off screen (so their videos stay paused). */
+html.deck-on, html.deck-on body { overflow: hidden; height: 100%; }
+html.deck-on [data-section], html.deck-on .pp-day > div > section { position: fixed; inset: 0; z-index: 30; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; justify-content: safe center; min-height: 0; margin: 0;
+  background-color: #F4F6FB;
+  transform: translateX(100%); opacity: 0; visibility: hidden;
+  transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s cubic-bezier(.16,1,.3,1), visibility 0s .6s; }
+html.deck-on [data-section].slide-past { transform: translateX(-100%); }
+html.deck-on [data-section].slide-on { transform: none; opacity: 1; visibility: visible; transition: transform .6s cubic-bezier(.16,1,.3,1), opacity .5s cubic-bezier(.16,1,.3,1), visibility 0s; }
+html.deck-on [data-section].day-hero { justify-content: stretch; }
+html.deck-on .pp-day > div.mx-auto > :not([data-section]) { display: none; }
+html.deck-on .slide-on [data-reveal] { animation: deck-rise .7s cubic-bezier(.22,.8,.24,1) both; animation-delay: calc(.12s + var(--i, 0) * 70ms); }
+@keyframes deck-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { html.deck-on [data-section] { transition: none !important; } html.deck-on .slide-on [data-reveal] { animation: none; } }
+.deck-progress { position: fixed; inset: 0 0 auto; height: 3px; z-index: 41; background: rgba(11,18,32,.08); }
+.deck-progress span { display: block; height: 100%; background: linear-gradient(90deg, #2F4DE0, #2A7FFF); transition: width .5s cubic-bezier(.16,1,.3,1); }
+.deck-dots { position: fixed; right: 1rem; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: .5rem; }
+.deck-dots button { width: .5rem; height: .5rem; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: rgba(11,18,32,.22); transition: transform .2s, background .2s; }
+.deck-dots button[aria-current] { background: #2F4DE0; transform: scale(1.4); }
+.deck-nav { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: .75rem;
+  background: rgba(255,255,255,.82); backdrop-filter: blur(18px); border-radius: 999px; padding: .4rem .5rem; box-shadow: 0 12px 32px rgba(11,18,32,.14); }
+.deck-btn { width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid rgba(11,18,32,.12); background: #fff; color: #0B1220; font-size: 1rem; cursor: pointer; transition: background .2s, color .2s, transform .2s; }
+.deck-btn:hover:not(:disabled) { background: #2F4DE0; color: #fff; transform: scale(1.06); }
+.deck-btn:disabled { opacity: .3; cursor: default; }
+.deck-count { font: 700 .75rem/1 'Red Hat Display', sans-serif; letter-spacing: .06em; color: #0B1220; min-width: 3.5rem; text-align: center; font-variant-numeric: tabular-nums; }
+.deck-exit { border: 0; background: transparent; color: #5C6375; font: 600 .75rem/1 'Red Hat Display', sans-serif; padding: .5rem .75rem; cursor: pointer; border-radius: 999px; }
+.deck-exit:hover { background: rgba(11,18,32,.06); color: #0B1220; }
+@media (max-width: 640px) { .deck-dots { display: none; } .deck-nav { bottom: .75rem; } }
+
+/* Credentials: the reality (photo, play), the London recognition and the client quotes with their number. */
+.cred-grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 1024px) { .cred-grid { grid-template-columns: 1.25fr .9fr 1fr; } }
+.cred-reality { position: relative; overflow: hidden; padding: 0; min-height: 22rem; color: #fff; text-decoration: none; display: block; }
+.cred-reality img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 30% 30%; transition: transform .8s cubic-bezier(.22,.8,.24,1); }
+.cred-reality:hover img { transform: scale(1.04); }
+.cred-reality::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11,18,32,.88) 0%, rgba(11,18,32,.35) 55%, rgba(11,18,32,0) 80%); }
+.cred-over { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 1.5rem; }
+.cred-over .day-pill { align-self: flex-start; }
+.cred-play { position: absolute; z-index: 1; top: 1.25rem; right: 1.25rem; width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.92); color: #2F4DE0; font-size: 1.1rem; box-shadow: 0 8px 24px rgba(11,18,32,.25); transition: transform .3s; }
+.cred-reality:hover .cred-play { transform: scale(1.1); }
+.cred-award-img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; border-radius: .875rem; }
+.cred-award-logo { width: 100%; max-width: 15rem; height: auto; mix-blend-mode: multiply; }
+.cred-quote { flex: 1; justify-content: space-between; }
+.cred-brands { align-items: center; }
+.day-hero > .day-hero-video { position: absolute; inset: 0; width: 100%; height: 100%; }
+.day-hero > .day-hero-video video { width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }

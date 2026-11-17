@@ -8,8 +8,8 @@ export function NoAccess() {
   const { t } = useI18n();
   return (
     <AuthLayout>
-      <div className="col g24 w-full max-w-[440px]">
-        <div className="flex h-16 w-16 items-center justify-center rounded-[20px]" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+      <div className="col g24 w-full max-w-[27.5rem]">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem]" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
           <Icon name="unlink" size={30} />
         </div>
         <div className="col g12">

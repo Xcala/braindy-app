@@ -1,5 +1,5 @@
 /* The working scenes. One 9-second clock: every element waits for its --d (seconds) and then plays. Sized in cqw so it scales. */
-.sc { position: relative; aspect-ratio: 16 / 10; container-type: inline-size; border-radius: 14px; border: 1px solid var(--line); background: #FAFBFD; overflow: hidden; font-family: 'Red Hat Display', system-ui, sans-serif; color: var(--ink); --c: var(--researcher); }
+.sc { position: relative; aspect-ratio: 16 / 10; container-type: inline-size; border-radius: 0.875rem; border: 1px solid var(--line); background: #FAFBFD; overflow: hidden; font-family: 'Red Hat Display', system-ui, sans-serif; color: var(--ink); --c: var(--researcher); }
 .sc.is-marketer { --c: var(--marketer); } .sc.is-creator { --c: var(--creator); } .sc.is-builder { --c: var(--builder); background: #0B0D12; color: #E9EDF7; }
 .sc * { box-sizing: border-box; }
 :where(.sc [style*="--d"]) { animation: sc-in .45s cubic-bezier(.2,.8,.2,1) var(--d, 0s) both; }
@@ -14,7 +14,7 @@
 .sc-thumb { position: relative; display: flex; flex-direction: column; gap: .8cqw; }
 .sc-thumb > i { display: block; aspect-ratio: 4 / 3; border-radius: 1cqw; background: linear-gradient(135deg, hsl(var(--h) 70% 82%), hsl(calc(var(--h) + 40) 60% 66%)); }
 .sc-thumb > b { display: block; height: 1cqw; border-radius: .5cqw; background: #E3E7EF; width: 90%; } .sc-thumb > b + b { width: 60%; }
-.sc-tag { white-space: nowrap; position: absolute; top: -1cqw; left: -1cqw; font: 700 1.9cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; padding: .7cqw 1.2cqw; border-radius: 99px; background: var(--c); color: #1A1200; box-shadow: 0 .6cqw 1.4cqw #0003; animation-name: sc-pop; }
+.sc-tag { white-space: nowrap; position: absolute; top: -1cqw; left: -1cqw; font: 700 1.9cqw/1 'Red Hat Display', system-ui, sans-serif; font-style: normal; padding: .7cqw 1.2cqw; border-radius: 6.1875rem; background: var(--c); color: #1A1200; box-shadow: 0 .6cqw 1.4cqw #0003; animation-name: sc-pop; }
 .sc-tag.is-rival { background: #EF4444; color: #fff; } .sc-tag.is-good { background: #10B981; color: #fff; }
 .sc-lens { position: absolute; left: 6%; top: 24%; width: 13cqw; height: 13cqw; border-radius: 50%; border: 1.3cqw solid var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); backdrop-filter: saturate(1.6) contrast(1.1); animation: sc-scan 4s ease-in-out 2.2s both; z-index: 2; }
 .sc-lens::after { content: ""; position: absolute; right: -4cqw; bottom: -2.4cqw; width: 5cqw; height: 1.6cqw; border-radius: 1cqw; background: var(--c); transform: rotate(45deg); }
@@ -52,7 +52,7 @@
 .sc-palette i { width: 6cqw; height: 6cqw; border-radius: 1cqw; background: var(--creator); animation: sc-pop .35s ease var(--d) both; }
 .sc-palette i:nth-child(2) { background: var(--marketer); } .sc-palette i:nth-child(3) { background: #0B0D12; } .sc-palette i:nth-child(4) { background: #F3FCFE; border: .3cqw solid #E3E7EF; }
 .sc-stage { position: absolute; right: 4%; bottom: 7%; font: 800 2.2cqw/1 'Red Hat Display', system-ui, sans-serif; }
-.sc-stage em { font-style: normal; padding: 1cqw 1.8cqw; border-radius: 99px; background: #E3E7EF; color: #4A5468; display: inline-block; }
+.sc-stage em { font-style: normal; padding: 1cqw 1.8cqw; border-radius: 6.1875rem; background: #E3E7EF; color: #4A5468; display: inline-block; }
 .sc-stage .w { animation: sc-out .3s ease 5.8s both; }
 .sc-stage .m { position: absolute; right: 0; top: 0; background: var(--creator); color: #04262E; animation-name: sc-pop !important; }
 .sc-cursor { position: absolute; width: 3.4cqw; fill: #0B0D12; stroke: #fff; stroke-width: 1.2; z-index: 3; animation: sc-cursor 8.6s ease-in-out both; }
@@ -94,7 +94,7 @@
 .sc-site { position: absolute; right: 4%; top: 18%; width: 31%; height: 56%; border-radius: 1.4cqw; background: #fff; color: var(--ink); overflow: hidden; box-shadow: 0 1.4cqw 4cqw #000A; animation-name: sc-pop !important; }
 .sc-site::after { content: ""; position: absolute; left: 8%; right: 8%; top: 30%; bottom: 28%; border-radius: 1cqw; background: linear-gradient(140deg, var(--creator), var(--marketer)); }
 .sc-site .sc-search { font-size: 1.6cqw; margin-left: .6cqw; }
-.sc-live { position: absolute; right: 6%; bottom: 7%; font: 800 2.3cqw/1 'Red Hat Display', system-ui, sans-serif; color: #fff; background: #1F7A4D; padding: 1.2cqw 2cqw; border-radius: 99px; animation: sc-pop .4s cubic-bezier(.3,1.6,.5,1) var(--d, 7.6s) both; z-index: 2; }
+.sc-live { position: absolute; right: 6%; bottom: 7%; font: 800 2.3cqw/1 'Red Hat Display', system-ui, sans-serif; color: #fff; background: #1F7A4D; padding: 1.2cqw 2cqw; border-radius: 6.1875rem; animation: sc-pop .4s cubic-bezier(.3,1.6,.5,1) var(--d, 7.6s) both; z-index: 2; }
 .sc-site .sc-live { right: 8%; bottom: 8%; font-size: 1.8cqw; padding: .9cqw 1.4cqw; }
 .sc-files { position: absolute; left: 6%; top: 10%; width: 64%; display: flex; flex-direction: column; gap: 2cqw; }
 .sc-file { display: grid; grid-template-columns: 7cqw 1fr 22% 3cqw; align-items: center; gap: 1.6cqw; padding: 1.4cqw; border-radius: 1.2cqw; background: #141826; font-size: 2.2cqw; }

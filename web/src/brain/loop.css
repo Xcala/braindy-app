@@ -1,23 +1,23 @@
 /* The Brand Brain loop (Home, Cerebro, review): four steps, each in the colour of the Brain that leads it. */
 .bl-card { border: 1px solid var(--line); }
-.bl-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: bl; }
-.bl-step { position: relative; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-start; padding: 12px 14px; border-radius: var(--r-md); background: color-mix(in srgb, var(--c) 9%, transparent); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); min-width: 0; }
+.bl-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; counter-reset: bl; }
+.bl-step { position: relative; display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-start; padding: 0.75rem 0.875rem; border-radius: var(--r-md); background: color-mix(in srgb, var(--c) 9%, transparent); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); min-width: 0; }
 /* The arrow to the next step; the last one points back to the first (the loop). */
-.bl-step:not(:last-child)::after { content: ""; position: absolute; right: -10px; top: 50%; width: 8px; height: 8px; border-top: 2px solid var(--line-strong); border-right: 2px solid var(--line-strong); transform: translateY(-50%) rotate(45deg); }
-.bl-ico { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c); }
+.bl-step:not(:last-child)::after { content: ""; position: absolute; right: -0.625rem; top: 50%; width: 0.5rem; height: 0.5rem; border-top: 2px solid var(--line-strong); border-right: 2px solid var(--line-strong); transform: translateY(-50%) rotate(45deg); }
+.bl-ico { flex: none; width: 1.75rem; height: 1.75rem; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--c); }
 .bl-step.is-on { animation: bl-glow 2.4s ease-out 2; }
 @keyframes bl-glow { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); } 100% { box-shadow: 0 0 0 12px transparent; } }
-.bl-last { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--ink); text-decoration: none; }
+.bl-last { display: flex; align-items: center; gap: 0.5rem; min-width: 0; color: var(--ink); text-decoration: none; }
 .bl-last:hover .truncate { color: var(--azul); }
 .bl-last > .t-mute { flex: none; white-space: nowrap; }
-.bl-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--success); animation: bl-beat 2s ease-out infinite; }
+.bl-dot { flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--success); animation: bl-beat 2s ease-out infinite; }
 @keyframes bl-beat { 0% { box-shadow: 0 0 0 0 var(--success); } 100% { box-shadow: 0 0 0 8px transparent; } }
 /* Right after an approval or a change: what the Brain just learned. */
-.bl-learned { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; background: var(--builder-bg); border: 1px solid color-mix(in srgb, var(--builder) 35%, transparent); animation: bl-in .5s var(--ease); }
+.bl-learned { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.875rem 1rem; border-radius: 0.875rem; background: var(--builder-bg); border: 1px solid color-mix(in srgb, var(--builder) 35%, transparent); animation: bl-in .5s var(--ease); }
 .bl-learned .bl-ico { --c: var(--builder); animation: bl-glow 2.4s ease-out 2; }
-@keyframes bl-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.bl-knows { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--r-sm); background: var(--builder-bg); }
-.bl-knows .bl-ico { --c: var(--builder); width: 24px; height: 24px; }
+@keyframes bl-in { from { opacity: 0; transform: translateY(0.375rem); } to { opacity: 1; transform: none; } }
+.bl-knows { display: flex; gap: 0.625rem; align-items: flex-start; padding: 0.625rem 0.75rem; border-radius: var(--r-sm); background: var(--builder-bg); }
+.bl-knows .bl-ico { --c: var(--builder); width: 1.5rem; height: 1.5rem; }
 .bl-wrap { container-type: inline-size; }
 @container (max-width: 700px) { .bl-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bl-step::after { display: none; } }
 @container (max-width: 240px) { .bl-steps { grid-template-columns: minmax(0, 1fr); } }

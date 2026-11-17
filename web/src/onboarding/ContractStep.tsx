@@ -13,9 +13,9 @@ export function ContractStep({ brandId, contractId }: { brandId: string; contrac
 
   if (!contract || contract.status === 'draft') {
     return (
-      <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+      <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <p className="label">{t('ctr.step1')}</p>
-        <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.rules1')}</span> {t('ctr.rules2')}</h1>
+        <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{t('ctr.rules1')}</span> {t('ctr.rules2')}</h1>
         <p className="t-lg muted">{t('ctr.repSigning')}</p>
       </div>
     );
@@ -23,9 +23,9 @@ export function ContractStep({ brandId, contractId }: { brandId: string; contrac
   if (contract.status === 'sent') return <SignContract brandId={brandId} contract={contract} />;
   return (
     <section className="col g20">
-      <div className="stage col g12 rounded-[20px] p-6 sm:p-9">
+      <div className="stage col g12 rounded-[1.25rem] p-6 sm:p-9">
         <p className="label">{t('ctr.step1')}</p>
-        <h1 className="d-lg" style={{ color: '#fff', fontSize: 40, lineHeight: '44px' }}><span className="w9">{t('ctr.youSigned1')}</span> {t('ctr.youSigned2')}</h1>
+        <h1 className="d-lg" style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '44px' }}><span className="w9">{t('ctr.youSigned1')}</span> {t('ctr.youSigned2')}</h1>
         <p className="t-lg muted">{t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned')}</p>
       </div>
       {contract.status === 'signed' && <ContractDownload brandId={brandId} contract={contract} />}

@@ -45,7 +45,7 @@ export function AskAttachments({ brandId, files, onChange, onBusy }: {
         onClick={() => input.current?.click()} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), input.current?.click())}
         onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); add(e.dataTransfer.files); }}
-        className="row g12" style={{ border: `1.5px dashed ${over ? 'var(--azul)' : 'var(--line-strong)'}`, background: over ? '#EEF3FF' : 'var(--niebla, #F6F7FB)', borderRadius: 14, padding: '14px 16px', cursor: 'pointer' }}>
+        className="row g12" style={{ border: `1.5px dashed ${over ? 'var(--azul)' : 'var(--line-strong)'}`, background: over ? '#EEF3FF' : 'var(--niebla, #F6F7FB)', borderRadius: '0.875rem', padding: '0.875rem 1rem', cursor: 'pointer' }}>
         <Icon name="upload" />
         <span className="col"><span className="t-sm w7">{t('ask.attach')}</span><span className="t-xs t-mute">{t('ask.attachHint')}</span></span>
       </div>

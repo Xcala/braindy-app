@@ -18,7 +18,7 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
     setGroup(gi, { ...g, rows });
   };
   const weekSelect = (value: number, onPick: (w: number) => void, label: string) => (
-    <select className="input" style={{ width: 76 }} value={value} onChange={(e) => onPick(Number(e.target.value))} aria-label={label}>
+    <select className="input" style={{ width: '4.75rem' }} value={value} onChange={(e) => onPick(Number(e.target.value))} aria-label={label}>
       {weeks.map((w) => <option key={w} value={w}>{t('ctr.weekShort', { n: w + 1 })}</option>)}
     </select>
   );
@@ -27,7 +27,7 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
     <div className="col g16">
       <div className="row g12 wrap t-sm">
         <label className="col g4"><span className="w7">{t('ctr.g.start')}</span><input className="input" type="date" value={schedule.start} onChange={(e) => onChange({ ...schedule, start: e.target.value })} /></label>
-        <label className="col g4"><span className="w7">{t('ctr.g.weeks')}</span><input className="input" type="number" min={1} max={52} style={{ width: 90 }} value={schedule.weeks} onChange={(e) => onChange({ ...schedule, weeks: Math.max(1, Math.min(52, Number(e.target.value) || 1)) })} /></label>
+        <label className="col g4"><span className="w7">{t('ctr.g.weeks')}</span><input className="input" type="number" min={1} max={52} style={{ width: '5.625rem' }} value={schedule.weeks} onChange={(e) => onChange({ ...schedule, weeks: Math.max(1, Math.min(52, Number(e.target.value) || 1)) })} /></label>
         <label className="col g4"><span className="w7">{t('ctr.g.meetingDay')}</span>
           <select className="input" value={schedule.meeting.weekday} onChange={(e) => onChange({ ...schedule, meeting: { ...schedule.meeting, weekday: Number(e.target.value) } })}>
             {[1, 2, 3, 4, 5].map((d) => <option key={d} value={d}>{t(`ctr.wd.${d}` as StringKey)}</option>)}
@@ -36,7 +36,7 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
       </div>
 
       {schedule.groups.map((g, gi) => (
-        <div key={g.id} className="col g8" style={{ background: '#F7F8FB', borderRadius: 14, padding: 14 }}>
+        <div key={g.id} className="col g8" style={{ background: 'var(--niebla)', borderRadius: '0.875rem', padding: '0.875rem' }}>
           <div className="row g8">
             <input className="input w7" value={g.title} placeholder={t('ctr.g.stage')} aria-label={t('ctr.g.stage')} onChange={(e) => setGroup(gi, { ...g, title: e.target.value })} />
             <button className="btn btn-ghost btn-sm" onClick={() => onChange({ ...schedule, groups: schedule.groups.filter((_, i) => i !== gi) })}>{t('ctr.g.removeStage')}</button>
@@ -47,16 +47,16 @@ export function GanttEditor({ schedule, onChange }: { schedule: Schedule; onChan
               {weekSelect(r.from, (w) => setRow(gi, ri, { from: w }), t('ctr.g.from'))}
               {!r.milestone && weekSelect(r.to, (w) => setRow(gi, ri, { to: w }), t('ctr.g.to'))}
               <label className="row g4 t-xs"><input type="checkbox" checked={r.milestone} onChange={(e) => setRow(gi, ri, { milestone: e.target.checked })} />{t('ctr.milestone')}</label>
-              <select className="input" style={{ width: 130 }} value={r.status} aria-label={t('ctr.g.status')} onChange={(e) => setRow(gi, ri, { status: e.target.value as RowStatus })}>
+              <select className="input" style={{ width: '8.125rem' }} value={r.status} aria-label={t('ctr.g.status')} onChange={(e) => setRow(gi, ri, { status: e.target.value as RowStatus })}>
                 {STATUSES.map((s) => <option key={s} value={s}>{t(`ctr.st.${s}`)}</option>)}
               </select>
               {!r.milestone && (
-                <select className="input" style={{ width: 170 }} value={r.tone ?? ''} aria-label={t('plan.toneLabel')} onChange={(e) => setRow(gi, ri, { tone: (e.target.value || undefined) as Tone | undefined })}>
+                <select className="input" style={{ width: '10.625rem' }} value={r.tone ?? ''} aria-label={t('plan.toneLabel')} onChange={(e) => setRow(gi, ri, { tone: (e.target.value || undefined) as Tone | undefined })}>
                   <option value="">{t('plan.toneAuto')}</option>
                   {TONES.map((k) => <option key={k} value={k}>{t(`plan.tone.${k}`)}</option>)}
                 </select>
               )}
-              <input className="input" style={{ width: 120 }} value={r.label ?? ''} maxLength={30} placeholder={t('plan.barLabel')} aria-label={t('plan.barLabel')} onChange={(e) => setRow(gi, ri, { label: e.target.value || undefined })} />
+              <input className="input" style={{ width: '7.5rem' }} value={r.label ?? ''} maxLength={30} placeholder={t('plan.barLabel')} aria-label={t('plan.barLabel')} onChange={(e) => setRow(gi, ri, { label: e.target.value || undefined })} />
               <button className="btn btn-ghost btn-sm" aria-label={t('ctr.g.removeRow')} onClick={() => setGroup(gi, { ...g, rows: g.rows.filter((_, i) => i !== ri) })}>×</button>
             </div>
           ))}

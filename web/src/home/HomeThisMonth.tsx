@@ -46,7 +46,7 @@ export function HomeThisMonth({ brandId, requests }: { brandId: string; requests
       <div className="grid gap-4 sm:grid-cols-3">
         {stats.map((s) => (
           <Link key={s.k} to={s.to} className="col g4" style={{ textDecoration: 'none', color: 'var(--ink)' }}>
-            <span className="w9" style={{ fontSize: 40, lineHeight: '44px', letterSpacing: '-.03em' }}>{s.n}</span>
+            <span className="w9" style={{ fontSize: '2.5rem', lineHeight: '44px', letterSpacing: '-.03em' }}>{s.n}</span>
             <span className="t-sm w7">{t(s.k)}</span>
             {s.sub && <span className="t-xs t-mute">{s.sub}</span>}
           </Link>

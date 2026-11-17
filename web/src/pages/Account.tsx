@@ -37,7 +37,7 @@ type Row = { to?: string; onClick?: () => void; icon: React.ReactNode; label: St
 
 /** Account page (search and deep links); the photo opens the same list as a menu over everything. */
 export function Account() {
-  return <div className="mx-auto w-full max-w-[560px]"><AccountBody /></div>;
+  return <div className="mx-auto w-full max-w-[35rem]"><AccountBody /></div>;
 }
 
 /** ChatGPT-style grouped list; each row opens its own content. onPick closes the menu when a row navigates. */
@@ -60,7 +60,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
 
   const brand = ([
     { to: '/plan', icon: I.plan, label: 'nav.plan', value: plan?.path ? t(`bill.path.${plan.path}`) : undefined },
-    { to: '/settings?tab=billing', icon: I.billing, label: 'set.tab.billing' },
+    { to: '/plan?tab=payments', icon: I.billing, label: 'set.tab.billing' },
     { to: '/accesses', icon: I.connectors, label: 'nav.accesses', value: acc.loading || acc.denied ? undefined : t('acct.connected', { n: String(acc.list.length) }) },
     { to: '/settings?tab=team', icon: I.team, label: 'set.tab.team' },
     { to: '/settings?tab=notices', icon: I.notices, label: 'set.tab.notices' },

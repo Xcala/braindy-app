@@ -38,14 +38,14 @@ export function GranolaInbox() {
       {msg && <p className="t-sm" role="status">{msg}</p>}
       {items.length === 0 && <p className="t-sm t-mute">{t('gra.empty')}</p>}
       {items.map((i) => (
-        <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+        <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.625rem' }}>
           <div className="row between g8 wrap">
             <span className="t-sm"><b>{i.title}</b> <span className="t-mute">· {i.date}</span></span>
             {i.webUrl && <a className="t-xs" href={i.webUrl} target="_blank" rel="noreferrer">Granola</a>}
           </div>
           {i.attendees?.length ? <span className="t-xs t-mute truncate">{i.attendees.join(', ')}</span> : null}
           <div className="row g8 wrap">
-            <select className="input" style={{ height: 36, width: 'auto', minWidth: 200 }} value={pick[i.id] ?? ''} onChange={(e) => setPick({ ...pick, [i.id]: e.target.value })} aria-label={t('gra.brand')}>
+            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '12.5rem' }} value={pick[i.id] ?? ''} onChange={(e) => setPick({ ...pick, [i.id]: e.target.value })} aria-label={t('gra.brand')}>
               <option value="">{t('gra.brand')}</option>
               {active.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>

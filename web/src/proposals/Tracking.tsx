@@ -31,7 +31,7 @@ function SendCard({ proposalId, send }: { proposalId: string; send: Send }) {
   const section = (n: number) => t(`proposals.section.${SECTION_KEYS[Math.min(n, SECTION_KEYS.length - 1)]}` as StringKey);
 
   return (
-    <div className="col g12" style={{ border: '1px solid var(--line)', borderRadius: 18, padding: 20 }}>
+    <div className="col g12" style={{ border: '1px solid var(--line)', borderRadius: '1.125rem', padding: '1.25rem' }}>
       <div className="row between g8 wrap">
         <span className="row g8"><Icon name={send.channel === 'link' ? 'link' : 'external'} /><span className="w7">{t(`proposals.sendTo.${send.channel}`, { to: send.to || '—' })}</span></span>
         <span className={`chip ${send.opens ? 'c-sent' : 'c-draft'}`}>{t('proposals.opens', { n: send.opens })}</span>

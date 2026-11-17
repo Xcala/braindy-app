@@ -76,28 +76,28 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
       </button>
       )}
       {open && (
-        <div className="menu absolute left-0 top-[56px] z-40 flex max-h-[70vh] w-[min(380px,calc(100vw-32px))] flex-col gap-0.5 overflow-y-auto" role="listbox" aria-label={t('brand.choose')}>
-          <div className="search" style={{ margin: '4px 4px 8px' }}>
+        <div className="menu absolute left-0 top-[3.5rem] z-40 flex max-h-[70vh] w-[min(380px,calc(100vw-32px))] flex-col gap-0.5 overflow-y-auto" role="listbox" aria-label={t('brand.choose')}>
+          <div className="search" style={{ margin: '0.25rem 0.25rem 0.5rem' }}>
             <Icon name="search" />
             <input className="input" autoFocus placeholder={t('brand.searchN', { n: brands.length })} aria-label={t('brand.search')}
               value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           {isAdmin && !enter && !found && (
             <Link to="/admin/brands" onClick={() => setOpen(false)} className="menu-item" style={{ background: 'var(--ink)', color: '#fff' }}>
-              <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: 20, height: 20 }} /></span>
+              <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: '1.25rem', height: '1.25rem' }} /></span>
               <span className="grow">{t('brand.admin')}</span>
               <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('nav.brands')}</span>
             </Link>
           )}
           {found ? (
-            found.length ? found.map((b) => item(b)) : <p className="t-sm t-mute" style={{ padding: '8px 12px' }}>{t('brand.noMatch')}</p>
+            found.length ? found.map((b) => item(b)) : <p className="t-sm t-mute" style={{ padding: '0.5rem 0.75rem' }}>{t('brand.noMatch')}</p>
           ) : (
             <>
               {recent.length > 0 && (
                 <>
-                  <p className="label" style={{ padding: '6px 12px' }}>{t('brand.recent')}</p>
+                  <p className="label" style={{ padding: '0.375rem 0.75rem' }}>{t('brand.recent')}</p>
                   {recent.map((b) => item(b))}
-                  <div className="divider" style={{ margin: '6px 0' }} />
+                  <div className="divider" style={{ margin: '0.375rem 0' }} />
                 </>
               )}
               {tree.map(({ brand, depth }) => item(brand, depth))}

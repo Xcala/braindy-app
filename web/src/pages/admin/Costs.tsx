@@ -30,7 +30,7 @@ export function AdminCosts() {
     <div className="col g24">
       <div className="row between g12 wrap">
         <div className="col g8"><p className="label">{t('anav.allBrands')} · {t('bill.a.only')}</p><h1 className="h1">{t('cost.nav')}</h1><p className="t-mute">{t('cost.sub')}</p></div>
-        <div className="field" style={{ minWidth: 200 }}>
+        <div className="field" style={{ minWidth: '12.5rem' }}>
           <label htmlFor="cost-month">{t('cost.period')}</label>
           <select id="cost-month" className="input" value={period} onChange={(e) => setPeriod(e.target.value)}>
             {(Object.keys(PRESETS) as Preset[]).map((p) => <option key={p} value={p}>{t(`cost.p.${p}`)}</option>)}
@@ -55,7 +55,7 @@ export function AdminCosts() {
               <section className="col g12">
                 <h2 className="h3">{t('cost.byBrand')}</h2>
                 <div className="table cost-table">
-                  <div className="trow head label min-w-[1150px]" style={{ gridTemplateColumns: BRAND_COLS }}>
+                  <div className="trow head label min-w-[71.875rem]" style={{ gridTemplateColumns: BRAND_COLS }}>
                     <span className="cost-name">{t('cost.c.brand')}</span><span>{t('cost.c.real')}</span><span>{t('cost.c.share')}</span><span>{t('cost.c.max')}</span><span>{t('cost.c.api')}</span>
                     <span>{t('cost.c.eq')}</span><span>{t('cost.c.pieces')}</span><span>{t('cost.c.perPiece')}</span><span>{t('cost.c.plan')}</span><span>{t('cost.c.margin')}</span>
                   </div>
@@ -63,7 +63,7 @@ export function AdminCosts() {
                     // What it paid in the period: the monthly plan times the months shown.
                     const paysUsd = b.plan?.currency === 'usd' && b.plan.monthly ? b.plan.monthly * c.months : null;
                     return (
-                      <div key={b.key} className="trow min-w-[1150px] t-sm" style={{ gridTemplateColumns: BRAND_COLS }}>
+                      <div key={b.key} className="trow min-w-[71.875rem] t-sm" style={{ gridTemplateColumns: BRAND_COLS }}>
                         <span className="w7 cost-name" title={name(b.brandId, b.project)}>{b.brandId ? <Link to={`/admin/brands?manage=${b.brandId}`} style={{ color: 'inherit' }}><b>{name(b.brandId, b.project)}</b></Link> : <b>{name(b.brandId, b.project)}</b>}</span>
                         <span className="w7">{usd(b.real)}</span>
                         <span className="col g4"><span>{pct(b.share)}</span><span className="costbar" aria-hidden="true"><i style={{ width: pct(b.share) }} /></span></span>
@@ -80,12 +80,12 @@ export function AdminCosts() {
               <section className="col g12">
                 <h2 className="h3">{t('cost.byModel')}</h2>
                 <div className="table cost-table">
-                  <div className="trow head label min-w-[980px]" style={{ gridTemplateColumns: MODEL_COLS }}>
+                  <div className="trow head label min-w-[61.25rem]" style={{ gridTemplateColumns: MODEL_COLS }}>
                     <span className="cost-name">{t('cost.c.model')}</span><span>{t('cost.c.source')}</span><span>{t('cost.c.input')}</span><span>{t('cost.c.output')}</span>
                     <span>{t('cost.c.cacheW')}</span><span>{t('cost.c.cacheR')}</span><span>{t('cost.c.eq')}</span><span>{t('cost.c.share')}</span>
                   </div>
                   {c.models.map((m) => (
-                    <div key={m.key} className="trow min-w-[980px] t-sm" style={{ gridTemplateColumns: MODEL_COLS }}>
+                    <div key={m.key} className="trow min-w-[61.25rem] t-sm" style={{ gridTemplateColumns: MODEL_COLS }}>
                       <span className="w7 cost-name"><b>{m.model}</b></span><span>{t(m.source === 'api' ? 'cost.src.api' : 'cost.src.session')}</span>
                       <span>{mtok(m.input)}</span><span>{mtok(m.output)}</span><span>{mtok(m.cacheW)}</span><span>{mtok(m.cacheR)}</span>
                       <span>{usd(m.usd)}</span><span>{pct(m.share)}</span>

@@ -7,6 +7,10 @@ export const createRequest = (brandId: string, body: Record<string, unknown>) =>
 export const decide = (brandId: string, requestId: string, versionId: string, state: 'approved' | 'changes_requested', note = '') =>
   api(`/v1/brands/${brandId}/requests/${requestId}/versions/${versionId}/decision`, { method: 'POST', body: JSON.stringify({ state, note }) });
 
+/** Already done outside the app (approved by voice, finished together): leaves the pending lists; undo puts it back. */
+export const markDone = (brandId: string, requestId: string, undo = false) =>
+  api(`/v1/brands/${brandId}/requests/${requestId}/done`, { method: 'POST', body: JSON.stringify({ undo }) });
+
 export const approveBatch = (brandId: string, items: Array<{ requestId: string; versionId: string }>) =>
   api<{ approved: number; total: number }>(`/v1/brands/${brandId}/approvals/batch`, { method: 'POST', body: JSON.stringify({ items }) });
 

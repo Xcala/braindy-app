@@ -4,7 +4,8 @@ import type { Brand } from '../brands/BrandProvider';
 import { inkOn } from '../brands/identity/useCopy';
 import type { Cur } from './hostingData';
 import { Featured, useL } from './HostingParts';
-import { Explainer, useBrandKit, type Kit } from './Explainer';
+import { Explainer, ExampleRow, useBrandKit, type Kit } from './Explainer';
+import { OnceIntro } from './OnceIntro';
 import './hosting.css';
 
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
@@ -30,17 +31,14 @@ export function BrandPieces({ brand }: { brand: Brand }) {
 
   return (
     <div className="col g32">
+      <OnceIntro id="brand">
       <Explainer label={L(['Diseño de piezas on-brand', 'On-brand piece design'])} title={L(['Pides una pieza. ', 'Ask for a piece. '])} strong={L(['Sale con tu marca.', 'It comes out on-brand.'])}
         lead={L(['Carruseles, posts, historias, videos e investigaciones hechos por los Brains con tu identidad ya cargada, y revisados por NicoMarca antes de llegar a ti.', 'Carousels, posts, stories, videos and research made by the Brains with your identity already loaded, and reviewed by NickMark before they reach you.'])}
-        stage={<Stage kit={kit} head={L(['Gran lanzamiento', 'Big launch'])} ask={L(['Un carrusel para el lanzamiento', 'A carousel for the launch'])} done={L(['Entregado', 'Delivered'])} />} steps={steps} />
-
-      <section className="col g16" aria-labelledby="bp-ex">
-        <div className="col g4">
-          <h2 id="bp-ex" className="h3">{L(['Así se verían con tu marca', 'How they would look with your brand'])}</h2>
-          <p className="t-sm t-mute" style={{ margin: 0 }}>{L(['Ejemplos dibujados con el logo y los colores de ', 'Examples drawn with the logo and colors of '])}{brand.name}.</p>
-        </div>
-        <Examples kit={kit} L={L} />
-      </section>
+        stage={<Stage kit={kit} head={L(['Gran lanzamiento', 'Big launch'])} ask={L(['Un carrusel para el lanzamiento', 'A carousel for the launch'])} done={L(['Entregado', 'Delivered'])} />} steps={steps}>
+        {/* Same compact strip as the other tabs: the examples live inside the explainer card. */}
+        <ExampleRow title={L(['Así se vería con tu marca', 'How it looks with your brand'])} items={examples(kit, L)} />
+      </Explainer>
+      </OnceIntro>
 
       <div className="hp">
         <div className="hp-bar">
@@ -76,7 +74,11 @@ function Stage({ kit, head, ask, done }: { kit: Kit; head: string; ask: string; 
   );
 }
 
-function Examples({ kit, L }: { kit: Kit; L: (x: readonly [string, string]) => string }) {
+/** A tall piece centered and shrunk inside the strip's small frame (the frame's own scale would leave it cut off). */
+const tall = (k: number) => ({ position: 'absolute' as const, left: '50%', top: '50%', transform: `translate(-50%, -50%) scale(${k})` });
+
+/** Pieces drawn with this brand's logo, colors and type, sized for the explainer's example strip. */
+function examples(kit: Kit, L: (x: readonly [string, string]) => string) {
   const ink1 = inkOn(kit.c1), ink2 = inkOn(kit.c2);
   const ff = kit.font ? `'${kit.font}', var(--f-text)` : undefined;
   const Logo = ({ dark }: { dark?: boolean }) => kit.logo
@@ -84,7 +86,7 @@ function Examples({ kit, L }: { kit: Kit; L: (x: readonly [string, string]) => s
     : <b className="t-xs">{kit.name}</b>;
   const pieces = [
     { key: 'carousel', label: L(['Carrusel', 'Carousel']), note: L(['Instagram y LinkedIn', 'Instagram and LinkedIn']), art: (
-      <div className="bp-x bp-x-car">
+      <div className="bp-x bp-x-car" style={tall(.5)}>
         {[kit.c2, kit.c3, kit.c1].map((bg, i) => (
           <div key={i} className="bp-x-slide" style={{ background: bg, color: inkOn(bg), fontFamily: ff, transform: `translate(${i * 14}px, ${i * -10}px)` }}>
             {i === 2 && <><Logo dark={ink1 === '#FFFFFF'} /><b>{L(['5 claves de tu sector', '5 keys of your industry'])}</b><small>1 / 5</small></>}
@@ -93,35 +95,26 @@ function Examples({ kit, L }: { kit: Kit; L: (x: readonly [string, string]) => s
       </div>
     ) },
     { key: 'post', label: L(['Post', 'Post']), note: L(['Una imagen con mensaje', 'One image with a message']), art: (
-      <div className="bp-x bp-x-post" style={{ background: kit.c2, color: ink2, fontFamily: ff }}>
+      <div className="bp-x bp-x-post" style={{ background: kit.c2, color: ink2, fontFamily: ff, ...tall(.48) }}>
         <span className="bp-x-blob" style={{ background: kit.c1 }} />
         <b>{L(['Lo que tu cliente necesita oír', 'What your client needs to hear'])}</b>
         <Logo dark={ink2 === '#FFFFFF'} />
       </div>
     ) },
     { key: 'story', label: L(['Historia o video', 'Story or video']), note: L(['Vertical, 9:16', 'Vertical, 9:16']), art: (
-      <div className="bp-x bp-x-story" style={{ background: `linear-gradient(160deg, ${kit.c1}, ${kit.c2})`, color: ink1, fontFamily: ff }}>
+      <div className="bp-x bp-x-story" style={{ background: `linear-gradient(160deg, ${kit.c1}, ${kit.c2})`, color: ink1, fontFamily: ff, ...tall(.42) }}>
         <span className="bp-x-play">▶</span>
         <b>{L(['Detrás de cámaras', 'Behind the scenes'])}</b>
         <Logo dark={ink1 === '#FFFFFF'} />
       </div>
     ) },
     { key: 'research', label: L(['Investigación', 'Research']), note: L(['Mercado y competencia', 'Market and competitors']), art: (
-      <div className="bp-x bp-x-doc" style={{ fontFamily: ff }}>
+      <div className="bp-x bp-x-doc" style={{ fontFamily: ff, ...tall(.45) }}>
         <span className="bp-x-doc-top" style={{ background: kit.c1 }}><Logo dark={ink1 === '#FFFFFF'} /></span>
         <b>{L(['Mapa de mercado', 'Market map'])}</b>
         <span className="bp-x-bars">{[70, 45, 85, 30].map((w, i) => <i key={i} style={{ width: `${w}%`, background: i % 2 ? kit.c3 : kit.c1 }} />)}</span>
       </div>
     ) },
   ];
-  return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      {pieces.map((p) => (
-        <figure key={p.key} className="bp-ex card">
-          <div className="bp-ex-art">{p.art}</div>
-          <figcaption className="col"><span className="w7">{p.label}</span><span className="t-xs t-mute">{p.note}</span></figcaption>
-        </figure>
-      ))}
-    </div>
-  );
+  return pieces;
 }

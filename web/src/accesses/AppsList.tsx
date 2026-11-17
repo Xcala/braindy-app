@@ -58,7 +58,7 @@ export function AppsList({ brandId, list, view, q, cols, onEdit, onClear }: {
         <section key={g.key} className="col g8">
           {head(g)}
           <div className="table acc-table overflow-x-auto">
-            <div className="trow head label" style={{ gridTemplateColumns: gridFor(cols), minWidth: 260 + cols.length * 170 }}>
+            <div className="trow head label" style={{ gridTemplateColumns: gridFor(cols), minWidth: `${(260 + cols.length * 170) / 16}rem` }}>
               <span>{t('acc.platform')}</span>{cols.map((c) => <span key={c}>{t(COL_LABEL[c])}</span>)}<span />
             </div>
             {g.items.map((a) => <AccessRow key={a.id} brandId={brandId} a={a} cols={cols} logo={logoDomain(a, list)} drag={drag(a)} onEdit={() => onEdit(a)} />)}

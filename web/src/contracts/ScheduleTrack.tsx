@@ -48,7 +48,7 @@ export function ScheduleTrack({ schedule: s }: { schedule: Schedule }) {
         {raw >= 0 && raw < s.weeks && <span className="trk-today" style={{ left: at(now) }}><em>{t('trk.today')}</em></span>}
         {points.map((p, i) => (
           // Deliveries due the same week sit side by side instead of on top of each other.
-          <span key={p.id} className={`trk-node is-${p.state}`} style={{ left: at(p.to + 1), marginLeft: -11 + points.slice(0, i).filter((q) => q.to === p.to).length * 16 }} title={`${p.title} · ${date(p.to)}`}>
+          <span key={p.id} className={`trk-node is-${p.state}`} style={{ left: at(p.to + 1), marginLeft: `${(-11 + points.slice(0, i).filter((q) => q.to === p.to).length * 16) / 16}rem` }} title={`${p.title} · ${date(p.to)}`}>
             {p.state === 'done' && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
           </span>
         ))}

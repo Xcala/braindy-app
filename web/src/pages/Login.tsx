@@ -56,8 +56,8 @@ export function Login() {
   const linkBtn = { background: 'none', border: 0, color: 'var(--azul)', cursor: 'pointer', padding: 0 } as const;
   return (
     <AuthLayout>
-      <form onSubmit={onSubmit} className="col g24 w-full max-w-[420px]">
-        <div className="col" style={{ gap: 10 }}>
+      <form onSubmit={onSubmit} className="col g24 w-full max-w-[26.25rem]">
+        <div className="col" style={{ gap: '0.625rem' }}>
           <h2 className="h1">{t('login.title1')}<span className="w9">ai</span>{t('login.title2')}</h2>
           <p className="t-mute">{fromLink ? t('login.linkConfirm') : t('login.subtitle')}</p>
         </div>
@@ -69,7 +69,7 @@ export function Login() {
           </div>
         ) : <>
           {!fromLink && <>
-            <button type="button" className="btn btn-google btn-block" style={{ height: 52 }} disabled={busy}
+            <button type="button" className="btn btn-google btn-block" style={{ height: '3.25rem' }} disabled={busy}
               onClick={() => run(() => signInWithPopup(auth, googleProvider))}>
               <GoogleIcon />
               {t('login.google')}
@@ -98,7 +98,7 @@ export function Login() {
           {message && (
             <p role={message.kind === 'error' ? 'alert' : 'status'} className="t-sm" style={{ color: message.kind === 'error' ? 'var(--danger)' : 'var(--success)' }}>{message.text}</p>
           )}
-          <button className="btn btn-primary btn-block" type="submit" style={{ height: 52 }} disabled={busy}>
+          <button className="btn btn-primary btn-block" type="submit" style={{ height: '3.25rem' }} disabled={busy}>
             {fromLink ? t('login.linkFinish') : withPassword ? t('login.submit') : t('login.sendLink')}
           </button>
           {!fromLink && (

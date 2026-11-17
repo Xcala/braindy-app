@@ -53,7 +53,7 @@ export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId
 
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <form className="modal w-full max-w-[520px]" role="dialog" aria-modal="true" aria-labelledby="acc-form-title" onSubmit={save} autoComplete="off">
+      <form className="modal w-full max-w-[32.5rem]" role="dialog" aria-modal="true" aria-labelledby="acc-form-title" onSubmit={save} autoComplete="off">
         <div className="row between g12">
           <h2 className="h2" id="acc-form-title">{editing ? t('acc.editTitle') : t('acc.addTitle')}</h2>
           <span className="chip c-active">{t('acc.encryptedBefore')}</span>
@@ -97,7 +97,7 @@ export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId
         </div>
         <div className="field">
           <label htmlFor="acc-notes">{t('acc.notes')}</label>
-          <textarea id="acc-notes" className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} style={{ height: 'auto', paddingTop: 10 }} />
+          <textarea id="acc-notes" className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} style={{ height: 'auto', paddingTop: '0.625rem' }} />
           {secretInNotes ? (
             <div className="row between g8 wrap" role="alert">
               <span className="help err">{t('acc.secretInNotes')}</span>

@@ -33,22 +33,22 @@ const body = { fontSize: 17, lineHeight: 1.65 } as const;
 export function Prose({ text, accent }: { text: string; accent?: string }) {
   let n = 0, firstP = true;
   return (
-    <div className="col g16" style={{ maxWidth: 760 }}>
+    <div className="col g16" style={{ maxWidth: '47.5rem' }}>
       {parse(text).map((b, i) => {
         if (b.kind === 'h') {
-          if (!accent) return <h2 key={i} className="h3" style={{ marginTop: 12 }}>{inline(b.lines[0])}</h2>;
+          if (!accent) return <h2 key={i} className="h3" style={{ marginTop: '0.75rem' }}>{inline(b.lines[0])}</h2>;
           n += 1;
           return <h2 key={i} id={`sec-${n}`} className="h3 lx-h"><span className="lx-n" style={{ background: accent }}>{n}</span>{inline(b.lines[0].replace(/^\d+\.\s*/, ''))}</h2>;
         }
         if (b.kind === 'ul') {
-          if (!accent) return <ul key={i} className="col g8" style={{ ...body, paddingLeft: 22, listStyle: 'disc' }}>{b.lines.map((l, j) => <li key={j}>{inline(l)}</li>)}</ul>;
+          if (!accent) return <ul key={i} className="col g8" style={{ ...body, paddingLeft: '1.375rem', listStyle: 'disc' }}>{b.lines.map((l, j) => <li key={j}>{inline(l)}</li>)}</ul>;
           const grid = b.lines.length >= 4 && b.lines.every((l) => l.length < 110);
           return <ul key={i} className={`lx-list${grid ? ' is-grid' : ''}`}>{b.lines.map((l, j) => <li key={j}><i style={{ background: accent }}>✓</i><span>{inline(l)}</span></li>)}</ul>;
         }
         if (b.kind === 'quote') {
           return accent
             ? <blockquote key={i} className="lx-quote" style={{ background: `${accent}14`, color: 'var(--ink)' }}>{inline(b.lines.join(' '))}</blockquote>
-            : <blockquote key={i} className="h3" style={{ borderLeft: '3px solid var(--azul)', paddingLeft: 16 }}>{inline(b.lines.join(' '))}</blockquote>;
+            : <blockquote key={i} className="h3" style={{ borderLeft: '3px solid var(--azul)', paddingLeft: '1rem' }}>{inline(b.lines.join(' '))}</blockquote>;
         }
         const lead = accent && firstP; firstP = false;
         return <p key={i} className={lead ? 'lx-lead' : undefined} style={lead ? undefined : body}>{inline(b.lines.join(' '))}</p>;

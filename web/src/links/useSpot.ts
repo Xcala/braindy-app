@@ -22,6 +22,7 @@ export function useSpot(siteUrl: string) {
   const bridge = useRef(false);
   const wantPick = useRef(false); // comment mode asked for before the bridge answered: turned on when it does
   const [hasBridge, setHasBridge] = useState(false);
+  const [editor, setEditor] = useState<string | null>(null); // the site's own editor, when it has one (it says so on ready)
   const pending = useRef<Spot | null>(null);
   const pinsRef = useRef<Pin[]>([]);
   const [page, setPage] = useState(siteUrl);
@@ -53,6 +54,8 @@ export function useSpot(siteUrl: string) {
       const d = e.data;
       if (d.type === 'braindy:ready') {
         bridge.current = true; setHasBridge(true);
+        if (typeof d.editor === 'string' && sameHost(d.editor, siteUrl)) setEditor(d.editor);
+        if (d.inEditor) return; // the editor itself: not a page of the site
         current.current = String(d.url ?? current.current); setPage(current.current);
         send({ type: 'braindy:pins', pins: pinsRef.current });
         const p = pending.current; pending.current = null;
@@ -69,7 +72,7 @@ export function useSpot(siteUrl: string) {
     };
     window.addEventListener('message', onMsg);
     return () => { window.removeEventListener('message', onMsg); clearTimeout(wait.current); };
-  }, [ask, send]);
+  }, [ask, send, siteUrl]);
 
   const go = useCallback((s: Spot) => {
     setNote(null); setActive(s.label);
@@ -95,10 +98,13 @@ export function useSpot(siteUrl: string) {
     send({ type: 'braindy:comment-mode', on });
   }, [send]);
 
+  /** Loads a URL in the frame as it is (the site's editor, or back to a page): no spot, no note. */
+  const load = useCallback((url: string) => { setNote(null); pending.current = null; if (frame.current) frame.current.src = url; }, []);
+
   const setPins = useCallback((pins: Pin[]) => { pinsRef.current = pins; send({ type: 'braindy:pins', pins }); }, [send]);
 
   return {
-    frame, go, note, active, page, hasBridge, dismiss: () => setNote(null),
+    frame, go, load, note, active, page, hasBridge, editor, dismiss: () => setNote(null),
     picking, setPicking, picked, clearPicked: () => setPicked(null), setPins, pinned, clearPinned: () => setPinned(null),
   };
 }

@@ -44,12 +44,21 @@ async function send(body: string): Promise<{ j: Answer; attempts: number }> {
 
 /** `meta` names the brand the call works for, so its tokens and cost land in that brand's usage. */
 export async function claude(system: string, user: string, maxTokens = 2000, meta?: UsageMeta): Promise<string> {
+  return claudeChat(system, [{ role: 'user', content: user }], { maxTokens, meta });
+}
+
+export type ChatTurn = { role: 'user' | 'assistant'; content: string };
+
+/** A conversation (the last turn must be the user's). `model` overrides the default, e.g. a lighter one for app help. */
+export async function claudeChat(system: string, messages: ChatTurn[], o: { maxTokens?: number; meta?: UsageMeta; model?: string } = {}): Promise<string> {
   if (!KEY) throw new Error('ai_not_configured');
+  const { maxTokens = 2000, meta } = o;
+  const asked = o.model ?? MODEL;
   const t0 = Date.now();
   const log = { brandId: meta?.brandId ?? null, kind: meta?.kind ?? 'other', taskId: meta?.taskId ?? null, requestId: meta?.requestId ?? null };
   try {
-    const { j, attempts } = await send(JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }));
-    const model = j.model ?? MODEL;
+    const { j, attempts } = await send(JSON.stringify({ model: asked, max_tokens: maxTokens, system, messages }));
+    const model = j.model ?? asked;
     const t = tokensOf(j.usage);
     await Promise.all([
       recordClaude(meta, model, j.usage),
@@ -58,7 +67,7 @@ export async function claude(system: string, user: string, maxTokens = 2000, met
     return (j.content ?? []).filter((c) => c.type === 'text').map((c) => c.text).join('');
   } catch (e) {
     const err = e as Error & { attempts?: number };
-    await recordCall({ ...log, model: MODEL, ok: false, error: err.message.slice(0, 80), ms: Date.now() - t0, attempts: err.attempts ?? ATTEMPTS });
+    await recordCall({ ...log, model: asked, ok: false, error: err.message.slice(0, 80), ms: Date.now() - t0, attempts: err.attempts ?? ATTEMPTS });
     throw e;
   }
 }

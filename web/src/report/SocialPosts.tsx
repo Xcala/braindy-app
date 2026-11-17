@@ -35,7 +35,7 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
         {feed.slice(0, 6).map((p) => (
           <div key={p.id} className="col g6">
           <a href={p.url || undefined} target="_blank" rel="noreferrer" className="col g6" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{ aspectRatio: network === 'linkedin' || network === 'youtube' ? '16 / 9' : '4 / 5', borderRadius: 12, overflow: 'hidden', background: 'var(--hielo)' }}>
+            <div style={{ aspectRatio: network === 'linkedin' || network === 'youtube' ? '16 / 9' : '4 / 5', borderRadius: '0.75rem', overflow: 'hidden', background: 'var(--hielo)' }}>
               {p.image && <img src={p.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </div>
             <span className="t-xs t-mute row g4" style={{ alignItems: 'center' }}>{p.network && <NetBadge network={p.network} />}{type(p)} · {day(p.date)}</span>
@@ -51,18 +51,18 @@ export function SocialPosts({ posts, network }: { posts: StatPost[]; network: st
       </button>
       {all && (
         <div style={{ overflowX: 'auto' }}>
-          <table className="t-sm" style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
+          <table className="t-sm" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '35rem' }}>
             <thead><tr className="t-xs t-mute" style={{ textAlign: 'left' }}>
-              {(['soc.t.post', 'soc.k.views', 'soc.k.reach', 'soc.t.likes', 'soc.t.comments', 'soc.t.saves', 'soc.t.shares', 'soc.k.interactions'] as StringKey[]).map((k, i) => <th key={k} style={{ padding: '6px 8px', textAlign: i ? 'right' : 'left', fontWeight: 700 }}>{t(k)}</th>)}
+              {(['soc.t.post', 'soc.k.views', 'soc.k.reach', 'soc.t.likes', 'soc.t.comments', 'soc.t.saves', 'soc.t.shares', 'soc.k.interactions'] as StringKey[]).map((k, i) => <th key={k} style={{ padding: '0.375rem 0.5rem', textAlign: i ? 'right' : 'left', fontWeight: 700 }}>{t(k)}</th>)}
             </tr></thead>
             <tbody>
               {[...posts].sort(by).map((p) => (
                 <tr key={p.id} style={{ borderTop: '1px solid var(--line)' }}>
-                  <td style={{ padding: '6px 8px', maxWidth: 260 }}>
+                  <td style={{ padding: '0.375rem 0.5rem', maxWidth: '16.25rem' }}>
                     <a href={p.url || undefined} target="_blank" rel="noreferrer" className="w7">{p.network ? `${netInfo(p.network).label} · ` : ''}{type(p)} · {day(p.date)}</a>
                     {p.text && <div className="t-xs t-mute" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.text}</div>}
                   </td>
-                  {[p.views, p.reach, p.likes, p.comments, p.saves, p.shares, p.interactions].map((v, i) => <td key={i} style={{ padding: '6px 8px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmt(v)}</td>)}
+                  {[p.views, p.reach, p.likes, p.comments, p.saves, p.shares, p.interactions].map((v, i) => <td key={i} style={{ padding: '0.375rem 0.5rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmt(v)}</td>)}
                 </tr>
               ))}
             </tbody>

@@ -34,7 +34,7 @@ export function BrainFeed({ events, fresh }: { events: BrainEvent[]; fresh: Set<
         <div className="col g4"><h2 className="h3" id="h-bb-feed">{t('bb.learned')}</h2><p className="t-sm t-mute">{t('bb.learnedSub')}</p></div>
         <span className="bb-live t-xs w7">{t('bb.live')}</span>
       </header>
-      {events.length === 0 && <p className="t-sm t-mute" style={{ padding: '8px 4px' }}>{t('bb.empty')}</p>}
+      {events.length === 0 && <p className="t-sm t-mute" style={{ padding: '0.5rem 0.25rem' }}>{t('bb.empty')}</p>}
       <ul className="bb-list">
         {events.map((e) => {
           const text = eventText(e, t);

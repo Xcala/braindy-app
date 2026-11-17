@@ -7,6 +7,7 @@ import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
 import { Stack } from './Stack';
+import { OnceIntro } from './OnceIntro';
 import type { BrandPlan, PackStatus, StackItem } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
@@ -46,21 +47,28 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
+  // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
+  const head = !plan && !schedule ? (
+    <header className="col g4">
+      <p className="label" style={{ margin: 0 }}>{brandName}</p>
+      <h1 className="h1">{t('plan.title')}</h1>
+    </header>
+  ) : null;
   return (
-    <div className="col g40">
-      <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
+    <div className="col g32">
+      {head ?? <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
         <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
         <h1 className="h1" style={{ color: '#fff' }}><span className="w3">{t('plan.title')}{plan ? ' · ' : ''}</span>{plan && <span className="w9">{plan.title}</span>}</h1>
-        {plan?.summary && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: 720 }}>{plan.summary}</p>}
+        {plan?.summary && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan.summary}</p>}
         <div className="row g24" style={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
           {(plan?.start || plan?.end) && (
             <div className="col"><span className="label" style={{ color: '#8FA0FF' }}>{t('plan.dates')}</span><span className="w7">{fmt(plan.start, lang)}{plan.end ? ` → ${fmt(plan.end, lang)}` : ''}</span></div>
           )}
           {p.total > 0 && (
-            <div className="col g4" style={{ minWidth: 220, flex: '1 1 220px', maxWidth: 360 }}>
+            <div className="col g4" style={{ minWidth: '13.75rem', flex: '1 1 220px', maxWidth: '22.5rem' }}>
               <span className="label" style={{ color: '#8FA0FF' }}>{t('plan.progress')}</span>
               <span className="w7">{t('plan.delivered').replace('{done}', String(p.done)).replace('{total}', String(p.total))}</span>
-              <span role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t('plan.progress')} style={{ height: 8, borderRadius: 99, background: 'rgba(255,255,255,.18)', overflow: 'hidden' }}>
+              <span role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={t('plan.progress')} style={{ height: '0.5rem', borderRadius: '6.1875rem', background: 'rgba(255,255,255,.18)', overflow: 'hidden' }}>
                 <span style={{ display: 'block', height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#10B981,#06B6D4)' }} />
               </span>
             </div>
@@ -70,9 +78,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           {/* The "ai" inside Brains goes in 900 in signatures. */}
           {t('plan.signature').split('Brains').flatMap((part, i) => (i ? [<span key={i}>Br<b className="w9">ai</b>ns</span>, part] : [part]))}
         </p>
-      </header>
+      </header>}
       {tabs}
-      {intros?.[tab]}
+      {intros?.[tab] && <OnceIntro key={tab} id={tab}>{intros[tab]}</OnceIntro>}
       {tab === 'summary' && contract}
       {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
       {tab === 'schedule' && schedule && (
@@ -97,9 +105,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
         </section>
       )}
       {tab === 'brand' && brand}
+      {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
       {tab === 'site' && stack && <Stack items={stack} />}
-      {tab === 'site' && site}
       {tab === 'payments' && payments}
     </div>
   );

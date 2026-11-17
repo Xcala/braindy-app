@@ -31,7 +31,7 @@ export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onTogg
       </div>
       <div className="acct-sheet-body col g16">
         <button type="button" className="btn btn-primary" onClick={() => { select(brand.id); navigate('/home'); }}>{t('anav.openBrand')}</button>
-        <div className="card row between" style={{ padding: 16 }}>
+        <div className="card row between" style={{ padding: '1rem' }}>
           <span className="w7">{t('anav.status')}</span>
           <span className="row g12">
             <span className="t-sm w7" style={{ color: on ? 'var(--success)' : 'var(--graphite)' }}>{t(`status.${brand.status}`)}</span>
