@@ -1,5 +1,4 @@
 import { Navigate, useSearchParams } from 'react-router';
-import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { LangToggle } from '../i18n/LangToggle';
@@ -15,12 +14,10 @@ const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team
 /** Settings: WhatsApp and notices, team and approvers, language. Per brand, in tabs like the other pages. */
 export function Settings() {
   const { current } = useBrands();
-  const isAdmin = useAuth().profile?.role === 'admin';
-  // NickMark manages people in Team (admin), the one place for it; clients keep it here.
-  const tabs = isAdmin ? TABS.filter(([k]) => k !== 'team') : TABS;
+  // The brand's people (who can sign in) are here for clients and for NickMark too (2026-11-17), next to its WhatsApp.
+  const tabs = TABS;
   const { t } = useI18n();
   const [params, setParams] = useSearchParams();
-  if (isAdmin && params.get('tab') === 'team') return <Navigate to="/team" replace />;
   if (params.get('tab') === 'billing') return <Navigate to="/plan?tab=payments" replace />;
   const tab = tabs.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
