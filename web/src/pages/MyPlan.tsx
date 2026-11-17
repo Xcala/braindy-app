@@ -9,6 +9,7 @@ import type { StackItem } from '../plan/types';
 import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/types';
 import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
+import { ProposalCard } from '../plan/ProposalCard';
 import { AdminPlan } from '../plan/AdminPlan';
 import { Subscription } from '../plan/Subscription';
 import { BrandPieces } from '../plan/BrandPieces';
@@ -56,7 +57,7 @@ export function MyPlan() {
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
         payments={<PaymentsTab brand={current} />}
         brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
-        contract={<ContractCard brandId={id} contract={contract} noPlan={!plan} />}
+        contract={<><ProposalCard brandId={id} admin={admin} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
