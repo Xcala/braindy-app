@@ -24,3 +24,11 @@ export function usePlanTabs(on: boolean) {
   const isOn = (to: string) => to === (open ? `/plan?tab=${open}` : '/plan');
   return { pages, isOn };
 }
+
+/** Settings' tabs (WhatsApp and notices, team and approvers, language) take its place in the same row (2026-11-17). */
+const SETTINGS = ['notices', 'team', 'language'];
+export const settingsPages: NavPage[] = SETTINGS.map((k) => ({ to: k === 'notices' ? '/settings' : `/settings?tab=${k}`, label: `set.tab.${k}` } as NavPage));
+export const settingsOn = (to: string, search: string) => {
+  const asked = new URLSearchParams(search).get('tab') ?? '';
+  return to === (SETTINGS.includes(asked) && asked !== 'notices' ? `/settings?tab=${asked}` : '/settings');
+};

@@ -17,12 +17,12 @@ export function Settings() {
   // The brand's people (who can sign in) are here for clients and for NickMark too (2026-11-17), next to its WhatsApp.
   const tabs = TABS;
   const { t } = useI18n();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   if (params.get('tab') === 'billing') return <Navigate to="/plan?tab=payments" replace />;
   const tab = tabs.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
-  // Same pattern as the rest of the app: title on top, a row of tabs, one section at a time.
+  // Same pattern as the rest of the app: title on top, its tabs in the section row (app/planTabs), one section at a time.
   return (
     <div className="col g24">
       <div className="col g8">
@@ -30,11 +30,6 @@ export function Settings() {
         <p className="label">{current.name}</p>
         <h1 className="h1">{t('nav.settings')}</h1>
       </div>
-      <nav className="seg seg-scroll" aria-label={t('nav.settings')}>
-        {tabs.map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setParams({ tab: k }, { replace: true })} aria-pressed={tab === k} className={tab === k ? 'is-on' : ''}>{t(label)}</button>
-        ))}
-      </nav>
       {tab === 'notices' && <p className="t-mute" style={{ margin: 0 }}>{t('set.noticesTagline')}</p>}
       {tab === 'notices' && <MyWhatsappCard />}
       {tab === 'notices' && <NoticesCard brandId={current.id} />}
