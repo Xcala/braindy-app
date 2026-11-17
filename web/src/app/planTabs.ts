@@ -32,3 +32,11 @@ export const settingsOn = (to: string, search: string) => {
   const asked = new URLSearchParams(search).get('tab') ?? '';
   return to === (SETTINGS.includes(asked) && asked !== 'notices' ? `/settings?tab=${asked}` : '/settings');
 };
+
+/** The Account row in order of what matters to a client (2026-11-17): the plan and its schedule, what they pay, who can sign in
+ *  and how they hear from us, then hosting, the AI studio, third-party apps and language. Pages not listed keep their place at the end. */
+const ACCOUNT_ORDER = ['/plan', '/plan?tab=schedule', '/plan?tab=payments', '/settings?tab=team', '/settings', '/plan?tab=site', '/plan?tab=brand', '/accesses', '/settings?tab=language'];
+export const byAccountOrder = (a: NavPage, b: NavPage) => {
+  const i = (p: NavPage) => { const k = ACCOUNT_ORDER.indexOf(p.to); return k < 0 ? ACCOUNT_ORDER.length : k; };
+  return i(a) - i(b);
+};

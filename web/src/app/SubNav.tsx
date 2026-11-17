@@ -8,7 +8,7 @@ import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { groupOfPath, pageMatch, type NavPage } from './navGroups';
-import { settingsOn, settingsPages, usePlanTabs } from './planTabs';
+import { byAccountOrder, settingsOn, settingsPages, usePlanTabs } from './planTabs';
 
 /**
  * The tabs of a section, at the top of each of its pages (phones and desktop): My brand → Brand kit · Deliveries · Library ·
@@ -28,7 +28,8 @@ export function SubNav() {
   const inTab = here?.tab ? pages.filter((p) => p.tab === here.tab) : [];
   // Mi plan's and Settings' own tabs join the row where /plan and /settings are: one bar, not two.
   const plan = usePlanTabs(tabs.some((p) => p.to === '/plan'));
-  const row = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : p.to === '/settings' ? settingsPages : [p]));
+  const flat = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : p.to === '/settings' ? settingsPages : [p]));
+  const row = tabs.some((p) => p.to === '/plan') ? [...flat].sort(byAccountOrder) : flat;
   if (row.length < 2 && inTab.length < 2) return null;
   const on = (p: NavPage) => (p.to.startsWith('/plan') ? pathname === '/plan' && plan.isOn(p.to) : p.to.startsWith('/settings') ? pathname === '/settings' && settingsOn(p.to, search) : p.tab ? here?.tab === p.tab : here?.to === p.to);
   return (
