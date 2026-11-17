@@ -14,6 +14,7 @@
 
 /**
  * @typedef {Object} Opciones
+ * @property {(href: string) => void} [navegar]  Navega dentro de la app al tocar un enlace con data-tg-nav.
  * @property {{ texto: string, href: string }} [fin]  Enlace en el último paso (p. ej. «Leer la guía completa →»).
  * @property {string} [logoHtml]                       HTML del logo para los pasos con logo: true.
  * @property {(id: string) => void} [alCerrar]         Se llama al cerrar (terminar o saltar), p. ej. para analítica.
@@ -188,7 +189,7 @@ export function iniciarTour(id, pasos, op = {}) {
     let finLink = capa.querySelector('.tg-fin');
     if (ultimo && op.fin) {
       if (!finLink) { finLink = document.createElement('a'); finLink.className = 'tg-fin'; capa.querySelector('.tg-x').after(finLink); }
-      finLink.href = op.fin.href; finLink.textContent = op.fin.texto;
+      finLink.href = op.fin.href; finLink.textContent = op.fin.texto; finLink.dataset.tgNav = '';
     } else finLink?.remove();
     const fijo = objetivo && getComputedStyle(objetivo.closest('.fixed, [style*="fixed"]') ?? objetivo).position === 'fixed';
     if (objetivo && innerWidth < 640 && !fijo) {
@@ -232,6 +233,12 @@ export function iniciarTour(id, pasos, op = {}) {
     }
   }
 
+  // Enlaces internos (data-tg-nav): cierran el recorrido y navegan dentro de la app, sin recargar.
+  card.addEventListener('click', (e) => {
+    const a = e.target.closest?.('a[data-tg-nav]');
+    if (!a || !op.navegar) return;
+    e.preventDefault(); cerrar(); op.navegar(a.getAttribute('href'));
+  });
   nextBtn.addEventListener('click', () => (i === pasos.length - 1 ? cerrar(true) : mostrar(i + 1)));
   prevBtn.addEventListener('click', () => mostrar(i - 1));
   skipBtn.addEventListener('click', () => cerrar());

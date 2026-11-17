@@ -14,6 +14,7 @@ import { LiveBanner } from '../home/HomeExtras';
 import { LessonOfTheWeek } from '../criterio/LessonCards';
 import { HomeThisMonth } from '../home/HomeThisMonth';
 import { HomeBrainLoop } from '../brain/BrainLoop';
+import { useLessons } from '../criterio/useCriterio';
 
 /**
  * Home, by hierarchy: the studio with what was launched (4 columns: studio 3, launches 1), what was delivered
@@ -26,7 +27,11 @@ export function Home() {
   const scope = current ? [current.id, ...brands.filter((b) => b.groupId && (b.groupId === current.id || brands.find((p) => p.id === b.groupId)?.groupId === current.id)).map((b) => b.id)] : [];
   const all = useBrandsRequests(scope);
   const { profile } = useAuth();
-  useTour('home', () => homeSteps(lang), !!current, profile?.role !== 'admin');
+  // The tour offers the how-to videos too: the overview in this person's language, else the Learn shelf.
+  const tutorials = useLessons().list.filter((l) => l.kind && l.status === 'published' && l.videos?.[lang]);
+  const overview = tutorials.find((l) => l.kind === 'general');
+  const videos = overview ? `/learn/${overview.id}` : tutorials.length ? '/learn' : undefined;
+  useTour('home', () => homeSteps(lang, videos), !!current, profile?.role !== 'admin');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const needsYou = all.filter((r) => r.status === 'to_approve');

@@ -2,6 +2,8 @@
 export interface Paso { el?: string; titulo: string; texto: string; logo?: boolean; antes?: () => void }
 export interface Opciones {
   fin?: { texto: string; href: string };
+  /** In-app navigation for links marked data-tg-nav (closes the tour first). */
+  navegar?: (href: string) => void;
   logoHtml?: string;
   alCerrar?: (id: string) => void;
   alCompletar?: (id: string) => void;

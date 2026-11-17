@@ -40,6 +40,8 @@
 .tg-x { font-size: 0.9375rem; line-height: 1.55; color: var(--tg-muted); }
 .tg-x p { margin: 0 0 0.5rem; }
 .tg-x b { color: var(--tg-ink); }
+.tg-x a { font-weight: 600; color: var(--tg-accent); }
+.tg-x .tg-video { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid color-mix(in srgb, var(--tg-muted) 25%, transparent); }
 /* Ejemplo «Mejor / Que»: <p class="tg-ej"><span>Mejor</span> … <br><span>Que</span> …</p> */
 .tg-ej { background: var(--tg-surface); border-radius: 0.875rem; padding: 0.625rem 0.75rem; font-size: 0.875rem; color: var(--tg-ink); }
 .tg-ej span { font-family: var(--tg-font-mono); font-size: 0.625rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--tg-muted); margin-right: 0.25rem; }
