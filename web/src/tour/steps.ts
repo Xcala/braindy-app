@@ -6,12 +6,17 @@ const visible = (...sels: string[]) => sels.find((s) => document.querySelector(s
 const ask = () => visible('[data-tour="ask-nav-m"]', '[data-tour="ask-nav"]');
 const fin = { es: '<p>¿Quieres verlo otra vez? Abre el menú de tu cuenta (tu inicial, arriba a la derecha) y elige <b>Ver el recorrido</b>.</p>', en: '<p>Want to see it again? Open your account menu (your initial, top right) and choose <b>See the tour</b>.</p>' };
 
-export function homeSteps(lang: Lang): Paso[] {
+/** "Prefer video?": a link to the how-to videos, in the person's language (only when they exist). */
+const videoLink = (es: boolean, href?: string) => (href
+  ? `<p class="tg-video">${es ? '¿Prefieres verlo en video?' : 'Prefer to watch it?'} <a href="${href}" data-tg-nav>${es ? 'Mira los videos de cómo usar Braindy →' : 'Watch the how-to videos →'}</a></p>`
+  : '');
+
+export function homeSteps(lang: Lang, videos?: string): Paso[] {
   const es = lang === 'es';
   return [
     { logo: true, titulo: es ? 'Bienvenido a Braindy' : 'Welcome to Braindy',
-      texto: es ? '<p>En un minuto te mostramos cómo funciona tu app: <b>qué te necesita</b>, quién está trabajando y cómo pedir algo nuevo.</p><p>No hay nada que configurar. Todo lo que hagas se guarda solo.</p>'
-        : '<p>In one minute we show you how your app works: <b>what needs you</b>, who is working, and how to ask for something new.</p><p>There is nothing to set up. Everything you do saves itself.</p>' },
+      texto: (es ? '<p>En un minuto te mostramos cómo funciona tu app: <b>qué te necesita</b>, quién está trabajando y cómo pedir algo nuevo.</p><p>No hay nada que configurar. Todo lo que hagas se guarda solo.</p>'
+        : '<p>In one minute we show you how your app works: <b>what needs you</b>, who is working, and how to ask for something new.</p><p>There is nothing to set up. Everything you do saves itself.</p>') + videoLink(es, videos) },
     { el: '[data-tour="home-needs"]', titulo: es ? '1 · Lo que te necesita y WhatsApp' : '1 · What needs you and WhatsApp',
       texto: es ? '<p>Arriba ves si algo espera tu respuesta. A la derecha, el <b>grupo de WhatsApp</b> de tu marca y el WhatsApp directo de Nicolas.</p><p>Responde el mismo día si puedes: cada día de espera corre la entrega un día.</p>'
         : '<p>At the top you see whether something is waiting for your answer. On the right, your brand’s <b>WhatsApp group</b> and Nick’s direct WhatsApp.</p><p>Answer the same day if you can: every day of waiting moves the delivery one day.</p>' },
@@ -33,7 +38,7 @@ export function homeSteps(lang: Lang): Paso[] {
     { el: '[data-tour="home-meetings"]', titulo: es ? '7 · Reuniones' : '7 · Meetings',
       texto: es ? '<p>Tu <b>siguiente reunión</b> con Nicolas, con un botón para agregarla a tu calendario, y el historial con lo que hablamos en cada una.</p>'
         : '<p>Your <b>next meeting</b> with Nick, with a button to add it to your calendar, and the history with what we talked about in each one.</p>' },
-    { logo: true, titulo: es ? 'Listo para empezar' : 'Ready to start', texto: (es ? '<p>Ya sabes lo esencial. Cuando quieras algo nuevo, ve a <b>Pedir algo</b>.</p>' : '<p>You know the essentials. Whenever you want something new, go to <b>Ask for something</b>.</p>') + fin[lang] },
+    { logo: true, titulo: es ? 'Listo para empezar' : 'Ready to start', texto: (es ? '<p>Ya sabes lo esencial. Cuando quieras algo nuevo, ve a <b>Pedir algo</b>.</p>' : '<p>You know the essentials. Whenever you want something new, go to <b>Ask for something</b>.</p>') + videoLink(es, videos) + fin[lang] },
   ];
 }
 
