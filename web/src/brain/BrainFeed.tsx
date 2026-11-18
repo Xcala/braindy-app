@@ -14,6 +14,8 @@ export function eventText(e: BrainEvent, t: T) {
   if (e.kind === 'meeting') return t('bb.txt.meeting');
   if (e.kind === 'session') return e.text ? t('bb.txt.sessionOn', { text: e.text }) : t('bb.txt.session');
   if (e.kind === 'signed') return t('bb.txt.signed');
+  if (e.kind === 'taught') return t('bb.txt.taught', { what: t(`bb.topic.${e.parts?.[0] ?? 'voice'}` as StringKey), text: e.text ?? '' });
+  if (e.kind === 'forgot') return t('bb.txt.forgot', { text: e.text ?? '' });
   if (e.kind === 'file' && (e.count ?? 1) > 1) return t('bb.txt.files', { n: e.count!, text: e.text ?? '' });
   return e.text ?? '';
 }
@@ -22,6 +24,17 @@ export function ago(d: Date | null, t: T) {
   if (!d) return t('bb.never');
   const m = Math.max(0, Math.round((Date.now() - +d) / 60000));
   return m < 1 ? t('bb.now') : m < 60 ? t('bb.minAgo', { n: m }) : m < 1440 ? t('bb.hAgo', { n: Math.round(m / 60) }) : t('bb.dAgo', { n: Math.round(m / 1440) });
+}
+
+/** Files uploaded the same day become one line («3 files»): a file is kept, not learned, so it should not flood the feed. */
+function grouped(events: BrainEvent[]) {
+  const out: BrainEvent[] = [];
+  for (const e of events) {
+    const prev = out[out.length - 1];
+    if (e.kind === 'file' && prev?.kind === 'file' && prev.at?.toDateString() === e.at?.toDateString()) { out[out.length - 1] = { ...prev, count: (prev.count ?? 1) + (e.count ?? 1), text: prev.text }; continue; }
+    out.push(e);
+  }
+  return out;
 }
 
 /** What it learned, newest first. Items that arrive while the page is open slide in and flash. */
@@ -36,7 +49,7 @@ export function BrainFeed({ events, fresh }: { events: BrainEvent[]; fresh: Set<
       </header>
       {events.length === 0 && <p className="t-sm t-mute" style={{ padding: '0.5rem 0.25rem' }}>{t('bb.empty')}</p>}
       <ul className="bb-list">
-        {events.map((e) => {
+        {grouped(events).map((e) => {
           const text = eventText(e, t);
           return (
             <li key={e.id} className={`bb-item${fresh.has(e.id) ? ' is-new' : ''}`}>
