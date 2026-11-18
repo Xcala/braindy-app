@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 import { useBrands, type Brand } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
@@ -17,7 +17,6 @@ import { GroupAnalysis, LearningsSection } from '../brains/BrainPanels';
 import { useAuth } from '../auth/AuthProvider';
 import { useCanApprove } from '../requests/useCanApprove';
 import { BrandFiles, type BrandFile } from '../brands/identity/BrandFiles';
-import { useCopy } from '../brands/identity/useCopy';
 import { SectionHead } from '../components/SectionHead';
 import { useI18n } from '../i18n/I18nProvider';
 import { BrandEditor, type EditableIdentity } from '../brands/edit/BrandEditor';
@@ -44,7 +43,6 @@ export function MyBrand() {
   const brainDoc = useBrandDoc(current?.id, 'context/brain');
   const primalDoc = useBrandDoc(current?.id, 'context/primal');
   const legacyShots = deckShots(useLegacyAssets(current?.id));
-  const { copied, copy } = useCopy();
   const canAsk = useCanApprove(current?.id);
   const isAdmin = useAuth().profile?.role === 'admin';
   const [editing, setEditing] = useState(false);
@@ -54,13 +52,6 @@ export function MyBrand() {
   const old = versions.find((v) => v.id === ver) ?? null;
   // My brand is split in views (see SubNav): essence (the default), visual and documents. Research is its own page.
   const { view = 'essence' } = useParams<{ view?: string }>();
-  const active = useActiveSection([identity.loading, voiceDoc.loading, brainDoc.loading, current?.id, view]);
-  const bar = useRef<HTMLDivElement>(null);
-  // On mobile the bar is one scrolling line: keep the current section chip in view.
-  useEffect(() => {
-    const el = bar.current, on = el?.querySelector<HTMLElement>('a.is-on');
-    if (el && on && el.scrollWidth > el.clientWidth) el.scrollTo({ left: on.offsetLeft - 12, behavior: 'smooth' });
-  }, [active]);
 
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   const id = ((old ? old.identity : identity.data) ?? {}) as Identity;
@@ -90,7 +81,6 @@ export function MyBrand() {
   const visible = sections.filter((s) => s.show && s.view === view);
   const on = (key: string) => visible.some((s) => s.id === key);
   const num = (key: string) => visible.findIndex((s) => s.id === key) + 1;
-  const font = ((id.typography ?? [])[0] as { fontFamily?: string; name?: string } | undefined)?.fontFamily ?? ((id.typography ?? [])[0] as { name?: string } | undefined)?.name;
 
   return (
     <div className="col g48 brandpage">
@@ -100,25 +90,6 @@ export function MyBrand() {
       {view === 'essence' && <BrandHero brand={shown} logo={id.logos?.primary ?? shown.logoUrl ?? undefined}
         essence={voice?.essence?.title} tags={(voice?.archetype ?? []).slice(0, 3)} accent={colors[0]?.hex} />}
       {editing && <BrandEditor key={current.id} brandId={current.id} identity={id as EditableIdentity} voice={voice} brain={brain} primal={primal} onClose={() => setEditing(false)} />}
-
-      {view === 'visual' && visible.length > 1 && (
-        <div ref={bar} className="stickybar brandbar row between g16 wrap rounded-[1.25rem]" style={{ marginTop: '-1.5rem', padding: '0.75rem 1rem', top: 'calc(var(--top-h, 0px) + 0.5rem)' }}>
-          <nav className="anchors" aria-label={t('brand.onThisPage')}>
-            {visible.map((s) => <a key={s.id} href={`#${s.id}`} className={active === s.id ? 'is-on' : ''} aria-current={active === s.id ? 'location' : undefined}>{t(s.label)}</a>)}
-          </nav>
-          {colors.length > 0 && (
-            <div className="qrow row g8 wrap">
-              <span className="label">{t('brand.quickCopy')}</span>
-              {colors.slice(0, 3).map((c) => (
-                <button key={c.hex} className="qcopy" onClick={() => copy(c.hex!.toUpperCase())}>
-                  <i style={{ background: c.hex }} />{copied === c.hex!.toUpperCase() ? t('common.copied') : c.hex!.toUpperCase()}
-                </button>
-              ))}
-              {font && <button className="qcopy" onClick={() => copy(font)}>{font}</button>}
-            </div>
-          )}
-        </div>
-      )}
 
       {loading && <p className="t-mute">{t('common.loading')}…</p>}
       {!loading && visible.length === 0 && <div className="card t-mute">{t('brand.empty')}</div>}
@@ -212,19 +183,4 @@ function GroupBrands({ brands, all }: { brands: Brand[]; all: Brand[] }) {
       })}
     </div>
   );
-}
-
-/** The section currently in view, to highlight its anchor in the sticky bar (design 26). */
-function useActiveSection(deps: unknown[]) {
-  const [active, setActive] = useState<string | null>(null);
-  useEffect(() => {
-    const els = [...document.querySelectorAll<HTMLElement>('main section[id]')];
-    const io = new IntersectionObserver((entries) => {
-      const top = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-      if (top) setActive(top.target.id);
-    }, { rootMargin: '-80px 0px -60% 0px' });
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
-  return active;
 }
