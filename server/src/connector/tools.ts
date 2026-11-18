@@ -55,6 +55,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   server.registerTool('braindy_app_link', {
     title: 'Publicar un sitio o app en Mis apps',
     description: 'Adds (or updates, same URL) a card in the brand\'s "Mis apps" in Braindy App: the website or web app built for it. '
+      + 'Every site is editable by default («Hazlo tú»): the answer says whether the site has the bridge, the editor meta and editorAuth, and what is missing. '
       + 'Use when Nicolas says "publícala en Braindy App", "ponla en Mis apps".',
     inputSchema: {
       brandId: z.string(),
@@ -63,11 +64,13 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
       kind: z.enum(['web', 'app', 'dashboard', 'research', 'marketmap']).optional().describe('web = sitio web (default), app = web app, dashboard'),
       description: z.string().optional().describe('One sentence in Spanish'),
       status: z.enum(['live', 'building']).optional().describe('live = Publicado (default), building = En construcción'),
+      editorAuth: z.object({ projectId: z.string(), serviceAccount: z.string() }).optional()
+        .describe('The site\'s own Firebase project id and its admin service account (firebase-adminsdk-…@<project>.iam.gserviceaccount.com): clients then open its editor already signed in. Once per site.'),
     },
   }, run(async ({ brandId, ...l }) => {
     const name = await requireBrand(brandId);
     const r = await setLink(brandId, l);
-    return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\nVer: ${APP}/apps`;
+    return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\n${r.editing ? `${r.editing}\n` : ''}Ver: ${APP}/apps`;
   }));
 
   server.registerTool('braindy_plan', {

@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { SitePanel } from './SitePanel';
 import { useSpot } from './useSpot';
 import { AddressBar } from './AddressBar';
-import { ModeIntro, ModeSwitch, useSiteMode } from './SiteModes';
+import { ModeSwitch, useSiteMode, useSiteSignIn } from './SiteModes';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
 
@@ -40,9 +40,12 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
   // The adjustments column: open by default where there is room, folded on phones.
   const hasPanel = link.section === 'apps';
   const [panel, setPanel] = useState(() => typeof window === 'undefined' || window.innerWidth >= 768);
-  // A site with its own editor: «Dímelo» (this panel) or «Hazlo tú» (its editor, full width, in the same frame).
+  // A site with its own editor opens in it («Hazlo tú», full width, same frame, already signed in); «Dímelo» is this panel.
   const sm = useSiteMode(link.id, spot, hasPanel && !blocked);
+  useSiteSignIn(brandId, link.id, spot, hasPanel && !blocked && !!link.editorAuth);
   const editing = sm.mode === 'edit';
+  // In the editor the comments stay one click away, folded.
+  useEffect(() => { if (editing) setPanel(false); }, [editing]);
 
   return (
     <div className="lview" role="dialog" aria-modal="true" aria-label={link.title}>
@@ -80,13 +83,12 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
               <iframe ref={spot.frame} title={link.title} src={link.url} className="lview-frame" style={{ width: editing ? '100%' : SIZES[size] }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
                 referrerPolicy="no-referrer" allow="fullscreen; clipboard-write" />
-              {sm.intro && <ModeIntro setMode={sm.setMode} />}
               {frame === null && <p className="t-xs t-mute lview-hint">{t('lv.hint')}</p>}
               {spot.note && <p className="lview-note t-sm" role="status">{t(spot.note === 'moved' ? 'sp.noBridge' : spot.note === 'nobridge' ? 'sc.noBridge' : 'sp.notFound')} <button type="button" className="btn btn-ghost btn-sm" onClick={spot.dismiss} aria-label={t('lb.close')}>✕</button></p>}
             </>
           )}
         </div>
-        {hasPanel && !editing && (
+        {hasPanel && (
           <div className={`lview-side${panel ? ' is-open' : ''}`}>
             {/* One clear handle: a rail with the label when folded, a round button in the corner when open. */}
             <button type="button" className="lview-side-tog" aria-expanded={panel} aria-controls="site-panel" onClick={() => setPanel((p) => !p)}
@@ -94,7 +96,7 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <span className="lview-side-label">{t('sp.toggle')}</span>
             </button>
-            <div className="lview-side-in" inert={!panel}><SitePanel brandId={brandId} link={link} links={links} frame={blocked ? undefined : spot} /></div>
+            <div className="lview-side-in" inert={!panel}><SitePanel brandId={brandId} link={link} links={links} frame={blocked || editing ? undefined : spot} /></div>
           </div>
         )}
       </div>
