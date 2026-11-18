@@ -1,26 +1,27 @@
 import { useLocation } from 'react-router';
-import { useBrands } from '../brands/BrandProvider';
-import { useBrandDoc } from '../brands/useBrandDoc';
 import type { NavPage } from './navGroups';
 
 /**
- * Mi plan's own tabs (summary, schedule, brand, site, payments) sit in the section's top row with Third-party apps and
- * Settings (2026-11-17; before, a second switch under the title). Each is /plan?tab=…; the schedule only when there is one.
+ * The Account row (2026-11-17): five tabs, no second row anywhere. Mi plan (with its schedule folded inside), Payments,
+ * Team and notices (/settings), Third-party apps (own tab since 2026-11-18), Hosting and On-Brand AI Studio.
+ * Inside each tab what the person comes to do stays open and the rest folds (components/Fold). Language lives in Account.
  */
-export function usePlanTabs(on: boolean) {
+const PLAN = ['payments', 'apps', 'site', 'brand'];
+export function usePlanTabs(_on: boolean) {
   const { search } = useLocation();
-  const brand = useBrands().current;
-  const id = on ? brand?.id : undefined;
-  const live = useBrandDoc(id, 'context/schedule').data;
-  const kickoff = useBrandDoc(id, 'context/kickoff').data as { items?: unknown[] } | null;
-  const contractId = brand?.onboarding?.contractId;
-  const contract = useBrandDoc(id && contractId ? id : undefined, `contracts/${contractId ?? '-'}`).data as { schedule?: unknown } | null;
-  const schedule = !!(live || contract?.schedule || kickoff?.items?.length);
-  const keys = ['schedule', 'brand', 'site', 'payments'].filter((k) => k !== 'schedule' || schedule);
   const asked = new URLSearchParams(search).get('tab') ?? '';
-  const open = keys.includes(asked) ? asked : '';
-  /** The plan's pages, to put where /plan is in the row. */
-  const pages: NavPage[] = [{ to: '/plan', label: 'nav.plan' }, ...keys.map((k) => ({ to: `/plan?tab=${k}`, label: `plan.tab.${k}` } as NavPage))];
+  const open = PLAN.includes(asked) ? asked : '';
+  const pages: NavPage[] = [{ to: '/plan', label: 'nav.plan' }, ...PLAN.map((k) => ({ to: `/plan?tab=${k}`, label: `plan.tab.${k}` } as NavPage))];
   const isOn = (to: string) => to === (open ? `/plan?tab=${open}` : '/plan');
   return { pages, isOn };
 }
+
+export const settingsPages: NavPage[] = [{ to: '/settings', label: 'set.tab.people' } as NavPage];
+export const settingsOn = (to: string, _search: string) => to === '/settings';
+
+/** In order of what matters to a client: the plan, what they pay, who signs in and how they hear from us, hosting, the studio. */
+const ACCOUNT_ORDER = ['/plan', '/plan?tab=payments', '/settings', '/plan?tab=apps', '/plan?tab=site', '/plan?tab=brand'];
+export const byAccountOrder = (a: NavPage, b: NavPage) => {
+  const i = (p: NavPage) => { const k = ACCOUNT_ORDER.indexOf(p.to); return k < 0 ? ACCOUNT_ORDER.length : k; };
+  return i(a) - i(b);
+};

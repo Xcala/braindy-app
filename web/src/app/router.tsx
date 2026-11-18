@@ -22,7 +22,6 @@ import { BatchApprove } from '../pages/BatchApprove';
 import { Home } from '../pages/Home';
 import { AdminTeam } from '../pages/admin/Team';
 import { AdminWhatsapp } from '../pages/admin/Whatsapp';
-import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
 import { PublicUpload } from '../pages/PublicUpload';
 import { PublicShowcase } from '../pages/PublicShowcase';
@@ -76,7 +75,7 @@ export const router = createBrowserRouter([
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
-          { path: 'accesses', element: <Accesses /> },
+          { path: 'accesses', element: <Navigate to="/plan?tab=apps" replace /> },
           { path: 'settings', element: <Settings /> },
           { path: 'onboarding', element: <Onboarding /> },
           { path: 'report', element: <Report /> },

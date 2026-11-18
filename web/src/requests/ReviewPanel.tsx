@@ -17,10 +17,12 @@ import { CommentEdit } from '../components/CommentEdit';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
 import { LearnedMoment } from '../brain/BrainLearned';
+import { AskedBox } from './AskedBox';
+import { RateDelivery } from './RateDelivery';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
-export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
-  brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; canApprove: boolean;
+export function ReviewPanel({ brandId, r, v, comments, addenda = [], canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
+  brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; addenda?: RequestComment[]; canApprove: boolean;
   pendingMark: Annotation | null; clearMark: () => void; onShowFile: (i: number) => void; onSeek: (fileIndex: number, t: number) => void;
 }) {
   const { t, lang } = useI18n();
@@ -97,8 +99,10 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAdapting(true)}><Icon name="plus" size={16} />{t('ad.btn')}</button>
             </div>
           )}
+          {v.approval?.state === 'approved' && profile?.role !== 'admin' && <RateDelivery brandId={brandId} requestId={r.id} versionId={v.id} comments={comments} />}
           {adapting && <AdaptDialog brandId={brandId} r={r} v={v} onClose={() => setAdapting(false)} />}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
+          {canApprove && pending && isLatest && <AskedBox r={r} addenda={addenda} />}
           {canApprove && pending && isLatest && (
             <div className="col g8" data-tour="review-decide">
               <button className="btn btn-primary w-full" disabled={busy} onClick={() => decision('approved')}><Icon name="check" />{t('req.approveV', { n: v.n })}</button>

@@ -8,7 +8,7 @@ import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { groupOfPath, pageMatch, type NavPage } from './navGroups';
-import { usePlanTabs } from './planTabs';
+import { byAccountOrder, settingsOn, settingsPages, usePlanTabs } from './planTabs';
 
 /**
  * The tabs of a section, at the top of each of its pages (phones and desktop): My brand → Brand kit · Deliveries · Library ·
@@ -16,7 +16,7 @@ import { usePlanTabs } from './planTabs';
  * switch. A page with nothing in it stays out for the client.
  */
 export function SubNav() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { t } = useI18n();
   const { can } = useMySections();
   const isAdmin = useAuth().profile?.role === 'admin';
@@ -26,11 +26,12 @@ export function SubNav() {
   const here = pages.find((p) => pageMatch(pathname, p.to));
   const tabs = pages.filter((p, i) => !p.tab || pages.findIndex((q) => q.tab === p.tab) === i);
   const inTab = here?.tab ? pages.filter((p) => p.tab === here.tab) : [];
-  // Mi plan's own tabs join the row where /plan is: one bar, not two.
+  // Mi plan's and Settings' own tabs join the row where /plan and /settings are: one bar, not two.
   const plan = usePlanTabs(tabs.some((p) => p.to === '/plan'));
-  const row = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : [p]));
+  const flat = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : p.to === '/settings' ? settingsPages : [p]));
+  const row = tabs.some((p) => p.to === '/plan') ? [...flat].sort(byAccountOrder) : flat;
   if (row.length < 2 && inTab.length < 2) return null;
-  const on = (p: NavPage) => (p.to.startsWith('/plan') ? pathname === '/plan' && plan.isOn(p.to) : p.tab ? here?.tab === p.tab : here?.to === p.to);
+  const on = (p: NavPage) => (p.to.startsWith('/plan') ? pathname === '/plan' && plan.isOn(p.to) : p.to.startsWith('/settings') ? pathname === '/settings' && settingsOn(p.to, search) : p.tab ? here?.tab === p.tab : here?.to === p.to);
   return (
     <div className="col g8" style={{ marginBottom: '1.5rem' }}>
       {row.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>

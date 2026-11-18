@@ -15,21 +15,22 @@ export const NAV: NavGroup[] = [
   { label: 'nav.brand', short: 'nav.brandShort', pages: [
     { to: '/brand/visual', label: 'sub.kit' },
     { to: '/deliveries', label: 'sub.deliveries' },
+    { to: '/calendar', label: 'sub.socialCal' },
     { to: '/assets', label: 'sub.library' },
     { to: '/apps', label: 'sub.sites' },
     { to: '/brand', label: 'sub.essence' },
     { to: '/brand/brain', label: 'sub.brain' },
     { to: '/research', label: 'sub.research' },
   ] },
-  // Results shows only on brands with resultsOn; the social calendar lives here next to its numbers.
-  { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }, { to: '/calendar', label: 'sub.socialCal' }] },
+  // Results shows only on brands with resultsOn. The social calendar moved to My brand, third tab (2026-11-17).
+  { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }] },
 ];
 
 /** Below them (2026-11-12): three rows instead of five. Learn · Wishlist · Account, each one's pages as tabs too. */
 export const FOOT_NAV: NavGroup[] = [
   { label: 'nav.learnGroup', short: 'nav.learnGroup', pages: [{ to: '/learn', label: 'sub.lessons' }, { to: '/resources', label: 'res.nav' }] },
   { label: 'nav.wishlist', short: 'nav.wishlist', pages: [{ to: '/wishlist', label: 'nav.wishlist' }] },
-  { label: 'nav.account', short: 'nav.account', pages: [{ to: '/plan', label: 'nav.plan' }, { to: '/accesses', label: 'nav.accesses' }, { to: '/settings', label: 'nav.settings' }] },
+  { label: 'nav.account', short: 'nav.account', pages: [{ to: '/plan', label: 'nav.plan' }, { to: '/settings', label: 'nav.settings' }] },
 ];
 
 export const pageMatch = (path: string, to: string) => path === to || (to !== '/brand' && path.startsWith(`${to}/`)) || (to === '/brand' && /^\/brand\/(?!visual|brain|docs)[^/]+$/.test(path));

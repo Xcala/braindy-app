@@ -73,6 +73,8 @@ export interface RequestComment {
   annotation?: Annotation;
   versionId?: string;
   kind?: string;
+  /** Stars 1–5 on a delivery (kind "rating"). */
+  rating?: number;
   resolved?: boolean;
   createdAt?: Timestamp;
   editedAt?: Timestamp;

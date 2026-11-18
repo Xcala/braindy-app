@@ -1,50 +1,39 @@
 import { Navigate, useSearchParams } from 'react-router';
 import { useBrands } from '../brands/BrandProvider';
 import { useI18n } from '../i18n/I18nProvider';
-import { LangToggle } from '../i18n/LangToggle';
 import { NoticesCard } from '../settings/NoticesCard';
 import { MyWhatsappCard } from '../settings/MyWhatsappCard';
 import { MembersCard } from '../team/MembersCard';
-import type { StringKey } from '../i18n/strings';
+import { Fold } from '../components/Fold';
 import { BackToAccount } from './Account';
 
-// Billing moved to Mi plan › Pagos (one place for every charge); old links land there.
-const TABS: Array<[string, StringKey]> = [['notices', 'set.tab.notices'], ['team', 'set.tab.team'], ['language', 'set.tab.language']];
-
-/** Settings: WhatsApp and notices, team and approvers, language. Per brand, in tabs like the other pages. */
+/**
+ * Team and notices (2026-11-17), one page instead of three tabs: who can sign in to the brand's page stays open on top, the
+ * WhatsApp number and notices fold below. Language moved to Account (it is each person's, not the brand's).
+ * Old links: ?tab=notices opens the fold, ?tab=billing goes to Mi plan › Payments.
+ */
 export function Settings() {
   const { current } = useBrands();
-  // The brand's people (who can sign in) are here for clients and for NickMark too (2026-11-17), next to its WhatsApp.
-  const tabs = TABS;
   const { t } = useI18n();
-  const [params, setParams] = useSearchParams();
-  if (params.get('tab') === 'billing') return <Navigate to="/plan?tab=payments" replace />;
-  const tab = tabs.some(([k]) => k === params.get('tab')) ? params.get('tab')! : 'notices';
+  const [params] = useSearchParams();
+  const tab = params.get('tab');
+  if (tab === 'billing') return <Navigate to="/plan?tab=payments" replace />;
+  if (tab === 'language') return <Navigate to="/account" replace />;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
-  // Same pattern as the rest of the app: title on top, a row of tabs, one section at a time.
   return (
     <div className="col g24">
       <div className="col g8">
         <BackToAccount />
         <p className="label">{current.name}</p>
-        <h1 className="h1">{t('nav.settings')}</h1>
+        <h1 className="h1">{t('set.tab.people')}</h1>
       </div>
-      <nav className="seg seg-scroll" aria-label={t('nav.settings')}>
-        {tabs.map(([k, label]) => (
-          <button key={k} type="button" onClick={() => setParams({ tab: k }, { replace: true })} aria-pressed={tab === k} className={tab === k ? 'is-on' : ''}>{t(label)}</button>
-        ))}
-      </nav>
-      {tab === 'notices' && <p className="t-mute" style={{ margin: 0 }}>{t('set.noticesTagline')}</p>}
-      {tab === 'notices' && <MyWhatsappCard />}
-      {tab === 'notices' && <NoticesCard brandId={current.id} />}
-      {tab === 'team' && <MembersCard brandId={current.id} brandName={current.name} />}
-      {tab === 'language' && (
-        <div className="card row between g16 wrap">
-          <span className="col"><span className="w7">{t('set.tab.language')}</span><span className="t-sm t-mute">{t('set.langSub')}</span></span>
-          <LangToggle />
-        </div>
-      )}
+      <MembersCard brandId={current.id} brandName={current.name} />
+      <Fold id="notices" title={t('set.foldNotices')} sub={t('set.foldNoticesSub')} open={tab === 'notices'}>
+        <p className="t-mute" style={{ margin: 0 }}>{t('set.noticesTagline')}</p>
+        <MyWhatsappCard />
+        <NoticesCard brandId={current.id} />
+      </Fold>
     </div>
   );
 }

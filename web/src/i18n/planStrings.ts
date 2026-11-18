@@ -1,6 +1,9 @@
 /** Strings for "My plan": what the brand contracted (packs, contract, weekly schedule, care, apps stack), its design plan and site hosting plan. */
 export const planEn = {
-  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Payments',
+  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.apps': 'Third-party apps', 'plan.tab.payments': 'Payments',
+  'plan.foldSchedule': 'See the schedule', 'plan.foldScheduleSub': 'Weeks, deliveries and the kickoff checklist.',
+  'plan.foldApps': 'Third-party apps', 'plan.foldAppsSub': 'The accounts your brand runs on, with their access kept safe.',
+  'set.tab.people': 'Team and notices', 'set.foldNotices': 'WhatsApp notices', 'set.foldNoticesSub': 'Your number and what we let you know.',
   'nav.plan': 'My plan', 'nav.planShort': 'My plan', 'nav.appsShort': 'Apps',
   'plan.title': 'My plan', 'plan.sub': 'What you have with Braindy: the design of your brand and the hosting of your site.',
   'plan.design': 'Design plan', 'plan.hosting': 'Site hosting',
@@ -121,7 +124,10 @@ export const planEn = {
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
-  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.payments': 'Pagos',
+  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.apps': 'Apps de terceros', 'plan.tab.payments': 'Pagos',
+  'plan.foldSchedule': 'Ver cronograma', 'plan.foldScheduleSub': 'Semanas, entregas y la lista de arranque.',
+  'plan.foldApps': 'Apps de terceros', 'plan.foldAppsSub': 'Las cuentas con las que funciona tu marca, con sus accesos protegidos.',
+  'set.tab.people': 'Equipo y avisos', 'set.foldNotices': 'Avisos por WhatsApp', 'set.foldNoticesSub': 'Tu número y lo que te avisamos.',
   'nav.plan': 'Mi plan', 'nav.planShort': 'Mi plan', 'nav.appsShort': 'Mis apps',
   'plan.title': 'Mi plan', 'plan.sub': 'Lo que tienes con Braindy: el diseño de tu marca y el hosting de tu sitio.',
   'plan.design': 'Plan de diseño', 'plan.hosting': 'Hosting del sitio',
