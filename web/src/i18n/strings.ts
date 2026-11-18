@@ -21,6 +21,7 @@ import { brandEditEn, brandEditEs } from './brandEditStrings';
 import { whatsappEn, whatsappEs } from './whatsappStrings';
 import { pwaEn, pwaEs } from './pwaStrings';
 import { adminNavEn, adminNavEs } from './adminNavStrings';
+import { waAccessEn, waAccessEs } from './waAccessStrings';
 import { versionEn, versionEs } from './versionStrings';
 import { viewerEn, viewerEs } from './viewerStrings';
 import { reuseEn, reuseEs } from './reuseStrings';
@@ -226,7 +227,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn, ...logoDlEn, ...helpEn, ...resEn, ...wishEn, ...pageHeadEn, ...planProposalEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn, ...waAccessEn, ...logoDlEn, ...helpEn, ...resEn, ...wishEn, ...pageHeadEn, ...planProposalEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -410,4 +411,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs, ...logoDlEs, ...helpEs, ...resEs, ...wishEs, ...pageHeadEs, ...planProposalEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs, ...waAccessEs, ...logoDlEs, ...helpEs, ...resEs, ...wishEs, ...pageHeadEs, ...planProposalEs };

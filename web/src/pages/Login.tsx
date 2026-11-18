@@ -7,8 +7,9 @@ import { useI18n } from '../i18n/I18nProvider';
 import { AuthLayout } from '../components/AuthLayout';
 import { GoogleIcon } from '../components/Icon';
 import { completeAccessLink, isAccessLink, rememberedEmail, sendAccessLink } from '../auth/emailLink';
+import { useBraindyNumber, waChat } from '../auth/whatsappAccess';
 
-/** Sign-in: Google, a one-time link by email (any inbox, no password) or, for those who have one, a password. */
+/** Sign-in: Google, a one-time link by WhatsApp or by email (any inbox, no password) or, for those who have one, a password. */
 export function Login() {
   const { user, loading } = useAuth();
   const { t, lang } = useI18n();
@@ -20,6 +21,7 @@ export function Login() {
   const [fromLink] = useState(isAccessLink);
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const waNumber = useBraindyNumber();
 
   // Coming back from the emailed link: finish at once when this browser asked for it, otherwise confirm the email.
   useEffect(() => {
@@ -74,6 +76,12 @@ export function Login() {
               <GoogleIcon />
               {t('login.google')}
             </button>
+            {waNumber && (
+              <a className='btn btn-secondary btn-block' style={{ height: '3.25rem' }} href={waChat(waNumber, t('wax.loginText'))} target='_blank' rel='noreferrer' title={t('wax.loginHint')}>
+                <svg width='20' height='20' viewBox='0 0 24 24' aria-hidden='true' fill='#25D366'><path d='M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-3.3-.8-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3Z'/></svg>
+                {t('wax.loginBtn')}
+              </a>
+            )}
             <div className="row g16">
               <div className="divider" style={{ flex: '1 1 auto', width: 'auto' }} />
               <span className="t-sm t-mute">{t('login.orEmail')}</span>

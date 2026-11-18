@@ -4,6 +4,7 @@ import { AppShell } from './AppShell';
 import { Landing } from './Landing';
 import { RouteError } from '../components/RouteError';
 import { Login } from '../pages/Login';
+import { EnterLink } from '../pages/EnterLink';
 import { MyBrand } from '../pages/MyBrand';
 import { BrandBrain } from '../pages/BrandBrain';
 import { MyAssets } from '../pages/MyAssets';
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
   { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
   { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
   { path: '/u/:token', element: <PublicUpload />, errorElement: <RouteError /> },
+  { path: '/entrar/:token', element: <EnterLink />, errorElement: <RouteError /> },
   { path: '/s/:token', element: <PublicShowcase />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,

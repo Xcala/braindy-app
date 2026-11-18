@@ -10,6 +10,7 @@ import { sendChoices, sendText } from '../whatsapp.js';
 import { brandsOf, contactRef, getContact, type Contact, type Pending } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
 import { queueWork } from '../autopilot.js';
+import { replyWithLoginLink } from '../accessLinks.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const FOLLOW_UP_MS = 15 * 60_000;
@@ -146,6 +147,9 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     await contactRef(phone).set({ state: null }, { merge: true });
     return decideByButton(phone, contact.state.awaitNote, 'changes_requested', text, lang);
   }
+
+  // «Quiero entrar» / «Sign in»: a one-time link to the app, only for a number linked to a client.
+  if (await replyWithLoginLink(phone, text, contact?.uid, lang)) return;
 
   const uid = contact?.uid ?? null;
   const brands = uid ? await brandsOf(uid) : [];
