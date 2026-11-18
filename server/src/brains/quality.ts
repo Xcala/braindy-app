@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { db } from '../firebase.js';
 import { requireBrand } from '../connector/store.js';
 import { siblings } from '../connector/brandGuard.js';
+import { brainBlock } from './knowledge.js';
 
 export type CheckItem = { id: string; text: string; critical?: boolean };
 const PASS_AT = 85;
@@ -54,13 +55,14 @@ export function scoreOf(items: CheckItem[], checks: Array<{ id: string; ok: bool
 export function registerQualityTools(server: McpServer) {
   server.registerTool('braindy_quality_checklist', {
     title: 'Lista de revisión de marca',
-    description: 'Antes de entregar: la lista con la que revisas tus propios archivos contra la marca (paleta, tipografía, voz, lo que hay que evitar, correcciones anteriores del cliente, marcas hermanas). Abre y mira cada archivo final, revisa cada punto y repórtalo con braindy_quality_report.',
+    description: 'Antes de entregar: la lista con la que revisas tus propios archivos contra la marca (paleta, tipografía, voz, lo que hay que evitar, correcciones anteriores del cliente, marcas hermanas), seguida del cerebro de la marca (lo mismo que braindy_brand_brain). Abre y mira cada archivo final, revisa cada punto y repórtalo con braindy_quality_report.',
     inputSchema: { brandId: z.string() },
   }, async (a) => {
     try {
       await requireBrand(a.brandId);
       const { name, items } = await qualityChecklist(a.brandId);
-      return { content: [{ type: 'text' as const, text: `Revisión de marca de ${name} (pasa con ${PASS_AT}+ y sin fallar ningún punto crítico):\n${items.map((i) => `- [${i.id}]${i.critical ? ' (crítico)' : ''} ${i.text}`).join('\n')}` }] };
+      const brain = await brainBlock(a.brandId, 'Revisa también contra el cerebro de la marca (sus reglas y correcciones cuentan en los puntos «asked», «voice» y «avoid»)');
+      return { content: [{ type: 'text' as const, text: `Revisión de marca de ${name} (pasa con ${PASS_AT}+ y sin fallar ningún punto crítico):\n${items.map((i) => `- [${i.id}]${i.critical ? ' (crítico)' : ''} ${i.text}`).join('\n')}${brain}` }] };
     } catch (e) {
       return { content: [{ type: 'text' as const, text: `Error: ${(e as Error).message}` }], isError: true };
     }

@@ -7,6 +7,7 @@ import { FieldValue, type DocumentReference } from 'firebase-admin/firestore';
 import { z } from 'zod';
 import { db } from '../firebase.js';
 import { requireBrand } from '../connector/store.js';
+import { brainBlock } from './knowledge.js';
 
 export const RELAY = ['researcher', 'marketer', 'creator', 'builder'] as const;
 export type StepBrain = (typeof RELAY)[number];
@@ -54,7 +55,7 @@ const show = (steps: Step[]) => steps.map((s, i) => `${i + 1}. ${s.brain}: ${s.s
 export function registerStepTools(server: McpServer) {
   server.registerTool('braindy_work_step', {
     title: 'Mover el paso de un Brain en una solicitud',
-    description: 'El equipo trabaja por turnos en cada solicitud: researcher → marketer → creator → builder. Llama esto al empezar el turno de un Brain (state "doing") y al terminarlo (state "done", con una nota de una línea para el cliente: qué encontró o hizo, en el idioma de la marca, sin claves ni datos internos). Usa "skip" si ese Brain no tiene nada que hacer en esta solicitud. El cliente lo ve en vivo.',
+    description: 'El equipo trabaja por turnos en cada solicitud: researcher → marketer → creator → builder. Llama esto al empezar el turno de un Brain (state "doing"; la respuesta trae el cerebro de la marca: léelo y aplícalo) y al terminarlo (state "done", con una nota de una línea para el cliente: qué encontró o hizo, en el idioma de la marca, sin claves ni datos internos). Usa "skip" si ese Brain no tiene nada que hacer en esta solicitud. El cliente lo ve en vivo.',
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
       brain: z.enum(RELAY), state: z.enum(['doing', 'done', 'skip']),
@@ -65,7 +66,9 @@ export function registerStepTools(server: McpServer) {
       await requireBrand(a.brandId);
       const ref = db.doc(`brands/${a.brandId}/requests/${a.requestId}`);
       const steps = await setStep(ref, a.brain, a.state, a.note);
-      return { content: [{ type: 'text' as const, text: `Listo. Pasos ahora:\n${show(steps)}` }] };
+      // Every Brain starts its turn with the brand's brain in front of it.
+      const brain = a.state === 'doing' ? await brainBlock(a.brandId, `Antes de trabajar, ${a.brain}: lee y aplica el cerebro de la marca; manda sobre tus criterios generales`) : '';
+      return { content: [{ type: 'text' as const, text: `Listo. Pasos ahora:\n${show(steps)}${brain}` }] };
     } catch (e) {
       return { content: [{ type: 'text' as const, text: `Error: ${(e as Error).message}` }], isError: true };
     }

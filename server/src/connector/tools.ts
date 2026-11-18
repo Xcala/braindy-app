@@ -19,6 +19,7 @@ import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 import { registerStepTools } from '../brains/steps.js';
 import { registerQualityTools } from '../brains/quality.js';
+import { registerKnowledgeTools } from '../brains/knowledge.js';
 import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
@@ -41,6 +42,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   registerAdTools(server, APP);
   registerStepTools(server);
   registerQualityTools(server);
+  registerKnowledgeTools(server);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',
@@ -247,14 +249,21 @@ Ver: ${APP}/plan`;
   server.registerTool('braindy_log_session', {
     title: 'Registrar lo que se hizo en Braindy App',
     description: 'Saves a summary of this working session in the brand\'s internal work log (only Nicolas sees it). '
-      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session.',
-    inputSchema: { brandId: z.string(), text: z.string().min(1).max(20000), project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"'), requestId: z.string().optional() },
-  }, run(async ({ brandId, text, project, requestId }) => {
+      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session. '
+      + 'With brain: true the entry becomes brand knowledge that braindy_brand_brain hands to every Brain before it works (rules, client corrections, lessons): '
+      + 'saving again with the same project name replaces that chapter. Entries whose project starts with "Cerebro" count as knowledge too.',
+    inputSchema: {
+      brandId: z.string(), text: z.string().min(1).max(20000),
+      project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"; for knowledge, the chapter name, e.g. "Cerebro Sanuteam · 1/3 · Manual"'),
+      requestId: z.string().optional(),
+      brain: z.boolean().optional().describe('true = permanent brand knowledge the Brains read before every task'),
+    },
+  }, run(async ({ brandId, text, project, requestId, brain }) => {
     const name = await requireBrand(brandId);
-    await logSession(brandId, text, { project, requestId });
+    await logSession(brandId, text, { project, requestId, brain });
     // The log itself is internal; the Brain feed only shows that a work session happened (and its project name).
     await recordBrainEvent(brandId, { kind: 'session', area: 'talks', ...(project ? { text: project } : {}) });
-    return `Registrado en ${name}.`;
+    return brain ? `Guardado en el cerebro de ${name}.` : `Registrado en ${name}.`;
   }));
 
   if (ctx.mode === 'local') {
