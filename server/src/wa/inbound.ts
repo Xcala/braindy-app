@@ -10,6 +10,7 @@ import { sendChoices, sendText } from '../whatsapp.js';
 import { brandsOf, contactRef, getContact, type Contact, type Pending } from './contacts.js';
 import { storeMedia, type InMedia } from './media.js';
 import { queueWork } from '../autopilot.js';
+import { replyWithLoginLink } from '../accessLinks.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const FOLLOW_UP_MS = 15 * 60_000;
@@ -126,7 +127,11 @@ async function decideByButton(phone: string, token: string, state: 'approved' | 
 
 export async function handleMessage(m: WaMsg, profileName: string) {
   const phone = m.from;
-  if (!/^\d{8,15}$/.test(phone) || tooMany(phone)) return;
+  if (!/^\d{8,15}$/.test(String(phone ?? '')) || tooMany(phone)) {
+    // The shape of the sender id only (digits masked), never the number: tells a username id from a phone.
+    console.warn('whatsapp inbound skipped', JSON.stringify({ type: m.type, from: String(phone ?? '(none)').replace(/\d/g, '9').slice(0, 40), keys: Object.keys(m) }));
+    return;
+  }
   const contact: Contact | null = await getContact(phone);
   const lang = contact?.lang === 'en' ? 'en' : 'es';
   const { text, media, choice } = partsOf(m);
@@ -146,6 +151,9 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     await contactRef(phone).set({ state: null }, { merge: true });
     return decideByButton(phone, contact.state.awaitNote, 'changes_requested', text, lang);
   }
+
+  // «Quiero entrar» / «Sign in»: a one-time link to the app, only for a number linked to a client.
+  if (await replyWithLoginLink(phone, text, contact?.uid, lang)) return;
 
   const uid = contact?.uid ?? null;
   const brands = uid ? await brandsOf(uid) : [];

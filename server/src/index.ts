@@ -45,6 +45,7 @@ import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
 import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
+import { accessLinks, publicAccess } from './accessLinks.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -75,6 +76,7 @@ app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_00
 app.use('/public/booking/book', rateLimit('web-booking', 5, 60 * 60_000));
 // Upload links take files from strangers: a few hundred per sender per hour at most.
 app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
+app.use('/public/access/:token', rateLimit('access', 10, 10 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
@@ -82,6 +84,7 @@ app.route('/public', publicReview);
 app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
 app.route('/public', publicShare);
+app.route('/public', publicAccess);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -133,6 +136,7 @@ app.route('/v1', booking);
 app.route('/v1/admin', adminCalendar);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
+app.route('/v1', accessLinks);
 app.route('/v1', accesses);
 app.route('/v1', review);
 app.route('/v1/admin', adminReview);
