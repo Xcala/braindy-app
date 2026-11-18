@@ -3,7 +3,7 @@ import { collection, getCountFromServer, limit, onSnapshot, orderBy, query, wher
 import { db } from '../lib/firebase';
 import type { Area } from './knowledge';
 
-export type BrainKind = 'request' | 'approved' | 'changed' | 'identity' | 'file' | 'session' | 'meeting' | 'signed';
+export type BrainKind = 'request' | 'approved' | 'changed' | 'identity' | 'file' | 'session' | 'meeting' | 'signed' | 'taught' | 'forgot';
 export type BrainEvent = { id: string; kind: BrainKind; area: Area; text?: string; parts?: string[]; count?: number; requestId?: string; at: Date | null };
 
 /**

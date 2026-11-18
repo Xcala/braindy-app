@@ -127,7 +127,11 @@ async function decideByButton(phone: string, token: string, state: 'approved' | 
 
 export async function handleMessage(m: WaMsg, profileName: string) {
   const phone = m.from;
-  if (!/^\d{8,15}$/.test(phone) || tooMany(phone)) return;
+  if (!/^\d{8,15}$/.test(String(phone ?? '')) || tooMany(phone)) {
+    // The shape of the sender id only (digits masked), never the number: tells a username id from a phone.
+    console.warn('whatsapp inbound skipped', JSON.stringify({ type: m.type, from: String(phone ?? '(none)').replace(/\d/g, '9').slice(0, 40), keys: Object.keys(m) }));
+    return;
+  }
   const contact: Contact | null = await getContact(phone);
   const lang = contact?.lang === 'en' ? 'en' : 'es';
   const { text, media, choice } = partsOf(m);
