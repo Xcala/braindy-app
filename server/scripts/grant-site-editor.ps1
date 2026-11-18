@@ -6,7 +6,7 @@
 # Run:  powershell -ExecutionPolicy Bypass -File C:\Users\Mark\braindy-app\server\scripts\grant-site-editor.ps1
 # Add a new site's project to the list and run it again; running it twice changes nothing.
 $sa = 'serviceAccount:braindy-api@braindy-brand-guideline.iam.gserviceaccount.com'
-$projects = @('grupo-alternativas', 'legadus-e92eb', 'christine-dyer', 'pequeloop-web', 'jero66-web')
+$projects = @('quimiolab-web', 'grupo-alternativas', 'legadus-e92eb', 'christine-dyer', 'pequeloop-web', 'jero66-web')
 foreach ($p in $projects) {
   gcloud projects add-iam-policy-binding $p --member $sa --role roles/firebaseauth.admin --condition=None --quiet *> $null
   if ($LASTEXITCODE -ne 0) { Write-Output "  ERROR  $p (Authentication Admin)"; continue }
