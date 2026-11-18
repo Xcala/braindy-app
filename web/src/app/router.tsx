@@ -73,7 +73,7 @@ export const router = createBrowserRouter([
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
-          { path: 'accesses', element: <Navigate to="/plan?tab=site&open=apps" replace /> },
+          { path: 'accesses', element: <Navigate to="/plan?tab=apps" replace /> },
           { path: 'settings', element: <Settings /> },
           { path: 'onboarding', element: <Onboarding /> },
           { path: 'report', element: <Report /> },

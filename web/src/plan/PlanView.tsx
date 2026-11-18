@@ -14,7 +14,7 @@ import type { BrandPlan, PackStatus, StackItem } from './types';
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
-export type PlanTab = 'summary' | 'schedule' | 'brand' | 'site' | 'payments';
+export type PlanTab = 'summary' | 'schedule' | 'brand' | 'site' | 'apps' | 'payments';
 
 export interface PlanViewProps {
   /** Which tab is open; the summary header stays on top of every tab. */
@@ -28,7 +28,7 @@ export interface PlanViewProps {
   /** The explainer at the top of the summary, site and payments tabs. */
   intros?: Partial<Record<PlanTab, ReactNode>>;
   payments?: ReactNode;
-  /** Third-party apps, folded at the end of the Hosting and access tab. */
+  /** Third-party apps and their access: the Apps tab. */
   apps?: ReactNode;
   /** A fold to open on arrival (?open=schedule|apps). */
   openFold?: string;
@@ -116,8 +116,8 @@ export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, int
       {tab === 'brand' && brand}
       {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
-      {tab === 'site' && stack && <Stack items={stack} />}
-      {tab === 'site' && apps && <Fold id="apps" title={t('plan.foldApps')} sub={t('plan.foldAppsSub')} open={openFold === 'apps'}>{apps}</Fold>}
+      {tab === 'apps' && stack && <Stack items={stack} />}
+      {tab === 'apps' && apps}
       {tab === 'payments' && payments}
     </div>
   );

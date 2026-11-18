@@ -51,8 +51,9 @@ export function MyPlan() {
 
   // Tabs instead of one long page (they sit in the section's top row, see app/planTabs); the schedule tab only when there is a schedule or a kickoff checklist.
   // The schedule folds inside the summary (2026-11-17); old ?tab=schedule links land there with it open.
-  const tabs: PlanTab[] = ['summary', 'brand', 'site', 'payments'];
-  const asked = params.get('tab') as PlanTab | null;
+  const tabs: PlanTab[] = ['summary', 'brand', 'site', 'apps', 'payments'];
+  // Third-party apps got their own tab (2026-11-18); old ?tab=site&open=apps links land there.
+  const asked = (params.get('open') === 'apps' ? 'apps' : params.get('tab')) as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
   const openFold = asked === 'schedule' ? 'schedule' : params.get('open') ?? undefined;
 
