@@ -22,6 +22,7 @@ import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
 import { BriefSummary } from '../requests/BriefSummary';
+import { AddendaList, AddendumForm } from '../requests/Addenda';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -33,7 +34,10 @@ export function RequestDetail() {
   const { t, lang } = useI18n();
   const r = useRequest(current?.id, id);
   const all = useVersions(current?.id, id);
-  const comments = useComments(current?.id, id);
+  const allComments = useComments(current?.id, id);
+  // Details added after sending live under the brief, not in the review thread.
+  const addenda = allComments.filter((c) => c.kind === 'addendum');
+  const comments = allComments.filter((c) => c.kind !== 'addendum');
   const canApprove = useCanApprove(current?.id);
   const isAdmin = profile?.role === 'admin';
   const versions = isAdmin ? all : all.filter((v) => v.published);
@@ -72,7 +76,7 @@ export function RequestDetail() {
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
             fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
             comments={comments} onMark={setMark} onCompare={() => setComparing(true)} seek={seek} />
-          <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
+          <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)} addenda={addenda}
             canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex}
             onSeek={(i, t) => { setFileIndex(i); setSeek((s) => ({ t, n: (s?.n ?? 0) + 1 })); }} />
         </div>
@@ -83,6 +87,9 @@ export function RequestDetail() {
         <div className="col g12">
           <p className="label">{t('req.brief')}</p>
           <BriefSummary brandId={current.id} r={r} />
+          {(addenda.length > 0 || r.status === 'in_production' || r.status === 'to_approve') && (
+            <div className="card card-tight col g16"><AddendaList items={addenda} />{r.status !== 'approved' && r.status !== 'published' && <AddendumForm brandId={current.id} requestId={r.id} />}</div>
+          )}
         </div>
         <div className="col g12">
           <p className="label">{t('req.plan')}</p>
