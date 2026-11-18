@@ -5,7 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { basename } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand, setLink, syncSiteChanges, uploadContent, uploadPath } from './store.js';
+import { brandBrain, findBrands, listSiteChanges, logSession, REMOTE_MAX_FILE, requireBrand, setLink, syncSiteChanges, uploadContent, uploadPath } from './store.js';
 import { deliverVersion, listRequests, newRequest, type FileWriter } from './delivery.js';
 import { parseTriageHtml } from './triageHtml.js';
 import { setIdentity } from './identity.js';
@@ -117,12 +117,32 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   server.registerTool('braindy_log_session', {
     title: 'Registrar lo que se hizo en Braindy App',
     description: 'Saves a summary of this working session in the brand\'s internal work log (only Nicolas sees it). '
-      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session.',
-    inputSchema: { brandId: z.string(), text: z.string().min(1).max(20000), project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"'), requestId: z.string().optional() },
-  }, run(async ({ brandId, text, project, requestId }) => {
+      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session. '
+      + 'With brain: true the entry becomes brand knowledge that braindy_brand_brain hands to every Brain before it works (rules, client corrections, lessons): '
+      + 'saving again with the same project name replaces that chapter. Entries whose project starts with "Cerebro" count as knowledge too.',
+    inputSchema: {
+      brandId: z.string(), text: z.string().min(1).max(20000),
+      project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"; for knowledge, the chapter name, e.g. "Cerebro Sanuteam · 1/3 · Manual"'),
+      requestId: z.string().optional(),
+      brain: z.boolean().optional().describe('true = permanent brand knowledge the Brains read before every task'),
+    },
+  }, run(async ({ brandId, text, project, requestId, brain }) => {
     const name = await requireBrand(brandId);
-    await logSession(brandId, text, { project, requestId });
-    return `Registrado en ${name}.`;
+    await logSession(brandId, text, { project, requestId, brain });
+    return brain ? `Guardado en el cerebro de ${name}.` : `Registrado en ${name}.`;
+  }));
+
+  server.registerTool('braindy_brand_brain', {
+    title: 'Leer el cerebro de la marca',
+    description: 'Call this FIRST, before any work for a brand (a request, a piece, a review, a reply): returns everything the Brains know about it, '
+      + 'the knowledge chapters (brand rules, client corrections, lessons, people, where files live) and the latest work sessions. '
+      + 'Read it completely and apply it; it outranks your general defaults. Then use braindy_quality_checklist before delivering.',
+    inputSchema: { brandId: z.string() },
+  }, run(async ({ brandId }) => {
+    const name = await requireBrand(brandId);
+    const brain = await brandBrain(brandId);
+    if (!brain.text) return `${name} todavía no tiene conocimiento guardado. Guárdalo con braindy_log_session y brain: true.`;
+    return `Cerebro de ${name}: ${brain.chapters} capítulo(s) y ${brain.sessions} sesión(es) recientes.\n\n${brain.text}`;
   }));
 
   if (ctx.mode === 'local') {

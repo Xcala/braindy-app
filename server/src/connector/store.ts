@@ -87,12 +87,50 @@ export async function setLink(brandId: string, l: LinkInput) {
   return { id: ref.id, created: true };
 }
 
-export async function logSession(brandId: string, text: string, opts: { project?: string; requestId?: string }) {
+/** Work-log entries whose project starts with this prefix count as brand knowledge even without the flag (entries saved before it existed). */
+const BRAIN_PREFIX = /^cerebro\b/i;
+const isBrain = (d: { brain?: unknown; project?: unknown }) => d.brain === true || (typeof d.project === 'string' && BRAIN_PREFIX.test(d.project));
+
+export async function logSession(brandId: string, text: string, opts: { project?: string; requestId?: string; brain?: boolean }) {
   const ref = await db.collection(`brands/${brandId}/activity`).add({
     text: text.slice(0, 20000), project: opts.project ?? null, requestId: opts.requestId ?? null,
+    brain: isBrain({ brain: opts.brain, project: opts.project }),
     source: 'connector', by: 'NicoMarca', createdAt: FieldValue.serverTimestamp(),
   });
   return ref.id;
+}
+
+const BRAIN_MAX_CHARS = 150_000;
+const RECENT_SESSIONS = 5;
+
+/** What the Brains must read before working on a brand: every knowledge chapter (latest version per project name) plus the most recent sessions. */
+export async function brandBrain(brandId: string) {
+  const snap = await db.collection(`brands/${brandId}/activity`).orderBy('createdAt', 'desc').limit(300).get();
+  const chapters = new Map<string, { project: string; text: string; at: Date | null }>();
+  const recent: Array<{ project: string; text: string; at: Date | null }> = [];
+  for (const doc of snap.docs) {
+    const d = doc.data();
+    const entry = { project: (d.project as string) || 'Sesión', text: String(d.text ?? ''), at: d.createdAt?.toDate?.() ?? null };
+    if (isBrain(d)) {
+      if (!chapters.has(entry.project)) chapters.set(entry.project, entry); // newest wins
+    } else if (recent.length < RECENT_SESSIONS) {
+      recent.push(entry);
+    }
+  }
+  const day = (at: Date | null) => (at ? at.toISOString().slice(0, 10) : 's. f.');
+  const ordered = [...chapters.values()].sort((a, b) => a.project.localeCompare(b.project, 'es', { numeric: true }));
+  const parts: string[] = [];
+  if (ordered.length) {
+    parts.push('# Conocimiento de la marca (leer completo y aplicar en todo lo que hagas)');
+    for (const c of ordered) parts.push(`## ${c.project} (${day(c.at)})\n\n${c.text}`);
+  }
+  if (recent.length) {
+    parts.push('# Últimas sesiones de trabajo (contexto, de la más reciente a la más antigua)');
+    for (const s of recent) parts.push(`## ${s.project} (${day(s.at)})\n\n${s.text}`);
+  }
+  let out = parts.join('\n\n');
+  if (out.length > BRAIN_MAX_CHARS) out = `${out.slice(0, BRAIN_MAX_CHARS)}\n\n[Recortado: el conocimiento supera ${BRAIN_MAX_CHARS} caracteres; condensa capítulos.]`;
+  return { text: out, chapters: ordered.length, sessions: recent.length };
 }
 
 async function filesUnder(path: string): Promise<string[]> {
