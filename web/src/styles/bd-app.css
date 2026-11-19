@@ -800,3 +800,19 @@ html[data-theme="dark"] img[src="/brand/braindy-logo.svg"]{content:url(/brand/br
 .fbar-actions .btn{white-space:nowrap;gap:0.375rem}
 .fbar-trash{width:2.25rem}
 @media (max-width:640px){.fbar{padding:0.75rem}.fbar-stat{flex:1 1 100%}}
+
+/* Monthly site adjustments (QuotaCard): used / available over one bar, like credits. */
+.quota{display:flex;flex-direction:column;gap:.625rem;padding:1.125rem 1.25rem;background:#fff;border:1px solid var(--line);border-radius:1.75rem}
+.quota.is-compact{padding:.875rem 1rem;border-radius:1rem;gap:.5rem}
+.quota-head{display:flex;align-items:center;gap:.625rem;margin:0;font-weight:700;color:var(--ink)}
+.quota-nums{display:flex;justify-content:space-between;gap:1rem;font-size:.875rem}
+.quota-nums b{font-weight:600;color:var(--ink);font-size:1rem}
+.quota-bar{height:.5rem;border-radius:62rem;background:var(--line,#e5e7eb);overflow:hidden}
+.quota-bar>span{display:block;height:100%;border-radius:inherit;background:var(--blue,#2A7FFF);transition:width .4s ease}
+.quota.is-low .quota-bar>span{background:#F59E0B}
+.quota.is-out .quota-bar>span{background:#E5604A}
+.quota-out{color:#B42318}
+.quota-link{background:none;border:0;padding:0;font:inherit;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.quota-link:disabled{opacity:.6;cursor:default}
+html[data-theme="dark"] .quota{background:var(--white)!important;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.quota-bar>span{transition:none}}

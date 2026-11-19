@@ -9,6 +9,7 @@ import { notify } from './notify.js';
 import { recordHostingSignup } from './hosting.js';
 import { isHostingEvent, onHostingEvent } from './hostingBrand.js';
 import type { AuthEnv } from './auth.js';
+import { addPack } from './adjustQuota.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const now = () => FieldValue.serverTimestamp();
@@ -215,6 +216,12 @@ stripeWebhook.post('/stripe', async (c) => {
   const seen = db.doc(`stripeEvents/${evt.id}`);
   if ((await seen.get()).exists) return c.json({ ok: true, duplicate: true });
   const o = evt.data.object;
+  // A pack of extra site adjustments: adds its units to that month and touches nothing else of the plan.
+  if (o.metadata?.kind === 'adjust_pack') {
+    if (evt.type === 'checkout.session.completed' && o.payment_status === 'paid') await addPack(o);
+    await seen.set({ type: evt.type, brandId: o.metadata.brandId ?? null, at: now() });
+    return c.json({ ok: true });
+  }
   const brandId = (o.metadata?.brandId as string) || (await brandOfCustomer(o.customer));
   if (!brandId && o.metadata?.kind === 'hosting' && evt.type === 'checkout.session.completed' && o.payment_status === 'paid') {
     await recordHostingSignup(o);

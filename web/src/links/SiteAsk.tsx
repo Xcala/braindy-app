@@ -5,6 +5,8 @@ import { createRequest } from '../requests/api';
 import { useToast } from '../components/Toaster';
 import type { SiteJob } from './useSiteWork';
 import type { SiteFrame } from './useSpot';
+import { QuotaCard } from './QuotaCard';
+import { useAdjustQuota } from './useAdjustQuota';
 
 /**
  * "Adjust" tab, top: one line that opens a box to ask for an adjustment (a web request routed to Builder, with the site's
@@ -17,7 +19,10 @@ export function SiteAsk({ brandId, url, jobs, frame }: { brandId: string; url: s
   const [openBox, setOpenBox] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<false | 'quota' | 'other'>(false);
+  // The month's adjustments: asked again whenever one of them moves.
+  const { quota, reload } = useAdjustQuota(brandId, jobs.map((j) => j.r.id + j.state).join('|'));
+  const out = !!quota && quota.left < quota.per;
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -31,12 +36,14 @@ export function SiteAsk({ brandId, url, jobs, frame }: { brandId: string; url: s
       });
       setText(''); setOpenBox(false);
       toast({ text: t('sp.sentToast'), ms: 7000 });
-    } catch { setError(true); } finally { setBusy(false); }
+      reload();
+    } catch (e) { setError((e as { status?: number }).status === 409 ? 'quota' : 'other'); reload(); } finally { setBusy(false); }
   }
 
   return (
     <div className="col g8">
-      {!openBox ? (
+      {quota && <QuotaCard brandId={brandId} quota={quota} compact />}
+      {out ? null : !openBox ? (
         <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setOpenBox(true)}>＋ {t('sp.askOpen')}</button>
       ) : (
         <form className="spanel-ask col g8" onSubmit={send}>
@@ -49,7 +56,7 @@ export function SiteAsk({ brandId, url, jobs, frame }: { brandId: string; url: s
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setOpenBox(false); setText(''); }}>{t('sc.cancel')}</button>
             <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !text.trim()}>{busy ? `${t('sp.sending')}…` : t('sp.send')}</button>
           </div>
-          {error && <p className="help err" role="alert" style={{ margin: 0 }}>{t('sp.error')}</p>}
+          {error && <p className="help err" role="alert" style={{ margin: 0 }}>{error === 'quota' && quota ? t('q.full', { date: quota.resets }) : t('sp.error')}</p>}
         </form>
       )}
 

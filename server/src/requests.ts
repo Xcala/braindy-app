@@ -15,6 +15,7 @@ import { queueWork } from './autopilot.js';
 import type { AuthEnv } from './auth.js';
 import { fileApproved } from './approvedFiles.js';
 import { zipStream } from './zip.js';
+import { quotaCheck } from './adjustQuota.js';
 
 const BUCKET = process.env.FILES_BUCKET ?? 'braindy-app-files';
 export const URL_TTL_MS = 15 * 60 * 1000;
@@ -84,7 +85,7 @@ requests.post('/brands/:brandId/requests', async (c) => {
   const uid = c.get('user').uid;
   if (!(await brandAccess(uid, brandId)).member) return c.json({ error: 'forbidden' }, 403);
   const r = await createRequest(brandId, uid, await c.req.json<Record<string, unknown>>());
-  return 'error' in r ? c.json(r, 400) : c.json(r);
+  return 'error' in r ? c.json(r, r.error === 'quota' ? 409 : 400) : c.json(r);
 });
 
 /** Creates a request and routes it to its lead Brain (also used by the Braindy connector). */
@@ -107,8 +108,12 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
   const fromIn = (b.from ?? {}) as { requestId?: unknown; versionId?: unknown };
   const fromReq = str(fromIn.requestId, 80), fromVer = str(fromIn.versionId, 80);
   const from = fromReq && fromVer && (await db.doc(`brands/${brandId}/requests/${fromReq}/versions/${fromVer}`).get()).exists ? { requestId: fromReq, versionId: fromVer } : null;
+  // Site adjustments count toward the brand's monthly quota (hosting plan); when it is used up, the client waits for next month or buys more.
+  const quota = await quotaCheck(brandId, uid, category);
+  if (quota.full) return { error: 'quota' };
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
+    ...(quota.billable ? { billable: true } : {}),
     ...(from ? { from } : {}),
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
