@@ -102,5 +102,5 @@ export function quickDates(now = new Date()) {
   const fri = new Date(now); fri.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7));
   if (+fri - +now < 2 * 864e5) { fri.setTime(+now); fri.setDate(now.getDate() + 2); }
   const next = new Date(now); next.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7) + 7);
-  return { thisWeek: iso(fri), nextWeek: iso(next) };
+  return { today: iso(now), thisWeek: iso(fri), nextWeek: iso(next) };
 }
