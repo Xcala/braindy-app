@@ -34,8 +34,8 @@ export function CommandK() {
   }, []);
   return (
     <>
-      <span className="hidden md:inline-flex"><button type="button" className="btn btn-secondary btn-sm" onClick={() => setOpen(true)} aria-label={t('search.open')}>
-        <Icon name="search" size={16} /><span className="t-mute">{t('search.short')}</span><span className="kbd t-xs t-mute">{/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'}</span>
+      <span className="hidden md:inline-flex"><button type="button" className="cmdk-field" onClick={() => setOpen(true)} aria-label={t('search.open')}>
+        <Icon name="search" size={18} /><span className="grow truncate text-left">{t('search.wide')}</span><span className="kbd t-xs t-mute">{/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'}</span>
       </button></span>
       <span className="md:hidden"><button type="button" className="btn btn-ghost btn-icon" onClick={() => setOpen(true)} aria-label={t('search.open')}><Icon name="search" /></button></span>
       {open && <Palette onClose={() => setOpen(false)} />}

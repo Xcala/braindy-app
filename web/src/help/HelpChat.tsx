@@ -19,15 +19,25 @@ const save = (brandId: string, s: Saved) => { try { sessionStorage.setItem(KEY(b
 
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
 const INTRO = 'bd-help-intro';
+const DOCK = 'bd-help-dock';
+const DESK = '(min-width: 768px)';
+const dockSaved = () => { try { return window.matchMedia(DESK).matches && localStorage.getItem(DOCK) === '1'; } catch { return false; } };
 const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
 
-/** The small help button in the corner: a chat that knows how Braindy works and hands off to Nick when it can't help. */
+/** The AI assistant: a chat that knows how Braindy works and hands off to Nick when it can't help. On computers it docks as a
+ * tinted panel on the left that pushes the app (open or closed is remembered); on phones it is a bottom sheet. */
 export function HelpChat() {
   const { t, lang } = useI18n();
   const { profile } = useAuth();
   const { current } = useBrands();
   const { pathname } = useLocation();
-  const [open, setOpen] = useState(false);
+  const [open, setOpenState] = useState(dockSaved);
+  const [desk, setDesk] = useState(() => window.matchMedia(DESK).matches);
+  const setOpen = useCallback((v: boolean | ((o: boolean) => boolean)) => setOpenState((o) => {
+    const next = typeof v === 'function' ? v(o) : v;
+    try { if (window.matchMedia(DESK).matches) localStorage.setItem(DOCK, next ? '1' : '0'); } catch { /* private mode */ }
+    return next;
+  }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -39,8 +49,22 @@ export function HelpChat() {
   // The corner button is a menu now (QuickDial): Ask Braindy is one of its actions.
   const [dial, setDial] = useState(false);
   const closeDial = useCallback(() => setDial(false), []);
-  const openAi = useCallback(() => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } setOpen(true); }, []);
+  const openAi = useCallback(() => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } setOpen(true); }, [setOpen]);
   useEffect(() => { setDial(false); }, [pathname]);
+  useEffect(() => {
+    const mq = window.matchMedia(DESK);
+    const on = () => setDesk(mq.matches);
+    mq.addEventListener('change', on);
+    const toggle = () => { setIntro(false); setOpen((o) => !o); };
+    window.addEventListener('bd-help-toggle', toggle);
+    return () => { mq.removeEventListener('change', on); window.removeEventListener('bd-help-toggle', toggle); };
+  }, [setOpen]);
+  const shown = !!current && !pathname.startsWith('/ask');
+  const docked = open && desk && shown;
+  useEffect(() => {
+    document.documentElement.classList.toggle('help-docked', docked);
+    return () => document.documentElement.classList.remove('help-docked');
+  }, [docked]);
 
   useEffect(() => { if (brandId) setS(load(brandId)); }, [brandId]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
@@ -50,9 +74,9 @@ export function HelpChat() {
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
     document.addEventListener('keydown', esc);
     return () => document.removeEventListener('keydown', esc);
-  }, [open]);
+  }, [open, setOpen]);
 
-  if (!current || pathname.startsWith('/ask')) return null;
+  if (!shown || !current) return null;
 
   const update = (next: Saved) => { setS(next); save(brandId, next); };
   async function ask(q: string) {
@@ -93,15 +117,22 @@ export function HelpChat() {
           </div>
         </aside>
       )}
-      {!open && (
+      {(!open || docked) && (
         <button type="button" className={`help-fab${dial ? ' is-open' : ''}`} onPointerMove={followPointer} onClick={() => { dismissIntro(); setDial((d) => !d); }}
           aria-expanded={dial} aria-label={t(dial ? 'dial.close' : 'dial.label')} title={t(dial ? 'dial.close' : 'dial.label')}>
           <span className="help-core"><svg className="qd-plus" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></span>
         </button>
       )}
-      {!open && dial && <QuickDial onClose={closeDial} onAi={openAi} />}
+      {(!open || docked) && dial && <QuickDial onClose={closeDial} onAi={openAi} />}
       {open && (
-        <section className="help-panel" role="dialog" aria-modal="false" aria-labelledby="help-title">
+        <section className={`help-panel${docked ? ' is-dock' : ''}`} role={docked ? 'complementary' : 'dialog'} aria-modal={docked ? undefined : false} aria-labelledby="help-title">
+          {docked ? (
+            <header className="help-dhead">
+              <h2 id="help-title" className="help-dtitle">{t('help.dock')}<span className="help-ai">{t('help.ai')}</span></h2>
+              <button type="button" className="help-dbtn" onClick={() => update({ msgs: [], chatId: null })} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+              <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
+            </header>
+          ) : (
           <header className="help-head">
             <div className="col" style={{ minWidth: 0 }}>
               <h2 id="help-title" className="help-title">{t('help.title')}<span className="help-ai">{t('help.ai')}</span></h2>
@@ -111,10 +142,17 @@ export function HelpChat() {
             </div>
             <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
           </header>
+          )}
           <div className="help-body" aria-live="polite">
-            <div className="help-msg is-bot"><p>{t('help.hello', { name: first ? ` ${first}` : '' })}</p></div>
+            {docked ? (
+              <div className="help-welcome">
+                <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
+                <b>{t('help.welcome', { name: first ? `, ${first}` : '' })}</b>
+                <p>{t('help.welcomeSub')}</p>
+              </div>
+            ) : <div className="help-msg is-bot"><p>{t('help.hello', { name: first ? ` ${first}` : '' })}</p></div>}
             {s.msgs.length === 0 && (
-              <div className="help-sugs">{(['help.s1', 'help.s2', 'help.s3'] as const).map((k) => <button key={k} type="button" className="chip" onClick={() => ask(t(k))}>{t(k)}</button>)}</div>
+              <div className={docked ? 'help-cards' : 'help-sugs'}>{(['help.s1', 'help.s2', 'help.s3'] as const).map((k) => <button key={k} type="button" className={docked ? 'help-card' : 'chip'} onClick={() => ask(t(k))}><span>{t(k)}</span>{docked && <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>}</button>)}</div>
             )}
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
