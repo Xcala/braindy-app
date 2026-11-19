@@ -23,6 +23,7 @@ import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
 import { BriefSummary } from '../requests/BriefSummary';
 import { AddendaList, AddendumForm } from '../requests/Addenda';
+import { RequestNav } from '../requests/RequestNav';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -58,9 +59,9 @@ export function RequestDetail() {
 
   return (
     <div className="col g20">
+      <div className="req-top"><nav className="crumbs min-w-0" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav><RequestNav brandId={current.id} id={r.id} /></div>
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
-          <nav className="crumbs" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav>
           <div className="row g12 wrap"><h1 className="h2" style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{r.title}</h1><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
           <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
         </div>

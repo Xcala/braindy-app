@@ -17,6 +17,7 @@ import { DeliveryPace } from '../requests/DeliveryPace';
 import { ActionStrip } from '../requests/ActionStrip';
 import { AskPanel } from '../requests/ask/AskPanel';
 import { downloadCsv, printPdf, rowOf } from '../requests/exportRequests';
+import { rememberOrder } from '../requests/RequestNav';
 import { NO_FILTERS, filtersFromParams, filtersToParams, inTab, isLate, narrow, sortRequests, type ReqFilters } from '../requests/requestFilters';
 
 const VIEWS: View[] = ['list', 'board', 'calendar'];
@@ -55,6 +56,8 @@ export function Requests() {
   const shown = sortRequests(narrowed.filter((r) => inTab(f.tab, r)), f.sort);
   const columns = COLUMNS.filter(({ status }) => f.tab === 'all' || (f.tab === 'late' ? status === 'in_production'
     : f.tab === 'active' ? status === 'in_production' || status === 'to_approve' : f.tab === 'done' ? status === 'approved' || status === 'published' : status === f.tab));
+  // The detail page walks the same order the person sees here (on the board, column by column) with its previous / next arrows.
+  if (!loading) rememberOrder(current.id, (view === 'board' ? columns.flatMap((c) => shown.filter((r) => r.status === c.status)) : shown).map((r) => r.id), params.toString());
 
   const head = [t('req.col.request'), t('req.col.requested'), t('req.col.type'), t('req.col.due'), t('req.col.status'), t('rf.tag'), t('rf.versions')];
   const rows = () => shown.map((r) => rowOf(r, { requested: dateLabel(r.createdAt?.toDate(), lang), type: typeLabel(r), due: r.dueDate ? String(r.dueDate) : '', status: isLate(r) ? t('rf.tab.late') : t(`req.status.${r.status}`) }));

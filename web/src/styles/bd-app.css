@@ -786,3 +786,10 @@ html[data-theme="dark"] img[src="/brand/braindy-logo.svg"]{content:url(/brand/br
 .fold-chev { transition: transform .2s ease; }
 .fold[open] .fold-chev { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .fold-chev { transition: none; } }
+
+/* request detail: previous / next */
+.req-top{margin-bottom:-0.75rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap}
+.req-nav{display:inline-flex;align-items:center;gap:0.5rem;flex:none}
+.req-nav-btn{width:2.25rem}
+.req-nav-btn.is-off{opacity:.35;cursor:default;pointer-events:none}
+.req-nav-count{min-width:3.5rem;text-align:center;font-variant-numeric:tabular-nums}
