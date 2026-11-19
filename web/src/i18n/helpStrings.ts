@@ -32,6 +32,7 @@ export const helpEn = {
   'nm.close': 'Close (it comes back for the next meeting)',
   'nm.show': 'Show next meeting',
   'dial.label': 'Quick actions', 'dial.close': 'Close', 'dial.ask': 'New request', 'dial.ideas': 'Ideas', 'dial.ai': 'AI assistant', 'dial.nick': 'Talk to Nick', 'dial.waText': 'Hi Nick, ',
+  'help.dock': 'Assistant', 'help.welcome': 'Welcome back{name}', 'help.welcomeSub': 'Ask me how to do anything in Braindy. If I can’t, I pass you to Nick.',
 } as const;
 
 export const helpEs: Record<keyof typeof helpEn, string> = {
@@ -67,4 +68,5 @@ export const helpEs: Record<keyof typeof helpEn, string> = {
   'nm.close': 'Cerrar (vuelve con la próxima reunión)',
   'nm.show': 'Ver siguiente reunión',
   'dial.label': 'Acciones rápidas', 'dial.close': 'Cerrar', 'dial.ask': 'Nuevo pedido', 'dial.ideas': 'Ideas', 'dial.ai': 'Asistente IA', 'dial.nick': 'Habla con Nico', 'dial.waText': 'Hola Nico, ',
+  'help.dock': 'Asistente', 'help.welcome': 'Hola de nuevo{name}', 'help.welcomeSub': 'Pregúntame cómo hacer cualquier cosa en Braindy. Si no puedo, te paso con Nico.',
 };

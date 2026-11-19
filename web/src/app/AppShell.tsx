@@ -17,6 +17,7 @@ import { useEffect, useRef } from 'react';
 import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
 import { HelpChat } from '../help/HelpChat';
 import { IdeasPanel } from '../wishes/IdeasPanel';
+import './shell.css';
 
 export function AppShell() {
   const { profile } = useAuth();
@@ -39,10 +40,10 @@ export function AppShell() {
   return (
     <BrandProvider>
       <Toaster>
-      <div className="flex min-h-full">
+      <div className="shell flex min-h-full">
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="flex min-h-full min-w-0 flex-1 flex-col">
-        <header ref={head} className="topbar" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
+        <header ref={head} className="topbar shell-top" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
           <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
           <div className="vsep hidden sm:block md:hidden" style={{ height: '2rem', margin: 0 }} />
           {adminSpace ? (
@@ -63,10 +64,12 @@ export function AppShell() {
           <Notifications />
           <AccountMenu />
         </header>
+        <div className="shell-card">
         <main className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
           <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}
+        </div>
         {!adminSpace && <><IdeasPanel /><HelpChat /></>}
       </div>
       </div>

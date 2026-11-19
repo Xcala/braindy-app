@@ -35,6 +35,11 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
       <nav className="sbar-main">{admin ? items.map((i) => <Link key={i.to} item={i} slim={slim} />) : <ClientSections slim={slim} />}</nav>
       <div className="sbar-foot">
         {!admin && <ClientFoot slim={slim} />}
+        {!admin && (
+          <button type="button" className="sbar-link sbar-ai" onClick={() => window.dispatchEvent(new Event('bd-help-toggle'))} title={slim ? t('help.dock') : undefined} aria-label={t('help.dock')}>
+            <span className="sbar-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4zM15 8.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" /></svg></span>{!slim && <span>{t('help.dock')}</span>}
+          </button>
+        )}
         <button type="button" className="sbar-link" onClick={() => setSlim(!slim)} title={slim ? t('nav.expand') : undefined} aria-label={t(slim ? 'nav.expand' : 'nav.collapse')}>
           <span className="sbar-ico">{NAV_ICON[slim ? 'expand' : 'collapse']}</span>{!slim && <span>{t('nav.collapse')}</span>}
         </button>

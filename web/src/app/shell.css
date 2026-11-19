@@ -1,0 +1,23 @@
+/* Computers: the frame (sidebar + top bar) sits on a gray chrome and the app itself is a lighter card with a rounded corner. */
+:root { --chrome: #E8EBF1; }
+html[data-theme="dark"] { --chrome: #060913; }
+.shell-card { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+@media (min-width: 768px) {
+  .shell { background: var(--chrome); }
+  html .shell .sbar { background: transparent; border-right: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html .shell .topbar.shell-top { background: var(--chrome); -webkit-backdrop-filter: none; backdrop-filter: none; padding-left: 0.25rem !important; padding-right: 1rem !important; }
+  .shell-card { background: var(--niebla); border-top-left-radius: 1.25rem; border-top: 1px solid var(--line); border-left: 1px solid var(--line); box-shadow: -1px -1px 0 rgba(255, 255, 255, .5) inset; }
+  html[data-theme="dark"] .shell-card { box-shadow: none; }
+}
+
+/* The search in the top bar reads as a field (opens the Ctrl K palette). */
+.cmdk-field { display: flex; align-items: center; gap: 0.625rem; width: clamp(15rem, 28vw, 30rem); height: 2.5rem; padding: 0 0.5rem 0 0.875rem; border-radius: var(--r-pill);
+  border: 1px solid var(--line); background: var(--white); color: var(--graphite); font: 500 0.875rem/1 var(--f-text); cursor: text; }
+.cmdk-field:hover { border-color: var(--line-strong); }
+.cmdk-field:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.cmdk-field .kbd { flex: none; }
+
+/* Brand menu: the person's name, then the brand under it. */
+.sel-who { font: 700 0.875rem/1.15 var(--f-text); color: var(--ink); max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-brand { font-size: 0.75rem; color: var(--graphite); max-width: 14rem; overflow: hidden; }
+.sel-brand * { font-weight: 600 !important; font-size: 0.75rem !important; color: var(--graphite) !important; }
