@@ -7,6 +7,7 @@ import type { BrandLink } from './useBrandLinks';
 import type { SiteFrame } from './useSpot';
 import { SiteComments, useSiteComments, type SiteComment } from './SiteComments';
 import { SiteAsk } from './SiteAsk';
+import type { SiteJob } from './useSiteWork';
 import { SiteDone } from './SiteDone';
 import { Point } from './SitePoint';
 
@@ -17,7 +18,7 @@ type Tab = 'adjust' | 'comments' | 'done';
  * Adjust (what is open + ask for one more), Comment (talk about a part of the page: write it or click it) and
  * Delivered (everything that already happened: delivered adjustments and resolved comments, newest first).
  */
-export function SitePanel({ brandId, link, links, frame }: { brandId: string; link: BrandLink; links: BrandLink[]; frame?: SiteFrame }) {
+export function SitePanel({ brandId, link, links, frame, jobs }: { brandId: string; link: BrandLink; links: BrandLink[]; frame?: SiteFrame; jobs: SiteJob[] }) {
   const { t, lang } = useI18n();
   const onShow = frame?.go, active = frame?.active;
   const comments = useSiteComments(brandId, link.url);
@@ -81,7 +82,7 @@ export function SitePanel({ brandId, link, links, frame }: { brandId: string; li
 
       {tab === 'adjust' && (
         <div className="col g8">
-          <SiteAsk brandId={brandId} url={link.url} />
+          <SiteAsk brandId={brandId} url={link.url} jobs={jobs} frame={frame} />
           {open.length === 0 ? <p className="t-sm t-mute" style={{ margin: 0 }}>{t('sp.empty')}</p> : <>
             <p className="label" style={{ margin: 0 }}>{t('sp.nTodo', { n: open.length })}</p>
             {open.map((x) => <Point key={x.id} brandId={brandId} x={x} onShow={onShow} on={active === x.key} />)}

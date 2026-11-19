@@ -6,10 +6,11 @@
  *   { type: 'braindy:auth', token } (a sign-in token for this site's own Firebase project: whoever is signed in to Braindy App never signs in twice)
  * Frame → parent: { type: 'braindy:ready', url, editor?, inEditor?, v } · { type: 'braindy:spot-result', id, found } ·
  *   { type: 'braindy:picked', url, selector, text, x, y } · { type: 'braindy:comment-mode', on: false } · { type: 'braindy:pin', id } ·
- *   { type: 'braindy:auth-result', ok }
+ *   { type: 'braindy:auth-result', ok } · { type: 'braindy:version' } (the page changed on the server: a new deploy)
  * Editor: <meta name="braindy-editor" content="/admin/editor?p="> (the page path is appended) or content="{path}?edit" ({path} = the page).
  * Sign-in handoff: the site defines window.braindySignIn = (token) => signInWithCustomToken(auth, token) (see the publicar-en-braindy-app skill).
  * v3 (2026-11-18): {path} editors and the sign-in handoff. Sites with v2 keep working.
+ * v4 (2026-11-19): watches the page on the server (ETag) and says «version» when a deploy changes it. Sites with v3 keep working.
  */
 (function () {
   if (window.parent === window) return;
@@ -29,7 +30,7 @@
     var q = RAW.split('?')[1] || '', here = new URLSearchParams(location.search);
     return !!q && q.split('&').every(function (kv) { var k = kv.split('=')[0]; return !k || here.has(k); });
   }
-  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href, editor: EDITOR || undefined, inEditor: inEditor(), v: 3 }, o); }); }
+  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href, editor: EDITOR || undefined, inEditor: inEditor(), v: 4 }, o); }); }
   function tell(msg) { if (parentOrigin) window.parent.postMessage(msg, parentOrigin); }
 
   // Sign-in handoff. The site's own code may load after this script: wait a little for window.braindySignIn.
@@ -172,6 +173,24 @@
     else if (d.type === 'braindy:pins') setPins(d.pins);
     else if (d.type === 'braindy:auth' && typeof d.token === 'string') signIn(d.token, 0);
   });
+
+  // New version: while Braindy App shows the site, ask the server for this page's ETag about once a minute (HEAD, no cache).
+  // When it changes, a deploy landed: the viewer offers to show it. Paused while the tab is hidden; silent on any error.
+  var etag = null, etagOf = '';
+  function watch() {
+    if (document.hidden || !parentOrigin || !window.fetch) return;
+    var here = location.pathname + location.search;
+    if (here !== etagOf) { etag = null; etagOf = here; } // another page (single-page sites): start over
+    fetch(here, { method: 'HEAD', cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+      var tag = r.ok && (r.headers.get('etag') || r.headers.get('last-modified'));
+      if (!tag || etagOf !== here) return;
+      if (etag && tag !== etag) tell({ type: 'braindy:version' });
+      etag = tag;
+    }, function () { /* offline: try next time */ });
+  }
+  setTimeout(watch, 3000);
+  setInterval(watch, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) watch(); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
   // Single-page sites change page without reloading: say "ready" again with the new address so the viewer's bar follows.
   var lastHref = location.href;
