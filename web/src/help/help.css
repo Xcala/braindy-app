@@ -89,8 +89,8 @@ a.qd-btn,a.qd-btn:visited,a.qd-btn:hover{color:var(--ink)}
 :root{--help-w:22.5rem}
 @media (min-width:768px){
   html.help-docked .shell{padding-left:var(--help-w)}
-  .help-panel.is-dock{position:fixed;inset:0 auto 0 0;width:var(--help-w);height:100vh;height:100dvh;border-radius:0;border:0;border-right:1px solid #E7D9F6;box-shadow:none;z-index:40;animation:none;
-    background:linear-gradient(180deg,#FCEFF8 0%,#F6F0FE 55%,#EEF2FF 100%)}
+  .help-panel.is-dock{position:fixed;inset:0 auto 0 0;width:var(--help-w);height:100vh;height:100dvh;border-radius:0;border:0;border-right:1px solid #DCC6F2;box-shadow:none;z-index:40;animation:none;
+    background:linear-gradient(180deg,#FAE6F4 0%,#F1E9FF 55%,#E9EEFF 100%)}
   .help-dhead{display:flex;align-items:center;gap:0.25rem;padding:1.125rem 0.875rem 0.5rem 1.25rem}
   .help-dtitle{flex:1;display:flex;align-items:center;gap:0.5rem;margin:0;font:800 1.0625rem/1 var(--f-display,var(--f-text));color:#8B5CF6}
   .help-dbtn{width:2.25rem;height:2.25rem;border-radius:50%;border:0;background:none;color:var(--ink);display:grid;place-items:center;cursor:pointer}
