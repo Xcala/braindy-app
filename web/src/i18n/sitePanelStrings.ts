@@ -19,6 +19,7 @@ export const sitePanelEn = {
   'sc.pickOn': 'Click the page to pin it there.', 'sc.pickAgain': 'Point at the page', 'sc.general': 'General comment on this page',
   'sc.hintNoBridge': 'Write your comment: it stays on this site. (Pointing at a part of the page is not available here yet.)',
   'sc.where': 'Which page or part? (optional)', 'sc.whereIs': 'Where',
+  'sc.sentToast': 'Done, your comment is in. Builder reviews it with NickMark and replies here.', 'sp.sentToast': 'Done, your adjustment is in. Builder reviews it with NickMark: you see it below in «Received».',
   'sc.dropSpot': 'Remove spot', 'sc.toPoint': 'Turn into adjustment', 'sc.asPoint': 'Now adjustment {key}',
 };
 export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
@@ -39,5 +40,6 @@ export const sitePanelEs: Record<keyof typeof sitePanelEn, string> = {
   'sc.pickOn': 'Haz clic en la página para fijarlo ahí.', 'sc.pickAgain': 'Señalar en la página', 'sc.general': 'Comentario general sobre esta página',
   'sc.hintNoBridge': 'Escribe tu comentario: queda sobre este sitio. (Señalar una parte de la página aún no está disponible aquí.)',
   'sc.where': '¿En qué página o parte? (opcional)', 'sc.whereIs': 'Dónde',
+  'sc.sentToast': 'Listo, quedó tu comentario. Builder lo revisa con NicoMarca y te responde aquí.', 'sp.sentToast': 'Listo, quedó tu ajuste. Builder lo revisa con NicoMarca: lo ves abajo en «Recibidos».',
   'sc.dropSpot': 'Quitar el lugar', 'sc.toPoint': 'Pasar a ajuste', 'sc.asPoint': 'Ya es el ajuste {key}',
 };

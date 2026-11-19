@@ -16,7 +16,7 @@ export function Toaster({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={show}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex flex-col items-center gap-2 px-4 md:bottom-6" role="status" aria-live="polite">
+      <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[90] flex flex-col items-center gap-2 px-4 md:bottom-6" role="status" aria-live="polite">
         {list.map((t) => <Item key={t.id} t={t} onClose={() => close(t.id)} />)}
       </div>
     </Ctx.Provider>

@@ -19,7 +19,9 @@ export const askPanelEn = {
   'as.material': 'Material', 'as.noMaterial': 'I have no material: propose it', 'as.exactType': 'Exact type of piece (optional)',
   'as.checkLabel': 'What makes a request clear', 'as.c.what': 'What it is', 'as.c.where': 'Where it is used', 'as.c.when': 'For when', 'as.c.material': 'Material',
   'as.understood': 'This is how NickMark read it', 'as.missingNote': 'Missing: {what}. You can send it as it is; NickMark asks you.', 'as.allClear': 'Clear. NickMark sends you the plan.',
-  'as.sendAnyway': 'Send anyway',
+  'as.sendAnyway': 'Send anyway', 'as.w.today': 'Today',
+  'as.sentDue': 'Done, your request is in. NickMark and his Brains already have it: we deliver it {day}.', 'as.sentPlan': 'Done, your request is in. NickMark sends you the plan with the delivery date.',
+  'as.on': 'on {day}',
   'vn.record': 'Voice note', 'vn.stop': 'Stop · {t}', 'vn.uploading': 'Uploading…', 'vn.error': 'Could not record', 'vn.fileName': 'voice-note',
 };
 export const askPanelEs: Record<keyof typeof askPanelEn, string> = {
@@ -42,6 +44,8 @@ export const askPanelEs: Record<keyof typeof askPanelEn, string> = {
   'as.material': 'Material', 'as.noMaterial': 'No tengo material: que lo propongan', 'as.exactType': 'Tipo exacto de pieza (opcional)',
   'as.checkLabel': 'Lo que hace claro un pedido', 'as.c.what': 'Qué es', 'as.c.where': 'Dónde se usa', 'as.c.when': 'Para cuándo', 'as.c.material': 'Material',
   'as.understood': 'Así lo entendió NicoMarca', 'as.missingNote': 'Falta: {what}. Puedes enviarlo así; NicoMarca te pregunta.', 'as.allClear': 'Claro. NicoMarca te manda el plan.',
-  'as.sendAnyway': 'Enviar así',
+  'as.sendAnyway': 'Enviar así', 'as.w.today': 'Hoy',
+  'as.sentDue': 'Listo, quedó tu pedido. NicoMarca y sus Brains ya lo tienen: te lo entregamos {day}.', 'as.sentPlan': 'Listo, quedó tu pedido. NicoMarca te manda el plan con la fecha de entrega.',
+  'as.on': 'el {day}',
   'vn.record': 'Nota de voz', 'vn.stop': 'Detener · {t}', 'vn.uploading': 'Subiendo…', 'vn.error': 'No se pudo grabar', 'vn.fileName': 'nota-de-voz',
 };

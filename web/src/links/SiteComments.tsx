@@ -9,6 +9,7 @@ import { VoiceNote } from '../requests/ask/VoiceNote';
 import { WishAudio } from '../wishes/WishAudio';
 
 type Audio = { assetId: string; name: string; size: number; contentType: string };
+import { useToast } from '../components/Toaster';
 
 /** A comment on the site (brands/{b}/siteComments), pinned on a part of it or general to a page. n: its number on the pins, oldest first. asPoint: key of the adjustment NickMark made from it. */
 export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; audio?: Audio; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp; editedAt?: Timestamp }
@@ -33,6 +34,7 @@ export function useSiteComments(brandId: string, siteUrl: string) {
 export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { brandId: string; siteUrl: string; list: SiteComment[]; frame?: SiteFrame; onToPoint?: (c: SiteComment) => void }) {
   const { t } = useI18n();
   const { user, profile } = useAuth();
+  const toast = useToast();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -68,6 +70,7 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
         resolved: false, createdAt: serverTimestamp(),
       });
       setText(''); setWhere(''); setAudio(undefined); frame?.clearPicked();
+      toast({ text: t('sc.sentToast'), ms: 7000 });
     } catch { setError(true); } finally { setBusy(false); }
   }
 
