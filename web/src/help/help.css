@@ -116,3 +116,13 @@ html[data-theme="dark"] .help-dtitle{color:#B79BFF}
 html[data-theme="dark"] .help-dbtn:hover{background:rgba(255,255,255,.08)}
 html[data-theme="dark"] .help-card,html[data-theme="dark"] .help-panel.is-dock .help-form{border-color:rgba(255,255,255,.08)}
 @media (prefers-reduced-motion:no-preference){@media (min-width:768px){.shell{transition:padding-left .2s ease}}}
+
+/* A request the assistant drafted: checked and sent by the person. */
+.help-draft{display:flex;flex-direction:column;gap:0.5rem;margin-top:0.625rem;padding:0.875rem;border-radius:0.875rem;background:var(--white);border:1px solid #D7C6FB;box-shadow:0 4px 14px -10px rgba(139,92,246,.5);color:var(--ink)}
+.help-draft b{font:700 0.9375rem/1.3 var(--f-text)}
+.help-draft p{margin:0;font:500 0.875rem/1.45 var(--f-text);color:var(--graphite);white-space:pre-wrap}
+.help-draft-tag{align-self:flex-start;font:800 0.6875rem/1 var(--f-text);letter-spacing:.04em;text-transform:uppercase;color:#7C3AED;background:#F1EBFF;border-radius:var(--r-pill);padding:0.3125rem 0.5rem}
+.help-draft.is-sent{border-color:#B9E5CC}
+.help-draft.is-sent .help-draft-tag{color:#0E5A3A;background:#EAF7EF}
+html[data-theme="dark"] .help-draft{border-color:#3B2E5E}
+html[data-theme="dark"] .help-draft-tag{background:#231A3D;color:#C4B0FF}

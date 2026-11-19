@@ -15,9 +15,9 @@ export const helpEn = {
   'help.error': 'I could not answer just now. Try again in a moment or write to Nick.',
   'help.limit': 'You reached today’s questions. Write to Nick and he’ll help you.',
   'help.off': 'Help is not available right now. Write to Nick.',
-  'help.s1': 'How do I download my logo?',
+  'help.s1': 'I need a post for Instagram',
   'help.s2': 'How do I approve a delivery?',
-  'help.s3': 'How do I ask for something new?',
+  'help.s3': 'I want to change something on my website',
   'help.ai': 'AI',
   'help.introTag': 'NEW · AI',
   'help.introTitle': 'Ask Braindy',
@@ -32,7 +32,8 @@ export const helpEn = {
   'nm.close': 'Close (it comes back for the next meeting)',
   'nm.show': 'Show next meeting',
   'dial.label': 'Quick actions', 'dial.close': 'Close', 'dial.ask': 'New request', 'dial.ideas': 'Ideas', 'dial.ai': 'AI assistant', 'dial.nick': 'Talk to Nick', 'dial.waText': 'Hi Nick, ',
-  'help.dock': 'Assistant', 'help.welcome': 'Welcome back{name}', 'help.welcomeSub': 'Ask me how to do anything in Braindy. If I can’t, I pass you to Nick.',
+  'help.draftTag': 'New request', 'help.draftSend': 'Send request', 'help.draftSending': 'Sending…', 'help.draftEdit': 'Edit', 'help.draftDone': 'Done', 'help.draftTitle': 'Title', 'help.draftWhat': 'What you need', 'help.draftDue': 'For', 'help.draftNoDue': 'No date: Nick suggests one', 'help.draftSent': 'Sent. The Brains are on it.', 'help.draftOpen': 'See request', 'help.draftError': 'It could not be sent. Try again.',
+  'help.dock': 'Assistant', 'help.welcome': 'Welcome back{name}', 'help.welcomeSub': 'Tell me what you need (a piece, a change to your site…) and I leave the request ready for you to send. Or ask me how to use Braindy.',
 } as const;
 
 export const helpEs: Record<keyof typeof helpEn, string> = {
@@ -51,9 +52,9 @@ export const helpEs: Record<keyof typeof helpEn, string> = {
   'help.error': 'No pude responder ahora. Intenta en un momento o escríbele a Nico.',
   'help.limit': 'Llegaste a las preguntas de hoy. Escríbele a Nico y él te ayuda.',
   'help.off': 'La ayuda no está disponible ahora. Escríbele a Nico.',
-  'help.s1': '¿Cómo descargo mi logo?',
+  'help.s1': 'Necesito un post para Instagram',
   'help.s2': '¿Cómo apruebo una entrega?',
-  'help.s3': '¿Cómo pido algo nuevo?',
+  'help.s3': 'Quiero cambiar algo de mi sitio web',
   'help.ai': 'IA',
   'help.introTag': 'NUEVO · IA',
   'help.introTitle': 'Pregúntale a Braindy',
@@ -68,5 +69,6 @@ export const helpEs: Record<keyof typeof helpEn, string> = {
   'nm.close': 'Cerrar (vuelve con la próxima reunión)',
   'nm.show': 'Ver siguiente reunión',
   'dial.label': 'Acciones rápidas', 'dial.close': 'Cerrar', 'dial.ask': 'Nuevo pedido', 'dial.ideas': 'Ideas', 'dial.ai': 'Asistente IA', 'dial.nick': 'Habla con Nico', 'dial.waText': 'Hola Nico, ',
-  'help.dock': 'Asistente', 'help.welcome': 'Hola de nuevo{name}', 'help.welcomeSub': 'Pregúntame cómo hacer cualquier cosa en Braindy. Si no puedo, te paso con Nico.',
+  'help.draftTag': 'Pedido nuevo', 'help.draftSend': 'Enviar pedido', 'help.draftSending': 'Enviando…', 'help.draftEdit': 'Editar', 'help.draftDone': 'Listo', 'help.draftTitle': 'Título', 'help.draftWhat': 'Lo que necesitas', 'help.draftDue': 'Para el', 'help.draftNoDue': 'Sin fecha: Nico propone una', 'help.draftSent': 'Enviado. Los Brains ya arrancan.', 'help.draftOpen': 'Ver pedido', 'help.draftError': 'No se pudo enviar. Intenta de nuevo.',
+  'help.dock': 'Asistente', 'help.welcome': 'Hola de nuevo{name}', 'help.welcomeSub': 'Dime qué necesitas (una pieza, un cambio en tu sitio…) y te dejo el pedido listo para enviar. O pregúntame cómo usar Braindy.',
 };

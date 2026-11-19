@@ -8,9 +8,13 @@ import { useBrands } from '../brands/BrandProvider';
 import { nicoWhatsApp } from '../lib/nicoWhatsApp';
 import { api } from '../lib/api';
 import { HelpText } from './HelpText';
+import { DraftCard, type Draft } from './DraftCard';
 import './help.css';
 
-type Msg = { role: 'user' | 'assistant'; content: string; next?: 'nico' | 'request' | null; error?: boolean };
+type Msg = { role: 'user' | 'assistant'; content: string; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string };
+/** What goes back to the model: a draft travels with its answer so «change the date» works on the next turn. */
+const asTurn = (m: Msg) => ({ role: m.role, content: m.draft ? `${m.content}
+[[BORRADOR ${JSON.stringify(m.draft)}]]${m.sent ? ' (ya enviado)' : ''}` : m.content });
 type Saved = { msgs: Msg[]; chatId: string | null };
 
 const KEY = (brandId: string) => `bd-help-${brandId}`;
@@ -86,11 +90,11 @@ export function HelpChat() {
     update({ ...s, msgs });
     setText(''); setBusy(true);
     try {
-      const r = await api<{ text: string; next: Msg['next']; chatId: string }>('/v1/help/chat', {
+      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; chatId: string }>('/v1/help/chat', {
         method: 'POST',
-        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, messages: msgs.filter((m) => !m.error).map(({ role, content }) => ({ role, content })) }),
+        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, messages: msgs.filter((m) => !m.error).map(asTurn) }),
       });
-      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next }] });
+      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null }] });
     } catch (e) {
       const code = String((e as Error).message);
       const key = code.includes('429') || code.includes('limit') ? 'help.limit' : code.includes('503') || code.includes('ai_off') ? 'help.off' : 'help.error';
@@ -157,6 +161,10 @@ export function HelpChat() {
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
                 {m.role === 'user' ? <p>{m.content}</p> : <HelpText text={m.content} onNavigate={close} />}
+                {m.role === 'assistant' && m.draft && (
+                  <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} sentId={m.sent} onClose={close}
+                    onSent={(id, d) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, draft: d, sent: id } : x)) })} />
+                )}
                 {m.role === 'assistant' && i === s.msgs.length - 1 && m.next === 'nico' && (
                   <a className="btn btn-secondary btn-sm help-next" href={nicoWhatsApp(current, t('help.waText', { q: lastQuestion.slice(0, 300) }))} target="_blank" rel="noreferrer" onClick={toNico}>{t('help.toNico')}</a>
                 )}
