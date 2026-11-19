@@ -173,20 +173,23 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
         {trashOpen ? <TrashView brandId={brandId} onBack={() => setTrashOpen(false)} /> : <>
         {subfolders.length > 0 && !needle && (
           <div className="col g12">
-            <div className="row between g8 wrap">
-              <p className="label">{t('files.folders')} · {subfolders.length}</p>
-              {isAdmin && !path && (
-                <span className="t-xs t-mute row g8" role="status">
-                  {tops.length > 0 && <>
+            <p className="label">{t('files.folders')} · {subfolders.length}</p>
+            {isAdmin && !path && (
+              <div className="fbar">
+                {tops.length > 0 && (
+                  <span className="fbar-stat t-sm" role="status">
+                    <Icon name="eye" size={16} />
                     {shareError ? <span style={{ color: 'var(--danger)' }}>{t('fa.error')}</span> : t('fa.clientSees', { n: String(share.count), m: String(tops.length) })}
-                    {share.count < tops.length && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
-                    {share.count > 0 && <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setHideAsk(true)}>{t('fa.hideAll')}</button>}
-                  </>}
-                  <button type="button" className="t-xs w7 row g4" style={{ color: 'var(--ink)' }} onClick={() => setTrashOpen(true)}><Icon name="trash" size={14} />{t('files.trash')}</button>
-                  <button type="button" className="t-xs w7" style={{ color: 'var(--azul)' }} onClick={() => setAsClient(true)}>{t('fa.asClient')}</button>
-                </span>
-              )}
-            </div>
+                  </span>
+                )}
+                <div className="fbar-actions">
+                  {tops.length > 0 && share.count < tops.length && <button type="button" className="btn btn-secondary btn-sm" onClick={() => share.showAll().catch(() => setShareError(true))}>{t('fa.showAll')}</button>}
+                  {tops.length > 0 && share.count > 0 && <button type="button" className="btn btn-secondary btn-sm" onClick={() => setHideAsk(true)}>{t('fa.hideAll')}</button>}
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAsClient(true)}><Icon name="eye" size={16} />{t('fa.asClient')}</button>
+                  <button type="button" className="btn btn-secondary btn-sm btn-icon fbar-trash" aria-label={t('files.trash')} title={t('files.trash')} onClick={() => setTrashOpen(true)}><Icon name="trash" size={16} /></button>
+                </div>
+              </div>
+            )}
             {isAdmin && !path && tops.length > 0 && share.count === 0 && (
               <div className="fnote" role="status">
                 <span className="t-sm">{t('fa.none')}</span>
