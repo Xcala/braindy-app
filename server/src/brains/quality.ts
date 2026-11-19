@@ -26,7 +26,7 @@ export async function qualityChecklist(brandId: string): Promise<{ name: string;
   const fonts = ((identity.get('typography') as Array<{ fontFamily?: string }>) ?? []).slice(0, 4).map((f) => f.fontFamily).filter(Boolean);
   const isNot = ((identity.get('voice.howItSounds.isNot') as string[]) ?? []).slice(0, 6);
   const avoid = String(identity.get('strategy.avoid') ?? brain.get('avoid') ?? '').trim();
-  const changed = ((learnings.get('items') as Array<{ kind: string; text: string }>) ?? []).filter((l) => l.kind === 'changed').slice(-5);
+  const changed = ((learnings.get('items') as Array<{ kind: string; text: string; retired?: boolean }>) ?? []).filter((l) => l.kind === 'changed' && !l.retired).slice(-5);
   const items: CheckItem[] = [
     { id: 'asked', text: 'Responde todo lo que pidió el cliente en la solicitud y sus comentarios (nada a medias, nada que no pidió).', critical: true },
     { id: 'brand', text: `Es de ${name}: nombre, logo y datos correctos y en su versión vigente.`, critical: true },

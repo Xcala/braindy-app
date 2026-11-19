@@ -4,7 +4,8 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { cancelInvite, inviteMember, listInvites, removeMember, updateMember } from './membersApi';
+import { cancelInvite, inviteByPhone, inviteMember, listInvites, removeMember, updateMember } from './membersApi';
+import { MemberWhatsApp, SentNote, deliverLink } from './MemberWhatsApp';
 import { MemberAccess, profilePatch } from './MemberAccess';
 import { BrandSections } from './BrandSections';
 import { profileOf } from './sections';
@@ -28,6 +29,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<'client_owner' | 'client_member'>('client_member');
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [waSent, setWaSent] = useState<Awaited<ReturnType<typeof deliverLink>> | null>(null);
   const [removing, setRemoving] = useState<Member | null>(null);
 
   useEffect(() => onSnapshot(collection(db, 'brands', brandId, 'members'),
@@ -36,12 +38,20 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
   const loadInvites = useCallback(() => { listInvites(brandId).then(setInvites).catch(() => setInvites([])); }, [brandId]);
   useEffect(loadInvites, [loadInvites]);
 
-  const valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const isEmail = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  // A mobile number instead of an email: the person is created now and gets their sign-in link by WhatsApp.
+  const isPhone = !isEmail && email.replace(/\D/g, '').length >= 10 && /^[+\d\s().-]+$/.test(email.trim());
+  const valid = isEmail || isPhone;
 
   async function invite() {
-    setMsg(null);
+    setMsg(null); setWaSent(null);
     try {
       const pp = isAdmin ? profilePatch(invProfile) : { role, sections: null };
+      if (isPhone) {
+        const r = await inviteByPhone(brandId, email.trim(), '', '', pp.role as typeof role, pp.role === 'client_owner', pp.sections);
+        setWaSent(await deliverLink(brandId, r.uid, '', lang));
+        setEmail(''); return;
+      }
       const r = await inviteMember(brandId, email.trim(), pp.role as typeof role, pp.role === 'client_owner', pp.sections);
       // Firebase emails them a one-time link to come in (any inbox, no password).
       const sent = await sendAccessLink(email.trim(), lang, false).then(() => true, () => false);
@@ -59,7 +69,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
       {members.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}
       {members.map((m) => {
         const self = m.uid === user?.uid;
-        const initials = (m.email ?? '?').slice(0, 2).toUpperCase();
+        const initials = (m.name || m.email || '?').replace(/^\+/, '').slice(0, 2).toUpperCase();
         return (
           <div key={m.uid} className="col g8" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
             <div className='row g12'>
@@ -67,6 +77,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
               <div className='col grow' style={{ minWidth: 0 }}><span className='w7 truncate'>{m.name && m.name !== m.email ? m.name : m.email ?? m.uid}</span>{m.name && m.name !== m.email && <span className='t-xs t-mute truncate'>{m.email}</span>}</div>
               {!self && <button className='btn btn-ghost btn-sm' onClick={() => setRemoving(m)}>{t('team.remove')}</button>}
             </div>
+            {!self && <MemberWhatsApp brandId={brandId} uid={m.uid} name={m.name || m.email || ''} />}
             <div className='row g16 wrap' style={{ paddingLeft: '3.25rem' }}>
               {isAdmin ? <MemberAccess member={m} disabled={self} onChange={(patch) => save(m.uid, patch)} /> : (
               <select className='input' style={{ height: '2.25rem', width: 'auto' }} value={m.role} disabled={self} aria-label={t('team.role')}
@@ -101,7 +112,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         </div>
       ))}
       <form className="row g8 wrap" onSubmit={(e) => { e.preventDefault(); if (valid) invite(); }}>
-        <input className="input grow" style={{ minWidth: '12.5rem' }} type="email" placeholder={t('team.invitePh')} aria-label={t('team.invitePh')} value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="input grow" style={{ minWidth: '12.5rem' }} type="text" inputMode="email" autoComplete="off" placeholder={t('wax.invitePh')} aria-label={t('wax.invitePh')} value={email} onChange={(e) => setEmail(e.target.value)} />
         {isAdmin ? (
           <select className="input" style={{ width: 'auto' }} value={invProfile} onChange={(e) => setInvProfile(e.target.value as typeof invProfile)} aria-label={t('perm.profile')}>
             <option value="all">{t('perm.all')}</option>
@@ -115,6 +126,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
         </select>)}
         <button type="submit" className="btn btn-primary" disabled={!valid}>{t('team.invite')}</button>
       </form>
+      {waSent && <SentNote r={waSent} />}
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
       <Scan text={t('team.inviteHint')} className="t-xs" />
       {removing && (

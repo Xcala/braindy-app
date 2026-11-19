@@ -1,23 +1,29 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { AREAS, type Area, type Counts } from './knowledge';
+import { AREAS, type Area } from './knowledge';
 import type { BrainKind } from './useBrainEvents';
+import type { Item, ItemKind } from './items';
 
 /** The canvas is always dark (a lit brain reads best on night), so its colors are fixed, not theme tokens. */
 export const KIND_COLOR: Record<BrainKind, string> = {
   request: '#8FA0FF', approved: '#3CCB8B', changed: '#FF8A8E', identity: '#5FD6EA',
-  file: '#F5C04A', session: '#B89CFF', meeting: '#B89CFF', signed: '#FFFFFF',
+  file: '#F5C04A', session: '#B89CFF', meeting: '#B89CFF', signed: '#FFFFFF', taught: '#F5B301', forgot: '#8B93A7',
 };
+const ITEM_COLOR: Partial<Record<ItemKind, string>> = { liked: '#3CCB8B', changed: '#FF8A8E', request: '#8FA0FF', rule: '#FFFFFF', talk: '#B89CFF', file: '#F5C04A' };
 const ANGLE: Record<Area, number> = { identity: -150, voice: -90, strategy: -30, work: 30, rules: 90, talks: 150 };
+/** Fewer than this many things in an area and it shows as a gap («teach it»). */
+export const THIN = 3;
 
-type Node = { area: Area; u: number; v: number; ph: number; size: number; x: number; y: number; born: number; kind?: BrainKind; hidden?: boolean };
-type Edge = { a: Node; b: Node; born: number; long?: boolean };
-type Flight = { x0: number; y0: number; mx: number; my: number; node: Node; kind: BrainKind; t0: number; dur: number; done?: () => void };
-export type BrainCanvasHandle = { learn: (kind: BrainKind, area: Area, opts?: { fast?: boolean; done?: () => void }) => void; reset: () => void; sync: (c: Counts) => void; fill: (area: Area, n: number) => void };
+type P = { x: number; y: number; u: number; v: number; ph: number; born: number };
+export type CanvasProps = {
+  items: Item[]; degree: Map<string, number>; color: string; selected: string | null; focus: Area | null;
+  /** Lit things (a search, or what goes into each piece); null lights everything. */
+  lit: Set<string> | null; cutoff: Date | null;
+  onPick: (id: string | null) => void; onArea: (a: Area | null) => void; onTeach: (a: Area) => void;
+};
 
-const mulberry = (a: number) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const hash = (s: string) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; }; };
 const rgba = (hex: string, a: number) => { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${Math.max(0, Math.min(1, a))})`; };
-const mix = (h1: string, h2: string, k: number) => { const p = (h: string) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }; const a = p(h1), b = p(h2); return `rgb(${a.map((v, i) => Math.round(v + (b[i]! - v) * k)).join(',')})`; };
 
 /** A brand color that stays visible on the night canvas (dark colors are lifted toward white). */
 export function brainColor(hex?: string) {
@@ -28,97 +34,104 @@ export function brainColor(hex?: string) {
   return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join('')}`;
 }
 
-export const BrainCanvas = forwardRef<BrainCanvasHandle, { counts: Counts; color: string; showNumbers: boolean }>(function BrainCanvas({ counts, color, showNumbers }, ref) {
+/** The Brand Brain as a map: every dot is one thing it knows, every line a real link. Tap a dot, an area or a gap. */
+export function BrainCanvas(props: CanvasProps) {
   const { t } = useI18n();
   const stage = useRef<HTMLDivElement>(null);
   const cv = useRef<HTMLCanvasElement>(null);
-  const labels = useRef<Partial<Record<Area, HTMLDivElement | null>>>({});
-  const s = useRef({ W: 0, H: 0, cx: 0, cy: 0, rx: 0, ry: 0, nodes: [] as Node[], edges: [] as Edge[], flights: [] as Flight[], rings: [] as Array<{ x: number; y: number; kind: BrainKind; t0: number }>, pulses: [] as Array<{ e: Edge; t0: number; kind?: BrainKind }>, rnd: mulberry(7), color });
-  s.current.color = color;
+  const tip = useRef<HTMLDivElement>(null);
+  const labels = useRef<Partial<Record<Area, HTMLButtonElement | null>>>({});
+  const live = useRef(props); live.current = props;
+  const g = useRef({ W: 0, H: 0, cx: 0, cy: 0, rx: 0, ry: 0, pos: new Map<string, P>(), seen: new Set<string>(), first: true, z: 1, zx: 0, zy: 0, hover: null as string | null });
   const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const place = (n: Node) => {
-    const g = s.current; const pinch = 1 - 0.12 * Math.exp(-Math.pow(Math.cos(n.u) * 3, 2));
-    n.x = g.cx + Math.cos(n.u) * g.rx * n.v * pinch; n.y = g.cy + Math.sin(n.u) * g.ry * n.v;
+  const place = (p: P) => {
+    const s = g.current; const pinch = 1 - 0.12 * Math.exp(-Math.pow(Math.cos(p.u) * 3, 2));
+    p.x = s.cx + Math.cos(p.u) * s.rx * p.v * pinch; p.y = s.cy + Math.sin(p.u) * s.ry * p.v;
   };
-  const addNode = (area: Area, big = false, born = -1e9, kind?: BrainKind) => {
-    const g = s.current; const r = g.rnd;
-    const n: Node = { area, u: (ANGLE[area] + (r() - 0.5) * 56) * Math.PI / 180, v: 0.18 + Math.sqrt(r()) * 0.8, ph: r() * 6.28, size: big ? 3.2 : 1.6 + r() * 1.1, x: 0, y: 0, born, kind };
-    place(n); g.nodes.push(n);
-    g.nodes.filter((m) => m !== n).map((m) => [m, (m.x - n.x) ** 2 + (m.y - n.y) ** 2] as const).sort((a, b) => a[1] - b[1]).slice(0, big ? 3 : 2)
-      .forEach(([m]) => g.edges.push({ a: n, b: m, born }));
-    if (r() < 0.18 && g.nodes.length > 8) { const m = g.nodes[Math.floor(r() * g.nodes.length)]!; if (m !== n) g.edges.push({ a: n, b: m, born, long: true }); }
-    return n;
+  const posOf = (it: Item) => {
+    const s = g.current; let p = s.pos.get(it.id);
+    if (!p) {
+      const r = hash(it.id);
+      p = { u: (ANGLE[it.area] + (r() - 0.5) * 54) * Math.PI / 180, v: 0.2 + Math.sqrt(r()) * 0.78, ph: r() * 6.28, x: 0, y: 0, born: s.first || reduce ? -1e9 : performance.now() };
+      place(p); s.pos.set(it.id, p);
+    }
+    return p;
   };
-  const sync = (c: Counts) => { for (const a of AREAS) { const have = s.current.nodes.filter((n) => n.area === a).length; for (let i = have; i < c[a]; i++) addNode(a); } };
-
-  useImperativeHandle(ref, () => ({
-    sync,
-    reset: () => { Object.assign(s.current, { nodes: [], edges: [], flights: [], rings: [], pulses: [], rnd: mulberry(11) }); },
-    fill: (area, n) => { for (let i = 0; i < n; i++) addNode(area, false, performance.now()); },
-    learn: (kind, area, opts) => {
-      const g = s.current; const node = addNode(area, true, performance.now(), kind); node.hidden = true;
-      const x0 = g.cx + (g.rnd() - 0.5) * g.W * 0.5, y0 = g.H + 10;
-      g.flights.push({ x0, y0, mx: (x0 + node.x) / 2 + (g.rnd() - 0.5) * 120, my: Math.min(y0, node.y) + g.H * 0.15, node, kind, t0: performance.now(), dur: reduce ? 1 : opts?.fast ? 650 : 1300, done: opts?.done });
-    },
-  }));
+  const visible = (it: Item) => { const c = live.current.cutoff; return !it.retired && (!c || !it.at || it.at <= c); };
+  const toWorld = (x: number, y: number) => { const s = g.current; return [(x - s.zx) / s.z, (y - s.zy) / s.z] as const; };
+  const nearest = (x: number, y: number) => {
+    const [wx, wy] = toWorld(x, y); let best: string | null = null, bd = (14 / g.current.z) ** 2;
+    for (const it of live.current.items) { if (!visible(it)) continue; const p = posOf(it); const d = (p.x - wx) ** 2 + (p.y - wy) ** 2; if (d < bd) { bd = d; best = it.id; } }
+    return best;
+  };
 
   useEffect(() => {
     const el = stage.current!, canvas = cv.current!, ctx = canvas.getContext('2d')!;
     const geom = () => {
-      const b = el.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), g = s.current;
-      g.W = b.width; g.H = b.height; canvas.width = g.W * dpr; canvas.height = g.H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      g.cx = g.W / 2; g.cy = g.H / 2; g.rx = Math.min(g.W * 0.36, g.H * 0.62); g.ry = g.H * 0.33;
-      for (const a of AREAS) {
-        const l = labels.current[a]; if (!l) continue;
-        const ang = ANGLE[a] * Math.PI / 180, hw = l.offsetWidth / 2 + 8;
-        l.style.left = `${Math.max(hw, Math.min(g.W - hw, g.cx + Math.cos(ang) * (g.rx + Math.min(70, g.W * 0.09))))}px`;
-        l.style.top = `${Math.max(18, Math.min(g.H - 18, g.cy + Math.sin(ang) * (g.ry + 30)))}px`;
-      }
-      g.nodes.forEach(place);
+      const b = el.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1), s = g.current;
+      s.W = b.width; s.H = b.height; canvas.width = s.W * dpr; canvas.height = s.H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      s.cx = s.W / 2; s.cy = s.H / 2; s.rx = Math.min(s.W * 0.36, s.H * 0.62); s.ry = s.H * 0.33;
+      s.pos.forEach(place);
     };
     geom();
     const ro = new ResizeObserver(geom); ro.observe(el);
     let raf = 0;
     const draw = (now: number) => {
-      const g = s.current, c = g.color;
-      ctx.clearRect(0, 0, g.W, g.H);
-      const glow = ctx.createRadialGradient(g.cx, g.cy, 0, g.cx, g.cy, g.rx); glow.addColorStop(0, rgba(c, 0.12)); glow.addColorStop(1, rgba(c, 0));
-      ctx.fillStyle = glow; ctx.fillRect(0, 0, g.W, g.H);
-      ctx.lineWidth = 1;
-      for (const e of g.edges) {
-        if (e.a.hidden || e.b.hidden) continue;
-        const fresh = Math.max(0, 1 - (now - e.born) / 2500);
-        ctx.strokeStyle = rgba(c, (e.long ? 0.06 : 0.14) + fresh * 0.5); ctx.beginPath(); ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); ctx.stroke();
+      const s = g.current, P = live.current, c = P.color, sel = P.selected;
+      // Zoom toward the focused area (eased), labels follow.
+      const fz = P.focus ? 1.9 : 1, ang = P.focus ? ANGLE[P.focus] * Math.PI / 180 : 0;
+      const tx = P.focus ? s.cx - (s.cx + Math.cos(ang) * s.rx * 0.55) * fz : 0, ty = P.focus ? s.cy - (s.cy + Math.sin(ang) * s.ry * 0.55) * fz : 0;
+      const k = reduce ? 1 : 0.12; s.z += (fz - s.z) * k; s.zx += (tx - s.zx) * k; s.zy += (ty - s.zy) * k;
+      const dpr = Math.min(2, devicePixelRatio || 1);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, s.W, s.H);
+      ctx.setTransform(dpr * s.z, 0, 0, dpr * s.z, dpr * s.zx, dpr * s.zy);
+      const glow = ctx.createRadialGradient(s.cx, s.cy, 0, s.cx, s.cy, s.rx); glow.addColorStop(0, rgba(c, 0.12)); glow.addColorStop(1, rgba(c, 0));
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, s.W, s.H);
+      const items = P.items.filter(visible);
+      const byId = new Map(items.map((x) => [x.id, x]));
+      const per = Object.fromEntries(AREAS.map((a) => [a, items.filter((x) => x.area === a).length])) as Record<Area, number>;
+      // Gaps: a dashed zone where it still knows little.
+      ctx.setLineDash([3, 5]);
+      for (const a of AREAS) {
+        if (P.cutoff || per[a] >= THIN) continue; // the past is not a gap
+        const an = ANGLE[a] * Math.PI / 180; ctx.strokeStyle = 'rgba(245,179,1,.45)';
+        ctx.beginPath(); ctx.ellipse(s.cx + Math.cos(an) * s.rx * 0.6, s.cy + Math.sin(an) * s.ry * 0.6, s.rx * 0.2, s.ry * 0.24, 0, 0, 7); ctx.stroke();
       }
-      if (!reduce && g.edges.length && Math.random() < 0.06) { const e = g.edges[Math.floor(Math.random() * g.edges.length)]!; if (!e.a.hidden && !e.b.hidden) g.pulses.push({ e, t0: now }); }
-      g.pulses = g.pulses.filter((p) => {
-        const k = (now - p.t0) / 900; if (k > 1) return false;
-        ctx.fillStyle = p.kind ? KIND_COLOR[p.kind] : 'rgba(255,255,255,.7)';
-        ctx.beginPath(); ctx.arc(p.e.a.x + (p.e.b.x - p.e.a.x) * k, p.e.a.y + (p.e.b.y - p.e.a.y) * k, p.kind ? 2.4 : 1.4, 0, 7); ctx.fill(); return true;
-      });
-      for (const n of g.nodes) {
-        if (n.hidden) continue;
-        const fresh = Math.max(0, 1 - (now - n.born) / 3500), tw = reduce ? 1 : 0.75 + 0.25 * Math.sin(now / 900 + n.ph), size = n.size * (1 + fresh * 1.2);
-        ctx.fillStyle = fresh > 0 && n.kind ? mix(KIND_COLOR[n.kind], c, 1 - fresh) : rgba(c, 0.55 + 0.45 * tw);
-        ctx.beginPath(); ctx.arc(n.x, n.y, size, 0, 7); ctx.fill();
-        if (n.size > 3) { ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(n.x, n.y, size + 2.5, 0, 7); ctx.stroke(); }
+      ctx.setLineDash([]);
+      const near = sel ? new Set([sel, ...(byId.get(sel)?.links ?? []), ...items.filter((x) => x.links.includes(sel)).map((x) => x.id)]) : null;
+      const on = (id: string) => (near ? near.has(id) : !P.lit || P.lit.has(id));
+      ctx.lineWidth = 1 / s.z;
+      for (const it of items) for (const l of it.links) {
+        const o = byId.get(l); if (!o) continue;
+        const a = posOf(it), b = posOf(o), lit = on(it.id) && on(l);
+        ctx.strokeStyle = rgba(lit && (near || P.lit) ? '#FFFFFF' : c, lit ? (near || P.lit ? 0.55 : 0.2) : 0.04);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
       }
-      g.rings = g.rings.filter((r) => {
-        const k = (now - r.t0) / 1100; if (k > 1) return false;
-        ctx.strokeStyle = rgba(KIND_COLOR[r.kind], 1 - k); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(r.x, r.y, 4 + k * 34, 0, 7); ctx.stroke(); ctx.lineWidth = 1; return true;
-      });
-      g.flights = g.flights.filter((f) => {
-        const k = Math.min(1, (now - f.t0) / f.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-        const at = (q: number) => [(1 - q) ** 2 * f.x0 + 2 * (1 - q) * q * f.mx + q * q * f.node.x, (1 - q) ** 2 * f.y0 + 2 * (1 - q) * q * f.my + q * q * f.node.y];
-        for (let i = 1; i <= 6; i++) { const [tx, ty] = at(Math.max(0, e - i * 0.025)); ctx.fillStyle = rgba(KIND_COLOR[f.kind], 0.5 - i * 0.07); ctx.beginPath(); ctx.arc(tx!, ty!, 3.2 - i * 0.35, 0, 7); ctx.fill(); }
-        const [x, y] = at(e); ctx.fillStyle = KIND_COLOR[f.kind]; ctx.beginPath(); ctx.arc(x!, y!, 4, 0, 7); ctx.fill();
-        if (k < 1) return true;
-        f.node.hidden = false; f.node.born = now; g.rings.push({ x: f.node.x, y: f.node.y, kind: f.kind, t0: now });
-        g.edges.filter((ed) => ed.a === f.node).forEach((ed) => { ed.born = now; g.pulses.push({ e: ed, t0: now, kind: f.kind }); });
-        const l = labels.current[f.node.area]; if (l) { l.classList.add('is-lit'); setTimeout(() => l.classList.remove('is-lit'), 1400); }
-        f.done?.(); return false;
-      });
+      for (const it of items) {
+        const p = posOf(it), lit = on(it.id), fresh = Math.max(0, 1 - (now - p.born) / 3000);
+        const tw = reduce ? 1 : 0.8 + 0.2 * Math.sin(now / 900 + p.ph);
+        const size = (it.used ? 2.4 : 1.6) + Math.min(3, (P.degree.get(it.id) ?? 0) * 0.5) + (it.kind === 'rule' ? 0.6 : 0);
+        const col = it.hex && /^#[0-9a-f]{6}$/i.test(it.hex) ? it.hex : ITEM_COLOR[it.kind] ?? c;
+        ctx.fillStyle = rgba(col, (lit ? (it.used ? 0.95 : 0.5) : 0.12) * tw);
+        ctx.beginPath(); ctx.arc(p.x, p.y, size * (1 + fresh * 1.5) / Math.sqrt(s.z), 0, 7); ctx.fill();
+        if (it.hex) { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(p.x, p.y, size / Math.sqrt(s.z) + 1, 0, 7); ctx.stroke(); }
+        if (fresh > 0) { ctx.strokeStyle = rgba(col, fresh); ctx.beginPath(); ctx.arc(p.x, p.y, 4 + (1 - fresh) * 30, 0, 7); ctx.stroke(); }
+        if (it.id === sel || it.id === s.hover) { ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5 / s.z; ctx.beginPath(); ctx.arc(p.x, p.y, size + 4, 0, 7); ctx.stroke(); ctx.lineWidth = 1 / s.z; }
+      }
+      s.first = false;
+      // Labels and the hover tip sit in screen space.
+      for (const a of AREAS) {
+        const l = labels.current[a]; if (!l) continue;
+        const an = ANGLE[a] * Math.PI / 180, hw = l.offsetWidth / 2 + 8;
+        const wx = s.cx + Math.cos(an) * (s.rx + Math.min(70, s.W * 0.09)), wy = s.cy + Math.sin(an) * (s.ry + 30);
+        l.style.left = `${Math.max(hw, Math.min(s.W - hw, wx * s.z + s.zx))}px`; l.style.top = `${Math.max(18, Math.min(s.H - 18, wy * s.z + s.zy))}px`;
+        const off = !!P.focus && P.focus !== a; l.style.opacity = off ? '0' : '1'; l.style.pointerEvents = off ? 'none' : ''; l.tabIndex = off ? -1 : 0;
+      }
+      const h = s.hover ? byId.get(s.hover) : null, tp = tip.current;
+      if (tp) {
+        if (h) { const p = posOf(h); tp.textContent = h.label; tp.style.left = `${p.x * s.z + s.zx}px`; tp.style.top = `${p.y * s.z + s.zy}px`; tp.classList.add('is-on'); } else tp.classList.remove('is-on');
+      }
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
@@ -126,14 +139,24 @@ export const BrainCanvas = forwardRef<BrainCanvasHandle, { counts: Counts; color
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const xy = (e: React.PointerEvent) => { const b = stage.current!.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top] as const; };
+  const count = (a: Area) => props.items.filter((x) => x.area === a && visible(x)).length;
   return (
-    <div className="bb-stage" ref={stage}>
+    <div className="bb-stage" ref={stage}
+      onPointerMove={(e) => { const id = nearest(...xy(e)); g.current.hover = id; stage.current!.style.cursor = id ? 'pointer' : 'default'; }}
+      onPointerLeave={() => { g.current.hover = null; }}
+      onClick={(e) => { if ((e.target as HTMLElement).closest('button')) return; props.onPick(nearest(...xy(e as unknown as React.PointerEvent))); }}>
       <canvas ref={cv} aria-hidden="true" />
-      {AREAS.map((a) => (
-        <div key={a} className="bb-rl" ref={(el) => { labels.current[a] = el; }}>
-          {t(`bb.area.${a}` as 'bb.area.identity')}{showNumbers && <b>{counts[a]}</b>}
-        </div>
-      ))}
+      <div className="bb-tip" ref={tip} aria-hidden="true" />
+      {AREAS.map((a) => {
+        const n = count(a), gap = n < THIN && !props.cutoff;
+        return (
+          <button key={a} type="button" className={`bb-rl${props.focus === a ? ' is-on' : ''}${gap ? ' is-gap' : ''}`} ref={(el) => { labels.current[a] = el; }}
+            aria-pressed={props.focus === a} onClick={() => (gap ? props.onTeach(a) : props.onArea(props.focus === a ? null : a))}>
+            {t(`bb.area.${a}` as 'bb.area.identity')}<b>{gap ? t('bb.teachShort') : n}</b>
+          </button>
+        );
+      })}
     </div>
   );
-});
+}

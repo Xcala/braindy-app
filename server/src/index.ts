@@ -19,6 +19,7 @@ import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
 import { adminLinks } from './og.js';
+import { siteEditor } from './siteEditor.js';
 import { adminGeo } from './geo.js';
 import { adminOnboarding, onboarding } from './onboarding.js';
 import { contracts } from './contracts/routes.js';
@@ -29,6 +30,7 @@ import { adminSite, brandHosting } from './hostingBrand.js';
 import { adminPlan } from './brandPlan.js';
 import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
+import { brainTeach } from './brains/teach.js';
 import { adminGranola, granolaWebhook } from './granola.js';
 import { whatsappWebhook } from './wa/webhook.js';
 import { meWhatsapp } from './wa/contacts.js';
@@ -43,6 +45,7 @@ import { adminAiHealth } from './aiLog.js';
 import { adminIdentity } from './connector/identity.js';
 import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
+import { accessLinks, publicAccess } from './accessLinks.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -73,6 +76,7 @@ app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_00
 app.use('/public/booking/book', rateLimit('web-booking', 5, 60 * 60_000));
 // Upload links take files from strangers: a few hundred per sender per hour at most.
 app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
+app.use('/public/access/:token', rateLimit('access', 10, 10 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
@@ -80,6 +84,7 @@ app.route('/public', publicReview);
 app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
 app.route('/public', publicShare);
+app.route('/public', publicAccess);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -131,10 +136,12 @@ app.route('/v1', booking);
 app.route('/v1/admin', adminCalendar);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
+app.route('/v1', accessLinks);
 app.route('/v1', accesses);
 app.route('/v1', review);
 app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
+app.route('/v1', siteEditor);
 app.route('/v1', connectorAuth);
 app.route('/v1/admin', adminIdentity);
 app.route('/v1/admin', adminBrandVersions);
@@ -150,6 +157,7 @@ app.route('/v1/admin', adminBilling);
 app.route('/v1/admin', adminSite);
 app.route('/v1/admin', adminPlan);
 app.route('/v1', brains);
+app.route('/v1', brainTeach);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);

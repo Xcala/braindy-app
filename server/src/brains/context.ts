@@ -33,7 +33,7 @@ export async function brandContext(brandId: string): Promise<{ text: string; lan
   const colors = ((identity.get('colors') as Array<{ hex?: string; name?: string }>) ?? []).slice(0, 6).map((c) => `${c.name ?? ''} ${c.hex ?? ''}`.trim());
   const fonts = ((identity.get('typography') as Array<{ fontFamily?: string; name?: string }>) ?? []).slice(0, 3).map((f) => f.fontFamily ?? f.name);
   const v = voice.data() ?? {};
-  const learned = ((learnings.get('items') as Array<{ kind: string; text: string }>) ?? []).slice(-15);
+  const learned = ((learnings.get('items') as Array<{ kind: string; text: string; retired?: boolean }>) ?? []).filter((l) => !l.retired).slice(-15);
   const lines = [
     `Brand: ${name}${b.status === 'signed' ? ' (Brand Brain signed by Nicolas)' : b.status ? ' (Brand Brain draft)' : ''}`,
     before.length && `Rebranded: formerly ${before.join(', ')}${since ? ` (new identity since ${since})` : ''}. Work before that used the old identity: never reuse its name, logos or colors.`,

@@ -30,9 +30,12 @@ export function BrainKnows({ brandId }: { brandId: string }) {
   const voice = useBrandDoc(brandId, 'context/voice').data;
   const brain = useBrandDoc(brandId, 'context/brain').data;
   const learnings = useBrandDoc(brandId, 'context/learnings').data;
+  const palette = (arr(identity?.colors) as Array<{ hex?: string; name?: string }>).filter((c) => /^#[0-9a-f]{6}$/i.test(c.hex ?? '')).slice(0, 6);
   const colors = arr(identity?.colors).length, fonts = arr(identity?.typography).length;
+  const live = (arr(learnings?.items) as Array<{ kind?: string; text?: string; retired?: boolean }>).filter((x) => !x.retired);
+  const lastChange = [...live].reverse().find((x) => x.kind === 'changed' && x.text);
   const tone = String((voice?.essence as { title?: string } | undefined)?.title ?? '').trim();
-  const rules = ruleLines(brain).length, learned = arr(learnings?.items).length;
+  const rules = ruleLines(brain).length, learned = live.length;
   const count = (n: number, k: 'colors' | 'fonts' | 'rules' | 'learned') => n && (n === 1 ? t(`bl.k.${k}1`) : t(`bl.k.${k}`, { n }));
   const parts = [
     count(colors, 'colors'), count(fonts, 'fonts'),
@@ -44,22 +47,11 @@ export function BrainKnows({ brandId }: { brandId: string }) {
       <span className="bl-ico" aria-hidden="true"><Icon name="repeat" size={14} /></span>
       <span className="col g4 min-w-0">
         <span className="t-sm w7">{t('bl.knows')}</span>
+        {palette.length > 0 && <span className="bl-pal" aria-hidden="true">{palette.map((c, i) => <i key={i} style={{ background: c.hex }} title={c.name} />)}</span>}
         <span className="t-xs t-mute">{parts.length ? parts.join(' · ') : t('bl.knowsNone')}</span>
+        {lastChange && <span className="t-xs"><b className="w7">{t('bl.remembers')}</b> «{clip(lastChange.text!, 110)}»</span>}
+        <Link to="/brand/brain?uso=1" className="t-xs w7" style={{ color: 'var(--azul)' }}>{t('bl.seeMap')}</Link>
       </span>
     </div>
-  );
-}
-
-/** Cerebro: the changes the client asked for, which now go into every piece (and the quality check before delivery). */
-export function BrainBetter({ learnings }: { learnings: Record<string, unknown> | null }) {
-  const { t } = useI18n();
-  const changes = (arr(learnings?.items) as Array<{ kind?: string; text?: string }>).filter((l) => l.kind === 'changed' && l.text).slice(-5).reverse();
-  return (
-    <section className="card card-tight col g12" aria-labelledby="h-bl-better">
-      <div className="col g4"><h2 className="h3" id="h-bl-better">{t('bl.better')}</h2><p className="t-sm t-mute">{t('bl.betterSub')}</p></div>
-      {changes.length
-        ? <ul className="bb-pins">{changes.map((c, i) => <li key={i} className="t-sm">{clip(c.text!, 180)}</li>)}</ul>
-        : <p className="t-sm t-mute">{t('bl.betterEmpty')}</p>}
-    </section>
   );
 }
