@@ -21,15 +21,30 @@ function embeddable(h: Headers) {
   return fa == null || /(^|\s)\*(\s|$)|braindy/i.test(fa);
 }
 
-/** The og:image of an https page (null when none) and whether it can be shown inside the app (null when unknown). */
-export async function readLinkMeta(pageUrl: string): Promise<{ ogImage: string | null; embeddable: boolean | null }> {
+/** How a site can be edited from Braindy: the bridge loaded, and the editor it names (braindy-editor meta). null = unknown. */
+export type SiteEditing = { bridge: boolean | null; editor: string | null; /** v3 hands over the Braindy session (braindy:auth). */ bridgeV3: boolean | null };
+type LinkMeta = { ogImage: string | null; embeddable: boolean | null } & SiteEditing;
+const NONE: LinkMeta = { ogImage: null, embeddable: null, bridge: null, editor: null, bridgeV3: null };
+
+/** Whether the site's copy of the bridge is v3. Same host only; null = could not read it. */
+async function bridgeIsV3(src: string | undefined, base: string | URL) {
+  try {
+    const u = new URL(src ?? '/braindy-bridge.js', base);
+    if (u.host !== new URL(base).host) return null;
+    const r = await fetch(u, { signal: AbortSignal.timeout(5000), headers: { 'User-Agent': 'BraindyBot/1.0 (+https://braindy.co)' } });
+    return r.ok ? (await r.text()).includes('braindy:auth') : null;
+  } catch { return null; }
+}
+
+/** The og:image of an https page (null when none), whether it can be shown inside the app (null when unknown) and its editing setup. */
+export async function readLinkMeta(pageUrl: string): Promise<LinkMeta> {
   let url: URL;
-  try { url = new URL(pageUrl); } catch { return { ogImage: null, embeddable: null }; }
-  if (url.protocol !== 'https:' || BLOCKED.test(url.hostname)) return { ogImage: null, embeddable: null };
+  try { url = new URL(pageUrl); } catch { return NONE; }
+  if (url.protocol !== 'https:' || BLOCKED.test(url.hostname)) return NONE;
   const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'BraindyBot/1.0 (+https://braindy.co)', Accept: 'text/html' } }).catch(() => null);
-  if (!res?.ok || !res.body) return { ogImage: null, embeddable: res ? embeddable(res.headers) : null };
+  if (!res?.ok || !res.body) return { ...NONE, embeddable: res ? embeddable(res.headers) : null };
   const frame = embeddable(res.headers);
-  // Read only the start of the page: the meta tags live in <head>.
+  // Read the head (meta tags), and on until the bridge script shows up (some sites load it before </body>).
   const reader = res.body.getReader();
   let html = '', size = 0;
   while (size < MAX_BYTES) {
@@ -37,17 +52,36 @@ export async function readLinkMeta(pageUrl: string): Promise<{ ogImage: string |
     if (done) break;
     size += value.length;
     html += new TextDecoder().decode(value);
-    if (/<\/head>/i.test(html)) break;
+    if (/<\/head>/i.test(html) && /braindy-bridge\.js/i.test(html)) break;
   }
   reader.cancel().catch(() => {});
   const metas = html.match(/<meta\b[^>]*>/gi) ?? [];
   const find = (key: string) => metas.find((m) => (attr(m, 'property') ?? attr(m, 'name'))?.toLowerCase() === key);
+  const tag = /<script\b[^>]*braindy-bridge\.js[^>]*>/i.exec(html)?.[0];
+  const editing: SiteEditing = {
+    bridge: !!tag, editor: attr(find('braindy-editor') ?? '', 'content')?.trim() || null,
+    bridgeV3: tag ? await bridgeIsV3(attr(tag, 'src'), res.url || url) : false,
+  };
   const raw = attr(find('og:image') ?? find('og:image:url') ?? find('twitter:image') ?? '', 'content');
-  if (!raw) return { ogImage: null, embeddable: frame };
+  if (!raw) return { ogImage: null, embeddable: frame, ...editing };
   try {
     const img = new URL(raw.replace(/&amp;/g, '&'), res.url || url);
-    return { ogImage: img.protocol === 'https:' ? img.toString() : null, embeddable: frame };
-  } catch { return { ogImage: null, embeddable: frame }; }
+    return { ogImage: img.protocol === 'https:' ? img.toString() : null, embeddable: frame, ...editing };
+  } catch { return { ogImage: null, embeddable: frame, ...editing }; }
+}
+
+/** One line for NickMark on whether a site opens in its editor from Braindy, and what is missing if not. */
+export function editingReport(m: LinkMeta, hasAuth: boolean) {
+  if (m.bridge === null) return 'Edición: no pude leer el sitio para revisar el bridge y el editor.';
+  const missing = [
+    m.embeddable === false && 'el sitio no deja mostrarse dentro de Braindy (X-Frame-Options / frame-ancestors)',
+    !m.bridge ? 'braindy-bridge.js (v3) cargado en todas las páginas'
+      : m.bridgeV3 === false && 'actualizar braindy-bridge.js a v3 y definir window.braindySignIn (entrega la sesión de Braindy)',
+    !m.editor && '<meta name="braindy-editor" content="…"> (ruta del editor, p. ej. "/admin/editor?p=" o "{path}?edit")',
+    !hasAuth && 'editorAuth (proyecto Firebase + cuenta de servicio) para que el cliente no tenga que volver a iniciar sesión',
+  ].filter(Boolean);
+  return missing.length ? `Edición «Hazlo tú»: falta ${missing.join('; ')}. Ver skill publicar-en-braindy-app, paso «Editable por defecto».`
+    : 'Edición «Hazlo tú»: lista (abre en su editor, con la sesión de Braindy).';
 }
 
 
@@ -60,9 +94,9 @@ adminLinks.post('/brands/:brandId/links/:linkId/preview', async (c) => {
   const ref = db.doc(`brands/${brandId}/links/${linkId}`);
   const link = await ref.get();
   if (!link.exists) return c.json({ error: 'not_found' }, 404);
-  const { ogImage, embeddable } = await readLinkMeta(String(link.get('url') ?? ''));
-  await ref.update({ ogImage, embeddable, ogCheckedAt: FieldValue.serverTimestamp() });
-  return c.json({ ogImage, embeddable });
+  const { ogImage, embeddable, bridge, bridgeV3, editor } = await readLinkMeta(String(link.get('url') ?? ''));
+  await ref.update({ ogImage, embeddable, siteEditing: { bridge, bridgeV3, editor }, ogCheckedAt: FieldValue.serverTimestamp() });
+  return c.json({ ogImage, embeddable, bridge, bridgeV3, editor });
 });
 
 /**

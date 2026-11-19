@@ -54,11 +54,12 @@ help.post('/help/chat', async (c) => {
   const [me, brand] = await Promise.all([db.doc(`users/${user.uid}`).get(), db.doc(`brands/${brandId}`).get()]);
   const system = helpSystem({
     lang, path, sections: access.sections, role: access.admin ? 'admin' : access.role,
+    canAsk: access.admin || access.sections.includes('requests'), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
   try {
-    answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 700, meta: { brandId, kind: 'help' } }));
+    answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta: { brandId, kind: 'help' } }));
   } catch {
     return c.json({ error: 'ai_failed' }, 502);
   }
@@ -68,10 +69,10 @@ help.post('/help/chat', async (c) => {
   if (prev.exists && prev.get('uid') !== user.uid) return c.json({ error: 'forbidden' }, 403);
   await ref.set({
     uid: user.uid, email: user.email ?? null, brandId, lang, path, next: answer.next,
-    messages: [...turns, { role: 'assistant', content: answer.text }],
+    messages: [...turns, { role: 'assistant', content: answer.text }], ...(answer.draft ? { draft: answer.draft } : {}),
     updatedAt: FieldValue.serverTimestamp(), ...(prev.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
   }, { merge: true });
-  return c.json({ text: answer.text, next: answer.next, chatId: ref.id });
+  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, chatId: ref.id });
 });
 
 /** The person passed the conversation to Nick (WhatsApp opens on their side); the chat is marked so it shows up for him. */

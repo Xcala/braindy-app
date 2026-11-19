@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
+import { useAuth } from '../auth/AuthProvider';
 import { normalizeSearch } from '../lib/text';
 import { Icon } from '../components/Icon';
 import { asTree, useBrands, type Brand } from './BrandProvider';
@@ -14,6 +15,8 @@ const pushRecent = (id: string) => {
 
 /** Brand selector from the design: search, recent, groups as a tree, admin entry. With `enter` (the admin space) it is a door into a brand, not a filter: no brand shows as picked. */
 export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPicked?: () => void; enter?: boolean }) {
+  // Who is in, then which brand (bold name over the brand, as in the top bar of the reference Nicolas liked).
+  const who = String((useAuth().profile as { name?: string } | null)?.name ?? '').trim();
   const { brands, current, select } = useBrands();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -69,8 +72,8 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
       <button type="button" className="sel" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
         <BrandMark brand={current} />
         <span className="flex flex-col items-start" style={{ lineHeight: '16px' }}>
-          <span className="t-xs t-mute" style={{ fontWeight: 600 }}>{t('brand.switch')}</span>
-          <BrandName name={current.name} />
+          {who ? <span className="sel-who">{who}</span> : <span className="t-xs t-mute" style={{ fontWeight: 600 }}>{t('brand.switch')}</span>}
+          <span className={who ? 'sel-brand' : undefined}><BrandName name={current.name} /></span>
         </span>
         <Icon name="chevronDown" size={16} />
       </button>

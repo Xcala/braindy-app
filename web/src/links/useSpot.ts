@@ -23,6 +23,8 @@ export function useSpot(siteUrl: string) {
   const wantPick = useRef(false); // comment mode asked for before the bridge answered: turned on when it does
   const [hasBridge, setHasBridge] = useState(false);
   const [editor, setEditor] = useState<string | null>(null); // the site's own editor, when it has one (it says so on ready)
+  const [ready, setReady] = useState(0); // how many times the bridge said ready (each page or editor load)
+  const [signedIn, setSignedIn] = useState<boolean | null>(null); // the sign-in handoff: null = not tried
   const pending = useRef<Spot | null>(null);
   const pinsRef = useRef<Pin[]>([]);
   const [page, setPage] = useState(siteUrl);
@@ -53,7 +55,7 @@ export function useSpot(siteUrl: string) {
       if (e.source !== frame.current?.contentWindow || !e.data || typeof e.data.type !== 'string') return;
       const d = e.data;
       if (d.type === 'braindy:ready') {
-        bridge.current = true; setHasBridge(true);
+        bridge.current = true; setHasBridge(true); setReady((n) => n + 1);
         if (typeof d.editor === 'string' && sameHost(d.editor, siteUrl)) setEditor(d.editor);
         if (d.inEditor) return; // the editor itself: not a page of the site
         current.current = String(d.url ?? current.current); setPage(current.current);
@@ -69,6 +71,7 @@ export function useSpot(siteUrl: string) {
         setPicked({ url: String(d.url ?? ''), selector: String(d.selector ?? ''), text: String(d.text ?? ''), x: Number(d.x ?? 0.5), y: Number(d.y ?? 0.5) });
       } else if (d.type === 'braindy:comment-mode' && !d.on) { wantPick.current = false; setPickingState(false); }
       else if (d.type === 'braindy:pin') setPinned(String(d.id));
+      else if (d.type === 'braindy:auth-result') setSignedIn(!!d.ok);
     };
     window.addEventListener('message', onMsg);
     return () => { window.removeEventListener('message', onMsg); clearTimeout(wait.current); };
@@ -104,7 +107,7 @@ export function useSpot(siteUrl: string) {
   const setPins = useCallback((pins: Pin[]) => { pinsRef.current = pins; send({ type: 'braindy:pins', pins }); }, [send]);
 
   return {
-    frame, go, load, note, active, page, hasBridge, editor, dismiss: () => setNote(null),
+    frame, go, load, note, active, page, hasBridge, editor, ready, signedIn, post: send, dismiss: () => setNote(null),
     picking, setPicking, picked, clearPicked: () => setPicked(null), setPins, pinned, clearPinned: () => setPinned(null),
   };
 }

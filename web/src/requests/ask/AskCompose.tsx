@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Icon } from '../../components/Icon';
-import { dayLabel } from '../../lib/dates';
+import { dayLabel, daysFrom } from '../../lib/dates';
+import { useToast } from '../../components/Toaster';
 import { useTour } from '../../tour/useTour';
 import { askSteps } from '../../tour/steps';
 import { TAXONOMY, findCategory } from '../taxonomy';
@@ -15,7 +16,7 @@ import { VoiceNote } from './VoiceNote';
 import { checklist, intentById, quickDates, type Answers, type Check, type QKey } from './intents';
 import type { Seed } from './AskStart';
 
-type When = '' | 'thisWeek' | 'nextWeek' | 'noRush' | 'pick';
+type When = '' | 'today' | 'thisWeek' | 'nextWeek' | 'noRush' | 'pick';
 
 /**
  * Second step of "New request": the words, the taps and the files. A live checklist shows the four things that make
@@ -25,6 +26,7 @@ type When = '' | 'thisWeek' | 'nextWeek' | 'noRush' | 'pick';
 export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: Seed; onBack: () => void }) {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
+  const toast = useToast();
   const intent = intentById(seed.intent);
   const [text, setText] = useState(seed.text);
   const [answers, setAnswers] = useState<Answers>(seed.answers);
@@ -43,7 +45,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   useTour('ask', () => askSteps(lang), true, false);
 
   const q = quickDates();
-  const dueDate = when === 'thisWeek' ? q.thisWeek : when === 'nextWeek' ? q.nextWeek : when === 'pick' ? picked : '';
+  const dueDate = when === 'today' ? q.today : when === 'thisWeek' ? q.thisWeek : when === 'nextWeek' ? q.nextWeek : when === 'pick' ? picked : '';
   const check: Check = checklist({ intent, answers, text, dueDate, noRush: when === 'noRush', files: files.length, links: links.length, noMaterial });
   const missing = (Object.keys(check) as Array<keyof Check>).filter((k) => !check[k]);
   const answered = Object.values(answers).filter((v) => v?.length).length;
@@ -77,6 +79,9 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         cards: { product: { text: text.trim() || summary, links, files }, application: { ...detail.application, text: lines.join('\n') }, scene: detail.scene },
         dueDate, format: detail.format, language: detail.language,
       });
+      const n = dueDate ? daysFrom(dueDate) : null;
+      const day = n === 0 || n === 1 ? dayLabel(dueDate, lang) : t('as.on', { day: dayLabel(dueDate, lang) });
+      toast({ text: dueDate ? t('as.sentDue', { day }) : t('as.sentPlan'), ms: 8000 });
       navigate(`/requests/${requestId}`);
     } catch { setError(true); } finally { setBusy(false); }
   }
@@ -105,7 +110,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
       <div className="col g8" role="group" aria-label={t('as.when')} data-tour="ask-when">
         <span className="t-sm w7">{t('as.when')}</span>
         <div className="row g8 wrap">
-          {(['thisWeek', 'nextWeek', 'noRush', 'pick'] as When[]).map((w) => (
+          {(['today', 'thisWeek', 'nextWeek', 'noRush', 'pick'] as When[]).map((w) => (
             <button key={w} type="button" className={`fx-chip${when === w ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={when === w} onClick={() => setWhen(when === w ? '' : w)}>
               {t(`as.w.${w}` as 'as.w.pick', { day: dayLabel(w === 'thisWeek' ? q.thisWeek : q.nextWeek, lang) })}
             </button>

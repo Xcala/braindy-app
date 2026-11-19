@@ -9,6 +9,8 @@ import { getStorage } from 'firebase-admin/storage';
 import { db } from '../firebase.js';
 import { contentTypeOf as lookup } from '../lib/mime.js';
 import { bumpIndex } from '../fileOps.js';
+import { editingReport, readLinkMeta } from '../og.js';
+import { editorAuthOf } from '../siteEditor.js';
 
 const bucket = () => getStorage().bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
 const MAX_FILE = 500 * 1024 ** 2;
@@ -74,7 +76,11 @@ export async function listSiteChanges(brandId: string) {
 }
 
 export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';
-export interface LinkInput { title: string; url: string; kind?: LinkKind; description?: string; status?: 'live' | 'building'; section?: 'apps' | 'research' }
+export interface LinkInput {
+  title: string; url: string; kind?: LinkKind; description?: string; status?: 'live' | 'building'; section?: 'apps' | 'research';
+  /** The site's own Firebase project, so Braindy can sign the person into its editor (see siteEditor.ts). */
+  editorAuth?: { projectId: string; serviceAccount: string };
+}
 
 /** Adds or updates a link in My apps (or My research). Same URL = same card, so repeating it never duplicates. */
 export async function setLink(brandId: string, l: LinkInput) {
@@ -87,9 +93,28 @@ export async function setLink(brandId: string, l: LinkInput) {
     section, kind: l.kind ?? 'web', title: l.title.trim().slice(0, 120), url: url.slice(0, 1000),
     description: (l.description ?? '').trim().slice(0, 300), status: l.status ?? 'live', updatedAt: FieldValue.serverTimestamp(),
   };
-  if (same) { await same.ref.update(data); return { id: same.id, created: false }; }
-  const ref = await col.add({ ...data, createdAt: FieldValue.serverTimestamp() });
-  return { id: ref.id, created: true };
+  if (l.editorAuth) {
+    const cfg = editorAuthOf(l.editorAuth);
+    if (!cfg) throw new Error('editorAuth: projectId de Firebase y serviceAccount (…@….iam.gserviceaccount.com) válidos');
+    Object.assign(data, { editorAuth: cfg });
+  }
+  const ref = same ? same.ref : await col.add({ ...data, createdAt: FieldValue.serverTimestamp() });
+  if (same) await same.ref.update(data);
+  // Editable by default: check the site has what «Hazlo tú» needs, keep it on the card, and say what is missing.
+  const editing = section === 'apps' ? await checkEditing(ref) : '';
+  return { id: ref.id, created: !same, editing };
+}
+
+/** Reads the site: bridge, editor meta, framing. Kept on the card; the report says what is missing. */
+export async function checkEditing(ref: FirebaseFirestore.DocumentReference) {
+  const doc = await ref.get();
+  const m = await readLinkMeta(String(doc.get('url') ?? ''));
+  await ref.update({
+    siteEditing: { bridge: m.bridge, bridgeV3: m.bridgeV3, editor: m.editor, checkedAt: FieldValue.serverTimestamp() },
+    ...(m.embeddable !== null ? { embeddable: m.embeddable } : {}),
+    ...(m.ogImage ? { ogImage: m.ogImage } : {}),
+  });
+  return editingReport(m, !!editorAuthOf(doc.get('editorAuth')));
 }
 
 /** Work-log entries whose project starts with this prefix count as brand knowledge even without the flag (entries saved before it existed). */

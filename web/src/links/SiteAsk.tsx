@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { createRequest } from '../requests/api';
 import { useRequests } from '../requests/useRequests';
 import type { BrandRequest } from '../requests/types';
+import { useToast } from '../components/Toaster';
 
 const hostOf = (url?: string) => { try { return url ? new URL(url).host.replace(/^www\./, '') : ''; } catch { return ''; } };
 
@@ -22,6 +23,7 @@ function useReceived(brandId: string, url: string): BrandRequest[] {
 export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
   const { t } = useI18n();
   const received = useReceived(brandId, url);
+  const toast = useToast();
   const [openBox, setOpenBox] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -38,6 +40,7 @@ export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
         cards: { product: { text: v, links: [url], files: [] } },
       });
       setText(''); setOpenBox(false);
+      toast({ text: t('sp.sentToast'), ms: 7000 });
     } catch { setError(true); } finally { setBusy(false); }
   }
 

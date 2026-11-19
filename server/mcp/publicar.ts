@@ -21,6 +21,7 @@ console.log(`Marca: ${name}`);
 if (p.link) {
   const r = await setLink(p.brandId, p.link);
   console.log(`Mis apps: enlace ${r.created ? 'agregado' : 'actualizado'} (${p.link.url})`);
+  if (r.editing) console.log(r.editing);
 }
 if (p.triage?.items?.length) {
   const r = await syncSiteChanges(p.brandId, p.triage.items, p.triage);
