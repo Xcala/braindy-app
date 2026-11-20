@@ -54,7 +54,7 @@ members.post('/brands/:brandId/members', async (c) => {
     const name = String(b.name ?? '').trim().slice(0, 80);
     const user = linked ? await adminAuth.getUser(linked) : byEmail
       ?? await adminAuth.createUser({ ...(email ? { email } : {}), ...(name ? { displayName: name } : {}) });
-    await addMember(brandId, user.uid, user.email ?? email, name || user.displayName || user.email || `+${phone}`, role, b.canApprove === true, by, sections);
+    await addMember(brandId, user.uid, user.email ?? email, name || user.displayName || user.email || `+${phone}`, role, b.canApprove !== false, by, sections);
     if (!linked) await linkPhone(phone, user.uid, 'admin');
     return c.json({ status: 'added', uid: user.uid });
   }
@@ -62,10 +62,10 @@ members.post('/brands/:brandId/members', async (c) => {
 
   const existing = await adminAuth.getUserByEmail(email).catch(() => null);
   if (existing) {
-    await addMember(brandId, existing.uid, email, existing.displayName ?? email, role, b.canApprove === true, by, sections);
+    await addMember(brandId, existing.uid, email, existing.displayName ?? email, role, b.canApprove !== false, by, sections);
     return c.json({ status: 'added', uid: existing.uid });
   }
-  await db.collection('invites').doc(`${brandId}__${email}`).set({ email, brandId, role, canApprove: b.canApprove === true, invitedBy: by, at: now(), ...(sections ? { sections } : {}) });
+  await db.collection('invites').doc(`${brandId}__${email}`).set({ email, brandId, role, canApprove: b.canApprove !== false, invitedBy: by, at: now(), ...(sections ? { sections } : {}) });
   return c.json({ status: 'invited' });
 });
 
