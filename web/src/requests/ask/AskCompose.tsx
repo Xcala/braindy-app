@@ -15,6 +15,10 @@ import { LessonForCategory } from '../../criterio/LessonCards';
 import { VoiceNote } from './VoiceNote';
 import { checklist, intentById, quickDates, type Answers, type Check, type QKey } from './intents';
 import type { Seed } from './AskStart';
+import { useRequests } from '../useRequests';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { findDuplicate } from './duplicate';
+import type { BrandRequest } from '../types';
 
 type When = '' | 'today' | 'thisWeek' | 'nextWeek' | 'noRush' | 'pick';
 
@@ -43,6 +47,8 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   const [detail, setDetail] = useState<AskDetailValue>({ sub: seed.sub ?? '', type: seed.formatType ?? '', application: {}, scene: {}, format: '', language: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const { list: open } = useRequests(brandId);
+  const [dup, setDup] = useState<BrandRequest | null>(null);
   useTour('ask', () => askSteps(lang), true, false);
 
   const q = quickDates();
@@ -69,7 +75,15 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
 
   const autoTitle = (format && !firstLine.toLowerCase().includes(format.toLowerCase()) ? `${format} · ${firstLine || answers.goal?.[0] || ''}` : firstLine || format || summary).replace(/ · $/, '').slice(0, 90);
 
+  // Before sending: an open request of the last two days that says much the same is offered first.
+  function send() {
+    const d = findDuplicate(open, customTitle || autoTitle, text);
+    if (d) setDup(d); else void submit();
+  }
+  const dupWhen = (r: BrandRequest) => { const ms = r.createdAt?.toMillis() ?? Date.now(); return t(new Date(ms).toDateString() === new Date().toDateString() ? 'rc.today' : 'rc.yesterday'); };
+
   async function submit() {
+    setDup(null);
     setBusy(true); setError(false);
     const lines = [
       ...(intent?.questions ?? []).filter((x) => answers[x.key]?.length).map((x) => `${x.label[lang]} ${answers[x.key]!.join(', ')}`),
@@ -177,8 +191,14 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{t('ask.error')}</p>}
       <div className="row between g12 wrap">
         <span className="t-xs t-mute" style={{ maxWidth: '18.75rem' }}>{missing.length ? t('as.missingNote', { what: missing.map((k) => t(`as.c.${k}`).toLowerCase()).join(', ') }) : t('as.allClear')}</span>
-        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={submit}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
+        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={send}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
       </div>
+      {dup && (
+        <ConfirmDialog title={t('rc.dupTitle', { title: dup.title })} confirmLabel={t('rc.dupOpen')} onConfirm={() => navigate(`/requests/${dup.id}`)} onCancel={() => setDup(null)}>
+          <p className="t-sm t-mute" style={{ margin: 0 }}>{t('rc.dupBody', { when: dupWhen(dup) })}</p>
+          <button type="button" className="btn btn-ghost btn-sm self-start" onClick={() => void submit()}>{t('rc.dupNew')}</button>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

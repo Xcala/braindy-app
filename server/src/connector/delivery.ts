@@ -13,8 +13,10 @@ export type FileWriter = { name: string; size: number; write: (file: ReturnType<
 
 export async function listRequests(brandId: string, all = false) {
   const snap = await db.collection(`brands/${brandId}/requests`).orderBy('createdAt', 'desc').limit(40).get();
-  return snap.docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), status: String(d.get('status') ?? ''), stage: String(d.get('stage') ?? ''), versionCount: Number(d.get('versionCount') ?? 0), dueDate: d.get('dueDate') ?? null }))
-    .filter((r) => all || r.status === 'in_production' || r.status === 'to_approve');
+  return snap.docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), status: String(d.get('status') ?? ''), stage: String(d.get('stage') ?? ''), versionCount: Number(d.get('versionCount') ?? 0), dueDate: d.get('dueDate') ?? null, cancelled: !!d.get('cancelled') }))
+    // A request the client cancelled is not work: shown only with all, marked.
+    .filter((r) => (all || ((r.status === 'in_production' || r.status === 'to_approve') && !r.cancelled)))
+    .map((r) => (r.cancelled ? { ...r, status: `${r.status} · CANCELADO por el cliente` } : r));
 }
 
 export async function newRequest(brandId: string, uid: string, r: { text: string; title?: string; category?: string; dueDate?: string; links?: string[] }) {
@@ -33,7 +35,9 @@ export async function deliverVersion(brandId: string, requestId: string, uid: st
   await assertOwnBrand(brandId, files.map((f) => f.name));
   const reqRef = db.doc(`brands/${brandId}/requests/${requestId}`);
   // A brand check that ran and did not pass blocks the delivery (no check at all: Nicolas delivering by hand).
-  const q = (await reqRef.get()).get('quality') as { passed?: boolean; score?: number } | undefined;
+  const cur = await reqRef.get();
+  if (cur.get('cancelled')) throw new Error('El cliente canceló esta solicitud: no se entrega. Si debe seguir, que la vuelva a abrir desde la app.');
+  const q = cur.get('quality') as { passed?: boolean; score?: number } | undefined;
   if (q && q.passed === false) throw new Error(`La revisión de marca no pasó (${q.score}/100). Corrige y vuelve a revisar con braindy_quality_report antes de entregar.`);
   const n = await db.runTransaction(async (tx) => {
     const r = await tx.get(reqRef);

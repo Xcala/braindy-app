@@ -41,6 +41,8 @@ export interface BrandRequest {
   tags?: string[];
   /** Hidden from the board and list unless "Archived" is on (admin sets it). */
   archived?: boolean;
+  /** Cancelled by the client or NickMark (sent by mistake): archived, the Brains skip it; can be undone. */
+  cancelled?: { by: string; at?: Timestamp } | null;
   approvedAt?: Timestamp;
   /** NickMark asked the client for what the request lacked (date, where, material). */
   askedMissingAt?: Timestamp;

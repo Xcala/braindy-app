@@ -138,7 +138,7 @@ export function ReviewPanel({ brandId, r, v, comments, addenda = [], canApprove,
               <div className="col g4 grow">
                 <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}{c.editedAt ? ` · ${t('ce.edited')}` : ''}</span></span>
                 {typeof c.annotation?.t === 'number' && <button type="button" className="vm-at self-start" onClick={() => onSeek(markFile(c.annotation), c.annotation!.t!)} aria-label={t('vm.goTo', { t: clock(c.annotation.t) })}>▶ {clock(c.annotation.t)}</button>}
-                {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>}
+                {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.kind === 'cancelled' ? t('rc.noteCancelled') : c.kind === 'reopened' ? t('rc.noteReopened') : c.text}</p>}
                 {(c.author === user?.uid || profile?.role === 'admin') && (
                   <CommentEdit text={c.text} max={5000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
                     onSave={c.author === user?.uid ? (text) => updateDoc(cRef(c), { text, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(cRef(c))} />
