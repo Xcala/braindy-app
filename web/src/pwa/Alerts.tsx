@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
@@ -8,7 +8,7 @@ import { disablePush, enablePush, pushApi, pushState, type PushState } from './p
 const ADMIN_KINDS = ['requests', 'comments', 'decisions'] as const;
 const CLIENT_KINDS = ['deliveries', 'comments', 'done', 'due'] as const;
 
-/** Account › Alerts: turn alerts on for this device, pick which arrive, send a test. */
+/** Account â€º Alerts: turn alerts on for this device, pick which arrive, send a test. */
 export function Alerts() {
   const { t, lang } = useI18n();
   const { profile } = useAuth();
@@ -46,7 +46,7 @@ export function Alerts() {
         <p className="t-mute" style={{ margin: 0 }}>{t('al.lead')}</p>
       </div>
       <div className="card col g16">
-        {state === null ? <p className="t-mute">{t('common.loading')}…</p> : note ? <p className="t-sm" style={{ margin: 0 }}>{t(note)}</p> : state === 'on' ? (
+        {state === null ? <p className="t-mute">{t('common.loading')}â€¦</p> : note ? <p className="t-sm" style={{ margin: 0 }}>{t(note)}</p> : state === 'on' ? (
           <>
             <p className="w7" style={{ margin: 0, color: 'var(--success)' }}>{t('al.thisOn')}</p>
             <div className="row g8 wrap">
@@ -90,8 +90,8 @@ export function AlertsPrompt() {
     <div className="card col g12" role="region" aria-label={t('al.title')}>
       <p className="t-sm" style={{ margin: 0 }}>{t('al.prompt')}</p>
       <div className="row g12 wrap">
-        <button type="button" className="btn btn-ghost" style={{ flex: '1 1 8rem' }} onClick={hide}>{t('al.later')}</button>
-        <button type="button" className="btn btn-primary" style={{ flex: '1 1 8rem' }} disabled={busy} onClick={async () => {
+        <button type="button" className="btn btn-ghost" style={{ flex: '1 1 0', minWidth: 0 }} onClick={hide}>{t('al.later')}</button>
+        <button type="button" className="btn btn-primary" style={{ flex: '1 1 0', minWidth: 0 }} disabled={busy} onClick={async () => {
           setBusy(true);
           const s = await enablePush(lang).catch(() => 'off' as PushState);
           setBusy(false);
