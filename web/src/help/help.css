@@ -261,3 +261,12 @@ html[data-theme="dark"] .hh-no{background:rgba(255,255,255,.1)}
 html[data-theme="dark"] .cd-card,html[data-theme="dark"] .cd-now{border-color:rgba(255,255,255,.1)}
 html[data-theme="dark"] .cd-steps{border-color:#4A3A72}
 html[data-theme="dark"] .cd-dot{background:#B79BFF}
+/* Follow-up buttons under the last answer: what the person would say next. */
+.help-follow{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.5rem}
+.help-follow button{border:1px solid #D7C6FB;background:var(--white);color:var(--ink);border-radius:6rem;padding:0.375rem 0.75rem;font:600 0.8125rem/1.2 var(--f-text);cursor:pointer;text-align:left}
+.help-follow button:hover{border-color:#8B5CF6;color:#6D3FE0}
+.help-follow button:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+html[data-theme="dark"] .help-follow button{border-color:#4A3A72}
+html[data-theme="dark"] .help-follow button:hover{color:#B79BFF}
+.help-dbtn.is-voice,.help-x.is-voice{background:rgba(139,92,246,.14);color:#6D3FE0}
+html[data-theme="dark"] .help-dbtn.is-voice,html[data-theme="dark"] .help-x.is-voice{color:#B79BFF}

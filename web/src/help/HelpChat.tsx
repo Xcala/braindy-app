@@ -15,6 +15,7 @@ import { viewingSite } from '../links/viewingSite';
 import { Composer } from './Composer';
 import { ChatHistory } from './ChatHistory';
 import { CapabilitiesMenu } from './CapabilitiesMenu';
+import { canVoice, useVoiceMode } from './useVoiceMode';
 import { CanDo } from './CanDo';
 import { markStep } from './firstSteps';
 import { useChatTour } from './useChatTour';
@@ -22,7 +23,7 @@ import type { AttachedFile } from '../requests/types';
 import './help.css';
 
 type AnyCard = ChatCard | ActCard;
-type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[]; old?: boolean };
+type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[]; old?: boolean; follow?: string[] };
 const isAct = (c: AnyCard): c is ActCard => c.kind === 'act';
 /** One line per card it showed, so «and that one?» or «open the second» can be followed on the next turn. */
 const cardLine = (c: AnyCard) => c.kind === 'act' ? `propuesta ${c.act} «${c.title}»${'requestId' in c ? ` pedido ${c.requestId}` : ''} (${c.done ? 'ya confirmada' : 'sin confirmar'})`
@@ -93,6 +94,8 @@ export function HelpChat() {
   }, [setOpen]);
   const shown = !!current && !pathname.startsWith('/ask');
   const docked = open && desk && shown;
+  const lastMsg = s.msgs[s.msgs.length - 1];
+  const voice = useVoiceMode(lang, lastMsg?.role === 'assistant' && !lastMsg.error ? { key: `${s.chatId}:${s.msgs.length}`, text: lastMsg.content } : null, open);
   useEffect(() => {
     document.documentElement.classList.toggle('help-docked', docked);
     return () => document.documentElement.classList.remove('help-docked');
@@ -132,11 +135,11 @@ export function HelpChat() {
     update({ ...base, msgs });
     setBusy(true); setHist(false); markStep('ask');
     try {
-      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; chatId: string }>('/v1/help/chat', {
+      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; follow?: string[]; chatId: string }>('/v1/help/chat', {
         method: 'POST',
         body: JSON.stringify({ brandId, lang, path: pathname, chatId: base.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) }),
       });
-      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], ...(files.length ? { files } : {}) }] });
+      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], follow: r.follow ?? [], ...(files.length ? { files } : {}) }] });
     } catch (e) {
       const code = String((e as Error).message);
       const key = code.includes('429') || code.includes('limit') ? 'help.limit' : code.includes('503') || code.includes('ai_off') ? 'help.off' : 'help.error';
@@ -151,6 +154,11 @@ export function HelpChat() {
       update({ chatId: r.id, msgs: restore(r.view) }); setHist(false);
     } catch { /* the list shows the error state on the next open */ }
   }
+  const voiceBtn = (cls: string) => canVoice() ? (
+    <button type="button" className={`${cls}${voice.on ? ' is-voice' : ''}`} onClick={voice.toggle} aria-pressed={voice.on} aria-label={t(voice.on ? 'help.voiceOff' : 'help.voiceOn')} title={t(voice.on ? 'help.voiceOff' : 'help.voiceOn')}>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z" />{voice.on ? <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /> : <path d="m16 9 5 6M21 9l-5 6" />}</svg>
+    </button>
+  ) : null;
   const histBtn = (cls: string) => (
     <button type="button" className={cls} data-tour="help-hist" onClick={() => setHist((h) => !h)} aria-pressed={hist} aria-label={t(hist ? 'help.histBack' : 'help.histOpen')} title={t(hist ? 'help.histBack' : 'help.histOpen')}>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>
@@ -189,6 +197,7 @@ export function HelpChat() {
           {docked ? (
             <header className="help-dhead">
               <CapabilitiesMenu id="help-title" className="help-dtitle" admin={admin} onAsk={(q) => void ask(q)} />
+              {voiceBtn('help-dbtn')}
               {histBtn('help-dbtn')}
               <button type="button" className="help-dbtn" onClick={newChat} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
               <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
@@ -201,6 +210,7 @@ export function HelpChat() {
               <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
               {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
             </div>
+            {voiceBtn('help-x')}
             {histBtn('help-x')}
             <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
           </header>
@@ -233,6 +243,9 @@ export function HelpChat() {
                 )}
                 {m.role === 'assistant' && i === s.msgs.length - 1 && m.next === 'request' && (
                   <Link className="btn btn-primary btn-sm help-next" to="/ask" onClick={close}>{t('help.toAsk')}</Link>
+                )}
+                {m.role === 'assistant' && i === s.msgs.length - 1 && !busy && !!m.follow?.length && (
+                  <div className="help-follow">{m.follow.map((f) => <button key={f} type="button" onClick={() => void ask(f)}>{f}</button>)}</div>
                 )}
               </div>
             ))}

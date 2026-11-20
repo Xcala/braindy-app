@@ -93,7 +93,7 @@ help.post('/help/chat', async (c) => {
     title: prev.get('title') ?? turns.find((t) => t.role === 'user')!.content.replace(/\[\[[^\]]*\]\]/g, '').trim().slice(0, 80),
     updatedAt: FieldValue.serverTimestamp(), ...(prev.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
   }, { merge: true });
-  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, cards, chatId: ref.id });
+  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, cards, follow: answer.follow, chatId: ref.id });
 });
 
 /** The person passed the conversation to Nick (WhatsApp opens on their side); the chat is marked so it shows up for him. */

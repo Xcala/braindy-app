@@ -31,13 +31,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
   useEffect(() => () => rec.current?.abort(), []);
   useEffect(() => { setFiles([]); setText(''); }, [brandId]);
   // The «What I can do» cards start a tool here, so the person learns it by using it.
-  const dictateRef = useRef<() => void>(() => undefined);
+  const dictateRef = useRef<(auto?: boolean) => void>(() => undefined);
   useEffect(() => {
     const attach = () => pick.current?.click();
     const talk = () => (SR() ? dictateRef.current() : attach());
     window.addEventListener('bd-help-attach', attach);
     window.addEventListener('bd-help-dictate', talk);
-    return () => { window.removeEventListener('bd-help-attach', attach); window.removeEventListener('bd-help-dictate', talk); };
+    // Hands-free mode: listen once and send what was said.
+    const once = () => { if (SR()) dictateRef.current(true); };
+    window.addEventListener('bd-help-listen', once);
+    return () => { window.removeEventListener('bd-help-attach', attach); window.removeEventListener('bd-help-dictate', talk); window.removeEventListener('bd-help-listen', once); };
   }, []);
 
   const send = () => {
@@ -61,13 +64,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
     }));
   }
 
-  function dictate() {
+  const sendRef = useRef<(said: string) => void>(() => undefined);
+  sendRef.current = (said) => { if (busy || uploading) return; onSend(said, files); setText(''); setFiles([]); };
+  function dictate(auto = false) {
     const Ctor = SR();
     if (!Ctor) return;
-    if (listening) { rec.current?.stop(); return; }
+    if (listening) { if (!auto) rec.current?.stop(); return; }
     const r = new Ctor();
     r.lang = lang === 'es' ? 'es-CO' : 'en-US';
-    r.interimResults = false; r.continuous = true;
+    r.interimResults = false; r.continuous = !auto;
     const base = text ? `${text.trimEnd()} ` : '';
     let said = '';
     r.onresult = (e) => {
@@ -75,11 +80,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
       setText(`${base}${said}`.trimEnd());
       if (said.trim()) markStep('voice');
     };
-    r.onend = () => setListening(false);
+    r.onend = () => { setListening(false); if (auto && said.trim()) sendRef.current(`${base}${said}`.trim()); };
     r.onerror = () => setListening(false);
     rec.current = r; r.start(); setListening(true);
   }
-  dictateRef.current = dictate;
+  dictateRef.current = (auto?: boolean) => dictate(auto === true);
 
   return (
     <form className="help-form" onSubmit={(e) => { e.preventDefault(); send(); }}>
@@ -104,7 +109,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
         <input ref={pick} type="file" multiple hidden onChange={(e) => { void add(e.target.files); e.target.value = ''; }} />
         <span className="help-gap" />
         {SR() && (
-          <button type="button" className={`help-tool${listening ? ' is-on' : ''}`} data-tour="help-mic" onClick={dictate} aria-pressed={listening} aria-label={t(listening ? 'help.dictateStop' : 'help.dictate')} title={t(listening ? 'help.dictateStop' : 'help.dictate')}>
+          <button type="button" className={`help-tool${listening ? ' is-on' : ''}`} data-tour="help-mic" onClick={() => dictate()} aria-pressed={listening} aria-label={t(listening ? 'help.dictateStop' : 'help.dictate')} title={t(listening ? 'help.dictateStop' : 'help.dictate')}>
             <Icon name="mic" size={20} />
           </button>
         )}
