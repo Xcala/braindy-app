@@ -4,11 +4,13 @@
 import { db } from '../firebase.js';
 import { canApprove } from '../requests.js';
 import type { Ctx } from './reads.js';
+import { proposeMore, type MoreCard } from './actionsMore.js';
 
 export type ActCard =
   | { kind: 'act'; act: 'site'; ref: string; siteUrl: string; siteTitle: string; title: string; text: string }
   | { kind: 'act'; act: 'approve' | 'changes'; ref: string; requestId: string; versionId: string; n: number; title: string; text: string }
-  | { kind: 'act'; act: 'add'; ref: string; requestId: string; title: string; text: string };
+  | { kind: 'act'; act: 'add'; ref: string; requestId: string; title: string; text: string }
+  | MoreCard;
 
 export type ActCtx = Ctx & { uid: string; site?: string };
 type Out = { text: string; card?: ActCard };
@@ -70,5 +72,5 @@ export async function propose(c: ActCtx, i: Record<string, unknown>): Promise<Ou
     if (!r?.exists || r.get('archived')) return { text: 'No encontré ese pedido en esta marca.' };
     return { text: ok, card: { kind: 'act', act: 'add', ref: '', requestId: r.id, title: cut(r.get('title'), 120), text: texto } };
   }
-  return { text: 'Acción desconocida.' };
+  return (await proposeMore(c, accion, i)) ?? { text: 'Acción desconocida.' };
 }

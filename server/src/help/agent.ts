@@ -32,8 +32,8 @@ const TOOLS: Tool[] = [
     input_schema: { type: 'object', properties: {} } },
   { name: 'leer_sitio', description: 'Lee el texto visible de una página del sitio de la marca (por defecto la que está viendo la persona). Úsala antes de opinar, dar ideas o alternativas sobre textos del sitio (ej. la frase del hero).',
     input_schema: { type: 'object', properties: { url: { type: 'string', description: 'https de un sitio de la marca; vacío = la página que está viendo' } } } },
-  { name: 'proponer', description: 'Propone una acción como tarjeta con botón; la persona la confirma, tú nunca la ejecutas. ajuste_sitio: un cambio a su sitio web (texto = qué cambiar y dónde; sitio = url si hay varios). aprobar: aprobar la versión que espera aprobación (pedido_id). pedir_cambios: pedir cambios a esa versión (pedido_id + texto con los cambios). agregar_al_pedido: sumar información o material a un pedido en curso (pedido_id + texto).',
-    input_schema: { type: 'object', properties: { accion: { type: 'string', enum: ['ajuste_sitio', 'aprobar', 'pedir_cambios', 'agregar_al_pedido'] }, pedido_id: { type: 'string' }, sitio: { type: 'string' }, titulo: { type: 'string' }, texto: { type: 'string' } }, required: ['accion'] } },
+  { name: 'proponer', description: 'Propone una acción como tarjeta con botón; la persona la confirma, tú nunca la ejecutas. ajuste_sitio: un cambio a su sitio web (texto = qué cambiar y dónde; sitio = url si hay varios). aprobar: aprobar la versión que espera aprobación (pedido_id). pedir_cambios: pedir cambios a esa versión (pedido_id + texto con los cambios). agregar_al_pedido: sumar información o material a un pedido en curso (pedido_id + texto). invitar: invitar a alguien al equipo de la marca (email + nombre). reunion: agendar una reunión con Nico (la tarjeta muestra sus horas libres). compartir_archivo: un enlace para compartir un archivo (archivo_id de «archivos»). recordar_gusto: guardar un gusto o regla de la marca para siempre (texto; tema evitar si es algo que no se debe hacer). recordatorio: recordarle algo a la persona (texto + cuando).',
+    input_schema: { type: 'object', properties: { accion: { type: 'string', enum: ['ajuste_sitio', 'aprobar', 'pedir_cambios', 'agregar_al_pedido', 'invitar', 'reunion', 'compartir_archivo', 'recordar_gusto', 'recordatorio'] }, pedido_id: { type: 'string' }, sitio: { type: 'string' }, titulo: { type: 'string' }, texto: { type: 'string' }, email: { type: 'string' }, nombre: { type: 'string' }, archivo_id: { type: 'string' }, tema: { type: 'string', enum: ['voz', 'evitar'] }, cuando: { type: 'string', description: 'AAAA-MM-DDTHH:mm, hora de Bogotá' } }, required: ['accion'] } },
 ];
 
 type In = Record<string, unknown>;
@@ -84,7 +84,7 @@ export async function answerWithTools(system: string, turns: ChatTurn[], c: ActC
       let out: Out;
       try { out = await run(c, u.name, (u.input ?? {}) as In); } catch { out = { text: 'ERROR: no pude hacer eso ahora.', cards: [] }; }
       for (const card of out.cards) cards.set(`${tag}.${card.ref}`, { ...card, ref: `${tag}.${card.ref}` });
-      if (out.act) acts.set(`${out.act.act}:${'requestId' in out.act ? out.act.requestId : out.act.siteUrl}`, { ...out.act, ref: tag });
+      if (out.act) acts.set(`${out.act.act}:${'requestId' in out.act ? out.act.requestId : 'siteUrl' in out.act ? out.act.siteUrl : out.act.title}`, { ...out.act, ref: tag });
       // Every ref in the text gets the same prefix the cards got, so [[VER t1.p2]] matches.
       const text = out.text.replace(/(^|\n)([pfcas]\d+) ·/g, `$1${tag}.$2 ·`).replace(/^p1 = /, `${tag}.p1 = `);
       return { type: 'tool_result', tool_use_id: u.id, content: text };

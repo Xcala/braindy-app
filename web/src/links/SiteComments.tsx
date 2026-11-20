@@ -75,6 +75,11 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
   }
 
   const p = frame?.picked;
+  // Point at a part of the site and talk it over with the assistant (it reads the page); nothing is sent to NickMark.
+  const askAi = (x: { url: string; text?: string }) => {
+    const q = t('sc.askQ', { where: x.text ? `«${x.text.slice(0, 160)}»` : '—', page: pathOf(x.url) || '/', q: text.trim() || t('sc.askDefault') });
+    window.dispatchEvent(new CustomEvent('bd-help-ask', { detail: q }));
+  };
   return (
     <div className="col g8">
       <p className="t-sm" style={{ margin: 0 }}>{t(bridge ? 'sc.hint' : 'sc.hintNoBridge')}</p>
@@ -90,7 +95,7 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
       <form className="spanel-ask col g8" onSubmit={send}>
         {!bridge && <input className="input" value={where} maxLength={200} placeholder={t('sc.where')} aria-label={t('sc.where')} onChange={(e) => setWhere(e.target.value)} />}
         {bridge && <p className="t-xs t-mute" style={{ margin: 0 }}>
-          {p ? <>{t('sc.about')} {p.text ? `«${p.text}»` : pathOf(p.url)} · <button type="button" className="spanel-textbtn" onClick={() => frame?.clearPicked()}>{t('sc.dropSpot')}</button></>
+          {p ? <>{t('sc.about')} {p.text ? `«${p.text}»` : pathOf(p.url)} · <button type="button" className="spanel-textbtn" onClick={() => frame?.clearPicked()}>{t('sc.dropSpot')}</button> · <button type="button" className="spanel-textbtn" onClick={() => askAi(p)}>✦ {t('sc.askAi')}</button></>
             : <>{t('sc.general')} · {pathOf(page ?? siteUrl) || '/'}</>}
         </p>}
         <textarea className="input" rows={3} value={text} maxLength={2000} placeholder={t('sc.ph')} aria-label={t('sc.ph')} onChange={(e) => setText(e.target.value)}

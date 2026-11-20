@@ -58,7 +58,13 @@ export async function chat(user: User, b: Body, on?: Live) {
     ? (await db.collection('brands').where('groupId', '==', brandId).limit(30).get()).docs.map((d) => String(d.get('name') ?? d.id)) : undefined;
   const att = tools ? await readAttachments(brandId, user.uid, access.admin, b.files) : { files: [], blocks: [] };
   const attached = att.files;
-  const system = helpSystem({ tools,
+  // The brand's voice and what to avoid (taught in Cerebro or from this chat): every answer and proposal follows them.
+  const brain = tools && !group ? (await db.doc(`brands/${brandId}/context/brain`).get()).data() ?? {} : {};
+  const taste = [brain.voice && `${lang === 'es' ? 'Voz' : 'Voice'}: ${String(brain.voice).slice(-700)}`, brain.avoid && `${lang === 'es' ? 'Evitar' : 'Avoid'}: ${String(brain.avoid).slice(-700)}`].filter(Boolean).join('\n');
+  const system = (taste ? `# ${lang === 'es' ? 'Gustos de la marca (respétalos en ideas, textos y propuestas)' : 'Brand preferences (follow them in ideas, copy and proposals)'}
+${taste}
+
+` : '') + helpSystem({ tools,
     lang, path, sections: group ? access.sections.filter((s) => s === 'learn') : access.sections, group, role: access.admin ? 'admin' : access.role,
     canAsk: !group && (access.admin || access.sections.includes('requests')), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),

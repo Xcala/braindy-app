@@ -11,6 +11,8 @@ import { HelpText } from './HelpText';
 import { DraftCard, type Draft } from './DraftCard';
 import { ChatCards, type ChatCard } from './ChatCards';
 import { ActionCard, type ActCard } from './ActionCard';
+import { MoreAction, MORE, type MoreCard } from './MoreAction';
+import { useDueReminders } from './useDueReminders';
 import { viewingSite } from '../links/viewingSite';
 import { Composer } from './Composer';
 import { ChatHistory } from './ChatHistory';
@@ -23,9 +25,10 @@ import { useChatTour } from './useChatTour';
 import type { AttachedFile } from '../requests/types';
 import './help.css';
 
-type AnyCard = ChatCard | ActCard;
+type AnyCard = ChatCard | ActCard | MoreCard;
 type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[]; old?: boolean; follow?: string[] };
-const isAct = (c: AnyCard): c is ActCard => c.kind === 'act';
+const isAct = (c: AnyCard): c is ActCard => c.kind === 'act' && !MORE.has(c.act);
+const isMore = (c: AnyCard): c is MoreCard => c.kind === 'act' && MORE.has(c.act);
 /** One line per card it showed, so «and that one?» or «open the second» can be followed on the next turn. */
 const cardLine = (c: AnyCard) => c.kind === 'act' ? `propuesta ${c.act} «${c.title}»${'requestId' in c ? ` pedido ${c.requestId}` : ''} (${c.done ? 'ya confirmada' : 'sin confirmar'})`
   : c.kind === 'request' ? `pedido ${c.id} «${c.title}» ${c.status}` : c.kind === 'file' ? `archivo «${c.title}»`
@@ -37,7 +40,7 @@ const asTurn = (m: Msg) => ({ role: m.role, content: `${m.content}${m.role === '
 type Saved = { msgs: Msg[]; chatId: string | null };
 /** A chat reopened from «Your chats»: what was said and shown, but old proposals and drafts come back as plain text, never as buttons. */
 const restore = (view: Msg[]): Msg[] => view.map((v) => ({ role: v.role, content: v.content, files: v.files, old: true,
-  cards: v.cards?.filter((c) => !isAct(c)) }));
+  cards: v.cards?.filter((c) => c.kind !== 'act') }));
 
 const KEY = (brandId: string) => `bd-help-${brandId}`;
 const load = (brandId: string): Saved => { try { return JSON.parse(sessionStorage.getItem(KEY(brandId)) ?? '') as Saved; } catch { return { msgs: [], chatId: null }; } };
@@ -104,6 +107,10 @@ export function HelpChat() {
   }, [docked]);
 
   useEffect(() => { if (brandId) { setS(load(brandId)); setHist(false); } }, [brandId]);
+  useDueReminders(brandId, (due) => {
+    setS((prev) => { const next = { ...prev, msgs: [...prev.msgs, ...due.map((d): Msg => ({ role: 'assistant', content: t('help.remDue', { text: d.text }) }))] }; save(brandId, next); return next; });
+    setIntro(false); setHist(false); setOpen(true);
+  });
   useEffect(() => {
     const p = new URLSearchParams(search);
     const a = p.get('asistente');
@@ -231,10 +238,14 @@ export function HelpChat() {
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
                 {m.role === 'user' ? <p>{m.content}</p> : <HelpText text={m.content} onNavigate={close} />}
                 {m.role === 'user' && !!m.files?.length && <span className="help-sentfiles">{m.files.map((x) => <span key={x.assetId}>📎 {x.name}</span>)}</span>}
-                {m.role === 'assistant' && !!m.cards?.some((c) => !isAct(c)) && <ChatCards brandId={brandId} cards={m.cards.filter((c): c is ChatCard => !isAct(c))} onOpen={close} />}
+                {m.role === 'assistant' && !!m.cards?.some((c) => c.kind !== 'act') && <ChatCards brandId={brandId} cards={m.cards.filter((c): c is ChatCard => c.kind !== 'act')} onOpen={close} />}
                 {m.role === 'assistant' && m.cards?.filter(isAct).map((c) => (
                   <ActionCard key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c} files={m.files} onOpen={close}
                     onDone={(done, text) => { if (c.act === 'approve' || c.act === 'site') markStep(c.act); update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done, text } : y)) } : x)) }); }} />
+                ))}
+                {m.role === 'assistant' && m.cards?.filter(isMore).map((c) => (
+                  <MoreAction key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c}
+                    onDone={(done) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done } : y)) } : x)) })} />
                 ))}
                 {m.role === 'assistant' && m.draft && (
                   <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} files={m.files} sentId={m.sent} onClose={close}
