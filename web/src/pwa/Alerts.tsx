@@ -87,17 +87,17 @@ export function AlertsPrompt() {
   if (!show) return null;
   const hide = () => { try { localStorage.setItem(DISMISS, String(Date.now() + 30 * 864e5)); } catch { /* ignore */ } setShow(false); };
   return (
-    <div className="card row g12 wrap between" role="region" aria-label={t('al.title')}>
-      <span className="t-sm grow" style={{ minWidth: '12rem' }}>{t('al.prompt')}</span>
-      <span className="row g8">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={hide}>{t('al.later')}</button>
-        <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={async () => {
+    <div className="card col g12" role="region" aria-label={t('al.title')}>
+      <p className="t-sm" style={{ margin: 0 }}>{t('al.prompt')}</p>
+      <div className="row g12 wrap">
+        <button type="button" className="btn btn-ghost" style={{ flex: '1 1 8rem' }} onClick={hide}>{t('al.later')}</button>
+        <button type="button" className="btn btn-primary" style={{ flex: '1 1 8rem' }} disabled={busy} onClick={async () => {
           setBusy(true);
           const s = await enablePush(lang).catch(() => 'off' as PushState);
           setBusy(false);
           if (s === 'on' || s === 'blocked') setShow(false);
-        }}>{t('al.enable')}</button>
-      </span>
+        }}>{t('al.enableShort')}</button>
+      </div>
     </div>
   );
 }
