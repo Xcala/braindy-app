@@ -16,6 +16,7 @@ import { Composer } from './Composer';
 import { ChatHistory } from './ChatHistory';
 import { CapabilitiesMenu } from './CapabilitiesMenu';
 import { canVoice, useVoiceMode } from './useVoiceMode';
+import { streamChat } from './streamChat';
 import { CanDo } from './CanDo';
 import { markStep } from './firstSteps';
 import { useChatTour } from './useChatTour';
@@ -66,6 +67,7 @@ export function HelpChat() {
   }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
   const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState('');
   const [hist, setHist] = useState(false);
   // A question coming from outside the panel (Home's box, a push alert's ?asistente=): asked in a new chat once the brand is ready.
   const [pending, setPending] = useState<{ q: string; brand?: string } | null>(null);
@@ -116,7 +118,7 @@ export function HelpChat() {
   useEffect(() => { if (pending && brandId && !busy && (!pending.brand || pending.brand === brandId)) { askRef.current(pending.q, [], true); setPending(null); } }, [pending, brandId, busy]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
   useChatTour(open && !hist && s.msgs.length === 0 && !!current);
-  useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [s.msgs.length, busy, open]);
+  useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [s.msgs.length, busy, open, live]);
   useEffect(() => {
     if (!open) return;
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
@@ -135,16 +137,16 @@ export function HelpChat() {
     update({ ...base, msgs });
     setBusy(true); setHist(false); markStep('ask');
     try {
-      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; follow?: string[]; chatId: string }>('/v1/help/chat', {
-        method: 'POST',
-        body: JSON.stringify({ brandId, lang, path: pathname, chatId: base.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) }),
-      });
+      // The answer shows up as it is written; the full one (cards, buttons) replaces it at the end.
+      const r = await streamChat<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; follow?: string[]; chatId: string }>(
+        { brandId, lang, path: pathname, chatId: base.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) },
+        (soFar) => setLive(soFar));
       update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], follow: r.follow ?? [], ...(files.length ? { files } : {}) }] });
     } catch (e) {
       const code = String((e as Error).message);
       const key = code.includes('429') || code.includes('limit') ? 'help.limit' : code.includes('503') || code.includes('ai_off') ? 'help.off' : 'help.error';
       update({ ...base, msgs: [...msgs, { role: 'assistant', content: t(key), next: 'nico', error: true }] });
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setLive(''); }
   }
 
   askRef.current = (q, files, fresh) => void ask(q, files, fresh);
@@ -250,7 +252,7 @@ export function HelpChat() {
               </div>
             ))}
             {s.msgs[0]?.old && <p className="t-xs t-mute">{t('help.histOld')}</p>}
-            {busy && <div className="help-msg is-bot"><p className="t-mute">{t('help.thinking')}</p></div>}
+            {busy && <div className="help-msg is-bot">{live ? <HelpText text={live} onNavigate={close} /> : <p className="t-mute">{t('help.thinking')}</p>}</div>}
             </>}
             <div ref={end} />
           </div>

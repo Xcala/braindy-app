@@ -2,6 +2,10 @@
 // essentials) and proposes actions (site adjustment, approve, ask for changes, add to a request). It never acts:
 // every action is a card the person confirms in the app.
 import { claudeTurn, type Block, type ChatTurn, type Tool } from '../ai.js';
+import { claudeTurnStream } from '../aiStream.js';
+
+/** Live answer: the text as it is written; reset when that text turns out to be a step before looking something up. */
+export type Live = { text: (d: string) => void; reset: () => void };
 import { brandBasics, findFiles, getRequest, listPosts, listRequests, results, siteChanges, type ChatCard, type ReadOut } from './reads.js';
 import { brandSites, propose, type ActCard, type ActCtx } from './actions.js';
 import { siteText } from './siteText.js';
@@ -58,7 +62,7 @@ async function run(c: ActCtx, name: string, i: In): Promise<Out> {
  * actions it proposed (always shown, the newest per kind of action and request). Card refs restart per tool call,
  * so each one is prefixed with the call (t1.p2) to stay unique.
  */
-export async function answerWithTools(system: string, turns: ChatTurn[], c: ActCtx, o: { model: string; meta: { brandId: string; kind: string }; extra?: unknown[] }) {
+export async function answerWithTools(system: string, turns: ChatTurn[], c: ActCtx, o: { model: string; meta: { brandId: string; kind: string }; extra?: unknown[]; on?: Live }) {
   // Attached images and file names ride on the last question.
   const messages: Array<{ role: string; content: unknown }> = turns.map((t, i) => ({ role: t.role, content: i === turns.length - 1 && o.extra?.length ? [...o.extra, { type: 'text', text: t.content }] : t.content }));
   const cards = new Map<string, ChatCard>();
@@ -66,11 +70,14 @@ export async function answerWithTools(system: string, turns: ChatTurn[], c: ActC
   let call = 0;
   for (let round = 0; round <= ROUNDS; round++) {
     const last = round === ROUNDS;
-    const { content, stop } = await claudeTurn(system, messages, c.access.admin ? [...TOOLS, ALL_BRANDS] : TOOLS, { model: o.model, maxTokens: 1500, meta: o.meta, noTools: last });
+    const tools = c.access.admin ? [...TOOLS, ALL_BRANDS] : TOOLS;
+    const opts = { model: o.model, maxTokens: 1500, meta: o.meta, noTools: last };
+    const { content, stop } = o.on ? await claudeTurnStream(system, messages, tools, o.on.text, opts) : await claudeTurn(system, messages, tools, opts);
     const uses = content.filter((b): b is Block & { id: string; name: string } => b.type === 'tool_use' && !!b.id && !!b.name);
     if (stop !== 'tool_use' || !uses.length || last) {
       return { text: content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join(''), cards, acts: [...acts.values()] };
     }
+    o.on?.reset();
     messages.push({ role: 'assistant', content });
     const outs = await Promise.all(uses.map(async (u) => {
       const tag = `t${++call}`;

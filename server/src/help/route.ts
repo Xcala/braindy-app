@@ -3,97 +3,26 @@
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
-import { brandAccess } from '../access.js';
-import { aiConfigured, claudeChat, type ChatTurn } from '../ai.js';
-import { answerWithTools } from './agent.js';
-import type { ChatCard } from './reads.js';
-import type { ActCard } from './actions.js';
-import { readAttachments } from './attach.js';
-import { helpSystem, readAnswer } from './guide.js';
+import { streamSSE } from 'hono/streaming';
+import { chat, type Body } from './chatCore.js';
 import type { AuthEnv } from '../auth.js';
-
-const MODEL = process.env.HELP_MODEL ?? 'claude-sonnet-5-5';
-const PER_DAY = 60; // questions per person per day
-const TURNS = 12;
-const CHARS = 1500;
 
 export const help = new Hono<AuthEnv>();
 
-type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown; files?: unknown };
-
-function turnsOf(raw: unknown): ChatTurn[] | null {
-  if (!Array.isArray(raw)) return null;
-  const turns = raw.slice(-TURNS).flatMap((m) => {
-    const role = (m as ChatTurn)?.role, content = (m as ChatTurn)?.content;
-    return (role === 'user' || role === 'assistant') && typeof content === 'string' && content.trim() ? [{ role, content: content.slice(0, CHARS) }] : [];
-  });
-  while (turns[0]?.role === 'assistant') turns.shift(); // the API wants the user first
-  return turns.length && turns[turns.length - 1]!.role === 'user' ? turns : null;
-}
-
-/** One more question today, or false when the person reached the daily limit. */
-async function spend(uid: string) {
-  const ref = db.doc(`helpUsage/${uid}_${new Date().toISOString().slice(0, 10)}`);
-  return db.runTransaction(async (tx) => {
-    const n = Number((await tx.get(ref)).get('n') ?? 0);
-    if (n >= PER_DAY) return false;
-    tx.set(ref, { n: n + 1, uid, at: FieldValue.serverTimestamp() }, { merge: true });
-    return true;
-  });
-}
-
 help.post('/help/chat', async (c) => {
+  const r = await chat(c.get('user'), (await c.req.json().catch(() => ({}))) as Body);
+  return c.json(r.body, r.status);
+});
+
+/** The same question, answered live: «delta» events with the text as it is written («reset» when it goes to look something up), then «done» with the full answer. */
+help.post('/help/chat/stream', async (c) => {
   const user = c.get('user');
   const b = (await c.req.json().catch(() => ({}))) as Body;
-  const brandId = typeof b.brandId === 'string' ? b.brandId : '';
-  const lang = b.lang === 'en' ? 'en' : 'es';
-  const path = typeof b.path === 'string' ? b.path.slice(0, 120) : '/';
-  const turns = turnsOf(b.messages);
-  if (!brandId || !turns) return c.json({ error: 'bad_request' }, 400);
-  if (!aiConfigured()) return c.json({ error: 'ai_off' }, 503);
-  const access = await brandAccess(user.uid, brandId);
-  if (!access.member) return c.json({ error: 'forbidden' }, 403);
-  if (!(await spend(user.uid))) return c.json({ error: 'limit' }, 429);
-
-  const [me, brand] = await Promise.all([db.doc(`users/${user.uid}`).get(), db.doc(`brands/${brandId}`).get()]);
-  // Older app versions do not send tools: they keep the guide-only assistant until they update.
-  const tools = b.tools === true;
-  // In a group the assistant sends people to each company (a group has no work of its own).
-  const group = brand.get('kind') === 'group'
-    ? (await db.collection('brands').where('groupId', '==', brandId).limit(30).get()).docs.map((d) => String(d.get('name') ?? d.id)) : undefined;
-  const att = tools ? await readAttachments(brandId, user.uid, access.admin, b.files) : { files: [], blocks: [] };
-  const attached = att.files;
-  const system = helpSystem({ tools,
-    lang, path, sections: group ? access.sections.filter((s) => s === 'learn') : access.sections, group, role: access.admin ? 'admin' : access.role,
-    canAsk: !group && (access.admin || access.sections.includes('requests')), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
-    name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
+  return streamSSE(c, async (s) => {
+    const send = (event: string, data: unknown) => { void s.writeSSE({ event, data: JSON.stringify(data) }); };
+    const r = await chat(user, b, { text: (d: string) => send('delta', d), reset: () => send('reset', 1) });
+    await s.writeSSE({ event: 'done', data: JSON.stringify({ status: r.status, ...r.body }) });
   });
-  let answer: ReturnType<typeof readAnswer>;
-  let cards: Array<ChatCard | ActCard> = [];
-  try {
-    const meta = { brandId, kind: 'help' };
-    if (tools) {
-      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta, extra: att.blocks });
-      answer = readAnswer(out.text);
-      cards = [...answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x), ...out.acts];
-    } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
-  } catch {
-    return c.json({ error: 'ai_failed' }, 502);
-  }
-
-  const ref = typeof b.chatId === 'string' && /^[\w-]{6,40}$/.test(b.chatId) ? db.doc(`helpChats/${b.chatId}`) : db.collection('helpChats').doc();
-  const prev = await ref.get();
-  if (prev.exists && prev.get('uid') !== user.uid) return c.json({ error: 'forbidden' }, 403);
-  await ref.set({
-    uid: user.uid, email: user.email ?? null, brandId, lang, path, next: answer.next,
-    messages: [...turns, { role: 'assistant', content: answer.text }], ...(answer.draft ? { draft: answer.draft } : {}),
-    // What the person saw (question with its files, answer with its cards), so the chat can be reopened from its history.
-    view: [...((prev.get('view') as unknown[]) ?? []), { role: 'user', content: turns[turns.length - 1]!.content.replace(/\s*\[\[ADJUNTÉ[^\]]*\]\]/g, ''), ...(attached.length ? { files: attached } : {}) },
-      { role: 'assistant', content: answer.text, next: answer.next, ...(answer.draft ? { draft: answer.draft } : {}), ...(cards.length ? { cards } : {}) }].slice(-40),
-    title: prev.get('title') ?? turns.find((t) => t.role === 'user')!.content.replace(/\[\[[^\]]*\]\]/g, '').trim().slice(0, 80),
-    updatedAt: FieldValue.serverTimestamp(), ...(prev.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
-  }, { merge: true });
-  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, cards, follow: answer.follow, chatId: ref.id });
 });
 
 /** The person passed the conversation to Nick (WhatsApp opens on their side); the chat is marked so it shows up for him. */
