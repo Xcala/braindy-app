@@ -60,7 +60,7 @@ export function ChatCards({ brandId, cards, onOpen }: { brandId: string; cards: 
         if (c.kind === 'file') {
           const src = thumbs[c.id];
           return (
-            <Link key={c.ref} to={`/open/${brandId}/${c.id}`} className="hc-card" onClick={onOpen}>
+            <Link key={c.ref} to={`/open/${brandId}/${c.id}`} className="hc-card" target="_blank" rel="noopener">
               <span className="hc-thumb">{src ? <img src={src} alt="" /> : <span aria-hidden="true">{(c.title.split('.').pop() ?? '').slice(0, 4).toUpperCase()}</span>}</span>
               <span className="hc-main"><b>{c.title}</b>{c.folder && <span className="t-xs t-mute">{c.folder}</span>}</span>
             </Link>
