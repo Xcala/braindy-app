@@ -53,10 +53,11 @@ export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, int
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
   // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
-  const head = !plan && !schedule ? (
+  // Every tab other than the summary gets a plain title with its own name (not «Mi plan» above the apps).
+  const head = tab !== 'summary' || (!plan && !schedule) ? (
     <header className="col g4">
       <p className="label" style={{ margin: 0 }}>{brandName}</p>
-      <h1 className="h1">{t('plan.title')}</h1>
+      <h1 className="h1">{t(tab === 'summary' ? 'plan.title' : `plan.tab.${tab}`)}</h1>
     </header>
   ) : null;
   return (
@@ -116,7 +117,7 @@ export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, int
       {tab === 'brand' && brand}
       {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
-      {tab === 'apps' && stack && <Stack items={stack} />}
+      {tab === 'apps' && <Stack items={stack ?? []} />}
       {tab === 'apps' && apps}
       {tab === 'payments' && payments}
     </div>

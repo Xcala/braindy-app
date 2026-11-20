@@ -12,7 +12,6 @@ const SOON = 30 * 864e5;
 /** Block 4 · The third-party apps the brand runs on: what each one does, plan, cost, who pays it and when it renews. */
 export function Stack({ items }: { items: StackItem[] }) {
   const { t, lang } = useI18n();
-  if (!items.length) return null;
   const date = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   // Monthly equivalent of what is active and recurring, per currency.
   const monthly = items.filter((x) => x.status === 'active' && x.cost && (x.period === 'month' || x.period === 'year'))
@@ -22,7 +21,6 @@ export function Stack({ items }: { items: StackItem[] }) {
     <section className="col g16" aria-labelledby="plan-stack">
       <div className="row g16" style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div className="col g4">
-          <p className="label">{t('plan.b4')}</p>
           <h2 id="plan-stack" className="h2">{t('plan.stackTitle')}</h2>
           <p className="t-sm t-mute" style={{ margin: 0, maxWidth: '40rem' }}>{t('plan.stackSub')}</p>
         </div>
@@ -33,6 +31,7 @@ export function Stack({ items }: { items: StackItem[] }) {
           </div>
         )}
       </div>
+      {!items.length && <p className="card card-tight t-sm t-mute" style={{ margin: 0 }}>{t('plan.stackEmpty')}</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {order.map((x, i) => {
           const soon = !!x.renews && x.status === 'active' && new Date(`${x.renews}T12:00:00`).getTime() - Date.now() < SOON;
