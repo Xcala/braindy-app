@@ -14,6 +14,7 @@ import { ActionCard, type ActCard } from './ActionCard';
 import { viewingSite } from '../links/viewingSite';
 import { Composer } from './Composer';
 import { ChatHistory } from './ChatHistory';
+import { CapabilitiesMenu } from './CapabilitiesMenu';
 import { CanDo } from './CanDo';
 import { markStep } from './firstSteps';
 import { useChatTour } from './useChatTour';
@@ -155,6 +156,8 @@ export function HelpChat() {
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>
     </button>
   );
+  const newChat = () => { setHist(false); update({ msgs: [], chatId: null }); input.current?.focus(); };
+  const admin = (profile as { role?: string } | null)?.role === 'admin';
   const lastQuestion = [...s.msgs].reverse().find((m) => m.role === 'user')?.content ?? '';
   const toNico = () => { if (s.chatId) api('/v1/help/handoff', { method: 'POST', body: JSON.stringify({ chatId: s.chatId }) }).catch(() => undefined); };
   const first = (profile as { name?: string } | null)?.name?.split(' ')[0];
@@ -185,15 +188,15 @@ export function HelpChat() {
         <section className={`help-panel${docked ? ' is-dock' : ''}`} role={docked ? 'complementary' : 'dialog'} aria-modal={docked ? undefined : false} aria-labelledby="help-title">
           {docked ? (
             <header className="help-dhead">
-              <h2 id="help-title" className="help-dtitle">{t('help.dock')}<span className="help-ai">{t('help.ai')}</span></h2>
+              <CapabilitiesMenu id="help-title" className="help-dtitle" admin={admin} onAsk={(q) => void ask(q)} />
               {histBtn('help-dbtn')}
-              <button type="button" className="help-dbtn" onClick={() => { setHist(false); update({ msgs: [], chatId: null }); }} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+              <button type="button" className="help-dbtn" onClick={newChat} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
               <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
             </header>
           ) : (
           <header className="help-head">
             <div className="col" style={{ minWidth: 0 }}>
-              <h2 id="help-title" className="help-title">{t('help.title')}<span className="help-ai">{t('help.ai')}</span></h2>
+              <CapabilitiesMenu id="help-title" className="help-title" admin={admin} onAsk={(q) => void ask(q)} />
               <p className="t-xs t-mute">{t('help.sub')}</p>
               <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
               {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
@@ -203,7 +206,7 @@ export function HelpChat() {
           </header>
           )}
           <div className="help-body" aria-live="polite">
-            {hist ? <ChatHistory brandId={brandId} current={s.chatId} onPick={(id) => void pick(id)} /> : <>
+            {hist ? <ChatHistory brandId={brandId} current={s.chatId} onPick={(id) => void pick(id)} onNew={newChat} onDeleted={(id) => { if (id === s.chatId) update({ msgs: [], chatId: null }); }} /> : <>
             {docked ? (
               <div className="help-welcome">
                 <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
@@ -238,7 +241,8 @@ export function HelpChat() {
             </>}
             <div ref={end} />
           </div>
-          <Composer ref={input} brandId={brandId} busy={busy} onSend={(q, files) => void ask(q, files)} />
+          <Composer ref={input} brandId={brandId} busy={busy} ph={hist ? t('help.newChatPh') : undefined} onSend={(q, files) => void ask(q, files, hist)} />
+          <p className="help-ainote">{t('help.aiNote')}</p>
         </section>
       )}
     </>

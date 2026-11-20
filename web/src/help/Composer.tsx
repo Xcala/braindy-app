@@ -19,7 +19,7 @@ const grow = (el: HTMLTextAreaElement) => { el.style.height = 'auto'; el.style.h
  * (photos, PDFs…), uploaded to the brand's Uploads like in «Ask for something». The assistant sees the photos and the
  * files travel with whatever it proposes in that answer.
  */
-export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy: boolean; onSend: (text: string, files: AttachedFile[]) => void }>(function Composer({ brandId, busy, onSend }, ref) {
+export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy: boolean; ph?: string; onSend: (text: string, files: AttachedFile[]) => void }>(function Composer({ brandId, busy, ph, onSend }, ref) {
   const { t, lang } = useI18n();
   const [text, setText] = useState('');
   const [files, setFiles] = useState<AttachedFile[]>([]);
@@ -94,7 +94,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
           {error && <span className="t-xs" role="alert" style={{ color: 'var(--rojo, #C62828)' }}>{t('help.fileError')}</span>}
         </div>
       )}
-      <textarea ref={ref} className="help-input" rows={1} value={text} maxLength={1500} placeholder={t(listening ? 'help.listening' : 'help.ph')} aria-label={t('help.ph')}
+      <textarea ref={ref} className="help-input" rows={1} value={text} maxLength={1500} placeholder={listening ? t('help.listening') : ph ?? t('help.ph')} aria-label={t('help.ph')}
         onChange={(e) => { setText(e.target.value); grow(e.currentTarget); }}
         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
       <div className="help-bar">
