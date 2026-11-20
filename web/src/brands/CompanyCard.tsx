@@ -9,15 +9,17 @@ import './companyCard.css';
 const ms = (r: ScopedRequest) => r.updatedAt?.toMillis?.() ?? r.createdAt?.toMillis?.() ?? 0;
 
 /**
- * One company inside a group (2026-11-20): its colors on top, its logo, what it needs (to approve, in production,
+ * One company inside a group (2026-11-20): its main photo on top (else its colors), its logo, what it needs (to approve, in production,
  * delivered this month), the latest movement and the next due date, plus shortcuts that open the company right there.
  */
 export function CompanyCard({ brand, requests, go }: { brand: Brand; requests: ScopedRequest[]; go: (to: string) => void }) {
   const { t, lang } = useI18n();
-  const identity = useBrandDoc(brand.id, 'context/identity').data as { colors?: Color[]; logos?: { primary?: string } } | null;
+  const identity = useBrandDoc(brand.id, 'context/identity').data as { colors?: Color[]; logos?: { primary?: string }; heroImage?: string; concept?: Array<{ kind?: string; url?: string }> } | null;
   const colors = brandColors(identity?.colors ?? []).slice(0, 4).map((c) => c.hex);
   const logo = identity?.logos?.primary ?? brand.logoUrl;
   const accent = colors[0] ?? 'var(--azul)';
+  // The brand's main photo; else its hero image; else its colors.
+  const cover = brand.coverUrl ?? identity?.heroImage ?? identity?.concept?.find((c) => c.kind === 'hero')?.url ?? null;
 
   const approve = requests.filter((r) => r.status === 'to_approve');
   const prod = requests.filter((r) => r.status === 'in_production');
@@ -30,8 +32,8 @@ export function CompanyCard({ brand, requests, go }: { brand: Brand; requests: S
   return (
     <article className={`cc${approve.length ? ' is-waiting' : ''}`} style={{ ['--cc-accent' as string]: accent }}>
       <button type="button" className="cc-top" onClick={() => go('/home')} aria-label={t('gh.openName', { name: brand.name })}>
-        <span className="cc-band" aria-hidden="true">
-          {colors.length ? colors.map((c) => <i key={c} style={{ background: c }} />) : <i />}
+        <span className={`cc-band${cover ? ' has-photo' : ''}`} aria-hidden="true">
+          {cover ? <img src={cover} alt="" loading="lazy" /> : colors.length ? colors.map((c) => <i key={c} style={{ background: c }} />) : <i />}
         </span>
         <span className="cc-logo">{logo ? <img src={logo} alt="" /> : <b>{brand.name.slice(0, 2).toUpperCase()}</b>}</span>
         <span className="cc-name">{brand.name}</span>
