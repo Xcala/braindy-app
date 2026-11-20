@@ -25,6 +25,8 @@ export interface Brand {
   resultsOn: boolean;
   /** Names the brand had before a rebrand (iPark → Muvify); its earlier Mi marca lives in brands/{id}/versions. */
   previousNames: string[];
+  /** Main photo of the brand (e.g. the restaurant): the company card in a group shows it. */
+  coverUrl: string | null;
 }
 
 /** contract = step 1 (rules of the game), kickoff = step 2, brief → firstDelivery = step 3 (strategy and training). */
@@ -55,6 +57,7 @@ const toBrand = (id: string, d: Record<string, unknown>): Brand => ({
   sectionsOff: Array.isArray(d.sectionsOff) ? (d.sectionsOff as string[]) : [],
   resultsOn: d.resultsOn === true,
   previousNames: Array.isArray(d.previousNames) ? (d.previousNames as string[]) : [],
+  coverUrl: typeof d.coverUrl === 'string' && d.coverUrl ? d.coverUrl : null,
 });
 
 const toOnboarding = (o?: Record<string, unknown>): Onboarding | null => o?.step ? {
