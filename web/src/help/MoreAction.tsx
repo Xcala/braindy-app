@@ -12,8 +12,9 @@ export type MoreCard =
   | { kind: 'act'; act: 'meeting'; ref: string; title: string; text: string; done?: string }
   | { kind: 'act'; act: 'share'; ref: string; assetId: string; title: string; text: string; done?: string }
   | { kind: 'act'; act: 'remember'; ref: string; topic: 'voice' | 'avoid'; title: string; text: string; done?: string }
-  | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string; done?: string };
-export const MORE = new Set(['invite', 'meeting', 'share', 'remember', 'reminder']);
+  | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string; done?: string }
+  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string; done?: string };
+export const MORE = new Set(['invite', 'meeting', 'share', 'remember', 'reminder', 'cancel']);
 
 export function MoreAction({ brandId, card, onDone }: { brandId: string; card: MoreCard; onDone: (done: string, text: string) => void }) {
   const { t, lang } = useI18n();
@@ -40,6 +41,10 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
       } else if (card.act === 'reminder') {
         await api('/v1/help/reminders', { method: 'POST', body: JSON.stringify({ brandId, at: card.at, text: card.text }) });
         onDone('1', card.text);
+      } else if (card.act === 'cancel') {
+        // Same call as «Cancel request» on the request; «Undo» puts it back.
+        await api(`/v1/brands/${brandId}/requests/${card.requestId}/cancel`, { method: 'POST', body: JSON.stringify({ undo: !!card.done }) });
+        onDone(card.done ? '' : '1', '');
       }
     } catch { setError(true); } finally { setBusy(false); }
   }
@@ -49,6 +54,7 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
   const body = card.act === 'invite' ? (card.name ? `${card.name} · ${card.email}` : card.email)
     : card.act === 'reminder' ? `${when} · ${card.text}` : card.act === 'share' ? card.title : card.text || card.title;
   const done = !!card.done && card.act !== 'meeting';
+  const undo = done && card.act === 'cancel';
   return (
     <div className={`help-draft${done ? ' is-sent' : ''}`} aria-label={tag}>
       <span className="help-draft-tag">{done ? `✓ ${t(`ma.${card.act}Done` as 'ma.inviteDone')}` : tag}</span>
@@ -59,6 +65,7 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
           <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => void go()}>{busy ? '…' : t(`ma.${card.act}Go` as 'ma.inviteGo')}</button>
         </div>
       )}
+      {undo && <button type="button" className="btn btn-ghost btn-sm self-start" disabled={busy} onClick={() => void go()}>{t('ma.cancelUndo')}</button>}
       {error && <p className="t-xs" role="alert" style={{ color: 'var(--rojo, #C62828)', margin: 0 }}>{t('help.actError')}</p>}
       {book && <BookMeeting brandId={brandId} onClose={() => setBook(false)} />}
     </div>

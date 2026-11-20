@@ -17,11 +17,13 @@ async function open(body: string) {
         headers: { 'x-api-key': KEY!, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       });
       if (r.ok && r.body) return { r, attempts: n };
-      last = Object.assign(new Error(`ai_http_${r.status}`), { attempts: n });
+      // The reason comes back in the body (e.g. an invalid message); it is kept in the call log, never the prompt.
+      const why = r.status < 500 ? (await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160) : '';
+      last = Object.assign(new Error(`ai_http_${r.status}${why ? ` ${why}` : ''}`), { attempts: n });
       if (!RETRY.has(r.status)) throw last;
     } catch (e) {
       last = e as Error;
-      if ((e as Error).message.startsWith('ai_http_4') && !(e as Error).message.endsWith('429')) throw e;
+      if ((e as Error).message.startsWith('ai_http_4') && !(e as Error).message.startsWith('ai_http_429')) throw e;
     }
     await new Promise((res) => setTimeout(res, 1000 * 3 ** (n - 1)));
   }
@@ -72,9 +74,10 @@ export async function claudeTurnStream(system: string, messages: unknown[], tool
       recordClaude(o.meta, model, usage),
       recordCall({ ...log, model, ok: true, ms: Date.now() - t0, attempts, usd: claudeCost(model, t), input: t.input, output: t.output }),
     ]);
-    return { content: blocks.filter(Boolean), stop };
+    // An empty text block (the model went straight to a tool) is rejected when sent back in the next round.
+    return { content: blocks.filter((b) => b && !(b.type === 'text' && !b.text?.trim())), stop };
   } catch (e) {
-    await recordCall({ ...log, model: asked, ok: false, error: (e as Error).message.slice(0, 80), ms: Date.now() - t0, attempts });
+    await recordCall({ ...log, model: asked, ok: false, error: (e as Error).message.slice(0, 240), ms: Date.now() - t0, attempts });
     throw e;
   }
 }

@@ -3,13 +3,15 @@
 // confirms it in the app, which calls the same endpoints as the screens. Nothing in this file writes.
 import { db } from '../firebase.js';
 import type { ActCtx } from './actions.js';
+import { canApprove } from '../requests.js';
 
 export type MoreCard =
   | { kind: 'act'; act: 'invite'; ref: string; email: string; name: string; title: string; text: string }
   | { kind: 'act'; act: 'meeting'; ref: string; title: string; text: string }
   | { kind: 'act'; act: 'share'; ref: string; assetId: string; title: string; text: string }
   | { kind: 'act'; act: 'remember'; ref: string; topic: 'voice' | 'avoid'; title: string; text: string }
-  | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string };
+  | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string }
+  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string };
 
 const cut = (s: unknown, n: number) => String(s ?? '').trim().slice(0, n);
 const OK = 'TARJETA_LISTA: la persona la revisa y la confirma con el botón. No digas que ya se hizo.';
@@ -50,6 +52,15 @@ export async function proposeMore(c: ActCtx, accion: string, i: Record<string, u
     if (!texto) return { text: 'Falta qué recordarle: pregúntalo.' };
     if (!Number.isFinite(t) || t < Date.now() - 60_000 || t > Date.now() + 366 * 86_400_000) return { text: 'Falta cuándo (fecha y hora, en el próximo año): pregúntalo. Usa AAAA-MM-DDTHH:mm, hora local de la persona.' };
     return { text: OK, card: { kind: 'act', act: 'reminder', ref: '', at: new Date(t).toISOString(), title: texto.slice(0, 70), text: texto } };
+  }
+  if (accion === 'cancelar_pedido') {
+    const id = cut(i.pedido_id, 80);
+    const r = /^[\w-]{4,80}$/.test(id) ? await db.doc(`brands/${c.brandId}/requests/${id}`).get() : null;
+    if (!r?.exists) return { text: 'No encontré ese pedido: búscalo primero con «pedidos» y usa su id.' };
+    if (r.get('cancelled')) return { text: 'Ese pedido ya está cancelado.' };
+    if (['approved', 'published'].includes(String(r.get('status')))) return { text: 'Ese pedido ya está aprobado: no se puede cancelar. Si hace falta, que lo hable con Nico.' };
+    if (!c.access.admin && r.get('createdBy') !== c.uid && !(await canApprove(c.uid, c.brandId))) return { text: 'Solo quien lo pidió o quien aprueba en la marca puede cancelarlo: dile que se lo pida a esa persona o a Nico.' };
+    return { text: `${OK} Al confirmar se cancela y Nico recibe aviso; se puede deshacer.`, card: { kind: 'act', act: 'cancel', ref: '', requestId: r.id, title: cut(r.get('title'), 120), text: '' } };
   }
   return null;
 }
