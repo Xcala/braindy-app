@@ -1,10 +1,14 @@
-// The in-app help assistant: answers how to use Braindy from the tutorial guide, on a lighter model, charged to the brand.
+// The in-app assistant: answers how to use Braindy from the tutorial guide and looks up the brand with read-only tools, charged to the brand.
 // Every conversation is kept in helpChats (server only) so NickMark can see what people ask and improve the app and the guide.
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { brandAccess } from '../access.js';
 import { aiConfigured, claudeChat, type ChatTurn } from '../ai.js';
+import { answerWithTools } from './agent.js';
+import type { ChatCard } from './reads.js';
+import type { ActCard } from './actions.js';
+import { readAttachments } from './attach.js';
 import { helpSystem, readAnswer } from './guide.js';
 import type { AuthEnv } from '../auth.js';
 
@@ -15,7 +19,7 @@ const CHARS = 1500;
 
 export const help = new Hono<AuthEnv>();
 
-type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown };
+type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown; files?: unknown };
 
 function turnsOf(raw: unknown): ChatTurn[] | null {
   if (!Array.isArray(raw)) return null;
@@ -52,14 +56,24 @@ help.post('/help/chat', async (c) => {
   if (!(await spend(user.uid))) return c.json({ error: 'limit' }, 429);
 
   const [me, brand] = await Promise.all([db.doc(`users/${user.uid}`).get(), db.doc(`brands/${brandId}`).get()]);
-  const system = helpSystem({
+  // Older app versions do not send tools: they keep the guide-only assistant until they update.
+  const tools = b.tools === true;
+  const att = tools ? await readAttachments(brandId, user.uid, access.admin, b.files) : { files: [], blocks: [] };
+  const attached = att.files;
+  const system = helpSystem({ tools,
     lang, path, sections: access.sections, role: access.admin ? 'admin' : access.role,
     canAsk: access.admin || access.sections.includes('requests'), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
+  let cards: Array<ChatCard | ActCard> = [];
   try {
-    answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta: { brandId, kind: 'help' } }));
+    const meta = { brandId, kind: 'help' };
+    if (tools) {
+      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta, extra: att.blocks });
+      answer = readAnswer(out.text);
+      cards = [...answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x), ...out.acts];
+    } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
   } catch {
     return c.json({ error: 'ai_failed' }, 502);
   }
@@ -70,9 +84,13 @@ help.post('/help/chat', async (c) => {
   await ref.set({
     uid: user.uid, email: user.email ?? null, brandId, lang, path, next: answer.next,
     messages: [...turns, { role: 'assistant', content: answer.text }], ...(answer.draft ? { draft: answer.draft } : {}),
+    // What the person saw (question with its files, answer with its cards), so the chat can be reopened from its history.
+    view: [...((prev.get('view') as unknown[]) ?? []), { role: 'user', content: turns[turns.length - 1]!.content.replace(/\s*\[\[ADJUNTÉ[^\]]*\]\]/g, ''), ...(attached.length ? { files: attached } : {}) },
+      { role: 'assistant', content: answer.text, next: answer.next, ...(answer.draft ? { draft: answer.draft } : {}), ...(cards.length ? { cards } : {}) }].slice(-40),
+    title: prev.get('title') ?? turns.find((t) => t.role === 'user')!.content.replace(/\[\[[^\]]*\]\]/g, '').trim().slice(0, 80),
     updatedAt: FieldValue.serverTimestamp(), ...(prev.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
   }, { merge: true });
-  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, chatId: ref.id });
+  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, cards, chatId: ref.id });
 });
 
 /** The person passed the conversation to Nick (WhatsApp opens on their side); the chat is marked so it shows up for him. */
@@ -84,4 +102,26 @@ help.post('/help/handoff', async (c) => {
   if (!snap.exists || snap.get('uid') !== c.get('user').uid) return c.json({ error: 'not_found' }, 404);
   await ref.update({ handoff: true, handoffAt: FieldValue.serverTimestamp() });
   return c.json({ ok: true });
+});
+
+/** The person's own conversations in this brand, newest first (title and date), for «Your chats». */
+help.get('/help/chats', async (c) => {
+  const uid = c.get('user').uid;
+  const brandId = String(c.req.query('brandId') ?? '');
+  if (!/^[\w-]{1,80}$/.test(brandId)) return c.json({ error: 'bad_request' }, 400);
+  // Two equalities and no order: no composite index needed; sorted here.
+  const snap = await db.collection('helpChats').where('uid', '==', uid).where('brandId', '==', brandId).select('title', 'updatedAt', 'view').limit(200).get();
+  const chats = snap.docs.filter((d) => Array.isArray(d.get('view')) && d.get('title'))
+    .map((d) => ({ id: d.id, title: String(d.get('title')), at: (d.get('updatedAt') as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0 }))
+    .sort((a, b) => b.at - a.at).slice(0, 30);
+  return c.json({ chats });
+});
+
+/** One of the person's conversations, as they saw it. */
+help.get('/help/chats/:id', async (c) => {
+  const id = c.req.param('id');
+  if (!/^[\w-]{6,40}$/.test(id)) return c.json({ error: 'bad_request' }, 400);
+  const snap = await db.doc(`helpChats/${id}`).get();
+  if (!snap.exists || snap.get('uid') !== c.get('user').uid) return c.json({ error: 'not_found' }, 404);
+  return c.json({ id, brandId: snap.get('brandId'), view: snap.get('view') ?? [] });
 });

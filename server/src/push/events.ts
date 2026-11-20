@@ -61,13 +61,14 @@ export async function onRequestWrite({ brandId, requestId }: Ids) {
   const base = { tag: `r-${requestId}`, url: url(brandId, requestId) };
   const admins = await adminUids();
   let sent = 0;
-  const go = async (uids: string[], m: Omit<PushMsg, 'tag' | 'url'>) => { sent += (await pushTo(uids, { ...base, ...m })).sent; };
+  const go = async (uids: string[], m: Omit<PushMsg, 'tag' | 'url'> & { url?: string }) => { sent += (await pushTo(uids, { ...base, ...m })).sent; };
 
   if (created) {
     if (!admins.includes(String(r.get('createdBy') ?? ''))) await go(admins, { kind: 'requests', title: { es: `Pedido nuevo · ${brand}`, en: `New request · ${brand}` }, body: { es: title, en: title } });
     return sent;
   }
-  if (after === 'to_approve') await go(people.uids, { kind: 'deliveries', title: { es: `Para aprobar · ${brand}`, en: `To approve · ${brand}` }, body: { es: `NicoMarca te entregó «${title}». Revísala aquí.`, en: `NickMark delivered "${title}". Review it here.` } });
+  // The new app opens the chat with the approve card (?asistente=); older versions just open the request.
+  if (after === 'to_approve') await go(people.uids, { url: `${url(brandId, requestId)}&asistente=aprobar:${requestId}`, kind: 'deliveries', title: { es: `Para aprobar · ${brand}`, en: `To approve · ${brand}` }, body: { es: `NicoMarca te entregó «${title}». Revísala aquí.`, en: `NickMark delivered "${title}". Review it here.` } });
   else if (before === 'to_approve' && after === 'approved') await go(admins, { kind: 'decisions', title: { es: `${brand} aprobó`, en: `${brand} approved` }, body: { es: `«${title}»`, en: `"${title}"` } });
   else if (before === 'to_approve' && after === 'in_production') await go(admins, { kind: 'decisions', title: { es: `${brand} pidió cambios`, en: `${brand} asked for changes` }, body: { es: `«${title}»`, en: `"${title}"` } });
   if (after === 'published') await go(people.uids, { kind: 'done', title: { es: `Publicado · ${brand}`, en: `Published · ${brand}` }, body: { es: `«${title}» ya está publicado.`, en: `"${title}" is published.` } });

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { enablePush, pushState, type PushState } from './push';
 import { usePwa } from './pwa';
+import { alertsSettled } from './popupQueue';
 
 const DISMISS = 'bd-alerts-later';
 const later = () => { try { return Number(localStorage.getItem(DISMISS)) > Date.now(); } catch { return false; } };
@@ -17,7 +18,10 @@ export function AlertsInvite() {
   const [busy, setBusy] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { if (!later()) pushState().then((s) => setCan(s === 'off')).catch(() => undefined); }, []);
+  useEffect(() => {
+    if (later()) { alertsSettled(); return; }
+    pushState().then((s) => { setCan(s === 'off'); if (s !== 'off') alertsSettled(); }).catch(alertsSettled);
+  }, []);
   // A new version reloads the page first; then, after a breath, the invitation.
   useEffect(() => {
     if (!can || update || open || pathname.startsWith('/alerts')) return;
@@ -35,13 +39,13 @@ export function AlertsInvite() {
   if (!open) return null;
   function hide() {
     try { localStorage.setItem(DISMISS, String(Date.now() + 30 * 864e5)); } catch { /* private mode */ }
-    setOpen(false); setCan(false);
+    setOpen(false); setCan(false); alertsSettled();
   }
   async function turnOn() {
     setBusy(true);
     const s = await enablePush(lang).catch(() => 'off' as PushState);
     setBusy(false);
-    if (s === 'on' || s === 'blocked') { setOpen(false); setCan(false); }
+    if (s === 'on' || s === 'blocked') { setOpen(false); setCan(false); alertsSettled(); }
   }
 
   return (

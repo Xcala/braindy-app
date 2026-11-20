@@ -37,16 +37,20 @@ search.get('/brands/:brandId/search/files', async (c) => {
   const { brandId } = c.req.param();
   const access = await brandAccess(c.get('user').uid, brandId);
   if (!access.member || !access.sections.includes('files')) return c.json({ files: [] });
-  const words = norm(String(c.req.query('q') ?? '')).split(/\s+/).filter((w) => w.length > 1).slice(0, 6);
-  if (!words.length) return c.json({ files: [] });
+  return c.json(await searchFiles(brandId, access.admin, String(c.req.query('q') ?? ''), Number(c.req.query('limit')) === 100 ? 100 : LIMIT));
+});
 
-  const visible = access.admin ? () => true : await fileFilter(brandId);
+/** The search itself (the box and the chat assistant). The caller checks the person can open Files. */
+export async function searchFiles(brandId: string, admin: boolean, q: string, limit = LIMIT) {
+  const words = norm(q).split(/\s+/).filter((w) => w.length > 1).slice(0, 6);
+  if (!words.length) return { total: 0, files: [] };
+  const visible = admin ? () => true : await fileFilter(brandId);
   const byName = (r: Row) => words.every((w) => r.key.includes(w));
   const found = (await rowsOf(brandId)).filter((r) => (byName(r) || words.every((w) => `${r.key} ${r.seen}`.includes(w))) && visible(r.snap));
   const inTitle = (r: Row) => (words.every((w) => norm(r.title).includes(w)) ? 0 : byName(r) ? 1 : 2);
   found.sort((a, b) => inTitle(a) - inTitle(b) || a.title.localeCompare(b.title));
-  return c.json({
+  return {
     total: found.length,
-    files: found.slice(0, Number(c.req.query('limit')) === 100 ? 100 : LIMIT).map((r) => ({ id: r.id, title: r.title, folder: r.folder, contentType: r.contentType, size: r.size, mtimeMs: r.mtimeMs, ...(byName(r) ? {} : { why: 'ai' }) })),
-  });
-});
+    files: found.slice(0, limit).map((r) => ({ id: r.id, title: r.title, folder: r.folder, contentType: r.contentType, size: r.size, mtimeMs: r.mtimeMs, ...(byName(r) ? {} : { why: 'ai' }) })),
+  };
+}
