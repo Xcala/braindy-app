@@ -2,6 +2,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
 import { HomeStudio } from './HomeStudio';
 import { TalkToNico } from './TalkToNico';
+import { HomeAsk } from './HomeAsk';
 
 /**
  * Home hero: the studio is the screen. Above it, one line (date + what needs you, or "anything is possible")
@@ -25,6 +26,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
         </div>
         <TalkToNico brandName={brandName} />
       </div>
+      <HomeAsk />
       <div data-tour="home-brains"><HomeStudio requests={open} /></div>
     </section>
   );

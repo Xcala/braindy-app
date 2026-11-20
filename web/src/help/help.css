@@ -157,3 +157,9 @@ html[data-theme="dark"] .help-draft-tag{background:#231A3D;color:#C4B0FF}
 .help-file{gap:0.25rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .help-file button{border:0;background:none;cursor:pointer;font-size:1rem;line-height:1;padding:0 0.125rem;color:inherit}
 .help-sentfiles{display:flex;flex-direction:column;gap:0.125rem;font:600 0.75rem/1.3 var(--f-text);opacity:.9}
+.hc-hist{width:100%;text-align:left;cursor:pointer;font:inherit}
+.hc-hist.is-on{border-color:var(--azul)}
+/* Home: «What do we do today?» */
+.home-ask{padding:1rem;border-radius:1rem;background:var(--white);border:1px solid var(--line)}
+.home-ask-row{display:flex;gap:0.5rem}
+.home-ask-row .input{flex:1;min-width:0}

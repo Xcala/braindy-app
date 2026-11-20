@@ -1,7 +1,7 @@
 import { followPointer } from './followPointer';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { QuickDial } from './QuickDial';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
@@ -13,11 +13,12 @@ import { ChatCards, type ChatCard } from './ChatCards';
 import { ActionCard, type ActCard } from './ActionCard';
 import { viewingSite } from '../links/viewingSite';
 import { Composer } from './Composer';
+import { ChatHistory } from './ChatHistory';
 import type { AttachedFile } from '../requests/types';
 import './help.css';
 
 type AnyCard = ChatCard | ActCard;
-type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[] };
+type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[]; old?: boolean };
 const isAct = (c: AnyCard): c is ActCard => c.kind === 'act';
 /** One line per card it showed, so «and that one?» or «open the second» can be followed on the next turn. */
 const cardLine = (c: AnyCard) => c.kind === 'act' ? `propuesta ${c.act} «${c.title}»${'requestId' in c ? ` pedido ${c.requestId}` : ''} (${c.done ? 'ya confirmada' : 'sin confirmar'})`
@@ -28,6 +29,9 @@ const asTurn = (m: Msg) => ({ role: m.role, content: `${m.content}${m.role === '
 [[MOSTRÉ ${m.cards.map(cardLine).join(' | ')}]]` : ''}${m.draft ? `
 [[BORRADOR ${JSON.stringify(m.draft)}]]${m.sent ? ' (ya enviado)' : ''}` : ''}` });
 type Saved = { msgs: Msg[]; chatId: string | null };
+/** A chat reopened from «Your chats»: what was said and shown, but old proposals and drafts come back as plain text, never as buttons. */
+const restore = (view: Msg[]): Msg[] => view.map((v) => ({ role: v.role, content: v.content, files: v.files, old: true,
+  cards: v.cards?.filter((c) => !isAct(c)) }));
 
 const KEY = (brandId: string) => `bd-help-${brandId}`;
 const load = (brandId: string): Saved => { try { return JSON.parse(sessionStorage.getItem(KEY(brandId)) ?? '') as Saved; } catch { return { msgs: [], chatId: null }; } };
@@ -46,7 +50,8 @@ export function HelpChat() {
   const { t, lang } = useI18n();
   const { profile } = useAuth();
   const { current } = useBrands();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
   const [open, setOpenState] = useState(dockSaved);
   const [desk, setDesk] = useState(() => window.matchMedia(DESK).matches);
   const setOpen = useCallback((v: boolean | ((o: boolean) => boolean)) => setOpenState((o) => {
@@ -56,6 +61,10 @@ export function HelpChat() {
   }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
   const [busy, setBusy] = useState(false);
+  const [hist, setHist] = useState(false);
+  // A question coming from outside the panel (Home's box, a push alert's ?asistente=): asked in a new chat once the brand is ready.
+  const [pending, setPending] = useState<{ q: string; brand?: string } | null>(null);
+  const askRef = useRef<(q: string, files?: AttachedFile[], fresh?: boolean) => void>(() => undefined);
   const [intro, setIntro] = useState(() => !introSeen());
   const dismissIntro = () => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } };
   const input = useRef<HTMLTextAreaElement>(null);
@@ -71,8 +80,10 @@ export function HelpChat() {
     const on = () => setDesk(mq.matches);
     mq.addEventListener('change', on);
     const toggle = () => { setIntro(false); setOpen((o) => !o); };
+    const fromOutside = (e: Event) => { const q = (e as CustomEvent<string>).detail; if (q?.trim()) { setIntro(false); setHist(false); setOpen(true); setPending({ q: q.trim().slice(0, 1500) }); } };
     window.addEventListener('bd-help-toggle', toggle);
-    return () => { mq.removeEventListener('change', on); window.removeEventListener('bd-help-toggle', toggle); };
+    window.addEventListener('bd-help-ask', fromOutside);
+    return () => { mq.removeEventListener('change', on); window.removeEventListener('bd-help-toggle', toggle); window.removeEventListener('bd-help-ask', fromOutside); };
   }, [setOpen]);
   const shown = !!current && !pathname.startsWith('/ask');
   const docked = open && desk && shown;
@@ -81,7 +92,19 @@ export function HelpChat() {
     return () => document.documentElement.classList.remove('help-docked');
   }, [docked]);
 
-  useEffect(() => { if (brandId) setS(load(brandId)); }, [brandId]);
+  useEffect(() => { if (brandId) { setS(load(brandId)); setHist(false); } }, [brandId]);
+  useEffect(() => {
+    const p = new URLSearchParams(search);
+    const a = p.get('asistente');
+    if (a == null) return;
+    // An alert says what to ask (aprobar:<requestId>) and for which brand; the question is written in the person's language.
+    const [kind, id] = a.split(':');
+    const q = kind === 'aprobar' && id && /^[\w-]{4,60}$/.test(id) ? t('help.askApprove', { id }) : a.slice(0, 300);
+    if (q.trim()) { setIntro(false); setHist(false); setOpen(true); setPending({ q, brand: p.get('brand') ?? undefined }); }
+    const rest = new URLSearchParams(search); rest.delete('asistente');
+    navigate({ pathname, search: rest.toString() ? `?${rest}` : '' }, { replace: true });
+  }, [search, pathname, navigate, setOpen, t]);
+  useEffect(() => { if (pending && brandId && !busy && (!pending.brand || pending.brand === brandId)) { askRef.current(pending.q, [], true); setPending(null); } }, [pending, brandId, busy]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [s.msgs.length, busy, open]);
   useEffect(() => {
@@ -94,25 +117,38 @@ export function HelpChat() {
   if (!shown || !current) return null;
 
   const update = (next: Saved) => { setS(next); save(brandId, next); };
-  async function ask(q: string, files: AttachedFile[] = []) {
+  async function ask(q: string, files: AttachedFile[] = [], fresh = false) {
     const question = q.trim();
     if (!question || busy) return;
-    const msgs: Msg[] = [...s.msgs, { role: 'user', content: question, ...(files.length ? { files } : {}) }];
-    update({ ...s, msgs });
-    setBusy(true);
+    const base: Saved = fresh ? { msgs: [], chatId: null } : s;
+    const msgs: Msg[] = [...base.msgs, { role: 'user', content: question, ...(files.length ? { files } : {}) }];
+    update({ ...base, msgs });
+    setBusy(true); setHist(false);
     try {
       const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; chatId: string }>('/v1/help/chat', {
         method: 'POST',
-        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) }),
+        body: JSON.stringify({ brandId, lang, path: pathname, chatId: base.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) }),
       });
       update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], ...(files.length ? { files } : {}) }] });
     } catch (e) {
       const code = String((e as Error).message);
       const key = code.includes('429') || code.includes('limit') ? 'help.limit' : code.includes('503') || code.includes('ai_off') ? 'help.off' : 'help.error';
-      update({ ...s, msgs: [...msgs, { role: 'assistant', content: t(key), next: 'nico', error: true }] });
+      update({ ...base, msgs: [...msgs, { role: 'assistant', content: t(key), next: 'nico', error: true }] });
     } finally { setBusy(false); }
   }
 
+  askRef.current = (q, files, fresh) => void ask(q, files, fresh);
+  async function pick(id: string) {
+    try {
+      const r = await api<{ id: string; view: Msg[] }>(`/v1/help/chats/${encodeURIComponent(id)}`);
+      update({ chatId: r.id, msgs: restore(r.view) }); setHist(false);
+    } catch { /* the list shows the error state on the next open */ }
+  }
+  const histBtn = (cls: string) => (
+    <button type="button" className={cls} onClick={() => setHist((h) => !h)} aria-pressed={hist} aria-label={t(hist ? 'help.histBack' : 'help.histOpen')} title={t(hist ? 'help.histBack' : 'help.histOpen')}>
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>
+    </button>
+  );
   const lastQuestion = [...s.msgs].reverse().find((m) => m.role === 'user')?.content ?? '';
   const toNico = () => { if (s.chatId) api('/v1/help/handoff', { method: 'POST', body: JSON.stringify({ chatId: s.chatId }) }).catch(() => undefined); };
   const first = (profile as { name?: string } | null)?.name?.split(' ')[0];
@@ -144,7 +180,8 @@ export function HelpChat() {
           {docked ? (
             <header className="help-dhead">
               <h2 id="help-title" className="help-dtitle">{t('help.dock')}<span className="help-ai">{t('help.ai')}</span></h2>
-              <button type="button" className="help-dbtn" onClick={() => update({ msgs: [], chatId: null })} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+              {histBtn('help-dbtn')}
+              <button type="button" className="help-dbtn" onClick={() => { setHist(false); update({ msgs: [], chatId: null }); }} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
               <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
             </header>
           ) : (
@@ -155,10 +192,12 @@ export function HelpChat() {
               <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
               {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
             </div>
+            {histBtn('help-x')}
             <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
           </header>
           )}
           <div className="help-body" aria-live="polite">
+            {hist ? <ChatHistory brandId={brandId} current={s.chatId} onPick={(id) => void pick(id)} /> : <>
             {docked ? (
               <div className="help-welcome">
                 <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
@@ -190,7 +229,9 @@ export function HelpChat() {
                 )}
               </div>
             ))}
+            {s.msgs[0]?.old && <p className="t-xs t-mute">{t('help.histOld')}</p>}
             {busy && <div className="help-msg is-bot"><p className="t-mute">{t('help.thinking')}</p></div>}
+            </>}
             <div ref={end} />
           </div>
           <Composer ref={input} brandId={brandId} busy={busy} onSend={(q, files) => void ask(q, files)} />

@@ -4,6 +4,7 @@
 import { claudeTurn, type Block, type ChatTurn, type Tool } from '../ai.js';
 import { brandBasics, findFiles, getRequest, listPosts, listRequests, results, siteChanges, type ChatCard, type ReadOut } from './reads.js';
 import { brandSites, propose, type ActCard, type ActCtx } from './actions.js';
+import { ALL_BRANDS, allBrands } from './allBrands.js';
 
 const ROUNDS = 4; // tool rounds per question, then it must answer
 
@@ -42,6 +43,7 @@ async function run(c: ActCtx, name: string, i: In): Promise<Out> {
     case 'ajustes_sitio': return siteChanges(c, i.todos !== true);
     case 'marca': return brandBasics(c);
     case 'sitios': return { ...(await brandSites(c)), cards: [] };
+    case 'todas_las_marcas': return allBrands(c, s(i.marca));
     case 'proponer': { const p = await propose(c, i); return { text: p.text, cards: [], act: p.card }; }
     default: return { text: 'Herramienta desconocida.', cards: [] };
   }
@@ -60,7 +62,7 @@ export async function answerWithTools(system: string, turns: ChatTurn[], c: ActC
   let call = 0;
   for (let round = 0; round <= ROUNDS; round++) {
     const last = round === ROUNDS;
-    const { content, stop } = await claudeTurn(system, messages, TOOLS, { model: o.model, maxTokens: 1500, meta: o.meta, noTools: last });
+    const { content, stop } = await claudeTurn(system, messages, c.access.admin ? [...TOOLS, ALL_BRANDS] : TOOLS, { model: o.model, maxTokens: 1500, meta: o.meta, noTools: last });
     const uses = content.filter((b): b is Block & { id: string; name: string } => b.type === 'tool_use' && !!b.id && !!b.name);
     if (stop !== 'tool_use' || !uses.length || last) {
       return { text: content.filter((b) => b.type === 'text').map((b) => b.text ?? '').join(''), cards, acts: [...acts.values()] };
