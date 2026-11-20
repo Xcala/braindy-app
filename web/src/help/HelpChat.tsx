@@ -83,7 +83,9 @@ export function HelpChat() {
     const fromOutside = (e: Event) => { const q = (e as CustomEvent<string>).detail; if (q?.trim()) { setIntro(false); setHist(false); setOpen(true); setPending({ q: q.trim().slice(0, 1500) }); } };
     window.addEventListener('bd-help-toggle', toggle);
     window.addEventListener('bd-help-ask', fromOutside);
-    return () => { mq.removeEventListener('change', on); window.removeEventListener('bd-help-toggle', toggle); window.removeEventListener('bd-help-ask', fromOutside); };
+    const show = () => { setIntro(false); setHist(false); setOpen(true); };
+    window.addEventListener('bd-help-open', show);
+    return () => { mq.removeEventListener('change', on); window.removeEventListener('bd-help-toggle', toggle); window.removeEventListener('bd-help-ask', fromOutside); window.removeEventListener('bd-help-open', show); };
   }, [setOpen]);
   const shown = !!current && !pathname.startsWith('/ask');
   const docked = open && desk && shown;

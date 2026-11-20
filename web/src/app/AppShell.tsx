@@ -18,6 +18,7 @@ import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
 import { HelpChat } from '../help/HelpChat';
 import { IdeasPanel } from '../wishes/IdeasPanel';
 import { AlertsInvite } from '../pwa/AlertsInvite';
+import { AssistantIntro } from '../help/AssistantIntro';
 import './shell.css';
 
 export function AppShell() {
@@ -71,7 +72,7 @@ export function AppShell() {
         </main>
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}
         </div>
-        {!adminSpace && <><IdeasPanel /><HelpChat /></>}
+        {!adminSpace && <><IdeasPanel /><HelpChat /><AssistantIntro /></>}
         <AlertsInvite />
       </div>
       </div>
