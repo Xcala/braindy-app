@@ -1,6 +1,5 @@
 /** Strings for Accesses (wave D). */
 export const accessEn = {
-  'acc.vault': 'Accesses',
   'acc.tagline': 'Encrypted. Only owners and Nicolas can reveal them. The Brains never see them.',
   'acc.addAccess': 'Add app',
   'acc.ownersOnly': 'Only the brand owners and Nicolas can see the accesses. Ask an owner if you need one.',
@@ -55,7 +54,6 @@ export const accessEn = {
 } as const;
 
 export const accessEs: Record<keyof typeof accessEn, string> = {
-  'acc.vault': 'Accesos',
   'acc.tagline': 'Cifrados. Solo los dueños y Nicolas pueden verlos. Los Brains nunca los ven.',
   'acc.addAccess': 'Agregar app',
   'acc.ownersOnly': 'Solo los dueños de la marca y Nicolas ven los accesos. Pídele a un dueño si necesitas uno.',

@@ -44,7 +44,6 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
         <div className="col g8">
           {!embedded && <p className="label">{current.name}</p>}
           {!embedded && <h1 className="h1">{t('nav.accesses')}</h1>}
-          {embedded && <h2 className="h2">{t('acc.vault')}</h2>}
           <p className="t-mute" style={{ margin: 0 }}>{t('acc.tagline')}</p>
         </div>
         {!denied && <button className="btn btn-primary" onClick={() => setEditing('new')}>{t('acc.addAccess')}</button>}

@@ -31,8 +31,7 @@ export function Stack({ items }: { items: StackItem[] }) {
           </div>
         )}
       </div>
-      {!items.length && <p className="card card-tight t-sm t-mute" style={{ margin: 0 }}>{t('plan.stackEmpty')}</p>}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {items.length > 0 && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {order.map((x, i) => {
           const soon = !!x.renews && x.status === 'active' && new Date(`${x.renews}T12:00:00`).getTime() - Date.now() < SOON;
           return (
@@ -56,7 +55,7 @@ export function Stack({ items }: { items: StackItem[] }) {
             </article>
           );
         })}
-      </div>
+      </div>}
     </section>
   );
 }
