@@ -58,7 +58,7 @@ export function ChatHistory({ brandId, current, onPick, onNew, onDeleted }: {
   const rel = new Intl.RelativeTimeFormat(lang === 'es' ? 'es' : 'en', { numeric: 'auto' });
   const ago = (at: number) => {
     const m = Math.round((at - Date.now()) / 60000);
-    return Math.abs(m) < 60 ? rel.format(m, 'minute') : Math.abs(m) < 1440 ? rel.format(Math.round(m / 60), 'hour')
+    return Math.abs(m) < 1 ? t('help.justNow') : Math.abs(m) < 60 ? rel.format(m, 'minute') : Math.abs(m) < 1440 ? rel.format(Math.round(m / 60), 'hour')
       : Math.abs(m) < 43200 ? rel.format(Math.round(m / 1440), 'day') : rel.format(Math.round(m / 43200), 'month');
   };
   const newBtn = (
