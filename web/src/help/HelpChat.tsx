@@ -15,6 +15,9 @@ import { viewingSite } from '../links/viewingSite';
 import { Composer } from './Composer';
 import { ChatHistory } from './ChatHistory';
 import { CapabilitiesMenu } from './CapabilitiesMenu';
+import { CanDo } from './CanDo';
+import { markStep } from './firstSteps';
+import { useChatTour } from './useChatTour';
 import type { AttachedFile } from '../requests/types';
 import './help.css';
 
@@ -109,6 +112,7 @@ export function HelpChat() {
   }, [search, pathname, navigate, setOpen, t]);
   useEffect(() => { if (pending && brandId && !busy && (!pending.brand || pending.brand === brandId)) { askRef.current(pending.q, [], true); setPending(null); } }, [pending, brandId, busy]);
   useEffect(() => { if (open) input.current?.focus(); }, [open]);
+  useChatTour(open && !hist && s.msgs.length === 0 && !!current);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [s.msgs.length, busy, open]);
   useEffect(() => {
     if (!open) return;
@@ -126,7 +130,7 @@ export function HelpChat() {
     const base: Saved = fresh ? { msgs: [], chatId: null } : s;
     const msgs: Msg[] = [...base.msgs, { role: 'user', content: question, ...(files.length ? { files } : {}) }];
     update({ ...base, msgs });
-    setBusy(true); setHist(false);
+    setBusy(true); setHist(false); markStep('ask');
     try {
       const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; chatId: string }>('/v1/help/chat', {
         method: 'POST',
@@ -148,7 +152,7 @@ export function HelpChat() {
     } catch { /* the list shows the error state on the next open */ }
   }
   const histBtn = (cls: string) => (
-    <button type="button" className={cls} onClick={() => setHist((h) => !h)} aria-pressed={hist} aria-label={t(hist ? 'help.histBack' : 'help.histOpen')} title={t(hist ? 'help.histBack' : 'help.histOpen')}>
+    <button type="button" className={cls} data-tour="help-hist" onClick={() => setHist((h) => !h)} aria-pressed={hist} aria-label={t(hist ? 'help.histBack' : 'help.histOpen')} title={t(hist ? 'help.histBack' : 'help.histOpen')}>
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5M12 7v5l3 2" /></svg>
     </button>
   );
@@ -210,9 +214,7 @@ export function HelpChat() {
                 <p>{t('help.welcomeSub')}</p>
               </div>
             ) : <div className="help-msg is-bot"><p>{t('help.hello', { name: first ? ` ${first}` : '' })}</p></div>}
-            {s.msgs.length === 0 && (
-              <div className={docked ? 'help-cards' : 'help-sugs'}>{(['help.s1', 'help.s2', 'help.s3'] as const).map((k) => <button key={k} type="button" className={docked ? 'help-card' : 'chip'} onClick={() => ask(t(k))}><span>{t(k)}</span>{docked && <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>}</button>)}</div>
-            )}
+            {s.msgs.length === 0 && <CanDo brandId={brandId} client={profile?.role !== 'admin'} onAsk={(q) => void ask(q)} onHist={() => setHist(true)} />}
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
                 {m.role === 'user' ? <p>{m.content}</p> : <HelpText text={m.content} onNavigate={close} />}
@@ -220,7 +222,7 @@ export function HelpChat() {
                 {m.role === 'assistant' && !!m.cards?.some((c) => !isAct(c)) && <ChatCards brandId={brandId} cards={m.cards.filter((c): c is ChatCard => !isAct(c))} onOpen={close} />}
                 {m.role === 'assistant' && m.cards?.filter(isAct).map((c) => (
                   <ActionCard key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c} files={m.files} onOpen={close}
-                    onDone={(done, text) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done, text } : y)) } : x)) })} />
+                    onDone={(done, text) => { if (c.act === 'approve' || c.act === 'site') markStep(c.act); update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done, text } : y)) } : x)) }); }} />
                 ))}
                 {m.role === 'assistant' && m.draft && (
                   <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} files={m.files} sentId={m.sent} onClose={close}

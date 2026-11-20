@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { StringKey } from '../i18n/strings';
 import { useI18n } from '../i18n/I18nProvider';
 import type { AppsView } from './appsView';
@@ -10,8 +11,8 @@ const ListIcon = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" str
 const GridIcon = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>;
 
 /** Search, sort, group, list or grid, and quick filters (with how many apps each one leaves). */
-export function AppsToolbar({ view, set, q, setQ, counts }: {
-  view: AppsView; set: (p: Partial<AppsView>) => void; q: string; setQ: (q: string) => void; counts: Record<AppsView['filter'], number>;
+export function AppsToolbar({ view, set, q, setQ, counts, extra }: {
+  extra?: ReactNode; view: AppsView; set: (p: Partial<AppsView>) => void; q: string; setQ: (q: string) => void; counts: Record<AppsView['filter'], number>;
 }) {
   const { t } = useI18n();
   return (
@@ -36,11 +37,12 @@ export function AppsToolbar({ view, set, q, setQ, counts }: {
               aria-label={t(l === 'list' ? 'apps.list' : 'apps.grid')} onClick={() => set({ layout: l })}>{l === 'list' ? ListIcon : GridIcon}</button>
           ))}
         </div>
+        {extra}
       </div>
-      <div className="row g8 wrap" role="group" aria-label={t('apps.filter')}>
+      <div className="apps-chips" role="group" aria-label={t('apps.filter')}>
         {FILTERS.filter(([f]) => f === 'all' || counts[f] > 0 || view.filter === f).map(([f, k]) => (
           <button key={f} type="button" aria-pressed={view.filter === f} onClick={() => set({ filter: f })}
-            className={`btn btn-sm ${view.filter === f ? 'btn-primary' : 'btn-secondary'}`}>{t(k)} <span className="apps-n">{counts[f]}</span></button>
+            className="apps-chip">{t(k)} <span className="apps-n">{counts[f]}</span></button>
         ))}
       </div>
     </div>

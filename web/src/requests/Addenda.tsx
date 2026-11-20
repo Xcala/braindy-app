@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { useToast } from '../components/Toaster';
 import type { RequestComment } from './types';
+import { useDraft } from '../lib/useDraft';
 
 /** Details added to a request after it was sent (Karol's wish): comments of kind "addendum", listed under the brief
  *  and beside Approve. The worker reads them with the rest of the comments. */
@@ -29,7 +30,7 @@ export function AddendumForm({ brandId, requestId }: { brandId: string; requestI
   const { t } = useI18n();
   const { user } = useAuth();
   const toast = useToast();
-  const [text, setText] = useState('');
+  const [text, setText] = useDraft(`addendum:${brandId}:${requestId}`);
   const [busy, setBusy] = useState(false);
   async function add() {
     const v = text.trim();

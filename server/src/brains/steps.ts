@@ -38,7 +38,7 @@ export async function ensureSteps(ref: DocumentReference, fresh = false): Promis
 }
 
 /** Moves one Brain's step. Starting one closes whoever was still working (the piece passed on). */
-export async function setStep(ref: DocumentReference, brain: StepBrain, state: Exclude<StepState, 'todo'>, note?: string) {
+export async function setStep(ref: DocumentReference, brain: StepBrain, state: Exclude<StepState, 'todo'>, note?: string, ask?: string) {
   const steps = await ensureSteps(ref);
   const at = Date.now();
   const next = steps.map((s) => {
@@ -46,7 +46,9 @@ export async function setStep(ref: DocumentReference, brain: StepBrain, state: E
     if (state === 'doing' && s.state === 'doing') return { ...s, state: 'done' as const, at };
     return s;
   });
-  await ref.update({ 'work.steps': next, 'work.current': state === 'doing' ? brain : null, updatedAt: FieldValue.serverTimestamp() });
+  // A question for the client shows above the strip until they answer it; an empty one clears it.
+  const q = ask === undefined ? {} : { 'work.ask': ask.trim() ? { brain, text: ask.trim().slice(0, 300), at } : null };
+  await ref.update({ 'work.steps': next, 'work.current': state === 'doing' ? brain : null, ...q, updatedAt: FieldValue.serverTimestamp() });
   return next;
 }
 
@@ -55,17 +57,18 @@ const show = (steps: Step[]) => steps.map((s, i) => `${i + 1}. ${s.brain}: ${s.s
 export function registerStepTools(server: McpServer) {
   server.registerTool('braindy_work_step', {
     title: 'Mover el paso de un Brain en una solicitud',
-    description: 'El equipo trabaja por turnos en cada solicitud: researcher → marketer → creator → builder. Llama esto al empezar el turno de un Brain (state "doing"; la respuesta trae el cerebro de la marca: léelo y aplícalo) y al terminarlo (state "done", con una nota de una línea para el cliente: qué encontró o hizo, en el idioma de la marca, sin claves ni datos internos). Usa "skip" si ese Brain no tiene nada que hacer en esta solicitud. El cliente lo ve en vivo.',
+    description: 'El equipo trabaja por turnos en cada solicitud: researcher → marketer → creator → builder. Llama esto al empezar el turno de un Brain (state "doing"; la respuesta trae el cerebro de la marca: léelo y aplícalo) y al terminarlo (state "done", con una nota de una línea para el cliente: qué encontró o hizo, en el idioma de la marca, sin claves ni datos internos). Usa "skip" si ese Brain no tiene nada que hacer en esta solicitud. Si necesitas un dato del cliente para seguir, ponlo en ask (una pregunta corta; el cliente la responde en el pedido y su respuesta llega como detalle agregado; ask vacío la quita). El cliente lo ve en vivo, en una franja compacta.',
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
       brain: z.enum(RELAY), state: z.enum(['doing', 'done', 'skip']),
       note: z.string().max(400).optional().describe('Una línea para el cliente (al terminar)'),
+      ask: z.string().max(300).optional().describe('Pregunta corta para el cliente cuando falta un dato; vacío la quita'),
     },
   }, async (a) => {
     try {
       await requireBrand(a.brandId);
       const ref = db.doc(`brands/${a.brandId}/requests/${a.requestId}`);
-      const steps = await setStep(ref, a.brain, a.state, a.note);
+      const steps = await setStep(ref, a.brain, a.state, a.note, a.ask);
       // Every Brain starts its turn with the brand's brain in front of it.
       const brain = a.state === 'doing' ? await brainBlock(a.brandId, `Antes de trabajar, ${a.brain}: lee y aplica el cerebro de la marca; manda sobre tus criterios generales`) : '';
       return { content: [{ type: 'text' as const, text: `Listo. Pasos ahora:\n${show(steps)}${brain}` }] };

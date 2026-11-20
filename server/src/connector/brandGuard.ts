@@ -12,12 +12,18 @@ function marks(name: string): string[] {
   return [words.join(' '), ...(words[0]?.length >= 6 ? [words[0]] : []), ...(initials.length >= 3 ? [initials] : [])];
 }
 
-/** Brands that share a client with this one (through users' brandIds), with their names. */
+/** Brands that share a client with this one (through users' brandIds) or a group (brand.ancestors), with their names. */
 export async function siblings(brandId: string) {
   const users = await db.collection('users').where('brandIds', 'array-contains', brandId).limit(20).get();
   const ids = new Set<string>();
   users.docs.forEach((u) => ((u.get('brandIds') as string[]) ?? []).forEach((id) => id !== brandId && ids.add(id)));
-  if (!ids.size || ids.size > 30) return []; // admins see every brand: only a client's own group counts
+  if (ids.size > 30) ids.clear(); // admins see every brand: only a client's own group counts
+  const group = ((await db.doc(`brands/${brandId}`).get()).get('ancestors') as string[] | undefined)?.[0];
+  if (group) {
+    const same = await db.collection('brands').where('ancestors', 'array-contains', group).limit(30).get();
+    same.docs.forEach((d) => d.id !== brandId && d.get('kind') !== 'group' && ids.add(d.id));
+  }
+  if (!ids.size) return [];
   const docs = await db.getAll(...[...ids].map((id) => db.doc(`brands/${id}`)));
   return docs.filter((d) => d.exists).map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id) }));
 }

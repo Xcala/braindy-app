@@ -54,7 +54,8 @@ export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, int
   const head = tab !== 'summary' || (!plan && !schedule) ? (
     <header className="col g4">
       <p className="label" style={{ margin: 0 }}>{brandName}</p>
-      <h1 className="h1">{t(tab === 'summary' ? 'plan.title' : `plan.tab.${tab}`)}</h1>
+      {/* Apps: the list's own heading («Las apps con las que opera tu marca») is the title. */}
+      {tab !== 'apps' && <h1 className="h1">{t(tab === 'summary' ? 'plan.title' : `plan.tab.${tab}`)}</h1>}
     </header>
   ) : null;
   return (

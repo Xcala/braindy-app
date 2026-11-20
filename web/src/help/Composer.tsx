@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { upload } from '../assets/fileApi';
 import type { AttachedFile } from '../requests/types';
+import { markStep } from './firstSteps';
 
 type Rec = { start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean; continuous: boolean; onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
 const SR = (): (new () => Rec) | null => {
@@ -29,6 +30,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
   const pick = useRef<HTMLInputElement>(null);
   useEffect(() => () => rec.current?.abort(), []);
   useEffect(() => { setFiles([]); setText(''); }, [brandId]);
+  // The «What I can do» cards start a tool here, so the person learns it by using it.
+  const dictateRef = useRef<() => void>(() => undefined);
+  useEffect(() => {
+    const attach = () => pick.current?.click();
+    const talk = () => (SR() ? dictateRef.current() : attach());
+    window.addEventListener('bd-help-attach', attach);
+    window.addEventListener('bd-help-dictate', talk);
+    return () => { window.removeEventListener('bd-help-attach', attach); window.removeEventListener('bd-help-dictate', talk); };
+  }, []);
 
   const send = () => {
     if (busy || uploading || (!text.trim() && !files.length)) return;
@@ -46,6 +56,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
       try {
         const assetId = await upload(brandId, f, () => undefined);
         setFiles((x) => [...x, { assetId, name: f.name, size: f.size, contentType: f.type || 'application/octet-stream' }]);
+        if (f.type.startsWith('image/')) markStep('photo');
       } catch { setError(true); } finally { setUploading((n) => n - 1); }
     }));
   }
@@ -62,11 +73,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
     r.onresult = (e) => {
       for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i]!.isFinal) said += `${e.results[i]![0]!.transcript} `;
       setText(`${base}${said}`.trimEnd());
+      if (said.trim()) markStep('voice');
     };
     r.onend = () => setListening(false);
     r.onerror = () => setListening(false);
     rec.current = r; r.start(); setListening(true);
   }
+  dictateRef.current = dictate;
 
   return (
     <form className="help-form" onSubmit={(e) => { e.preventDefault(); send(); }}>
@@ -85,13 +98,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
         onChange={(e) => { setText(e.target.value); grow(e.currentTarget); }}
         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
       <div className="help-bar">
-        <button type="button" className="help-tool" onClick={() => pick.current?.click()} disabled={files.length >= MAX_FILES} aria-label={t('help.attach')} title={t('help.attach')}>
+        <button type="button" className="help-tool" data-tour="help-attach" onClick={() => pick.current?.click()} disabled={files.length >= MAX_FILES} aria-label={t('help.attach')} title={t('help.attach')}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         </button>
         <input ref={pick} type="file" multiple hidden onChange={(e) => { void add(e.target.files); e.target.value = ''; }} />
         <span className="help-gap" />
         {SR() && (
-          <button type="button" className={`help-tool${listening ? ' is-on' : ''}`} onClick={dictate} aria-pressed={listening} aria-label={t(listening ? 'help.dictateStop' : 'help.dictate')} title={t(listening ? 'help.dictateStop' : 'help.dictate')}>
+          <button type="button" className={`help-tool${listening ? ' is-on' : ''}`} data-tour="help-mic" onClick={dictate} aria-pressed={listening} aria-label={t(listening ? 'help.dictateStop' : 'help.dictate')} title={t(listening ? 'help.dictateStop' : 'help.dictate')}>
             <Icon name="mic" size={20} />
           </button>
         )}

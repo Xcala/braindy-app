@@ -15,6 +15,10 @@ import { LessonForCategory } from '../../criterio/LessonCards';
 import { VoiceNote } from './VoiceNote';
 import { checklist, intentById, quickDates, type Answers, type Check, type QKey } from './intents';
 import type { Seed } from './AskStart';
+import { useRequests } from '../useRequests';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { findDuplicate } from './duplicate';
+import type { BrandRequest } from '../types';
 
 type When = '' | 'today' | 'thisWeek' | 'nextWeek' | 'noRush' | 'pick';
 
@@ -29,6 +33,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   const toast = useToast();
   const intent = intentById(seed.intent);
   const [text, setText] = useState(seed.text);
+  const [customTitle, setCustomTitle] = useState('');
   const [answers, setAnswers] = useState<Answers>(seed.answers);
   const [files, setFiles] = useState<AttachedFile[]>([]);
   const [links, setLinks] = useState<string[]>(seed.links ?? []);
@@ -42,6 +47,8 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   const [detail, setDetail] = useState<AskDetailValue>({ sub: seed.sub ?? '', type: seed.formatType ?? '', application: {}, scene: {}, format: '', language: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const { list: open } = useRequests(brandId);
+  const [dup, setDup] = useState<BrandRequest | null>(null);
   useTour('ask', () => askSteps(lang), true, false);
 
   const q = quickDates();
@@ -66,13 +73,24 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
     dueDate ? t('as.sumDue', { day: dayLabel(dueDate, lang) }) : when === 'noRush' ? t('as.sumNoRush') : '',
   ].filter(Boolean).join(', ');
 
+  const autoTitle = (format && !firstLine.toLowerCase().includes(format.toLowerCase()) ? `${format} · ${firstLine || answers.goal?.[0] || ''}` : firstLine || format || summary).replace(/ · $/, '').slice(0, 90);
+
+  // Before sending: an open request of the last two days that says much the same is offered first.
+  function send() {
+    const d = findDuplicate(open, customTitle || autoTitle, text);
+    if (d) setDup(d); else void submit();
+  }
+  const dupWhen = (r: BrandRequest) => { const ms = r.createdAt?.toMillis() ?? Date.now(); return t(new Date(ms).toDateString() === new Date().toDateString() ? 'rc.today' : 'rc.yesterday'); };
+
   async function submit() {
+    setDup(null);
     setBusy(true); setError(false);
     const lines = [
       ...(intent?.questions ?? []).filter((x) => answers[x.key]?.length).map((x) => `${x.label[lang]} ${answers[x.key]!.join(', ')}`),
       when === 'noRush' ? t('as.sumNoRush') : '', noMaterial ? t('as.noMaterial') : '', detail.application.text ?? '',
     ].filter(Boolean);
-    const title = (format && !firstLine.toLowerCase().includes(format.toLowerCase()) ? `${format} · ${firstLine || answers.goal?.[0] || ''}` : firstLine || format || summary).replace(/ · $/, '').slice(0, 90);
+    // The person's own title wins; the automatic one is only the fallback.
+    const title = customTitle.replace(/\s+/g, ' ').trim().slice(0, 160) || autoTitle;
     try {
       const { requestId } = await createRequest(brandId, {
         category: cat, subcategory: detail.sub, formatType: format, title,
@@ -92,6 +110,12 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         <span className="chip chip-plain" style={{ background: 'var(--hielo)', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onBack}><Icon name="arrowLeft" size={16} />{t('as.change')}</button>
       </div>
+
+      <label className="col g8">
+        <span className="t-sm w7">{t('as.titleLabel')} <span className="t-xs t-mute">· {t('as.optional')}</span></span>
+        <input className="input" style={{ height: '2.75rem' }} maxLength={160} value={customTitle} onChange={(e) => setCustomTitle(e.target.value)}
+          placeholder={autoTitle && text.trim() ? autoTitle : t('as.titlePh')} />
+      </label>
 
       <textarea className="input" autoFocus aria-label={t('ask.need')} data-tour="ask-what" style={{ minHeight: '7.5rem', padding: '0.875rem 1rem', resize: 'vertical', fontSize: '1rem', lineHeight: 1.5 }}
         placeholder={intent?.ph[lang] ?? t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} />
@@ -167,8 +191,14 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{t('ask.error')}</p>}
       <div className="row between g12 wrap">
         <span className="t-xs t-mute" style={{ maxWidth: '18.75rem' }}>{missing.length ? t('as.missingNote', { what: missing.map((k) => t(`as.c.${k}`).toLowerCase()).join(', ') }) : t('as.allClear')}</span>
-        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={submit}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
+        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={send}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
       </div>
+      {dup && (
+        <ConfirmDialog title={t('rc.dupTitle', { title: dup.title })} confirmLabel={t('rc.dupOpen')} onConfirm={() => navigate(`/requests/${dup.id}`)} onCancel={() => setDup(null)}>
+          <p className="t-sm t-mute" style={{ margin: 0 }}>{t('rc.dupBody', { when: dupWhen(dup) })}</p>
+          <button type="button" className="btn btn-ghost btn-sm self-start" onClick={() => void submit()}>{t('rc.dupNew')}</button>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

@@ -89,6 +89,8 @@ requests.post('/brands/:brandId/requests', async (c) => {
 
 /** Creates a request and routes it to its lead Brain (also used by the Braindy connector). */
 export async function createRequest(brandId: string, uid: string, b: Record<string, unknown>): Promise<{ requestId: string } | { error: string }> {
+  // A group has no work of its own: each request goes to one company in it (siblings are never mixed).
+  if ((await db.doc(`brands/${brandId}`).get()).get('kind') === 'group') return { error: 'group_brand' };
   type InFile = { assetId?: string; name?: string; size?: number; contentType?: string };
   const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[]; files?: InFile[] }>;
   // "Ask" can be one free-text box: without a type, the category is read from the words.
@@ -110,6 +112,8 @@ export async function createRequest(brandId: string, uid: string, b: Record<stri
   const ref = db.collection(`brands/${brandId}/requests`).doc();
   await ref.set({
     ...(from ? { from } : {}),
+    // Site adjustments are found by this flag, so the person can give them any title.
+    ...(b.siteAdjust === true ? { siteAdjust: true } : {}),
     title: str(b.title, 160) || str(b.formatType, 160),
     category, subcategory, formatType: str(b.formatType, 160),
     cards: { product: { ...card('product'), files: attachments(cards.product?.files) }, application: card('application'), scene: card('scene') },
@@ -160,6 +164,28 @@ requests.post('/brands/:brandId/requests/:requestId/versions/:versionId/decision
   if (!state) return c.json({ error: 'invalid' }, 400);
   const r = await decide(brandId, requestId, versionId, uid, state, str(b.note, 4000));
   return r === 'ok' ? c.json({ ok: true }) : c.json({ error: r }, r === 'not_found' ? 404 : 400);
+});
+
+/** Rename a request: the person who asked, anyone who can approve, or NickMark. */
+requests.patch('/brands/:brandId/requests/:requestId', async (c) => {
+  const { brandId, requestId } = c.req.param();
+  const uid = c.get('user').uid;
+  const b = await c.req.json<{ title?: unknown }>().catch(() => ({} as { title?: unknown }));
+  const title = str(b.title, 160).replace(/\s+/g, ' ').trim();
+  if (!title) return c.json({ error: 'title_required' }, 400);
+  const ref = db.doc(`brands/${brandId}/requests/${requestId}`);
+  const snap = await ref.get();
+  if (!snap.exists) return c.json({ error: 'not_found' }, 404);
+  const access = await brandAccess(uid, brandId);
+  if (!access.member) return c.json({ error: 'forbidden' }, 403);
+  if (!access.admin && snap.get('createdBy') !== uid && !(await canApprove(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const before = String(snap.get('title') ?? '');
+  if (before === title) return c.json({ ok: true, title });
+  // Old site adjustments were recognised by their title prefix: keep them recognised after a rename.
+  const keepSite = snap.get('category') === 'web' && /^(Ajuste del sitio|Site adjustment)/.test(before);
+  await ref.update({ title, titleBy: uid, ...(keepSite ? { siteAdjust: true } : {}), updatedAt: now() });
+  await db.collection('audit').doc().set({ type: 'request_renamed', brandId, requestId, before, after: title, by: uid, at: now() });
+  return c.json({ ok: true, title });
 });
 
 /** Approve a month of posts at once. */
