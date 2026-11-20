@@ -46,6 +46,8 @@ import { adminIdentity } from './connector/identity.js';
 import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
 import { accessLinks, publicAccess } from './accessLinks.js';
+import { push } from './push/routes.js';
+import { events } from './push/events.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -100,6 +102,9 @@ app.route('/', calendarCallback);
 // Scheduled Brain work (Cloud Scheduler, OIDC-verified inside).
 app.use('/cron/*', rateLimit('cron', 30, 60_000));
 app.route('/cron', cron);
+// Firestore writes → alerts on phones and computers (Eventarc, OIDC-verified inside).
+app.use('/events/*', rateLimit('events', 600, 60_000));
+app.route('/events', events);
 
 // Remote Braindy connector for Claude: OAuth (discovery, registration, authorize, token) and MCP at /mcp (Bearer token, admins only).
 app.use('/oauth/*', rateLimit('oauth', 60, 60_000));
@@ -167,6 +172,7 @@ app.route('/v1', shareLinks);
 app.use('/v1/help/chat', rateLimit('help', 20, 60_000));
 app.route('/v1', help);
 app.route('/v1', resources);
+app.route('/v1', push);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));
