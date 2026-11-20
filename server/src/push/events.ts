@@ -14,11 +14,17 @@ async function fromEventarc(authorization?: string) {
   // Cloud Run answers on two URLs (the old hash one and the project-number one); either may be the audience.
   const audience = (process.env.EVENTS_AUDIENCE ?? '').split(',').map((s) => s.trim()).filter(Boolean); const sa = process.env.EVENTS_SA;
   const token = (authorization ?? '').replace(/^Bearer /, '');
-  if (!audience.length || !sa || !token) return false;
+  if (!audience.length || !sa || !token) { console.warn('events auth: missing', JSON.stringify({ aud: audience.length, sa: !!sa, token: !!token })); return false; }
   try {
     const p = (await oidc.verifyIdToken({ idToken: token, audience })).getPayload();
     return p?.email === sa && !!p?.email_verified;
-  } catch { return false; }
+  } catch (e) {
+    // Only who signed it and for whom (never the token), to see a wrong audience or account.
+    const [, body] = token.split('.');
+    const claims = (() => { try { return JSON.parse(Buffer.from(body ?? '', 'base64url').toString()) as { aud?: string; email?: string }; } catch { return {}; } })();
+    console.warn('events auth failed', JSON.stringify({ aud: claims.aud, email: claims.email, err: String(e).slice(0, 120) }));
+    return false;
+  }
 }
 
 type Ids = { brandId: string; requestId: string; commentId?: string };
