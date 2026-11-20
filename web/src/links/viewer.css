@@ -108,6 +108,30 @@ button.spanel-pct { appearance: none; border: 0; background: none; padding: 0; c
 /* «Dímelo» / «Hazlo tú»: the switch in the bar. */
 .lview-modes button { height: 1.875rem; }
 
+/* Adjustment cards with where they stand: received (grey dot), Builder on it (avatar breathing, bar running), ready (green). */
+.spanel-recv { gap: 0.375rem; }
+.spanel-job { display: flex; align-items: center; gap: 0.5rem; }
+.spanel-job-dot { flex: none; width: 1.125rem; height: 1.125rem; border-radius: 50%; background: var(--line, #e5e7eb); color: #fff; font: 700 0.6875rem/1.125rem var(--f-text, system-ui); text-align: center; }
+.spanel-job-dot.is-done { background: #16A34A; }
+.spanel-job-ico { animation: spanel-breathe 1.6s ease-in-out infinite; }
+.spanel-recv.is-working { border-color: color-mix(in srgb, var(--builder, #2A7FFF) 45%, var(--line)); background: var(--builder-bg, #EEF4FF); }
+.spanel-recv.is-working .spanel-job .w7 { color: var(--builder, #2A7FFF); }
+.spanel-recv.is-done { border-color: color-mix(in srgb, #16A34A 45%, var(--line)); }
+.spanel-recv.is-done .spanel-job .w7 { color: #15803D; }
+.spanel-job-bar { position: relative; height: 0.25rem; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--builder, #2A7FFF) 18%, transparent); }
+.spanel-job-bar::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 40%; border-radius: inherit; background: var(--builder, #2A7FFF); animation: spanel-run 1.4s ease-in-out infinite; }
+@keyframes spanel-breathe { 50% { transform: scale(1.12); } }
+@keyframes spanel-run { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+/* In the viewer's bar: Builder at work, and «there is a new version» with a button that reloads only the site. */
+.lview-live { display: inline-flex; align-items: center; gap: 0.5rem; height: 2rem; padding: 0 0.75rem; border-radius: 999px; font: 700 0.75rem/1 var(--f-text); white-space: nowrap; }
+.lview-live.is-working { background: var(--builder-bg, #EEF4FF); color: var(--builder, #2A7FFF); }
+.lview-live.is-working::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; animation: spanel-ping 1.2s ease-out infinite; }
+.lview-live.is-fresh { background: #DCFCE7; color: #166534; padding-right: 0.25rem; }
+.lview-live.is-fresh .btn { height: 1.5rem; }
+@keyframes spanel-ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 0.5rem transparent; } }
+@media (max-width: 767px) { .lview-live { order: 8; } }
+@media (prefers-reduced-motion: reduce) { .spanel-job-ico, .spanel-job-bar::after, .lview-live.is-working::before { animation: none; } .spanel-job-bar::after { width: 100%; opacity: .5; } }
 /* The assistant stays docked on the left while a site is open (computers): the viewer starts after it. */
 .lview-ai { display: none; }
 @media (min-width: 768px) {

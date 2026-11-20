@@ -3,6 +3,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { api } from '../lib/api';
 import { SitePanel } from './SitePanel';
 import { useSpot } from './useSpot';
+import { useSiteWork } from './useSiteWork';
+import { useToast } from '../components/Toaster';
 import { AddressBar } from './AddressBar';
 import { ModeSwitch, useSiteMode, useSiteSignIn } from './SiteModes';
 import type { BrandLink } from './useBrandLinks';
@@ -46,6 +48,17 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
   const sm = useSiteMode(link.id, spot, hasPanel && !blocked);
   useSiteSignIn(brandId, link.id, spot, hasPanel && !blocked && !!link.editorAuth);
   const editing = sm.mode === 'edit';
+  // Builder's work on this site, live: a pill while it works, and when it finishes (or a deploy lands) «there is a new version».
+  const work = useSiteWork(brandId, link.url);
+  const toast = useToast();
+  const { justDone, clearJustDone } = work;
+  const markFresh = spot.markFresh;
+  useEffect(() => {
+    if (!justDone) return;
+    markFresh();
+    toast({ text: t('lv.freshDone', { what: justDone.note || (justDone.r.cards?.product?.text ?? justDone.r.title).split('\n')[0].slice(0, 70) }), ms: 8000, tone: 'ok' });
+    clearJustDone();
+  }, [justDone, clearJustDone, markFresh, toast, t]);
   // In the editor the comments stay one click away, folded.
   useEffect(() => { if (editing) setPanel(false); }, [editing]);
 
@@ -61,6 +74,9 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
           {blocked && <span className="t-xs t-mute truncate">{link.url.replace(/^https:\/\//, '')}</span>}
         </div>
         {!blocked && !editing && <AddressBar spot={spot} home={link.url} />}
+        {hasPanel && !blocked && (spot.fresh
+          ? <span className="lview-live is-fresh" role="status">{t('lv.fresh')} <button type="button" className="btn btn-primary btn-sm" onClick={spot.reload}>{t('lv.seeNew')}</button></span>
+          : work.working > 0 && <span className="lview-live is-working" role="status">{t('lv.working', { n: work.working })}</span>)}
         {sm.canEdit && <ModeSwitch mode={sm.mode} setMode={sm.setMode} />}
         {!blocked && !editing && (
           <div className="seg lview-sizes" role="group" aria-label={t('lv.size')}>
@@ -102,7 +118,7 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M13 6l6 6-6 6M5 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <span className="lview-side-label">{t('sp.toggle')}</span>
             </button>
-            <div className="lview-side-in" inert={!panel}><SitePanel brandId={brandId} link={link} links={links} frame={blocked || editing ? undefined : spot} /></div>
+            <div className="lview-side-in" inert={!panel}><SitePanel brandId={brandId} link={link} links={links} frame={blocked || editing ? undefined : spot} jobs={work.jobs} /></div>
           </div>
         )}
       </div>

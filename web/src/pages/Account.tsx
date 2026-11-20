@@ -14,6 +14,8 @@ import { sectionOfPath, useMySections } from '../team/sections';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { promptInstall, usePwa } from '../pwa/pwa';
 import { IosSteps } from '../pwa/PwaBar';
+import { QuotaCard } from '../links/QuotaCard';
+import { useAdjustQuota } from '../links/useAdjustQuota';
 
 const svg = (d: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const I = {
@@ -49,6 +51,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
   const { can } = useMySections();
   const { plan } = useBilling(can('billing') ? current?.id : undefined);
   const acc = useAccesses(can('accesses') ? current?.id : undefined);
+  const { quota } = useAdjustQuota(current?.id);
   const isAdmin = profile?.role === 'admin';
   const pwa = usePwa();
   const [iosHelp, setIosHelp] = useState(false);
@@ -86,6 +89,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
         <h1 className="h2">{profile?.name ?? name}</h1>
         <span className="t-sm t-mute">{user?.email} · {isAdmin ? t('role.admin') : t('role.client')}</span>
       </div>
+      {current && quota && <QuotaCard brandId={current.id} quota={quota} />}
       {current && brand.length > 0 && <Group title={current.name} rows={brand} onPick={onPick} />}
       {more.length > 0 && <Group title={t('acct.more')} rows={more} onPick={onPick} />}
       <Group title={t('acct.account')} rows={account} onPick={onPick} />

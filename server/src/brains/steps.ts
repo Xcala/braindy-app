@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { db } from '../firebase.js';
 import { requireBrand } from '../connector/store.js';
 import { brainBlock } from './knowledge.js';
+import { monthOf } from '../usage.js';
 
 export const RELAY = ['researcher', 'marketer', 'creator', 'builder'] as const;
 export type StepBrain = (typeof RELAY)[number];
@@ -63,15 +64,24 @@ export function registerStepTools(server: McpServer) {
       brain: z.enum(RELAY), state: z.enum(['doing', 'done', 'skip']),
       note: z.string().max(400).optional().describe('Una línea para el cliente (al terminar)'),
       ask: z.string().max(300).optional().describe('Pregunta corta para el cliente cuando falta un dato; vacío la quita'),
+      credits: z.number().int().min(0).max(2000).optional()
+        .describe('Solo builder al terminar un ajuste del cliente: créditos Braindy que gasta de su cupo mensual. Guía: 50 un texto o color, 100 una foto o un cambio pequeño, 200 un bloque, 300 una sección nueva, 400 un formulario o arreglo con datos; 0 si era repetido o se cotiza aparte. Por defecto 100.'),
     },
   }, async (a) => {
     try {
       await requireBrand(a.brandId);
       const ref = db.doc(`brands/${a.brandId}/requests/${a.requestId}`);
       const steps = await setStep(ref, a.brain, a.state, a.note, a.ask);
+      // A client's site adjustment takes its real size from the monthly quota once Builder finishes it.
+      let charged = '';
+      if (a.brain === 'builder' && a.state === 'done' && (await ref.get()).get('billable') === true) {
+        const credits = a.credits ?? 100;
+        await ref.update({ credits, creditsMonth: monthOf() });
+        charged = `\nCupo: ${credits} créditos este mes.`;
+      }
       // Every Brain starts its turn with the brand's brain in front of it.
       const brain = a.state === 'doing' ? await brainBlock(a.brandId, `Antes de trabajar, ${a.brain}: lee y aplica el cerebro de la marca; manda sobre tus criterios generales`) : '';
-      return { content: [{ type: 'text' as const, text: `Listo. Pasos ahora:\n${show(steps)}${brain}` }] };
+      return { content: [{ type: 'text' as const, text: `Listo. Pasos ahora:\n${show(steps)}${charged}${brain}` }] };
     } catch (e) {
       return { content: [{ type: 'text' as const, text: `Error: ${(e as Error).message}` }], isError: true };
     }
