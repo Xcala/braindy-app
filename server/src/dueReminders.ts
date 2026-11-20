@@ -5,6 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from './firebase.js';
 import { notify } from './notify.js';
 import { logError } from './guard.js';
+import { brandPeople, pushTo } from './push/send.js';
 
 /** Tomorrow as YYYY-MM-DD in Bogotá. */
 export function tomorrowInBogota(now = new Date()) {
@@ -25,6 +26,9 @@ export async function remindDueTomorrow() {
       try {
         await notify(b.id, 'due_tomorrow', { when: title });
         await r.ref.update({ remindedDue: day });
+        const people = await brandPeople(b.id);
+        await pushTo(people.uids, { kind: 'due', tag: `r-${r.id}`, url: `/requests/${r.id}?brand=${encodeURIComponent(b.id)}`,
+          title: { es: `Mañana se entrega · ${people.name}`, en: `Due tomorrow · ${people.name}` }, body: { es: `«${title}»`, en: `"${title}"` } });
         due.push({ brandId: b.id, brand: String(b.get('name') ?? b.id), requestId: r.id, title });
       } catch (e) { logError(e, { where: 'cron-due', brandId: b.id }); }
     }

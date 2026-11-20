@@ -72,6 +72,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
   const account: Row[] = [
     { icon: I.language, label: 'set.tab.language', value: <LangToggle /> },
     { icon: I.theme, label: 'theme.title', value: <ThemeToggle /> },
+    { to: '/alerts', icon: I.notices, label: 'al.title' },
     ...(pwa.canInstall || pwa.ios ? [{ onClick: () => { if (pwa.canInstall) void promptInstall(); else setIosHelp(true); }, icon: I.install, label: 'pwa.install' as StringKey }] : []),
     { onClick: () => { if (!requestTour()) navigate('/home?tour=1'); }, icon: I.tour, label: 'tour.see' },
     ...(isAdmin ? [{ to: '/admin/today', icon: I.admin, label: 'nav.backToAdmin' as StringKey }] : []),

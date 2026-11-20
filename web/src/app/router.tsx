@@ -41,6 +41,7 @@ import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
 import { Account } from '../pages/Account';
+import { Alerts } from '../pwa/Alerts';
 import { OpenFile } from '../pages/OpenFile';
 
 export const router = createBrowserRouter([
@@ -85,6 +86,7 @@ export const router = createBrowserRouter([
           { path: 'wishlist', element: <Wishlist /> },
           { path: 'plan', element: <MyPlan /> },
           { path: 'account', element: <Account /> },
+          { path: 'alerts', element: <Alerts /> },
           { path: 'pay', element: <Pay /> },
           { path: 'pay/success', element: <PaySuccess /> },
           {

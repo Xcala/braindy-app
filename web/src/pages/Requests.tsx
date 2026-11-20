@@ -14,7 +14,6 @@ import { RequestsBoard, COLUMNS } from '../requests/RequestsBoard';
 import { RequestsList } from '../requests/RequestsList';
 import { DueCalendar } from '../requests/DueCalendar';
 import { DeliveryPace } from '../requests/DeliveryPace';
-import { ActionStrip } from '../requests/ActionStrip';
 import { AskPanel } from '../requests/ask/AskPanel';
 import { downloadCsv, printPdf, rowOf } from '../requests/exportRequests';
 import { rememberOrder } from '../requests/RequestNav';
@@ -76,8 +75,6 @@ export function Requests() {
           <button type="button" className="btn btn-primary" data-tour="ask-open" onClick={() => setParam('new', '1')}><Icon name="plus" size={18} />{t('as.new')}</button>
         </div>
       </div>
-
-      {!loading && <ActionStrip brandId={current.id} list={list} isAdmin={isAdmin} />}
 
       {!loading && list.length > 0 && (
         <RequestsToolbar brandId={current.id} all={list} narrowed={narrowed} shown={shown.length} f={f} set={setFilters} tags={tags} isAdmin={isAdmin} view={view} setView={setView}
