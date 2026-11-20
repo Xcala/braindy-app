@@ -3,6 +3,7 @@ import type { ScopedRequest } from '../requests/useBrandsRequests';
 import { ago } from '../brain/BrainFeed';
 import { brandColors, type Color } from './identity/Colors';
 import { useBrandDoc } from './useBrandDoc';
+import { useTopResult } from './useTopResult';
 import type { Brand } from './BrandProvider';
 import './companyCard.css';
 
@@ -21,6 +22,7 @@ export function CompanyCard({ brand, requests, go }: { brand: Brand; requests: S
   // The brand's main photo; else its hero image; else its colors.
   const cover = brand.coverUrl ?? identity?.heroImage ?? identity?.concept?.find((c) => c.kind === 'hero')?.url ?? null;
 
+  const top = useTopResult(brand.id, brand.resultsOn);
   const approve = requests.filter((r) => r.status === 'to_approve');
   const prod = requests.filter((r) => r.status === 'in_production');
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
@@ -47,6 +49,17 @@ export function CompanyCard({ brand, requests, go }: { brand: Brand; requests: S
         <button type="button" className="cc-stat" onClick={() => go('/requests')}><b>{prod.length}</b><span>{t('gh.sProd')}</span></button>
         <button type="button" className="cc-stat" onClick={() => go('/deliveries')}><b>{done}</b><span>{t('gh.sDone')}</span></button>
       </div>
+
+      {top && (
+        <button type="button" className="cc-result" onClick={() => go('/report')}>
+          <span className="cc-result-k">{t('gh.r.kicker')}</span>
+          <span className="cc-result-row">
+            <b>{top.value.toLocaleString(lang === 'en' ? 'en-US' : 'es-CO')}</b>
+            {top.change !== null && top.change !== 0 && <i className={top.change > 0 ? 'is-up' : 'is-down'}>{top.change > 0 ? '▲' : '▼'} {Math.abs(top.change)}%</i>}
+          </span>
+          <span className="cc-result-l">{t(`gh.r.${top.key}`)}{top.change !== null ? ` · ${t('gh.r.vs')}` : ''}</span>
+        </button>
+      )}
 
       <div className="cc-meta">
         {last ? (
