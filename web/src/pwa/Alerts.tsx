@@ -72,32 +72,3 @@ export function Alerts() {
     </div>
   );
 }
-
-const DISMISS = 'bd-alerts-later';
-/** A one-line invitation on Home, until the person turns alerts on or says not now. */
-export function AlertsPrompt() {
-  const { t, lang } = useI18n();
-  const [show, setShow] = useState(false);
-  const [busy, setBusy] = useState(false);
-  useEffect(() => {
-    let later = false;
-    try { later = Number(localStorage.getItem(DISMISS)) > Date.now(); } catch { /* private mode */ }
-    if (!later) pushState().then((s) => setShow(s === 'off')).catch(() => undefined);
-  }, []);
-  if (!show) return null;
-  const hide = () => { try { localStorage.setItem(DISMISS, String(Date.now() + 30 * 864e5)); } catch { /* ignore */ } setShow(false); };
-  return (
-    <div className="card col g12" role="region" aria-label={t('al.title')}>
-      <p className="t-sm" style={{ margin: 0 }}>{t('al.prompt')}</p>
-      <div className="row g12 wrap">
-        <button type="button" className="btn btn-ghost" style={{ flex: '1 1 0', minWidth: 0 }} onClick={hide}>{t('al.later')}</button>
-        <button type="button" className="btn btn-primary" style={{ flex: '1 1 0', minWidth: 0 }} disabled={busy} onClick={async () => {
-          setBusy(true);
-          const s = await enablePush(lang).catch(() => 'off' as PushState);
-          setBusy(false);
-          if (s === 'on' || s === 'blocked') setShow(false);
-        }}>{t('al.enableShort')}</button>
-      </div>
-    </div>
-  );
-}

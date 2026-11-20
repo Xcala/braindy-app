@@ -17,6 +17,7 @@ import { useEffect, useRef } from 'react';
 import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
 import { HelpChat } from '../help/HelpChat';
 import { IdeasPanel } from '../wishes/IdeasPanel';
+import { AlertsInvite } from '../pwa/AlertsInvite';
 import './shell.css';
 
 export function AppShell() {
@@ -71,6 +72,7 @@ export function AppShell() {
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}
         </div>
         {!adminSpace && <><IdeasPanel /><HelpChat /></>}
+        <AlertsInvite />
       </div>
       </div>
       </Toaster>

@@ -1,4 +1,3 @@
-import { AlertsPrompt } from '../pwa/Alerts';
 import { useAuth } from '../auth/AuthProvider';
 import { useTour } from '../tour/useTour';
 import { homeSteps } from '../tour/steps';
@@ -41,7 +40,6 @@ export function Home() {
 
   return (
     <div className="col g40">
-      <AlertsPrompt />
       {current.onboarding && current.onboarding.step !== 'live' && (
         <Link to="/onboarding" className="card row between g16 wrap" style={{ textDecoration: 'none', color: 'var(--ink)', background: 'var(--hielo)', border: 0 }}>
           <span className="col"><span className="w7">{t('ob.continue')}</span><span className="t-sm t-mute">{t('ob.continueSub', { step: t(`ob.a.step.${current.onboarding.step}`) })}</span></span>
