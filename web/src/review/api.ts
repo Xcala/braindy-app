@@ -33,4 +33,6 @@ export const publicReviewApi = {
   load: (token: string) => call<PublicReview>(`/r/${encodeURIComponent(token)}`),
   decide: (token: string, state: 'approved' | 'changes_requested', note = '') =>
     call<{ ok: true }>(`/r/${encodeURIComponent(token)}/decision`, { method: 'POST', body: JSON.stringify({ state, note }) }),
+  rename: (token: string, title: string) =>
+    call<{ ok: true; title: string }>(`/r/${encodeURIComponent(token)}/title`, { method: 'POST', body: JSON.stringify({ title }) }),
 };
