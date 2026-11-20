@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { createRequest } from '../requests/api';
+import type { AttachedFile } from '../requests/types';
 
 export type Draft = { title: string; text: string; due: string | null };
 
@@ -12,7 +13,7 @@ const dayLabel = (iso: string, lang: string) =>
  * A request the assistant drafted. Nothing is sent until the person taps «Send request»; «Edit» lets them fix the
  * title, the text and the date first. Once sent it links to the request.
  */
-export function DraftCard({ brandId, draft, sentId, onSent, onClose }: { brandId: string; draft: Draft; sentId?: string; onSent: (id: string, d: Draft) => void; onClose?: () => void }) {
+export function DraftCard({ brandId, draft, files, sentId, onSent, onClose }: { brandId: string; draft: Draft; files?: AttachedFile[]; sentId?: string; onSent: (id: string, d: Draft) => void; onClose?: () => void }) {
   const { t, lang } = useI18n();
   const [d, setD] = useState(draft);
   const [edit, setEdit] = useState(false);
@@ -23,7 +24,7 @@ export function DraftCard({ brandId, draft, sentId, onSent, onClose }: { brandId
     if (!d.title.trim() || !d.text.trim()) return;
     setBusy(true); setError(false);
     try {
-      const { requestId } = await createRequest(brandId, { title: d.title.trim(), cards: { product: { text: d.text.trim() } }, dueDate: d.due ?? '', source: 'assistant' }) as { requestId: string };
+      const { requestId } = await createRequest(brandId, { title: d.title.trim(), cards: { product: { text: d.text.trim(), files: files ?? [] } }, dueDate: d.due ?? '', source: 'assistant' }) as { requestId: string };
       onSent(requestId, d);
     } catch { setError(true); } finally { setBusy(false); }
   }
@@ -55,6 +56,7 @@ export function DraftCard({ brandId, draft, sentId, onSent, onClose }: { brandId
           <b>{d.title}</b>
           <p>{d.text}</p>
           <span className="t-xs t-mute">{d.due ? `${t('help.draftDue')}: ${dayLabel(d.due, lang)}` : t('help.draftNoDue')}</span>
+          {!!files?.length && <span className="t-xs t-mute">📎 {files.map((x) => x.name).join(', ')}</span>}
         </>
       )}
       {error && <p className="t-xs" style={{ color: 'var(--rojo, #C62828)' }}>{t('help.draftError')}</p>}

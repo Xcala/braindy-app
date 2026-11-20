@@ -12,17 +12,19 @@ import { DraftCard, type Draft } from './DraftCard';
 import { ChatCards, type ChatCard } from './ChatCards';
 import { ActionCard, type ActCard } from './ActionCard';
 import { viewingSite } from '../links/viewingSite';
+import { Composer } from './Composer';
+import type { AttachedFile } from '../requests/types';
 import './help.css';
 
 type AnyCard = ChatCard | ActCard;
-type Msg = { role: 'user' | 'assistant'; content: string; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[] };
+type Msg = { role: 'user' | 'assistant'; content: string; files?: AttachedFile[]; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[] };
 const isAct = (c: AnyCard): c is ActCard => c.kind === 'act';
 /** One line per card it showed, so «and that one?» or «open the second» can be followed on the next turn. */
 const cardLine = (c: AnyCard) => c.kind === 'act' ? `propuesta ${c.act} «${c.title}»${'requestId' in c ? ` pedido ${c.requestId}` : ''} (${c.done ? 'ya confirmada' : 'sin confirmar'})`
   : c.kind === 'request' ? `pedido ${c.id} «${c.title}» ${c.status}` : c.kind === 'file' ? `archivo «${c.title}»`
   : c.kind === 'post' ? `post ${c.date.slice(0, 10)} «${c.text.slice(0, 60)}»` : c.kind === 'change' ? `ajuste ${c.key} «${c.title}» ${c.status}` : `${c.label}: ${c.value}`;
 /** What goes back to the model: a draft travels with its answer so «change the date» works on the next turn; cards too. */
-const asTurn = (m: Msg) => ({ role: m.role, content: `${m.content}${m.cards?.length ? `
+const asTurn = (m: Msg) => ({ role: m.role, content: `${m.content}${m.role === 'user' && m.files?.length ? ` [[ADJUNTÉ ${m.files.map((x) => x.name).join(', ')}]]` : ''}${m.cards?.length ? `
 [[MOSTRÉ ${m.cards.map(cardLine).join(' | ')}]]` : ''}${m.draft ? `
 [[BORRADOR ${JSON.stringify(m.draft)}]]${m.sent ? ' (ya enviado)' : ''}` : ''}` });
 type Saved = { msgs: Msg[]; chatId: string | null };
@@ -53,7 +55,6 @@ export function HelpChat() {
     return next;
   }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
-  const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [intro, setIntro] = useState(() => !introSeen());
   const dismissIntro = () => { setIntro(false); try { localStorage.setItem(INTRO, '1'); } catch { /* private mode */ } };
@@ -93,18 +94,18 @@ export function HelpChat() {
   if (!shown || !current) return null;
 
   const update = (next: Saved) => { setS(next); save(brandId, next); };
-  async function ask(q: string) {
+  async function ask(q: string, files: AttachedFile[] = []) {
     const question = q.trim();
     if (!question || busy) return;
-    const msgs: Msg[] = [...s.msgs, { role: 'user', content: question }];
+    const msgs: Msg[] = [...s.msgs, { role: 'user', content: question, ...(files.length ? { files } : {}) }];
     update({ ...s, msgs });
-    setText(''); setBusy(true);
+    setBusy(true);
     try {
       const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; chatId: string }>('/v1/help/chat', {
         method: 'POST',
-        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, tools: true, site: viewingSite() ?? undefined, messages: msgs.filter((m) => !m.error).map(asTurn) }),
+        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) }),
       });
-      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [] }] });
+      update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], ...(files.length ? { files } : {}) }] });
     } catch (e) {
       const code = String((e as Error).message);
       const key = code.includes('429') || code.includes('limit') ? 'help.limit' : code.includes('503') || code.includes('ai_off') ? 'help.off' : 'help.error';
@@ -171,13 +172,14 @@ export function HelpChat() {
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
                 {m.role === 'user' ? <p>{m.content}</p> : <HelpText text={m.content} onNavigate={close} />}
+                {m.role === 'user' && !!m.files?.length && <span className="help-sentfiles">{m.files.map((x) => <span key={x.assetId}>📎 {x.name}</span>)}</span>}
                 {m.role === 'assistant' && !!m.cards?.some((c) => !isAct(c)) && <ChatCards brandId={brandId} cards={m.cards.filter((c): c is ChatCard => !isAct(c))} onOpen={close} />}
                 {m.role === 'assistant' && m.cards?.filter(isAct).map((c) => (
-                  <ActionCard key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c} onOpen={close}
+                  <ActionCard key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c} files={m.files} onOpen={close}
                     onDone={(done, text) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done, text } : y)) } : x)) })} />
                 ))}
                 {m.role === 'assistant' && m.draft && (
-                  <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} sentId={m.sent} onClose={close}
+                  <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} files={m.files} sentId={m.sent} onClose={close}
                     onSent={(id, d) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, draft: d, sent: id } : x)) })} />
                 )}
                 {m.role === 'assistant' && i === s.msgs.length - 1 && m.next === 'nico' && (
@@ -191,12 +193,7 @@ export function HelpChat() {
             {busy && <div className="help-msg is-bot"><p className="t-mute">{t('help.thinking')}</p></div>}
             <div ref={end} />
           </div>
-          <form className="help-form" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
-            <textarea ref={input} className="input help-input" rows={1} value={text} maxLength={1500} placeholder={t('help.ph')} aria-label={t('help.ph')}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void ask(text); } }} />
-            <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !text.trim()}>{t('help.send')}</button>
-          </form>
+          <Composer ref={input} brandId={brandId} busy={busy} onSend={(q, files) => void ask(q, files)} />
         </section>
       )}
     </>

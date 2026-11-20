@@ -5,6 +5,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { createRequest, decide } from '../requests/api';
+import type { AttachedFile } from '../requests/types';
 
 /** An action the assistant proposed (server/src/help/actions.ts). `done` is set once the person confirmed it. */
 export type ActCard =
@@ -17,7 +18,7 @@ export type ActCard =
  * site attached (same as «Ask for an adjustment» in the viewer); approve and changes call the same decision as the
  * review screen; «add to the request» leaves an addendum comment. The text can be edited first.
  */
-export function ActionCard({ brandId, card, onDone, onOpen }: { brandId: string; card: ActCard; onDone: (done: string, text: string) => void; onOpen?: () => void }) {
+export function ActionCard({ brandId, card, files, onDone, onOpen }: { brandId: string; card: ActCard; files?: AttachedFile[]; onDone: (done: string, text: string) => void; onOpen?: () => void }) {
   const { t } = useI18n();
   const { user } = useAuth();
   const [text, setText] = useState(card.text);
@@ -33,7 +34,7 @@ export function ActionCard({ brandId, card, onDone, onOpen }: { brandId: string;
     setBusy(true); setError(false);
     try {
       if (card.act === 'site') {
-        const r = await createRequest(brandId, { category: 'web', title: `${t('sp.reqTitle')}: ${card.title}`.slice(0, 120), cards: { product: { text: v, links: [card.siteUrl], files: [] } }, source: 'assistant' }) as { requestId: string };
+        const r = await createRequest(brandId, { category: 'web', title: `${t('sp.reqTitle')}: ${card.title}`.slice(0, 120), cards: { product: { text: v, links: [card.siteUrl], files: files ?? [] } }, source: 'assistant' }) as { requestId: string };
         onDone(r.requestId, v);
       } else if (card.act === 'add') {
         if (!user) throw new Error('auth');
@@ -67,6 +68,7 @@ export function ActionCard({ brandId, card, onDone, onOpen }: { brandId: string;
       {needsText && (edit
         ? <textarea className="input" rows={4} value={text} maxLength={3000} aria-label={tag} onChange={(e) => setText(e.target.value)} />
         : <p>{text}</p>)}
+      {card.act === 'site' && !!files?.length && <span className="t-xs t-mute">📎 {files.map((x) => x.name).join(', ')}</span>}
       {error && <p className="t-xs" role="alert" style={{ color: 'var(--rojo, #C62828)', margin: 0 }}>{t('help.actError')}</p>}
       <div className="row g8 wrap">
         <button type="button" className="btn btn-primary btn-sm" disabled={busy || (needsText && !text.trim())} onClick={() => void go()}>{busy ? t('help.draftSending') : button}</button>

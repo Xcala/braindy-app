@@ -8,6 +8,7 @@ import { aiConfigured, claudeChat, type ChatTurn } from '../ai.js';
 import { answerWithTools } from './agent.js';
 import type { ChatCard } from './reads.js';
 import type { ActCard } from './actions.js';
+import { readAttachments } from './attach.js';
 import { helpSystem, readAnswer } from './guide.js';
 import type { AuthEnv } from '../auth.js';
 
@@ -18,7 +19,7 @@ const CHARS = 1500;
 
 export const help = new Hono<AuthEnv>();
 
-type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown };
+type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown; files?: unknown };
 
 function turnsOf(raw: unknown): ChatTurn[] | null {
   if (!Array.isArray(raw)) return null;
@@ -67,7 +68,7 @@ help.post('/help/chat', async (c) => {
   try {
     const meta = { brandId, kind: 'help' };
     if (tools) {
-      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
+      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta, extra: (await readAttachments(brandId, user.uid, access.admin, b.files)).blocks });
       answer = readAnswer(out.text);
       cards = [...answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x), ...out.acts];
     } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));

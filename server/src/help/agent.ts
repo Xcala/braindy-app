@@ -52,8 +52,9 @@ async function run(c: ActCtx, name: string, i: In): Promise<Out> {
  * actions it proposed (always shown, the newest per kind of action and request). Card refs restart per tool call,
  * so each one is prefixed with the call (t1.p2) to stay unique.
  */
-export async function answerWithTools(system: string, turns: ChatTurn[], c: ActCtx, o: { model: string; meta: { brandId: string; kind: string } }) {
-  const messages: Array<{ role: string; content: unknown }> = turns.map((t) => ({ role: t.role, content: t.content }));
+export async function answerWithTools(system: string, turns: ChatTurn[], c: ActCtx, o: { model: string; meta: { brandId: string; kind: string }; extra?: unknown[] }) {
+  // Attached images and file names ride on the last question.
+  const messages: Array<{ role: string; content: unknown }> = turns.map((t, i) => ({ role: t.role, content: i === turns.length - 1 && o.extra?.length ? [...o.extra, { type: 'text', text: t.content }] : t.content }));
   const cards = new Map<string, ChatCard>();
   const acts = new Map<string, ActCard>();
   let call = 0;
