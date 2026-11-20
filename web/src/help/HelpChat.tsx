@@ -10,11 +10,16 @@ import { api } from '../lib/api';
 import { HelpText } from './HelpText';
 import { DraftCard, type Draft } from './DraftCard';
 import { ChatCards, type ChatCard } from './ChatCards';
+import { ActionCard, type ActCard } from './ActionCard';
+import { viewingSite } from '../links/viewingSite';
 import './help.css';
 
-type Msg = { role: 'user' | 'assistant'; content: string; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: ChatCard[] };
+type AnyCard = ChatCard | ActCard;
+type Msg = { role: 'user' | 'assistant'; content: string; next?: 'nico' | 'request' | null; error?: boolean; draft?: Draft | null; sent?: string; cards?: AnyCard[] };
+const isAct = (c: AnyCard): c is ActCard => c.kind === 'act';
 /** One line per card it showed, so «and that one?» or «open the second» can be followed on the next turn. */
-const cardLine = (c: ChatCard) => c.kind === 'request' ? `pedido ${c.id} «${c.title}» ${c.status}` : c.kind === 'file' ? `archivo «${c.title}»`
+const cardLine = (c: AnyCard) => c.kind === 'act' ? `propuesta ${c.act} «${c.title}»${'requestId' in c ? ` pedido ${c.requestId}` : ''} (${c.done ? 'ya confirmada' : 'sin confirmar'})`
+  : c.kind === 'request' ? `pedido ${c.id} «${c.title}» ${c.status}` : c.kind === 'file' ? `archivo «${c.title}»`
   : c.kind === 'post' ? `post ${c.date.slice(0, 10)} «${c.text.slice(0, 60)}»` : c.kind === 'change' ? `ajuste ${c.key} «${c.title}» ${c.status}` : `${c.label}: ${c.value}`;
 /** What goes back to the model: a draft travels with its answer so «change the date» works on the next turn; cards too. */
 const asTurn = (m: Msg) => ({ role: m.role, content: `${m.content}${m.cards?.length ? `
@@ -95,9 +100,9 @@ export function HelpChat() {
     update({ ...s, msgs });
     setText(''); setBusy(true);
     try {
-      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: ChatCard[]; chatId: string }>('/v1/help/chat', {
+      const r = await api<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; chatId: string }>('/v1/help/chat', {
         method: 'POST',
-        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, tools: true, messages: msgs.filter((m) => !m.error).map(asTurn) }),
+        body: JSON.stringify({ brandId, lang, path: pathname, chatId: s.chatId, tools: true, site: viewingSite() ?? undefined, messages: msgs.filter((m) => !m.error).map(asTurn) }),
       });
       update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [] }] });
     } catch (e) {
@@ -166,7 +171,11 @@ export function HelpChat() {
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
                 {m.role === 'user' ? <p>{m.content}</p> : <HelpText text={m.content} onNavigate={close} />}
-                {m.role === 'assistant' && !!m.cards?.length && <ChatCards brandId={brandId} cards={m.cards} onOpen={close} />}
+                {m.role === 'assistant' && !!m.cards?.some((c) => !isAct(c)) && <ChatCards brandId={brandId} cards={m.cards.filter((c): c is ChatCard => !isAct(c))} onOpen={close} />}
+                {m.role === 'assistant' && m.cards?.filter(isAct).map((c) => (
+                  <ActionCard key={`${i}-${c.ref}-${c.done ?? ''}`} brandId={brandId} card={c} onOpen={close}
+                    onDone={(done, text) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, cards: x.cards?.map((y) => (y === c ? { ...c, done, text } : y)) } : x)) })} />
+                ))}
                 {m.role === 'assistant' && m.draft && (
                   <DraftCard key={`${i}-${m.sent ?? ''}`} brandId={brandId} draft={m.draft} sentId={m.sent} onClose={close}
                     onSent={(id, d) => update({ ...s, msgs: s.msgs.map((x, j) => (j === i ? { ...x, draft: d, sent: id } : x)) })} />

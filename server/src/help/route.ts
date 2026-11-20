@@ -7,6 +7,7 @@ import { brandAccess } from '../access.js';
 import { aiConfigured, claudeChat, type ChatTurn } from '../ai.js';
 import { answerWithTools } from './agent.js';
 import type { ChatCard } from './reads.js';
+import type { ActCard } from './actions.js';
 import { helpSystem, readAnswer } from './guide.js';
 import type { AuthEnv } from '../auth.js';
 
@@ -17,7 +18,7 @@ const CHARS = 1500;
 
 export const help = new Hono<AuthEnv>();
 
-type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown };
+type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown };
 
 function turnsOf(raw: unknown): ChatTurn[] | null {
   if (!Array.isArray(raw)) return null;
@@ -62,13 +63,13 @@ help.post('/help/chat', async (c) => {
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
-  let cards: ChatCard[] = [];
+  let cards: Array<ChatCard | ActCard> = [];
   try {
     const meta = { brandId, kind: 'help' };
     if (tools) {
-      const out = await answerWithTools(system, turns, { brandId, access, lang, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
+      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
       answer = readAnswer(out.text);
-      cards = answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x);
+      cards = [...answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x), ...out.acts];
     } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
   } catch {
     return c.json({ error: 'ai_failed' }, 502);

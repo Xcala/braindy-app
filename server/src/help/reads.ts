@@ -54,10 +54,10 @@ export async function getRequest(c: Ctx, id: string): Promise<ReadOut> {
   if (!/^[\w-]{4,60}$/.test(id)) return { text: 'Id inválido.', cards: [] };
   const ref = db.doc(`brands/${c.brandId}/requests/${id}`);
   const [r, vers, comments] = await Promise.all([
-    ref.get(), ref.collection('versions').orderBy('n', 'desc').limit(1).get(), ref.collection('comments').orderBy('createdAt', 'desc').limit(5).get(),
+    ref.get(), ref.collection('versions').orderBy('n', 'desc').limit(5).get(), ref.collection('comments').orderBy('createdAt', 'desc').limit(5).get(),
   ]);
   if (!r.exists || r.get('archived')) return { text: 'No encontré ese pedido en esta marca.', cards: [] };
-  const v = vers.docs[0];
+  const v = vers.docs.find((d) => c.access.admin || d.get('published') === true); // clients never see an unpublished version
   const steps = ((r.get('work.steps') as Array<{ brain: string; task: string; state: string }>) ?? []).map((s) => `${s.brain}: ${cut(s.task, 80)} (${s.state})`);
   const plan = r.get('plan') as { scope?: string[]; firstDelivery?: string; approved?: boolean } | null;
   const text = [

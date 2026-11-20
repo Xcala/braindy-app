@@ -7,6 +7,7 @@ import { AddressBar } from './AddressBar';
 import { ModeSwitch, useSiteMode, useSiteSignIn } from './SiteModes';
 import type { BrandLink } from './useBrandLinks';
 import './viewer.css';
+import { setViewingSite } from './viewingSite';
 
 const SIZES = { desktop: '100%', tablet: '820px', phone: '390px' } as const;
 type Size = keyof typeof SIZES;
@@ -16,6 +17,7 @@ type Size = keyof typeof SIZES;
  * Sites that refuse to be shown inside another page (checked when NickMark saves the link) get the new-tab button instead.
  */
 export function LinkViewer({ brandId, link, links, onClose }: { brandId: string; link: BrandLink; links: BrandLink[]; onClose: () => void }) {
+  useEffect(() => { setViewingSite(link.url); return () => setViewingSite(null); }, [link.url]);
   const { t } = useI18n();
   const [size, setSize] = useState<Size>('desktop');
   const close = useRef<HTMLButtonElement>(null);
