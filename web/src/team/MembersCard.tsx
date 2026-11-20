@@ -48,11 +48,11 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
     try {
       const pp = isAdmin ? profilePatch(invProfile) : { role, sections: null };
       if (isPhone) {
-        const r = await inviteByPhone(brandId, email.trim(), '', '', pp.role as typeof role, pp.role === 'client_owner', pp.sections);
+        const r = await inviteByPhone(brandId, email.trim(), '', '', pp.role as typeof role, true, pp.sections);
         setWaSent(await deliverLink(brandId, r.uid, '', lang));
         setEmail(''); return;
       }
-      const r = await inviteMember(brandId, email.trim(), pp.role as typeof role, pp.role === 'client_owner', pp.sections);
+      const r = await inviteMember(brandId, email.trim(), pp.role as typeof role, true, pp.sections);
       // Firebase emails them a one-time link to come in (any inbox, no password).
       const sent = await sendAccessLink(email.trim(), lang, false).then(() => true, () => false);
       setMsg({ ok: true, text: `${r.status === 'added' ? t('team.added', { email }) : t('team.invited', { email })}${sent ? ` ${t('team.linkSent', { email })}` : ''}` });
