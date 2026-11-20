@@ -44,7 +44,7 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
         <div className="col g8">
           {!embedded && <p className="label">{current.name}</p>}
           {!embedded && <h1 className="h1">{t('nav.accesses')}</h1>}
-          {embedded && <h2 className="h2">{t('plan.stackTitle')}</h2>}
+          {embedded && <h1 className="h1">{t('plan.stackTitle')}</h1>}
           <p className="t-mute" style={{ margin: 0, maxWidth: '40rem' }}>{embedded ? t('acc.introMerged') : t('acc.tagline')}</p>
         </div>
         {monthly.size > 0 && (
@@ -60,13 +60,20 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
       {denied ? <div className="card t-mute">{t('acc.ownersOnly')}</div> : (
         <div className="col g24">
           <div className="col g12 min-w-0">
-          <AppsToolbar view={view} set={set} q={q} setQ={setQ} counts={counts} />
-          {view.layout === 'list' && <div className="row g8 wrap" role="group" aria-label={t('acc.columns')}>
-            <span className="label">{t('acc.columns')}</span>
-            {ALL_COLS.map((c) => (
-              <button key={c} type="button" aria-pressed={cols.includes(c)} onClick={() => toggle(c)} className={`btn btn-sm ${cols.includes(c) ? 'btn-primary' : 'btn-secondary'}`}>{cols.includes(c) ? '✓ ' : ''}{label[c]}</button>
-            ))}
-          </div>}
+          <AppsToolbar view={view} set={set} q={q} setQ={setQ} counts={counts}
+            extra={view.layout === 'list' && (
+              <details className="apps-cols">
+                <summary className="apps-cols-btn" title={t('acc.columns')} aria-label={t('acc.columns')}>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
+                </summary>
+                <div className="apps-cols-menu" role="group" aria-label={t('acc.columns')}>
+                  <span className="label">{t('acc.columns')}</span>
+                  {ALL_COLS.map((c) => (
+                    <label key={c} className="row g8 t-sm"><input type="checkbox" checked={cols.includes(c)} onChange={() => toggle(c)} /> {label[c]}</label>
+                  ))}
+                </div>
+              </details>
+            )} />
           {loading ? <p className="t-sm t-mute">{t('common.loading')}…</p> : list.length === 0 ? <div className="card t-mute">{t('acc.empty')}</div>
             : <AppsList brandId={current.id} list={list} view={view} q={q} cols={cols} onEdit={setEditing} onClear={() => { setQ(''); set({ filter: 'all' }); }} />}
           <p className="t-xs t-mute">{t('acc.revealNote')}</p>
