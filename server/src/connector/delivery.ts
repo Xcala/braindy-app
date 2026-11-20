@@ -22,7 +22,7 @@ export async function newRequest(brandId: string, uid: string, r: { text: string
     title: r.title ?? r.text.split('\n')[0].slice(0, 80), category: r.category ?? '', dueDate: r.dueDate ?? '',
     cards: { product: { text: r.text, links: r.links ?? [] } }, language: 'Español',
   });
-  if ('error' in out) throw new Error(out.error === 'invalid_category' ? 'Categoría desconocida: déjala vacía y la app la deduce del texto.' : out.error);
+  if ('error' in out) throw new Error(out.error === 'invalid_category' ? 'Categoría desconocida: déjala vacía y la app la deduce del texto.' : out.error === 'group_brand' ? 'Eso es un grupo: elige una de sus empresas (cada pedido va a una sola marca).' : out.error);
   return out.requestId;
 }
 

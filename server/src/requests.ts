@@ -89,6 +89,8 @@ requests.post('/brands/:brandId/requests', async (c) => {
 
 /** Creates a request and routes it to its lead Brain (also used by the Braindy connector). */
 export async function createRequest(brandId: string, uid: string, b: Record<string, unknown>): Promise<{ requestId: string } | { error: string }> {
+  // A group has no work of its own: each request goes to one company in it (siblings are never mixed).
+  if ((await db.doc(`brands/${brandId}`).get()).get('kind') === 'group') return { error: 'group_brand' };
   type InFile = { assetId?: string; name?: string; size?: number; contentType?: string };
   const cards = (b.cards ?? {}) as Record<string, { text?: string; links?: string[]; files?: InFile[] }>;
   // "Ask" can be one free-text box: without a type, the category is read from the words.

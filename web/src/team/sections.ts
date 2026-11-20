@@ -57,7 +57,9 @@ export function useMySections() {
   }, [isAdmin, user, key]);
   // Results only exists for brands where it was switched on, for everyone (admin included).
   const resultsOk = (s?: Section) => s !== 'results' || !!current?.resultsOn;
-  if (isAdmin) return { ready: !loading, can: resultsOk };
+  // A group has nothing of its own: Home lists its companies and only Learn stays (2026-11-20), admin included.
+  const groupOk = (s?: Section) => current?.kind !== 'group' || !s || s === 'learn';
+  if (isAdmin) return { ready: !loading, can: (s?: Section) => resultsOk(s) && groupOk(s) };
   const ids = key ? key.split('/') : [];
   // Not ready until the brand is known: a reload on a deep link must not send the person home before it loads.
   const ready = ids.length > 0 && ids.every((id) => id in docs);
@@ -65,5 +67,5 @@ export function useMySections() {
   // The brand's own switches win over each person's sections.
   const off = current?.sectionsOff ?? [];
   const mine = new Set((nearest ? sectionsOf(nearest) : []).filter((s) => !off.includes(s)));
-  return { ready, can: (s?: Section) => !s || (mine.has(s) && resultsOk(s)) };
+  return { ready, can: (s?: Section) => !s || (mine.has(s) && resultsOk(s) && groupOk(s)) };
 }

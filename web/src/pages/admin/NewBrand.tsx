@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -39,11 +39,15 @@ export function NewBrand({ onClose, onCreated }: { onClose: () => void; onCreate
       for (let i = 2; (await getDoc(doc(db, 'brands', id))).exists(); i++) id = `${base}-${i}`;
       const parent = brands.find((b) => b.id === groupId);
       const parentAncestors = parent ? (((await getDoc(doc(db, 'brands', parent.id))).get('ancestors') as string[]) ?? []) : [];
-      await setDoc(doc(db, 'brands', id), {
-        name: clean, slug: id, kind, groupId: parent?.id ?? null, ancestors: parent ? [parent.id, ...parentAncestors] : [],
+      const ancestors = parent ? [parent.id, ...parentAncestors] : [];
+      const batch = writeBatch(db).set(doc(db, 'brands', id), {
+        name: clean, slug: id, kind, groupId: parent?.id ?? null, ancestors, ...(kind === 'group' ? { descendants: [] } : {}),
         status: 'active', logoUrl: null, legacyIds: { brands: [], orbit: [], brandingProjects: [], briefEmails: [] },
         createdInApp: true, createdAt: serverTimestamp(),
       });
+      // Every group above lists it at once, so whoever has the group sees and uses the new company right away.
+      ancestors.forEach((g) => batch.update(doc(db, 'brands', g), { descendants: arrayUnion(id) }));
+      await batch.commit();
       toast({ text: t('anav.newDone', { name: clean }), tone: 'ok' });
       onCreated(id);
     } catch {

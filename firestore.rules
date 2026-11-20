@@ -104,6 +104,10 @@ service cloud.firestore {
         || a.folder.split('/')[0] in fa.get('folders', []);
     }
 
+    function isGroup(brandId) {
+      return get(/databases/$(database)/documents/brands/$(brandId)).data.get('kind', 'brand') == 'group';
+    }
+
     function canReadBrand(brandId) {
       return isAdmin() || isMember(brandId);
     }
@@ -171,8 +175,10 @@ service cloud.firestore {
       match /requests/{requestId} {
         allow read: if canReadBrand(brandId);
         // Clients open requests; routing, plan, status and approval level are set server-side.
+        // Never on a group: its work lives inside each company (one brand = one request; siblings never mixed).
         allow create: if isAdmin()
           || (isMember(brandId)
+              && !isGroup(brandId)
               && request.resource.data.createdBy == uid()
               && request.resource.data.status == 'in_production'
               && request.resource.data.keys().hasOnly([

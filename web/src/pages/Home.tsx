@@ -15,6 +15,7 @@ import { LessonOfTheWeek } from '../criterio/LessonCards';
 import { HomeThisMonth } from '../home/HomeThisMonth';
 import { HomeBrainLoop } from '../brain/BrainLoop';
 import { useLessons } from '../criterio/useCriterio';
+import { GroupHome } from '../brands/GroupHome';
 
 /**
  * Home, by hierarchy: the studio with what was launched (4 columns: studio 3, launches 1), what was delivered
@@ -33,6 +34,8 @@ export function Home() {
   const videos = overview ? `/learn/${overview.id}` : tutorials.length ? '/learn' : undefined;
   useTour('home', () => homeSteps(lang, videos), !!current, profile?.role !== 'admin');
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
+  // A group's Home is its companies; requests, brand and files live inside each one (2026-11-20).
+  if (current.kind === 'group') return <GroupHome group={current} />;
 
   const needsYou = all.filter((r) => r.status === 'to_approve');
   const inProd = all.filter((r) => r.status === 'in_production')

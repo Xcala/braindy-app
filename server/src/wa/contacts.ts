@@ -44,18 +44,34 @@ export async function unlinkPhone(uid: string) {
   await batch.commit();
 }
 
-/** WhatsApp access per brand: a member may use the channel unless NickMark turned it off (members/{uid}.whatsapp). */
+/**
+ * WhatsApp access per brand: a member may use the channel unless NickMark turned it off (members/{uid}.whatsapp).
+ * As everywhere else, the nearest membership decides: the brand's own, else the group above it (brand.ancestors).
+ */
 export async function waAllowed(uid: string, brandId: string) {
-  const m = await db.doc(`brands/${brandId}/members/${uid}`).get();
-  return m.exists && m.get('whatsapp') !== false;
+  const brand = await db.doc(`brands/${brandId}`).get();
+  for (const id of [brandId, ...((brand.get('ancestors') as string[]) ?? [])]) {
+    const m = await db.doc(`brands/${id}/members/${uid}`).get();
+    if (m.exists) return m.get('whatsapp') !== false;
+  }
+  return false;
 }
 
-/** Brands a person can ask for by WhatsApp (direct memberships on their profile, with the channel on). */
+/**
+ * Brands a person can ask for by WhatsApp, with the channel on: direct memberships on their profile and, for a group,
+ * every company below it (whoever has the group has its companies). A group itself never takes requests.
+ */
 export async function brandsOf(uid: string): Promise<Array<{ id: string; name: string }>> {
-  const ids = (((await db.doc(`users/${uid}`).get()).get('brandIds') as string[]) ?? []).slice(0, 10);
+  const direct = (((await db.doc(`users/${uid}`).get()).get('brandIds') as string[]) ?? []).slice(0, 10);
+  const firsts = await Promise.all(direct.map((id) => db.doc(`brands/${id}`).get()));
+  // Companies are found by their ancestors (always set on create), so a company added to the group later counts at once.
+  const below = await Promise.all(firsts.map(async (d) => d.get('kind') === 'group'
+    ? (await db.collection('brands').where('ancestors', 'array-contains', d.id).limit(30).get()).docs.map((x) => x.id) : [d.id]));
+  const ids = [...new Set(below.flat())].slice(0, 30);
   const docs = await Promise.all(ids.map((id) => db.doc(`brands/${id}`).get()));
   const open = await Promise.all(docs.map((d) => waAllowed(uid, d.id)));
-  return docs.filter((d, i) => open[i] && d.exists && d.get('status') !== 'archived').map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id) }));
+  return docs.filter((d, i) => open[i] && d.exists && d.get('kind') !== 'group' && d.get('status') !== 'archived')
+    .map((d) => ({ id: d.id, name: String(d.get('name') ?? d.id) }));
 }
 
 // ---------- signed-in: my own number ----------

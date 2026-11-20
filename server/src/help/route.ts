@@ -58,11 +58,14 @@ help.post('/help/chat', async (c) => {
   const [me, brand] = await Promise.all([db.doc(`users/${user.uid}`).get(), db.doc(`brands/${brandId}`).get()]);
   // Older app versions do not send tools: they keep the guide-only assistant until they update.
   const tools = b.tools === true;
+  // In a group the assistant sends people to each company (a group has no work of its own).
+  const group = brand.get('kind') === 'group'
+    ? (await db.collection('brands').where('groupId', '==', brandId).limit(30).get()).docs.map((d) => String(d.get('name') ?? d.id)) : undefined;
   const att = tools ? await readAttachments(brandId, user.uid, access.admin, b.files) : { files: [], blocks: [] };
   const attached = att.files;
   const system = helpSystem({ tools,
-    lang, path, sections: access.sections, role: access.admin ? 'admin' : access.role,
-    canAsk: access.admin || access.sections.includes('requests'), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
+    lang, path, sections: group ? access.sections.filter((s) => s === 'learn') : access.sections, group, role: access.admin ? 'admin' : access.role,
+    canAsk: !group && (access.admin || access.sections.includes('requests')), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
