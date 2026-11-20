@@ -83,6 +83,7 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
             ))}
           </div>
         )}
+        <button type="button" className="btn btn-secondary btn-sm lview-ai" onClick={() => window.dispatchEvent(new Event('bd-help-toggle'))}>✦ {t('help.dock')}</button>
         <a href={link.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">{t('lv.newTab')} ↗</a>
         <button ref={close} type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('lb.close')}>✕</button>
       </div>

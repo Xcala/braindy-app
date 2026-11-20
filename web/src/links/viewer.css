@@ -132,3 +132,10 @@ button.spanel-pct { appearance: none; border: 0; background: none; padding: 0; c
 @keyframes spanel-ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 0.5rem transparent; } }
 @media (max-width: 767px) { .lview-live { order: 8; } }
 @media (prefers-reduced-motion: reduce) { .spanel-job-ico, .spanel-job-bar::after, .lview-live.is-working::before { animation: none; } .spanel-job-bar::after { width: 100%; opacity: .5; } }
+/* The assistant stays docked on the left while a site is open (computers): the viewer starts after it. */
+.lview-ai { display: none; }
+@media (min-width: 768px) {
+  html.help-docked .lview { left: var(--help-w); }
+  .lview-ai { display: inline-flex; align-items: center; gap: 0.375rem; color: #6D3FD8; }
+  html.help-docked .lview-ai { background: #F1EBFF; border-color: #DCC6F2; }
+}
