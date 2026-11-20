@@ -72,6 +72,9 @@ export function LinkViewer({ brandId, link, links, onClose }: { brandId: string;
         <button ref={close} type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('lb.close')}>✕</button>
       </div>
       <div className="lview-body">
+        <button type="button" className="lview-ai-rail" onClick={() => window.dispatchEvent(new Event('bd-help-toggle'))} aria-label={t('help.dock')}>
+          <span aria-hidden="true">✦</span><span className="lview-side-label">{t('help.dock')}</span>
+        </button>
         <div className="lview-stage">
           {frame === undefined ? <div className="skel lview-frame" style={{ width: SIZES[size] }} /> : blocked ? (
             <div className="card col g12 lview-blocked">
