@@ -13,7 +13,14 @@ export type ChatCard =
   | { kind: 'change'; ref: string; key: string; title: string; status: string }
   | { kind: 'stat'; ref: string; label: string; value: number; delta: number | null };
 
-export type Ctx = { brandId: string; access: Access; resultsOn: boolean };
+export type Ctx = { brandId: string; access: Access; resultsOn: boolean; lang?: 'es' | 'en' };
+
+/** Card labels in the person's language. */
+const WORDS = {
+  es: { followers: 'seguidores', views: 'vistas', reach: 'alcance', interactions: 'interacciones', users: 'usuarios', sessions: 'sesiones', web: 'Sitio web' },
+  en: { followers: 'followers', views: 'views', reach: 'reach', interactions: 'interactions', users: 'users', sessions: 'sessions', web: 'Website' },
+};
+const NETS: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', linkedin: 'LinkedIn', youtube: 'YouTube', tiktok: 'TikTok', twitter: 'X', threads: 'Threads', pinterest: 'Pinterest', gmb: 'Google' };
 export type ReadOut = { text: string; cards: ChatCard[] };
 
 const cut = (s: unknown, n: number) => String(s ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
@@ -106,6 +113,7 @@ export async function results(c: Ctx, dias: number): Promise<ReadOut> {
   const since = new Date(Date.now() - n * 864e5).toISOString().slice(0, 10), before = new Date(Date.now() - 2 * n * 864e5).toISOString().slice(0, 10);
   const [social, web] = await Promise.all([db.collection(`brands/${c.brandId}/socialStats`).get(), db.doc(`brands/${c.brandId}/webStats/ga4`).get()]);
   const lines: string[] = [], cards: ChatCard[] = [];
+  const w = WORDS[c.lang ?? 'es'];
   const add = (label: string, value: number, d: number | null) => { const ref = `s${cards.length + 1}`; cards.push({ kind: 'stat', ref, label, value: Math.round(value), delta: d }); lines.push(`${ref} · ${label}: ${Math.round(value)}${d == null ? '' : ` (${d > 0 ? '+' : ''}${d}% vs ${n} días antes)`}`); };
   for (const s of social.docs) {
     const daily = (s.get('daily') as Day[] | undefined) ?? [];
@@ -113,11 +121,11 @@ export async function results(c: Ctx, dias: number): Promise<ReadOut> {
     if (!cur.length) continue;
     const net = s.id;
     const followers = [...cur].reverse().find((r) => r.followers != null)?.followers;
-    if (followers != null) add(`${net} · seguidores`, Number(followers), null);
-    for (const k of ['views', 'reach', 'interactions'] as const) if (cur.some((r) => r[k] != null)) add(`${net} · ${k}`, sum(cur, k), prev.length ? delta(sum(cur, k), sum(prev, k)) : null);
+    if (followers != null) add(`${NETS[net] ?? net} · ${w.followers}`, Number(followers), null);
+    for (const k of ['views', 'reach', 'interactions'] as const) if (cur.some((r) => r[k] != null)) add(`${NETS[net] ?? net} · ${w[k]}`, sum(cur, k), prev.length ? delta(sum(cur, k), sum(prev, k)) : null);
   }
   const tot = (web.get(`totals.${n}`) as { cur?: Record<string, number> | null; prev?: Record<string, number> | null } | undefined);
-  if (tot?.cur) for (const k of ['users', 'sessions', 'views'] as const) add(`sitio web · ${k}`, tot.cur[k] ?? 0, tot.prev ? delta(tot.cur[k] ?? 0, tot.prev[k] ?? 0) : null);
+  if (tot?.cur) for (const k of ['users', 'sessions', 'views'] as const) add(`${w.web} · ${w[k]}`, tot.cur[k] ?? 0, tot.prev ? delta(tot.cur[k] ?? 0, tot.prev[k] ?? 0) : null);
   return { text: lines.length ? `Últimos ${n} días:\n${lines.join('\n')}` : 'No hay números guardados para este periodo.', cards: cards.slice(0, 12) };
 }
 

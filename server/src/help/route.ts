@@ -66,7 +66,7 @@ help.post('/help/chat', async (c) => {
   try {
     const meta = { brandId, kind: 'help' };
     if (tools) {
-      const out = await answerWithTools(system, turns, { brandId, access, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
+      const out = await answerWithTools(system, turns, { brandId, access, lang, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
       answer = readAnswer(out.text);
       cards = answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x);
     } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
