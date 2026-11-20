@@ -53,3 +53,9 @@ html[data-theme="dark"] .vw-arrow, html[data-theme="dark"] .vw-strip, html[data-
 @media (min-width: 1024px) { .rv-split > :last-child { border-top: 0; border-left: 1px solid var(--line); } }
 html[data-theme="dark"] .vw-stage { background: #2B2D31; }
 html[data-theme="dark"] .rv-split > :last-child { border-color: var(--line-strong); }
+/* Desktop: the gray stage is as tall as the piece; the review panel never stretches the row (contain: size) and scrolls
+   inside it, so long delivery notes do not leave empty gray above and below the piece. */
+@media (min-width: 1024px) {
+  .rv-split > :last-child { contain: size; overflow-y: auto; overscroll-behavior: contain; }
+  .rv-split { min-height: 34rem; }
+}
