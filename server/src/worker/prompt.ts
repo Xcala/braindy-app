@@ -44,6 +44,7 @@ Trabajas como los cuatro Brains, uno después del otro. Cada turno lo abres y lo
 ${j.steps.map((s, i) => `${i + 1}. ${s.brain}${s.task ? ` — ${s.task}` : ''}`).join('\n')}
 - Al empezar el turno: state "doing". Al terminarlo: state "done" con una nota de una línea para el cliente, en el idioma de la marca: qué encontró o qué hizo. Esa nota es también lo que le pasa al siguiente Brain: úsala.
 - Researcher: contexto, referentes y datos. Marketer: mensaje, textos y estrategia. Creator: diseño y dirección visual. Builder: construye, prepara archivos finales, publica si aplica y entrega.
+- La nota es corta y concreta (máx. ~120 caracteres): lo que salió, no cómo pensaste. Si falta un dato del cliente, pásalo en ask como pregunta corta y sigue con lo que puedas.
 - Si un Brain no tiene nada que hacer aquí, márcalo "skip". Nunca pongas claves, rutas del PC ni datos internos en las notas.
 
 ## Cómo trabajar

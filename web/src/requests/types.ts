@@ -26,7 +26,7 @@ export interface BrandRequest {
   helperBrains: BrainId[];
   approvalLevel: 'self' | 'nicolas';
   /** The team at work for real (server/brains/steps.ts): one step per Brain, moved by the session doing the request. */
-  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[] } | null;
+  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[]; ask?: { brain: BrainId; text: string; at: number } | null } | null;
   /** Brand check the team ran before delivering (admin). */
   quality?: { score: number; passed: boolean; round: number; checks: Array<{ id: string; text: string; critical: boolean; ok: boolean; note?: string }> } | null;
   teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
@@ -41,6 +41,8 @@ export interface BrandRequest {
   tags?: string[];
   /** Hidden from the board and list unless "Archived" is on (admin sets it). */
   archived?: boolean;
+  /** Cancelled by the client or NickMark (sent by mistake): archived, the Brains skip it; can be undone. */
+  cancelled?: { by: string; at?: Timestamp } | null;
   approvedAt?: Timestamp;
   /** NickMark asked the client for what the request lacked (date, where, material). */
   askedMissingAt?: Timestamp;

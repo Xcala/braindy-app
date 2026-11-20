@@ -9,6 +9,7 @@ import { Icon } from '../components/Icon';
 import { useComments, useRequest, useVersions } from '../requests/useRequests';
 import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
+import { CancelButton, CancelledBanner } from '../requests/CancelRequest';
 import { Progress } from '../requests/Progress';
 import { TeamAtWork } from '../requests/TeamAtWork';
 import { QualityCard } from '../requests/QualityCard';
@@ -56,6 +57,7 @@ export function RequestDetail() {
   if (r === undefined) return <div className="skel" style={{ height: '25rem' }} />;
   if (r === null) return <p className="t-mute">{t('req.notFound')}</p>;
   const v = versions.find((x) => x.id === versionId) ?? versions[versions.length - 1];
+  const mine = isAdmin || canApprove || (!!user && r.createdBy === user.uid);
   const type = [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang], r.formatType].filter(Boolean).join(' · ');
 
   return (
@@ -63,13 +65,14 @@ export function RequestDetail() {
       <div className="req-top"><nav className="crumbs min-w-0" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav><RequestNav brandId={current.id} id={r.id} /></div>
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
-          <div className="row g12 wrap"><EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={isAdmin || canApprove || (!!user && r.createdBy === user.uid)} /><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
+          <div className="row g12 wrap"><EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={mine} /><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.cancelled && <span className="chip c-type">{t('rc.chip')}</span>}{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
           <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
         </div>
-        <Progress r={r} />
+        <div className="col g8" style={{ alignItems: 'flex-end' }}><Progress r={r} />{mine && <CancelButton brandId={current.id} r={r} />}</div>
       </div>
+      <CancelledBanner brandId={current.id} r={r} canUndo={mine} />
 
-      {r.status === 'in_production' && <TeamAtWork r={r} />}
+      {(r.status === 'in_production' || r.status === 'to_approve') && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
       {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (
@@ -90,7 +93,7 @@ export function RequestDetail() {
           <p className="label">{t('req.brief')}</p>
           <BriefSummary brandId={current.id} r={r} />
           {(addenda.length > 0 || r.status === 'in_production' || r.status === 'to_approve') && (
-            <div className="card card-tight col g16"><AddendaList items={addenda} />{r.status !== 'approved' && r.status !== 'published' && <AddendumForm brandId={current.id} requestId={r.id} />}</div>
+            <div className="card card-tight col g16"><AddendaList items={addenda} />{r.status !== 'approved' && r.status !== 'published' && !r.cancelled && <AddendumForm brandId={current.id} requestId={r.id} />}</div>
           )}
         </div>
         <div className="col g12">
