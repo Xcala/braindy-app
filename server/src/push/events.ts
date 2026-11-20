@@ -11,9 +11,10 @@ import { adminUids, brandPeople, pushTo, type PushMsg } from './send.js';
 
 const oidc = new OAuth2Client();
 async function fromEventarc(authorization?: string) {
-  const audience = process.env.EVENTS_AUDIENCE; const sa = process.env.EVENTS_SA;
+  // Cloud Run answers on two URLs (the old hash one and the project-number one); either may be the audience.
+  const audience = (process.env.EVENTS_AUDIENCE ?? '').split(',').map((s) => s.trim()).filter(Boolean); const sa = process.env.EVENTS_SA;
   const token = (authorization ?? '').replace(/^Bearer /, '');
-  if (!audience || !sa || !token) return false;
+  if (!audience.length || !sa || !token) return false;
   try {
     const p = (await oidc.verifyIdToken({ idToken: token, audience })).getPayload();
     return p?.email === sa && !!p?.email_verified;
