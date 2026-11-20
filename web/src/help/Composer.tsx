@@ -10,6 +10,8 @@ const SR = (): (new () => Rec) | null => {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 };
 const MAX_FILES = 5;
+/** The box grows with the text (up to its max height), like Claude or ChatGPT. */
+const grow = (el: HTMLTextAreaElement) => { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; };
 
 /**
  * The chat's message box: write, dictate (the browser turns speech into text, where it can) or attach up to 5 files
@@ -33,6 +35,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
     rec.current?.stop();
     onSend(text.trim() || t('help.filesOnly'), files);
     setText(''); setFiles([]);
+    const box = (ref as React.RefObject<HTMLTextAreaElement> | null)?.current; if (box) box.style.height = '';
   };
 
   async function add(list: FileList | null) {
@@ -78,20 +81,23 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
           {error && <span className="t-xs" role="alert" style={{ color: 'var(--rojo, #C62828)' }}>{t('help.fileError')}</span>}
         </div>
       )}
-      <div className="help-row">
+      <textarea ref={ref} className="help-input" rows={1} value={text} maxLength={1500} placeholder={t(listening ? 'help.listening' : 'help.ph')} aria-label={t('help.ph')}
+        onChange={(e) => { setText(e.target.value); grow(e.currentTarget); }}
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+      <div className="help-bar">
         <button type="button" className="help-tool" onClick={() => pick.current?.click()} disabled={files.length >= MAX_FILES} aria-label={t('help.attach')} title={t('help.attach')}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9" /></svg>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         </button>
         <input ref={pick} type="file" multiple hidden onChange={(e) => { void add(e.target.files); e.target.value = ''; }} />
+        <span className="help-gap" />
         {SR() && (
           <button type="button" className={`help-tool${listening ? ' is-on' : ''}`} onClick={dictate} aria-pressed={listening} aria-label={t(listening ? 'help.dictateStop' : 'help.dictate')} title={t(listening ? 'help.dictateStop' : 'help.dictate')}>
             <Icon name="mic" size={20} />
           </button>
         )}
-        <textarea ref={ref} className="input help-input" rows={1} value={text} maxLength={1500} placeholder={t(listening ? 'help.listening' : 'help.ph')} aria-label={t('help.ph')}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
-        <button type="submit" className="btn btn-primary btn-sm" disabled={busy || uploading > 0 || (!text.trim() && !files.length)}>{t('help.send')}</button>
+        <button type="submit" className="help-send" disabled={busy || uploading > 0 || (!text.trim() && !files.length)} aria-label={t('help.send')} title={t('help.send')}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+        </button>
       </div>
     </form>
   );
