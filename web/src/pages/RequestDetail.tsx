@@ -69,7 +69,7 @@ export function RequestDetail() {
         <Progress r={r} />
       </div>
 
-      {r.status === 'in_production' && <TeamAtWork r={r} />}
+      {(r.status === 'in_production' || r.status === 'to_approve') && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
       {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (
