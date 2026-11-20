@@ -203,36 +203,22 @@ export function HelpChat() {
       {(!open || docked) && dial && <QuickDial onClose={closeDial} onAi={openAi} />}
       {open && (
         <section className={`help-panel${docked ? ' is-dock' : ''}`} role={docked ? 'complementary' : 'dialog'} aria-modal={docked ? undefined : false} aria-labelledby="help-title">
-          {docked ? (
-            <header className="help-dhead">
-              <CapabilitiesMenu id="help-title" className="help-dtitle" admin={admin} onAsk={(q) => void ask(q)} />
-              {voiceBtn('help-dbtn')}
-              {histBtn('help-dbtn')}
-              <button type="button" className="help-dbtn" onClick={newChat} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
-              <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
-            </header>
-          ) : (
-          <header className="help-head">
-            <div className="col" style={{ minWidth: 0 }}>
-              <CapabilitiesMenu id="help-title" className="help-title" admin={admin} onAsk={(q) => void ask(q)} />
-              <p className="t-xs t-mute">{t('help.sub')}</p>
-              <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
-              {s.msgs.length > 0 && <button type="button" className="help-new" onClick={() => update({ msgs: [], chatId: null })}>{t('help.new')}</button>}
-            </div>
-            {voiceBtn('help-x')}
-            {histBtn('help-x')}
-            <button type="button" className="help-x" onClick={() => setOpen(false)} aria-label={t('help.close')}>×</button>
+          <header className="help-dhead">
+            <CapabilitiesMenu id="help-title" className="help-dtitle" admin={admin} onAsk={(q) => void ask(q)} />
+            {voiceBtn('help-dbtn')}
+            {histBtn('help-dbtn')}
+            <button type="button" className="help-dbtn" onClick={newChat} aria-label={t('help.new')} title={t('help.new')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>
+            <button type="button" className="help-dbtn" onClick={() => setOpen(false)} aria-label={t('help.close')} title={t('help.close')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
           </header>
-          )}
           <div className="help-body" aria-live="polite">
             {hist ? <ChatHistory brandId={brandId} current={s.chatId} onPick={(id) => void pick(id)} onNew={newChat} onDeleted={(id) => { if (id === s.chatId) update({ msgs: [], chatId: null }); }} /> : <>
-            {docked ? (
+            {(docked || s.msgs.length === 0) && (
               <div className="help-welcome">
                 <span className="help-brains" aria-hidden="true">{BRAINS.map((b) => <img key={b} src={`/brand/brains/${b}.png`} alt="" />)}</span>
                 <b>{t('help.welcome', { name: first ? `, ${first}` : '' })}</b>
                 <p>{t('help.welcomeSub')}</p>
               </div>
-            ) : <div className="help-msg is-bot"><p>{t('help.hello', { name: first ? ` ${first}` : '' })}</p></div>}
+            )}
             {s.msgs.length === 0 && <CanDo brandId={brandId} client={profile?.role !== 'admin'} onAsk={(q) => void ask(q)} onHist={() => setHist(true)} />}
             {s.msgs.map((m, i) => (
               <div key={i} className={`help-msg ${m.role === 'user' ? 'is-me' : 'is-bot'}`}>
