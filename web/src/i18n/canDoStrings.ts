@@ -1,0 +1,38 @@
+/** The assistant's empty chat: what it can do (each card tries it), what is waiting now, first steps and the short tour. */
+export const canDoEn = {
+  'cd.title': 'What I can do',
+  'cd.status': 'See how everything is going', 'cd.statusTry': 'Requests, files, social and your site', 'cd.statusQ': 'How is everything going with my brand?',
+  'cd.work': 'Ask for work', 'cd.workTry': 'Tell me what you need, I leave it ready', 'cd.workQ': 'I need a post for Instagram this week',
+  'cd.approve': 'Approve or ask for changes', 'cd.approveTry': 'On what NickMark delivered', 'cd.approveQ': 'What do I have to approve?',
+  'cd.site': 'Adjust your site', 'cd.siteTry': 'Say what to change, it goes to Builder', 'cd.siteQ': 'I want to change something on my website',
+  'cd.media': 'Send photos and voice notes', 'cd.mediaTry': 'Tap to talk instead of typing',
+  'cd.chats': 'Pick up earlier chats', 'cd.chatsTry': 'They stay saved here',
+  'cd.nowApprove1': 'You have 1 piece to approve', 'cd.nowApprove': 'You have {n} pieces to approve',
+  'cd.nowProd1': '1 request in production: see how it goes', 'cd.nowProd': '{n} requests in production: see how they go',
+  'cd.stepsTitle': 'Your first 5 steps with the assistant',
+  'cd.step_ask': 'Ask it something', 'cd.step_voice': 'Send a voice note (the mic)', 'cd.step_photo': 'Attach a photo (the +)',
+  'cd.step_approve': 'Approve a piece from the chat', 'cd.step_site': 'Ask for an adjustment to your site',
+  'cd.stepDone': 'done', 'cd.stepTodo': 'to do', 'cd.stepsHint': 'Each one ticks itself when you do it. The list goes away when you finish.',
+  'ct.t1': 'Attach with +', 'ct.x1': '<p>Add <b>photos, PDFs or files</b> (up to 5). The assistant sees the photos, and they travel with whatever it proposes.</p>',
+  'ct.t2': 'Talk instead of typing', 'ct.x2': '<p>Tap the <b>mic</b>, speak, and tap it again to stop. Your words appear in the box for you to check and send.</p>',
+  'ct.t3': 'Your chats', 'ct.x3': '<p>Every conversation <b>stays saved</b>. Tap the clock to go back to any of them.</p>',
+} as const;
+
+export const canDoEs: Record<keyof typeof canDoEn, string> = {
+  'cd.title': 'Lo que puedo hacer',
+  'cd.status': 'Ver cómo va todo', 'cd.statusTry': 'Pedidos, archivos, redes y tu sitio', 'cd.statusQ': '¿Cómo va todo con mi marca?',
+  'cd.work': 'Pedir un trabajo', 'cd.workTry': 'Dime qué necesitas y te lo dejo listo', 'cd.workQ': 'Necesito un post para Instagram esta semana',
+  'cd.approve': 'Aprobar o pedir cambios', 'cd.approveTry': 'Sobre lo que te entregó NicoMarca', 'cd.approveQ': '¿Qué tengo por aprobar?',
+  'cd.site': 'Ajustar el sitio', 'cd.siteTry': 'Dime qué cambiar y le llega a Builder', 'cd.siteQ': 'Quiero cambiar algo de mi sitio web',
+  'cd.media': 'Mandar fotos y notas de voz', 'cd.mediaTry': 'Toca para hablar en vez de escribir',
+  'cd.chats': 'Retomar chats anteriores', 'cd.chatsTry': 'Quedan guardados aquí',
+  'cd.nowApprove1': 'Tienes 1 pieza por aprobar', 'cd.nowApprove': 'Tienes {n} piezas por aprobar',
+  'cd.nowProd1': '1 pedido en producción: mira cómo va', 'cd.nowProd': '{n} pedidos en producción: mira cómo van',
+  'cd.stepsTitle': 'Tus primeros 5 pasos con el asistente',
+  'cd.step_ask': 'Hazle una pregunta', 'cd.step_voice': 'Mándale una nota de voz (el micrófono)', 'cd.step_photo': 'Adjunta una foto (el +)',
+  'cd.step_approve': 'Aprueba una pieza desde el chat', 'cd.step_site': 'Pide un ajuste a tu sitio',
+  'cd.stepDone': 'hecho', 'cd.stepTodo': 'pendiente', 'cd.stepsHint': 'Cada uno se marca solo cuando lo haces. La lista se va cuando terminas.',
+  'ct.t1': 'Adjunta con el +', 'ct.x1': '<p>Agrega <b>fotos, PDF o archivos</b> (hasta 5). El asistente ve las fotos, y viajan con lo que te proponga.</p>',
+  'ct.t2': 'Habla en vez de escribir', 'ct.x2': '<p>Toca el <b>micrófono</b>, habla y tócalo otra vez para terminar. Tus palabras quedan en la caja para que las revises y envíes.</p>',
+  'ct.t3': 'Tus chats', 'ct.x3': '<p>Cada conversación <b>queda guardada</b>. Toca el reloj para volver a cualquiera.</p>',
+};
