@@ -9,6 +9,9 @@ export const groupHomeEn = {
   'gh.quiet': 'Nothing pending',
   'gh.companies': '{n} companies',
   'gh.empty': 'This group has no companies yet.',
+  'gh.openName': 'Open {name}', 'gh.sApprove': 'To approve', 'gh.sProd': 'In production', 'gh.sDone': 'Delivered this month',
+  'gh.last': 'Latest', 'gh.untitled': 'Untitled request', 'gh.noWork': 'No requests yet.', 'gh.nextDue': 'Next due · {date}',
+  'gh.newReq': 'New request', 'gh.brand': 'Brand kit',
 } as const;
 
 export const groupHomeEs: Record<keyof typeof groupHomeEn, string> = {
@@ -21,4 +24,7 @@ export const groupHomeEs: Record<keyof typeof groupHomeEn, string> = {
   'gh.quiet': 'Nada pendiente',
   'gh.companies': '{n} empresas',
   'gh.empty': 'Este grupo todavía no tiene empresas.',
+  'gh.openName': 'Abrir {name}', 'gh.sApprove': 'Por aprobar', 'gh.sProd': 'En producción', 'gh.sDone': 'Entregado este mes',
+  'gh.last': 'Lo último', 'gh.untitled': 'Pedido sin título', 'gh.noWork': 'Todavía no hay pedidos.', 'gh.nextDue': 'Próxima entrega · {date}',
+  'gh.newReq': 'Nuevo pedido', 'gh.brand': 'Kit de marca',
 };
