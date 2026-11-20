@@ -126,3 +126,21 @@ html[data-theme="dark"] .help-card,html[data-theme="dark"] .help-panel.is-dock .
 .help-draft.is-sent .help-draft-tag{color:#0E5A3A;background:#EAF7EF}
 html[data-theme="dark"] .help-draft{border-color:#3B2E5E}
 html[data-theme="dark"] .help-draft-tag{background:#231A3D;color:#C4B0FF}
+/* Cards the assistant looked up (requests, files, posts, site adjustments, numbers): each opens its screen. */
+.hc-list{display:flex;flex-direction:column;gap:0.375rem;margin-top:0.375rem}
+.hc-card{display:flex;align-items:center;gap:0.625rem;padding:0.5rem 0.625rem;border-radius:0.75rem;background:var(--white);border:1px solid var(--line);color:var(--ink);text-decoration:none;min-width:0}
+.hc-card:hover{border-color:var(--azul)}
+.hc-card:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+.help-msg .hc-card,.help-msg .hc-card:visited{color:var(--ink);font-weight:400}
+.hc-main{display:flex;flex-direction:column;gap:0.25rem;min-width:0;flex:1}
+.hc-main b{font:700 0.875rem/1.25 var(--f-text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hc-text{font:400 0.8125rem/1.3 var(--f-text);color:var(--graphite);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hc-ico.brain{width:2rem;height:2rem}
+.hc-thumb{flex:none;width:2.75rem;height:2.75rem;border-radius:0.5rem;background:var(--fog,#F4F6FB);display:grid;place-items:center;overflow:hidden;font:800 0.625rem/1 var(--f-text);color:var(--graphite)}
+.hc-thumb img{width:100%;height:100%;object-fit:cover}
+.hc-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.375rem}
+.hc-stat{display:flex;flex-direction:column;gap:0.125rem;padding:0.5rem 0.625rem;border-radius:0.75rem;background:var(--white);border:1px solid var(--line);min-width:0}
+.hc-stat b{font:800 1.125rem/1.2 var(--f-display)}
+.hc-stat .t-xs:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-up{color:var(--success);font-weight:700}
+.hc-down{color:var(--danger,#C62828);font-weight:700}

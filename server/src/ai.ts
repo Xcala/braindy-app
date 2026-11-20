@@ -14,7 +14,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const aiConfigured = () => !!KEY;
 
-type Answer = { model?: string; usage?: ClaudeUsage; content?: Array<{ type: string; text?: string }> };
+export type Block = { type: string; text?: string; id?: string; name?: string; input?: unknown };
+type Answer = { model?: string; usage?: ClaudeUsage; content?: Block[]; stop_reason?: string };
 
 /** One request with retries. Returns the answer and how many attempts it took; throws the last error. */
 async function send(body: string): Promise<{ j: Answer; attempts: number }> {
@@ -65,6 +66,29 @@ export async function claudeChat(system: string, messages: ChatTurn[], o: { maxT
       recordCall({ ...log, model, ok: true, ms: Date.now() - t0, attempts, usd: claudeCost(model, t), input: t.input, output: t.output }),
     ]);
     return (j.content ?? []).filter((c) => c.type === 'text').map((c) => c.text).join('');
+  } catch (e) {
+    const err = e as Error & { attempts?: number };
+    await recordCall({ ...log, model: asked, ok: false, error: err.message.slice(0, 80), ms: Date.now() - t0, attempts: err.attempts ?? ATTEMPTS });
+    throw e;
+  }
+}
+
+export type Tool = { name: string; description: string; input_schema: Record<string, unknown> };
+/** One turn with tools: every content block (text and tool_use) and why the model stopped. Logged like claudeChat. */
+export async function claudeTurn(system: string, messages: unknown[], tools: Tool[], o: { maxTokens?: number; meta?: UsageMeta; model?: string; noTools?: boolean } = {}) {
+  if (!KEY) throw new Error('ai_not_configured');
+  const asked = o.model ?? MODEL;
+  const t0 = Date.now();
+  const log = { brandId: o.meta?.brandId ?? null, kind: o.meta?.kind ?? 'other', taskId: o.meta?.taskId ?? null, requestId: o.meta?.requestId ?? null };
+  try {
+    const { j, attempts } = await send(JSON.stringify({ model: asked, max_tokens: o.maxTokens ?? 2000, system, messages, tools, ...(o.noTools ? { tool_choice: { type: 'none' } } : {}) }));
+    const model = j.model ?? asked;
+    const t = tokensOf(j.usage);
+    await Promise.all([
+      recordClaude(o.meta, model, j.usage),
+      recordCall({ ...log, model, ok: true, ms: Date.now() - t0, attempts, usd: claudeCost(model, t), input: t.input, output: t.output }),
+    ]);
+    return { content: j.content ?? [], stop: j.stop_reason ?? 'end_turn' };
   } catch (e) {
     const err = e as Error & { attempts?: number };
     await recordCall({ ...log, model: asked, ok: false, error: err.message.slice(0, 80), ms: Date.now() - t0, attempts: err.attempts ?? ATTEMPTS });

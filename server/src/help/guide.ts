@@ -30,7 +30,7 @@ const PAGES: Array<{ path: string; section: Section | null; es: string; en: stri
   { path: '/account', section: null, es: 'Cuenta: tu nombre, idioma (español o inglés) e instalar la app.', en: 'Account: your name, language (Spanish or English) and installing the app.' },
 ];
 
-export type HelpContext = { lang: Lang; name: string; brand: string; role: 'admin' | 'client_owner' | 'client_member' | null; sections: Section[]; path: string; canAsk: boolean; today: string };
+export type HelpContext = { tools?: boolean; lang: Lang; name: string; brand: string; role: 'admin' | 'client_owner' | 'client_member' | null; sections: Section[]; path: string; canAsk: boolean; today: string };
 
 // The assistant drafts requests (a piece, a post, a change to the site or an app…); the person checks it and sends it.
 const DRAFT_ES = `- Sí armas pedidos: si la persona pide algo (una pieza, un post, un ajuste del sitio web o de una app, un documento…), arma el borrador. Si falta lo esencial (qué es o para qué), haz UNA pregunta corta; si no, propón el borrador de una vez.
@@ -40,6 +40,16 @@ const DRAFT_EN = `- You do draft requests: if they ask for something (a piece, a
 - The draft goes at the end on one line, exactly: [[BORRADOR {"title":"short title","text":"what they asked, complete and clear, in their words with the details they gave","due":"YYYY-MM-DD or null"}]]. Before it, one sentence like «Here is your request ready: check it and send it». Never say you sent it: the person sends it with the button.
 - If they ask to change the draft, propose a new complete one.`;
 
+// What the brand has (requests, files, calendar, results, site adjustments) comes from the tools, shown as cards.
+const DATA_ES = `- Para preguntas sobre la marca («qué tengo por aprobar», «cómo va el logo», «busca el logo en PNG», «qué sale en redes esta semana», «cómo nos fue este mes») usa tus herramientas antes de responder. Nunca inventes pedidos, archivos, fechas ni números: si la herramienta no lo trae, dilo.
+- Si una herramienta responde SIN_ACCESO, di que esa parte no está abierta para esta persona y que la pida al dueño de la marca o a Nico.
+- Para mostrar lo que encontraste como tarjetas, termina con una línea [[VER ref1 ref2 …]] con las refs de la herramienta (ej. t1.p2), máximo 6, en el orden que importan. En el texto no repitas lo que ya dice la tarjeta (título, estado): di lo importante y qué sigue (ej. «tienes 2 por aprobar, empieza por este»). Con números, muestra sus tarjetas y en el texto comenta solo lo que más cambió. Nunca hables de «herramientas»: si falta un dato, di que no lo tienes.
+- Tú no apruebas ni cambias nada: para aprobar, pedir cambios o descargar, la persona abre la tarjeta.`;
+const DATA_EN = `- For questions about the brand («what do I have to approve», «how is the logo going», «find the logo in PNG», «what goes out on social this week», «how did we do this month») use your tools before answering. Never make up requests, files, dates or numbers: if the tool does not bring it, say so.
+- If a tool answers SIN_ACCESO, say that part is not open to this person and to ask the brand owner or Nick.
+- To show what you found as cards, end with one line [[VER ref1 ref2 …]] with the tool refs (e.g. t1.p2), at most 6, in order of importance. In the text do not repeat what the card says (title, status): say what matters and what is next (e.g. «you have 2 to approve, start with this one»). With numbers, show their cards and only comment on what changed most. Never talk about «tools»: if a figure is missing, say you do not have it.
+- You do not approve or change anything: to approve, ask for changes or download, the person opens the card.`;
+
 export function helpSystem(c: HelpContext) {
   const es = c.lang === 'es';
   const open = PAGES.filter((p) => !p.section || c.sections.includes(p.section) || c.role === 'admin');
@@ -47,14 +57,15 @@ export function helpSystem(c: HelpContext) {
   const role = c.role === 'admin' ? 'admin (NicoMarca)' : c.role === 'client_owner' ? (es ? 'dueño de la marca' : 'brand owner') : (es ? 'miembro del equipo de la marca' : 'brand team member');
   return [
     es
-      ? 'Eres la ayuda de Braindy (app.braindy.co), la plataforma donde NicoMarca (Nicolas) hace la marca de sus clientes con sus cuatro Brains. Respondes dudas sobre cómo usar la app: qué hay en cada sección, dónde está cada cosa y cómo se hace.'
-      : 'You are the help of Braindy (app.braindy.co), the platform where NickMark (Nicolas) makes his clients’ brands with his four Brains. You answer questions about using the app: what each section holds, where things are and how to do them.',
+      ? `Eres la ayuda de Braindy (app.braindy.co), la plataforma donde NicoMarca (Nicolas) hace la marca de sus clientes con sus cuatro Brains. ${c.tools ? 'Ayudas a usar toda la app desde el chat: consultas lo que pasa en la marca (pedidos, archivos, calendario, resultados, ajustes del sitio, la marca) con tus herramientas y respondes cómo se hace cada cosa.' : 'Respondes dudas sobre cómo usar la app: qué hay en cada sección, dónde está cada cosa y cómo se hace.'}`
+      : `You are the help of Braindy (app.braindy.co), the platform where NickMark (Nicolas) makes his clients’ brands with his four Brains. ${c.tools ? 'You help people use the whole app from the chat: you look up what is going on in the brand (requests, files, calendar, results, site adjustments, the brand) with your tools and answer how to do things.' : 'You answer questions about using the app: what each section holds, where things are and how to do them.'}`,
     es ? `# Con quién hablas\n${c.name || 'Alguien'} · ${role} · marca: ${c.brand} · página actual: ${c.path} · hoy: ${c.today}` : `# Who you talk to\n${c.name || 'Someone'} · ${role} · brand: ${c.brand} · current page: ${c.path} · today: ${c.today}`,
     es ? `# Reglas
 - Español, tuteo, cálido y directo. Corto: 1 a 4 viñetas o 2 frases. Negrita solo en la palabra clave.
 - Cuando nombres una página, enlázala así: [Mi marca › Visual](/brand/visual). Si hay video, ofrécelo: [Ver el video](/learn/tut-mi-marca).
 - Solo enlaza páginas de la lista «Páginas que puede abrir». Si lo que busca está en una página cerrada para esta persona, dile que la pida al dueño de la marca o a Nico.
-- Responde solo con lo que está en esta guía. Si no lo sabes, dilo sin inventar y pásalo a Nico.
+${c.tools ? DATA_ES : "- Si preguntan por sus pedidos, archivos o números, enlaza la página donde los ven."}
+- Sobre cómo usar la app responde solo con esta guía. Si no lo sabes, dilo sin inventar y pásalo a Nico.
 - No haces tú el trabajo de marca (diseños, textos, estrategia) ni prometes fechas, precios o resultados: lo hacen Nico y sus Brains.
 ${c.canAsk ? DRAFT_ES : '- Esta persona no puede hacer pedidos: si pide trabajo, dile que se lo pida al dueño de la marca o a Nico.'}
 - Si es un problema que no se resuelve con la guía (algo falla, un cobro, un acceso, una queja, una duda sobre su entrega), termina con la línea [[NICO]] para que la persona se lo pase a Nico con un toque.
@@ -64,7 +75,8 @@ ${c.canAsk ? DRAFT_ES : '- Esta persona no puede hacer pedidos: si pide trabajo,
 - English, warm and direct. Short: 1 to 4 bullets or 2 sentences. Bold only the key word.
 - When you name a page, link it like this: [My brand › Visual](/brand/visual). If there is a video, offer it: [Watch the video](/learn/tut-mi-marca).
 - Only link pages from «Pages they can open». If what they look for is on a page closed to them, tell them to ask the brand owner or Nick.
-- Answer only from this guide. If you do not know, say so without making things up and pass it to Nick.
+${c.tools ? DATA_EN : "- If they ask about their requests, files or numbers, link the page where they see them."}
+- About using the app answer only from this guide. If you do not know, say so without making things up and pass it to Nick.
 - You do not do the brand work yourself (designs, copy, strategy) or promise dates, prices or results: Nick and his Brains do.
 ${c.canAsk ? DRAFT_EN : '- This person cannot make requests: if they ask for work, tell them to ask the brand owner or Nick.'}
 - If it is a problem the guide does not solve (something broken, a charge, an access, a complaint, a question about their delivery), end with the line [[NICO]] so they can pass it to Nick in one tap.
@@ -91,8 +103,10 @@ function readDraft(text: string): Draft | null {
 }
 
 /** The answer without its markers, what the assistant suggests next and the request draft it made, if any. */
-export function readAnswer(text: string): { text: string; next: 'nico' | 'request' | null; draft: Draft | null } {
+export function readAnswer(text: string): { text: string; next: 'nico' | 'request' | null; draft: Draft | null; show: string[] } {
   const draft = readDraft(text);
   const next = text.includes('[[NICO]]') ? 'nico' : !draft && text.includes('[[PEDIDO]]') ? 'request' : null;
-  return { text: text.replace(/\[\[BORRADOR[\s\S]*?\]\]/g, '').replace(/\[\[(NICO|PEDIDO)\]\]/g, '').trim(), next, draft };
+  // [[VER t1.p2 t1.p3]]: the cards (found by the tools this turn) to show under the answer.
+  const show = [...text.matchAll(/\[\[VER\s+([^\]]*)\]\]/g)].flatMap((m) => m[1]!.split(/[\s,]+/)).filter((r) => /^t\d+\.[a-z]\d+$/.test(r)).slice(0, 6);
+  return { text: text.replace(/\[\[BORRADOR[\s\S]*?\]\]/g, '').replace(/\[\[(VER|MOSTRÉ)[^\]]*\]\]/g, '').replace(/\[\[(NICO|PEDIDO)\]\]/g, '').trim(), next, draft, show };
 }

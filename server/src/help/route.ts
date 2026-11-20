@@ -1,10 +1,12 @@
-// The in-app help assistant: answers how to use Braindy from the tutorial guide, on a lighter model, charged to the brand.
+// The in-app assistant: answers how to use Braindy from the tutorial guide and looks up the brand with read-only tools, charged to the brand.
 // Every conversation is kept in helpChats (server only) so NickMark can see what people ask and improve the app and the guide.
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { brandAccess } from '../access.js';
 import { aiConfigured, claudeChat, type ChatTurn } from '../ai.js';
+import { answerWithTools } from './agent.js';
+import type { ChatCard } from './reads.js';
 import { helpSystem, readAnswer } from './guide.js';
 import type { AuthEnv } from '../auth.js';
 
@@ -15,7 +17,7 @@ const CHARS = 1500;
 
 export const help = new Hono<AuthEnv>();
 
-type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown };
+type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown };
 
 function turnsOf(raw: unknown): ChatTurn[] | null {
   if (!Array.isArray(raw)) return null;
@@ -52,14 +54,22 @@ help.post('/help/chat', async (c) => {
   if (!(await spend(user.uid))) return c.json({ error: 'limit' }, 429);
 
   const [me, brand] = await Promise.all([db.doc(`users/${user.uid}`).get(), db.doc(`brands/${brandId}`).get()]);
-  const system = helpSystem({
+  // Older app versions do not send tools: they keep the guide-only assistant until they update.
+  const tools = b.tools === true;
+  const system = helpSystem({ tools,
     lang, path, sections: access.sections, role: access.admin ? 'admin' : access.role,
     canAsk: access.admin || access.sections.includes('requests'), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
+  let cards: ChatCard[] = [];
   try {
-    answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta: { brandId, kind: 'help' } }));
+    const meta = { brandId, kind: 'help' };
+    if (tools) {
+      const out = await answerWithTools(system, turns, { brandId, access, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta });
+      answer = readAnswer(out.text);
+      cards = answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x);
+    } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
   } catch {
     return c.json({ error: 'ai_failed' }, 502);
   }
@@ -72,7 +82,7 @@ help.post('/help/chat', async (c) => {
     messages: [...turns, { role: 'assistant', content: answer.text }], ...(answer.draft ? { draft: answer.draft } : {}),
     updatedAt: FieldValue.serverTimestamp(), ...(prev.exists ? {} : { createdAt: FieldValue.serverTimestamp() }),
   }, { merge: true });
-  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, chatId: ref.id });
+  return c.json({ text: answer.text, next: answer.next, draft: answer.draft, cards, chatId: ref.id });
 });
 
 /** The person passed the conversation to Nick (WhatsApp opens on their side); the chat is marked so it shows up for him. */
