@@ -4,6 +4,7 @@
 import { claudeTurn, type Block, type ChatTurn, type Tool } from '../ai.js';
 import { brandBasics, findFiles, getRequest, listPosts, listRequests, results, siteChanges, type ChatCard, type ReadOut } from './reads.js';
 import { brandSites, propose, type ActCard, type ActCtx } from './actions.js';
+import { siteText } from './siteText.js';
 import { ALL_BRANDS, allBrands } from './allBrands.js';
 
 const ROUNDS = 4; // tool rounds per question, then it must answer
@@ -25,6 +26,8 @@ const TOOLS: Tool[] = [
     input_schema: { type: 'object', properties: {} } },
   { name: 'sitios', description: 'Los sitios web y apps de la marca (y cuál está viendo la persona ahora), para saber a qué sitio va un ajuste.',
     input_schema: { type: 'object', properties: {} } },
+  { name: 'leer_sitio', description: 'Lee el texto visible de una página del sitio de la marca (por defecto la que está viendo la persona). Úsala antes de opinar, dar ideas o alternativas sobre textos del sitio (ej. la frase del hero).',
+    input_schema: { type: 'object', properties: { url: { type: 'string', description: 'https de un sitio de la marca; vacío = la página que está viendo' } } } },
   { name: 'proponer', description: 'Propone una acción como tarjeta con botón; la persona la confirma, tú nunca la ejecutas. ajuste_sitio: un cambio a su sitio web (texto = qué cambiar y dónde; sitio = url si hay varios). aprobar: aprobar la versión que espera aprobación (pedido_id). pedir_cambios: pedir cambios a esa versión (pedido_id + texto con los cambios). agregar_al_pedido: sumar información o material a un pedido en curso (pedido_id + texto).',
     input_schema: { type: 'object', properties: { accion: { type: 'string', enum: ['ajuste_sitio', 'aprobar', 'pedir_cambios', 'agregar_al_pedido'] }, pedido_id: { type: 'string' }, sitio: { type: 'string' }, titulo: { type: 'string' }, texto: { type: 'string' } }, required: ['accion'] } },
 ];
@@ -42,6 +45,7 @@ async function run(c: ActCtx, name: string, i: In): Promise<Out> {
     case 'resultados': return results(c, Number(i.dias) || 30);
     case 'ajustes_sitio': return siteChanges(c, i.todos !== true);
     case 'marca': return brandBasics(c);
+    case 'leer_sitio': return { ...(await siteText(c, i)), cards: [] };
     case 'sitios': return { ...(await brandSites(c)), cards: [] };
     case 'todas_las_marcas': return allBrands(c, s(i.marca));
     case 'proponer': { const p = await propose(c, i); return { text: p.text, cards: [], act: p.card }; }
