@@ -1,6 +1,8 @@
 // Firestore → alerts. Eventarc calls this on every write to a request and every new comment, whatever wrote it
 // (the app, WhatsApp, the connector, the Brains), so no write path has to remember to send an alert.
-// Verified by Eventarc's OIDC token (EVENTS_AUDIENCE + EVENTS_SA). Each event is handled once (pushEvents/{ce-id}).
+// Eventarc sends Firestore events only as protobuf; the path rides in the ce-document header, so the payload is
+// never parsed. What changed on a request is found by comparing it with the status seen last time (pushSeen).
+// Verified by Eventarc's OIDC token (EVENTS_AUDIENCE + EVENTS_SA). Each comment event is handled once (pushEvents/{ce-id}).
 import { Hono } from 'hono';
 import { OAuth2Client } from 'google-auth-library';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
@@ -18,26 +20,34 @@ async function fromEventarc(authorization?: string) {
   } catch { return false; }
 }
 
-type FsDoc = { name?: string; fields?: Record<string, { stringValue?: string }> };
-type FsEvent = { value?: FsDoc; oldValue?: FsDoc };
-const str = (d: FsDoc | undefined, f: string) => d?.fields?.[f]?.stringValue;
-/** "projects/…/documents/brands/B/requests/R[/comments/C]" → its ids. */
-function idsOf(name = '') {
-  const m = name.match(/\/documents\/brands\/([^/]+)\/requests\/([^/]+)(?:\/comments\/([^/]+))?$/);
+type Ids = { brandId: string; requestId: string; commentId?: string };
+/** "brands/B/requests/R[/comments/C]" → its ids. */
+export function idsOf(path = ''): Ids | null {
+  const m = path.match(/^brands\/([^/]+)\/requests\/([^/]+)(?:\/comments\/([^/]+))?$/);
   return m ? { brandId: m[1]!, requestId: m[2]!, commentId: m[3] } : null;
 }
 const url = (brandId: string, requestId: string) => `/requests/${requestId}?brand=${encodeURIComponent(brandId)}`;
 const cut = (s: string, n = 70) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
-/** What changed on a request, as alerts. Exported for tests. */
-export async function onRequestWrite(e: FsEvent) {
-  const ids = idsOf(e.value?.name ?? e.oldValue?.name);
-  if (!ids || ids.commentId || !e.value?.name) return 0;
-  const { brandId, requestId } = ids;
-  const before = str(e.oldValue, 'status'); const after = str(e.value, 'status');
-  if (before === after && e.oldValue) return 0;
+/** What changed on a request, as alerts. */
+export async function onRequestWrite({ brandId, requestId }: Ids) {
   const r = await db.doc(`brands/${brandId}/requests/${requestId}`).get();
-  if (!r.exists || r.get('archived')) return 0;
+  const after = r.exists ? String(r.get('status') ?? '') : '';
+  // Swap the last seen status for this one, once: only the event that sees the change speaks.
+  const seen = db.doc(`pushSeen/${brandId}__${requestId}`);
+  const prev = await db.runTransaction(async (tx) => {
+    const d = await tx.get(seen);
+    const before = d.exists ? String(d.get('status') ?? '') : null;
+    if (before === after) return { same: true as const, before };
+    tx.set(seen, { status: after, at: FieldValue.serverTimestamp() });
+    return { same: false as const, before };
+  });
+  if (prev.same || !r.exists || r.get('archived')) return 0;
+  const before = prev.before;
+  // Never seen: new only when just created (older requests are simply being seen for the first time).
+  const created = before === null && Date.now() - ((r.get('createdAt') as Timestamp | undefined)?.toMillis() ?? 0) < 10 * 60_000;
+  if (before === null && !created) return 0;
+
   const title = cut(String(r.get('title') ?? r.get('formatType') ?? ''));
   const people = await brandPeople(brandId);
   const brand = people.name;
@@ -46,7 +56,7 @@ export async function onRequestWrite(e: FsEvent) {
   let sent = 0;
   const go = async (uids: string[], m: Omit<PushMsg, 'tag' | 'url'>) => { sent += (await pushTo(uids, { ...base, ...m })).sent; };
 
-  if (!e.oldValue) {
+  if (created) {
     if (!admins.includes(String(r.get('createdBy') ?? ''))) await go(admins, { kind: 'requests', title: { es: `Pedido nuevo · ${brand}`, en: `New request · ${brand}` }, body: { es: title, en: title } });
     return sent;
   }
@@ -61,10 +71,8 @@ export async function onRequestWrite(e: FsEvent) {
 const QUIET_KINDS = new Set(['approved', 'changes_requested', 'status', 'system']);
 
 /** A new comment, as alerts: NickMark hears from clients; the brand's people hear from anyone else. */
-export async function onCommentCreate(e: FsEvent) {
-  const ids = idsOf(e.value?.name);
-  if (!ids?.commentId || e.oldValue) return 0;
-  const { brandId, requestId, commentId } = ids;
+export async function onCommentCreate({ brandId, requestId, commentId }: Ids) {
+  if (!commentId) return 0;
   const c = await db.doc(`brands/${brandId}/requests/${requestId}/comments/${commentId}`).get();
   if (!c.exists || QUIET_KINDS.has(String(c.get('kind') ?? ''))) return 0;
   const author = String(c.get('author') ?? '');
@@ -87,20 +95,17 @@ export async function onCommentCreate(e: FsEvent) {
 export const events = new Hono();
 events.use('*', async (c, next) => ((await fromEventarc(c.req.header('Authorization'))) ? next() : c.json({ error: 'unauthorized' }, 401)));
 events.post('/firestore', async (c) => {
-  const id = c.req.header('ce-id') ?? '';
-  const body = await c.req.json<FsEvent>().catch(() => ({} as FsEvent));
-  // Most request writes are the Brains' progress: same status, nothing to say, nothing written.
-  const isComment = /\/comments\/[^/]+$/.test(body.value?.name ?? body.oldValue?.name ?? '');
-  if (!isComment && (!body.value || (body.oldValue && str(body.oldValue, 'status') === str(body.value, 'status')))) return c.json({ ok: true });
-  if (id) {
-    // Eventarc may deliver twice; the first one wins.
-    const ok = await db.doc(`pushEvents/${id.replace(/[^\w-]/g, '_').slice(0, 120)}`)
-      .create({ at: FieldValue.serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 864e5) }).then(() => true, () => false);
-    if (!ok) return c.json({ ok: true, duplicate: true });
-  }
+  const ids = idsOf(c.req.header('ce-document') ?? '');
+  if (!ids) return c.json({ ok: true });
   try {
-    const sent = isComment ? await onCommentCreate(body) : await onRequestWrite(body);
-    return c.json({ ok: true, sent });
+    if (!ids.commentId) return c.json({ ok: true, sent: await onRequestWrite(ids) });
+    // Eventarc may deliver twice; the first one wins.
+    const id = (c.req.header('ce-id') ?? '').replace(/[^\w-]/g, '_').slice(0, 120);
+    if (id) {
+      const first = await db.doc(`pushEvents/${id}`).create({ at: FieldValue.serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 7 * 864e5) }).then(() => true, () => false);
+      if (!first) return c.json({ ok: true, duplicate: true });
+    }
+    return c.json({ ok: true, sent: await onCommentCreate(ids) });
   } catch (e) {
     console.warn('push event failed', String(e));
     return c.json({ ok: true }); // never retried: an alert late by an hour is worse than none
