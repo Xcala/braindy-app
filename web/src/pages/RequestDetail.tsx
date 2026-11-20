@@ -24,6 +24,7 @@ import { LessonForRequest } from '../criterio/LessonCards';
 import { BriefSummary } from '../requests/BriefSummary';
 import { AddendaList, AddendumForm } from '../requests/Addenda';
 import { RequestNav } from '../requests/RequestNav';
+import { EditableTitle } from '../requests/EditableTitle';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -31,7 +32,7 @@ export function RequestDetail() {
   // A shared link can carry its brand (?brand=quimiolab), so it opens whatever brand is selected now.
   const linked = useSearchParams()[0].get('brand');
   useEffect(() => { if (linked && linked !== current?.id && brands.some((b) => b.id === linked)) select(linked); }, [linked, brands.length]);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { t, lang } = useI18n();
   const r = useRequest(current?.id, id);
   const all = useVersions(current?.id, id);
@@ -62,7 +63,7 @@ export function RequestDetail() {
       <div className="req-top"><nav className="crumbs min-w-0" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav><RequestNav brandId={current.id} id={r.id} /></div>
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
-          <div className="row g12 wrap"><h1 className="h2" style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{r.title}</h1><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
+          <div className="row g12 wrap"><EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={isAdmin || canApprove || (!!user && r.createdBy === user.uid)} /><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
           <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
         </div>
         <Progress r={r} />

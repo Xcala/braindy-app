@@ -10,6 +10,8 @@ export interface Card { text?: string; links?: string[]; files?: AttachedFile[] 
 export interface BrandRequest {
   id: string;
   title: string;
+  /** A website adjustment (found by this, not by its title, so it can be renamed). */
+  siteAdjust?: boolean;
   category: string;
   subcategory: string;
   formatType: string;

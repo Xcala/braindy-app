@@ -13,7 +13,7 @@ function useReceived(brandId: string, url: string): BrandRequest[] {
   const { list } = useRequests(brandId);
   const host = hostOf(url);
   return list.filter((r) => r.category === 'web' && !r.archived && r.status !== 'approved' && r.status !== 'published'
-    && /^(Ajuste del sitio|Site adjustment)/.test(r.title) && (r.cards?.product?.links ?? []).some((l) => hostOf(l) === host));
+    && (r.siteAdjust || /^(Ajuste del sitio|Site adjustment)/.test(r.title)) && (r.cards?.product?.links ?? []).some((l) => hostOf(l) === host));
 }
 
 /**
@@ -36,7 +36,7 @@ export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
     setBusy(true); setError(false);
     try {
       await createRequest(brandId, {
-        category: 'web', title: `${t('sp.reqTitle')}: ${v.split('\n')[0].slice(0, 70)}`,
+        category: 'web', siteAdjust: true, title: `${t('sp.reqTitle')}: ${v.split('\n')[0].slice(0, 70)}`,
         cards: { product: { text: v, links: [url], files: [] } },
       });
       setText(''); setOpenBox(false);

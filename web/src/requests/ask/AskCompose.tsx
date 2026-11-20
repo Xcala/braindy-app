@@ -29,6 +29,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   const toast = useToast();
   const intent = intentById(seed.intent);
   const [text, setText] = useState(seed.text);
+  const [customTitle, setCustomTitle] = useState('');
   const [answers, setAnswers] = useState<Answers>(seed.answers);
   const [files, setFiles] = useState<AttachedFile[]>([]);
   const [links, setLinks] = useState<string[]>(seed.links ?? []);
@@ -66,13 +67,16 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
     dueDate ? t('as.sumDue', { day: dayLabel(dueDate, lang) }) : when === 'noRush' ? t('as.sumNoRush') : '',
   ].filter(Boolean).join(', ');
 
+  const autoTitle = (format && !firstLine.toLowerCase().includes(format.toLowerCase()) ? `${format} · ${firstLine || answers.goal?.[0] || ''}` : firstLine || format || summary).replace(/ · $/, '').slice(0, 90);
+
   async function submit() {
     setBusy(true); setError(false);
     const lines = [
       ...(intent?.questions ?? []).filter((x) => answers[x.key]?.length).map((x) => `${x.label[lang]} ${answers[x.key]!.join(', ')}`),
       when === 'noRush' ? t('as.sumNoRush') : '', noMaterial ? t('as.noMaterial') : '', detail.application.text ?? '',
     ].filter(Boolean);
-    const title = (format && !firstLine.toLowerCase().includes(format.toLowerCase()) ? `${format} · ${firstLine || answers.goal?.[0] || ''}` : firstLine || format || summary).replace(/ · $/, '').slice(0, 90);
+    // The person's own title wins; the automatic one is only the fallback.
+    const title = customTitle.replace(/\s+/g, ' ').trim().slice(0, 160) || autoTitle;
     try {
       const { requestId } = await createRequest(brandId, {
         category: cat, subcategory: detail.sub, formatType: format, title,
@@ -92,6 +96,12 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         <span className="chip chip-plain" style={{ background: 'var(--hielo)', color: 'var(--azul)' }}>{intent ? intent.label[lang] : t('as.direct')}</span>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onBack}><Icon name="arrowLeft" size={16} />{t('as.change')}</button>
       </div>
+
+      <label className="col g8">
+        <span className="t-sm w7">{t('as.titleLabel')} <span className="t-xs t-mute">· {t('as.optional')}</span></span>
+        <input className="input" style={{ height: '2.75rem' }} maxLength={160} value={customTitle} onChange={(e) => setCustomTitle(e.target.value)}
+          placeholder={autoTitle && text.trim() ? autoTitle : t('as.titlePh')} />
+      </label>
 
       <textarea className="input" autoFocus aria-label={t('ask.need')} data-tour="ask-what" style={{ minHeight: '7.5rem', padding: '0.875rem 1rem', resize: 'vertical', fontSize: '1rem', lineHeight: 1.5 }}
         placeholder={intent?.ph[lang] ?? t('ask.simplePh')} value={text} onChange={(e) => setText(e.target.value)} />
