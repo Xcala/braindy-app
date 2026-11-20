@@ -8,7 +8,11 @@ import { renameRequest } from './api';
  * is never lost: it saves with Enter, the Save button, or simply leaving the field (tapping elsewhere or moving to
  * another request). Only Escape or Cancel throw it away. The request listens live, so the new title shows everywhere.
  */
-export function EditableTitle({ brandId, requestId, title, canEdit }: { brandId: string; requestId: string; title: string; canEdit: boolean }) {
+export function EditableTitle({ brandId, requestId, title, canEdit, onSave, headingClass = 'h2' }: {
+  brandId: string; requestId: string; title: string; canEdit: boolean;
+  /** Another way to save (the review link page saves through its token). */
+  onSave?: (title: string) => Promise<unknown>; headingClass?: string;
+}) {
   const { t } = useI18n();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(title);
@@ -22,7 +26,7 @@ export function EditableTitle({ brandId, requestId, title, canEdit }: { brandId:
   async function persist(p: { requestId: string; title: string; value: string }) {
     const next = p.value.replace(/\s+/g, ' ').trim();
     if (!next || next === p.title) return true;
-    await renameRequest(brandId, p.requestId, next);
+    if (onSave) await onSave(next); else await renameRequest(brandId, p.requestId, next);
     return true;
   }
 
@@ -56,7 +60,7 @@ export function EditableTitle({ brandId, requestId, title, canEdit }: { brandId:
   if (!editing) {
     return (
       <span className="row g8" style={{ minWidth: 0, alignItems: 'center', flexWrap: 'wrap' }}>
-        <h1 className="h2" style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{title}</h1>
+        <h1 className={headingClass} style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{title}</h1>
         {canEdit && (
           <button type="button" className="btn btn-ghost btn-sm" onClick={start} aria-label={t('as.rename')} title={t('as.rename')}>
             <Icon name="pencil" size={16} />

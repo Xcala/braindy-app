@@ -177,3 +177,24 @@ publicReview.post('/r/:token/decision', async (c) => {
   const r = await decideWithLink(c.req.param('token'), String(b.state ?? ''), String(b.note ?? ''));
   return r === 'ok' ? c.json({ ok: true }) : c.json({ error: r }, (STATUS[r] ?? 400) as 400);
 });
+
+// Whoever holds a live review link can also rename the request it shows, like on the request page.
+publicReview.post('/r/:token/title', async (c) => {
+  const l = await load(c.req.param('token'));
+  if (!l) return c.json({ error: 'not_found' }, 404);
+  if (l.expired) return c.json({ error: 'expired' }, 410);
+  const b = await c.req.json<{ title?: unknown }>().catch(() => ({} as { title?: unknown }));
+  const title = (typeof b.title === 'string' ? b.title : '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  if (!title) return c.json({ error: 'title_required' }, 400);
+  const { brandId, requestId } = l.link.data() as { brandId: string; requestId: string };
+  const ref = db.doc(`brands/${brandId}/requests/${requestId}`);
+  const snap = await ref.get();
+  if (!snap.exists) return c.json({ error: 'not_found' }, 404);
+  const before = String(snap.get('title') ?? '');
+  if (before === title) return c.json({ ok: true, title });
+  const keepSite = snap.get('category') === 'web' && /^(Ajuste del sitio|Site adjustment)/.test(before);
+  const by = (l.link.get('approverUid') as string | undefined) ?? 'review_link';
+  await ref.update({ title, titleBy: by, ...(keepSite ? { siteAdjust: true } : {}), updatedAt: FieldValue.serverTimestamp() });
+  await db.collection('audit').doc().set({ type: 'request_renamed', brandId, requestId, before, after: title, by, via: 'link', at: FieldValue.serverTimestamp() });
+  return c.json({ ok: true, title });
+});
