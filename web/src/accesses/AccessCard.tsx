@@ -10,7 +10,7 @@ export function AccessCard({ brandId, a, logo, drag, onEdit }: { brandId: string
   const { t } = useI18n();
   const sub = useSubline(a);
   return (
-    <article className={`card acc-card col g12${drag.className}`} {...drag.bind}>
+    <article className={`card acc-card col g12${drag.className}`} {...drag.bind} style={{ opacity: a.status && a.status !== 'active' ? 0.6 : 1 }}>
       <div className="row g12 min-w-0">
         <AppLogo name={a.platform} domain={logo} size={40} />
         <span className="col min-w-0 grow"><span className="w7 truncate">{a.platform}</span><span className="t-xs t-mute truncate">{sub}</span></span>
@@ -20,7 +20,7 @@ export function AccessCard({ brandId, a, logo, drag, onEdit }: { brandId: string
         <dt>{t('acc.user')}</dt><dd><UserCell a={a} /></dd>
         <dt>{t('acc.password')}</dt><dd><PasswordCell brandId={brandId} a={a} onEdit={onEdit} /></dd>
         <dt>{t('acc.link')}</dt><dd><LinkCell a={a} /></dd>
-        {a.subscription && <><dt>{t('acc.subscription')}</dt><dd><PlanCell a={a} /></dd></>}
+        {(a.subscription || a.payer) && <><dt>{t('acc.subscription')}</dt><dd><PlanCell a={a} /></dd></>}
       </dl>
       <div className="row between g8 acc-card-foot">
         {a.group ? <span className="chip">{a.group}</span> : <span />}

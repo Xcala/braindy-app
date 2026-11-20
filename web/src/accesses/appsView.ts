@@ -6,7 +6,7 @@ export type AppsView = {
   layout: 'list' | 'grid';
   sort: 'manual' | 'az' | 'price' | 'recent';
   groupBy: 'none' | 'group' | 'signIn' | 'account';
-  filter: 'all' | 'subs' | 'google' | 'microsoft' | 'missing';
+  filter: 'all' | 'subs' | 'direct' | 'braindy' | 'google' | 'microsoft' | 'missing';
 };
 export const DEFAULT_VIEW: AppsView = { layout: 'list', sort: 'manual', groupBy: 'none', filter: 'all' };
 
@@ -19,12 +19,14 @@ export function saveView(v: AppsView) { try { localStorage.setItem(VIEW_KEY, JSO
 const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 /** Name, user, link, notes, plan and group: every word typed has to appear somewhere. */
 export function matches(a: Access, q: string) {
-  const hay = fold([a.platform, a.username, a.link, a.notes, a.subscription?.plan, a.group].filter(Boolean).join(' '));
+  const hay = fold([a.platform, a.purpose, a.username, a.link, a.notes, a.subscription?.plan, a.group].filter(Boolean).join(' '));
   return fold(q).split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
 }
 
 export function passes(a: Access, f: AppsView['filter']) {
   if (f === 'subs') return !!a.subscription;
+  if (f === 'direct') return a.payer === 'client';
+  if (f === 'braindy') return a.payer === 'braindy';
   if (f === 'google' || f === 'microsoft') return signInOf(a) === f;
   if (f === 'missing') return signInOf(a) === 'password' && !a.hasSecret;
   return true;
@@ -33,13 +35,14 @@ export function passes(a: Access, f: AppsView['filter']) {
 /** What it costs per month in USD-equivalent terms of its own currency (yearly plans count a twelfth). */
 export const perMonth = (a: Access) => {
   const s = a.subscription;
-  return s?.price != null ? (s.period === 'year' ? s.price / 12 : s.price) : 0;
+  if (s?.price == null || s.period === 'once' || (a.status && a.status !== 'active')) return 0;
+  return s.period === 'year' ? s.price / 12 : s.price;
 };
 
 /** Monthly totals per currency for a set of apps. */
 export function monthlyTotals(list: Access[]) {
   const m = new Map<string, number>();
-  for (const a of list) if (a.subscription?.price != null) m.set(a.subscription.currency ?? 'USD', (m.get(a.subscription.currency ?? 'USD') ?? 0) + perMonth(a));
+  for (const a of list) if (perMonth(a) > 0) m.set(a.subscription?.currency ?? 'USD', (m.get(a.subscription?.currency ?? 'USD') ?? 0) + perMonth(a));
   return m;
 }
 

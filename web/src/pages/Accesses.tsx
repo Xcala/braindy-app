@@ -22,7 +22,7 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
   const [view, setView] = useState<AppsView>(loadView);
   const set = (p: Partial<AppsView>) => setView((v) => { const next = { ...v, ...p }; saveView(next); return next; });
   const [q, setQ] = useState('');
-  const FILTERS: AppsView['filter'][] = ['all', 'subs', 'google', 'microsoft', 'missing'];
+  const FILTERS: AppsView['filter'][] = ['all', 'subs', 'direct', 'braindy', 'google', 'microsoft', 'missing'];
   const counts = Object.fromEntries(FILTERS.map((f) => [f, list.filter((a) => passes(a, f)).length])) as Record<AppsView['filter'], number>;
   const groupNames = [...new Set(list.map((a) => a.group).filter((g): g is string => !!g))].sort();
   const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('acc.password'), link: t('acc.link'), plan: t('acc.subscription'), notes: t('acc.notes') };
@@ -44,8 +44,16 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
         <div className="col g8">
           {!embedded && <p className="label">{current.name}</p>}
           {!embedded && <h1 className="h1">{t('nav.accesses')}</h1>}
-          <p className="t-mute" style={{ margin: 0 }}>{t('acc.tagline')}</p>
+          {embedded && <h2 className="h2">{t('plan.stackTitle')}</h2>}
+          <p className="t-mute" style={{ margin: 0, maxWidth: '40rem' }}>{embedded ? t('acc.introMerged') : t('acc.tagline')}</p>
         </div>
+        {monthly.size > 0 && (
+          <div className="col" style={{ textAlign: 'right', marginLeft: 'auto' }}>
+            <span className="label">{t('plan.stackMonthly')}</span>
+            <span className="w9" style={{ fontSize: '1.5rem', lineHeight: 1.25 }}>{[...monthly].map(([cur, v]) => priceLabel(Math.round(v * 100) / 100, cur, 'month', t, lang)).join(' + ')}</span>
+            <span className="t-xs t-mute">{t('acc.subsTotal', { n: String(subs) })}</span>
+          </div>
+        )}
         {!denied && <button className="btn btn-primary" onClick={() => setEditing('new')}>{t('acc.addAccess')}</button>}
       </div>
 
@@ -61,15 +69,11 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
           </div>}
           {loading ? <p className="t-sm t-mute">{t('common.loading')}…</p> : list.length === 0 ? <div className="card t-mute">{t('acc.empty')}</div>
             : <AppsList brandId={current.id} list={list} view={view} q={q} cols={cols} onEdit={setEditing} onClear={() => { setQ(''); set({ filter: 'all' }); }} />}
-          {subs > 0 && (
-            <p className="t-sm" style={{ margin: 0 }}>
-              <span className="w7">{t('acc.subsTotal', { n: String(subs) })}</span>
-              {monthly.size > 0 && <span className="t-mute"> · {[...monthly].map(([cur, v]) => priceLabel(Math.round(v * 100) / 100, cur, 'month', t, lang)).join(' + ')}</span>}
-            </p>
-          )}
           <p className="t-xs t-mute">{t('acc.revealNote')}</p>
           </div>
-          <aside className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+          <details className="acc-safety">
+          <summary className="w7">{t('acc.safetyFold')}</summary>
+          <aside className="grid grid-cols-1 items-start gap-4 md:grid-cols-2" style={{ marginTop: '0.75rem' }}>
             <div className="card col g12">
               <h2 className="h3">{t('acc.log')}</h2>
               {log.length === 0 && <p className="t-sm t-mute">{t('acc.logEmpty')}</p>}
@@ -86,6 +90,7 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
               <Scan text={t('acc.howBody')} />
             </div>
           </aside>
+          </details>
         </div>
       )}
       {editing && <AccessForm brandId={current.id} editing={editing === 'new' ? null : editing} groups={groupNames} onClose={() => setEditing(null)} />}

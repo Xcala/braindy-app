@@ -37,8 +37,17 @@ function subscription(v: unknown) {
     plan: clean(s.plan, 80),
     price: Number.isFinite(price) && price >= 0 ? Math.round(price * 100) / 100 : null,
     currency: s.currency === 'COP' || s.currency === 'EUR' ? s.currency : 'USD',
-    period: s.period === 'year' ? 'year' : 'month',
+    period: s.period === 'year' || s.period === 'usage' || s.period === 'once' ? s.period : 'month',
   };
+}
+/** What the app is for, who pays it, when it renews and whether it is in use (shown to the brand, not secret). */
+function about(b: Record<string, unknown>) {
+  const out: Record<string, unknown> = {};
+  if (b.purpose !== undefined) out.purpose = clean(b.purpose, 160);
+  if (b.payer !== undefined) out.payer = b.payer === 'braindy' || b.payer === 'client' ? b.payer : null;
+  if (b.renews !== undefined) out.renews = typeof b.renews === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.renews) ? b.renews : null;
+  if (b.status !== undefined) out.status = b.status === 'paused' || b.status === 'cancelled' ? b.status : 'active';
+  return out;
 }
 /** How people sign in: a password kept here, or their Google / Microsoft account. */
 const signIn = (v: unknown) => (v === 'google' || v === 'microsoft' ? v : 'password');
@@ -66,7 +75,7 @@ accesses.post('/brands/:brandId/accesses', async (c) => {
   }
   await ref.set({
     platform, username: clean(b.username), link: clean(b.link, 500), notes: clean(b.notes, 1000),
-    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription), signIn: signIn(b.signIn), group: clean(b.group, 40),
+    hasSecret: !!password, sharedWithBraindy: b.sharedWithBraindy === true, subscription: subscription(b.subscription), signIn: signIn(b.signIn), group: clean(b.group, 40), ...about(b),
     createdBy: user.uid, updatedBy: user.uid, updatedByName: byName, createdAt: now(), updatedAt: now(),
   });
   await log(brandId, ref.id, platform, 'added', user.uid, byName);
@@ -92,6 +101,7 @@ accesses.patch('/brands/:brandId/accesses/:id', async (c) => {
   if (b.subscription !== undefined) patch.subscription = subscription(b.subscription);
   if (b.signIn !== undefined) patch.signIn = signIn(b.signIn);
   if (b.group !== undefined) patch.group = clean(b.group, 40);
+  Object.assign(patch, about(b));
   if (typeof b.password === 'string' && b.password) {
     const s = await seal(b.password, aad(brandId, id)).catch(() => null);
     if (!s) return c.json({ error: 'vault_unavailable' }, 503);
