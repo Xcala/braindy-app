@@ -1,5 +1,9 @@
 /** Strings for Accesses (wave D). */
 export const accessEn = {
+  'acc.purpose': 'What it is for', 'acc.purposeHint': 'E.g. website, delivery orders, newsletter', 'acc.payer': 'Who pays it', 'acc.payClient': 'You pay directly', 'acc.payBraindy': 'Through Braindy', 'acc.payNone': 'Free / not set',
+  'acc.usage': 'pay per use', 'acc.once': 'one payment', 'acc.renews': 'Renews on', 'acc.status': 'Status', 'acc.statusActive': 'Active', 'acc.statusPaused': 'Paused', 'acc.statusCancelled': 'Cancelled',
+  'acc.introMerged': 'Each app your brand runs on: what it is for, what it costs, who pays it and how to get in. Passwords are encrypted: only owners and Nicolas can reveal them, the Brains never see them.',
+  'acc.safetyFold': 'Security and access log',
   'acc.tagline': 'Encrypted. Only owners and Nicolas can reveal them. The Brains never see them.',
   'acc.addAccess': 'Add app',
   'acc.ownersOnly': 'Only the brand owners and Nicolas can see the accesses. Ask an owner if you need one.',
@@ -54,6 +58,10 @@ export const accessEn = {
 } as const;
 
 export const accessEs: Record<keyof typeof accessEn, string> = {
+  'acc.purpose': 'Para qué sirve', 'acc.purposeHint': 'Ej.: sitio web, pedidos a domicilio, boletín', 'acc.payer': 'Quién la paga', 'acc.payClient': 'Lo pagas directo', 'acc.payBraindy': 'A través de Braindy', 'acc.payNone': 'Gratis / sin definir',
+  'acc.usage': 'pago por uso', 'acc.once': 'pago único', 'acc.renews': 'Renueva el', 'acc.status': 'Estado', 'acc.statusActive': 'Activa', 'acc.statusPaused': 'Pausada', 'acc.statusCancelled': 'Cancelada',
+  'acc.introMerged': 'Cada app con la que funciona tu marca: para qué sirve, cuánto cuesta, quién la paga y cómo se entra. Las contraseñas van cifradas: solo los dueños y Nicolas pueden verlas, los Brains nunca las ven.',
+  'acc.safetyFold': 'Seguridad y registro de accesos',
   'acc.tagline': 'Cifrados. Solo los dueños y Nicolas pueden verlos. Los Brains nunca los ven.',
   'acc.addAccess': 'Agregar app',
   'acc.ownersOnly': 'Solo los dueños de la marca y Nicolas ven los accesos. Pídele a un dueño si necesitas uno.',

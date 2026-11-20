@@ -1,11 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { planApi } from './usePlan';
-import { EXAMPLE, EXAMPLE_STACK } from './example';
+import { EXAMPLE } from './example';
 import { tidy } from './formFields';
 import { EMPTY_PLAN, PlanForm } from './PlanForm';
-import { StackForm } from './StackForm';
-import type { BrandPlan, StackItem } from './types';
+import type { BrandPlan } from './types';
 import { Scan } from '../components/Scan';
 
 interface AdminProps<T> {
@@ -65,16 +64,14 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
   );
 }
 
-/** Admin only · What the brand contracted (connector tool braindy_plan) and its apps stack (braindy_stack), as forms.
+/** Admin only · What the brand contracted (connector tool braindy_plan), as a form. Its apps live in Apps de terceros (accesses) since 2026-11-20.
  *  The schedule is edited in the contract panel (Onboarding), where it is Anexo 2. */
-export function AdminPlan({ brandId, plan, stack }: { brandId: string; plan: BrandPlan | null; stack: StackItem[] | null }) {
+export function AdminPlan({ brandId, plan }: { brandId: string; plan: BrandPlan | null }) {
   const { t } = useI18n();
   return (
     <div className="col g12">
       <Admin<BrandPlan> title={t('plan.a.title')} help={t('plan.a.help')} value={plan} empty={EMPTY_PLAN} example={EXAMPLE}
         save={(v) => planApi.set(brandId, v)} remove={() => planApi.remove(brandId)} form={(v, set) => <PlanForm v={v} set={set} />} />
-      <Admin<StackItem[]> title={t('plan.a.stackTitle')} help={t('plan.a.stackHelp')} value={stack} empty={[]} example={EXAMPLE_STACK}
-        save={(v) => planApi.setStack(brandId, v)} remove={() => planApi.removeStack(brandId)} form={(v, set) => <StackForm v={v} set={set} />} />
     </div>
   );
 }

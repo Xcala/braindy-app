@@ -5,7 +5,6 @@ import { useBrands } from '../brands/BrandProvider';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
 import { contractsApi } from '../contracts/api';
-import type { StackItem } from '../plan/types';
 import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/types';
 import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
@@ -30,7 +29,6 @@ export function MyPlan() {
   const contractDoc = useBrandDoc(current?.id, `contracts/${contractId ?? '-'}`);
   const live = useBrandDoc(current?.id, 'context/schedule').data as Schedule | null;
   const kickoff = useBrandDoc(current?.id, 'context/kickoff').data as { start: string; items: ChecklistItem[] } | null;
-  const stack = (useBrandDoc(current?.id, 'billing/stack').data as { items?: StackItem[] } | null)?.items ?? null;
   const admin = profile?.role === 'admin';
   const [params] = useSearchParams();
   const { can } = useMySections();
@@ -63,12 +61,12 @@ export function MyPlan() {
         intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
         payments={<PaymentsTab brand={current} />} openFold={openFold}
         apps={can('accesses') ? <Accesses embedded /> : undefined}
-        brandName={current.name} plan={plan} stack={stack ?? undefined} schedule={schedule} kickoff={kickoff}
+        brandName={current.name} plan={plan} schedule={schedule} kickoff={kickoff}
         contract={<><ProposalCard brandId={id} admin={admin} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
-      {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} stack={stack} />}
+      {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} />}
     </div>
   );
 }

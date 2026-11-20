@@ -6,10 +6,9 @@ import { Checklist } from '../contracts/Checklist';
 import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
-import { Stack } from './Stack';
 import { OnceIntro } from './OnceIntro';
 import { Fold } from '../components/Fold';
-import type { BrandPlan, PackStatus, StackItem } from './types';
+import type { BrandPlan, PackStatus } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
@@ -34,8 +33,6 @@ export interface PlanViewProps {
   openFold?: string;
   brandName: string;
   plan: BrandPlan | null;
-  /** Third-party apps the brand runs on. */
-  stack?: StackItem[];
   /** The contract block (status, signing, PDF), rendered right under the summary. */
   contract?: ReactNode;
   schedule: Schedule | null;
@@ -47,16 +44,17 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, intros, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
   // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
-  const head = !plan && !schedule ? (
+  // Every tab other than the summary gets a plain title with its own name (not «Mi plan» above the apps).
+  const head = tab !== 'summary' || (!plan && !schedule) ? (
     <header className="col g4">
       <p className="label" style={{ margin: 0 }}>{brandName}</p>
-      <h1 className="h1">{t('plan.title')}</h1>
+      <h1 className="h1">{t(tab === 'summary' ? 'plan.title' : `plan.tab.${tab}`)}</h1>
     </header>
   ) : null;
   return (
@@ -116,7 +114,6 @@ export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, int
       {tab === 'brand' && brand}
       {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
-      {tab === 'apps' && stack && <Stack items={stack} />}
       {tab === 'apps' && apps}
       {tab === 'payments' && payments}
     </div>

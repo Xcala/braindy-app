@@ -5,7 +5,9 @@ import { api } from '../lib/api';
 
 export type Access = {
   id: string; platform: string; username?: string; link?: string; notes?: string; hasSecret?: boolean;
-  sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string; order?: number; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
+  sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string; order?: number;
+  /** What it is for, who pays it, when it renews and whether it is in use (2026-11-20: the old «apps» cards of Mi plan live here now). */
+  purpose?: string; payer?: Payer | null; renews?: string | null; status?: AppStatus; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
 };
 /** How people get in: their own password, or a Google / Microsoft (Outlook) account with nothing to keep here. */
 export type SignIn = 'password' | 'google' | 'microsoft';
@@ -13,7 +15,9 @@ export type SignIn = 'password' | 'google' | 'microsoft';
 export const signInOf = (a: Pick<Access, 'signIn' | 'notes'>): SignIn =>
   a.signIn ?? (/\bgoogle\b/i.test(a.notes ?? '') ? 'google' : /\b(outlook|microsoft|hotmail)\b/i.test(a.notes ?? '') ? 'microsoft' : 'password');
 /** A paid plan on the platform: shown in its own column and added up below the table. */
-export type Subscription = { plan?: string; price?: number | null; currency?: 'USD' | 'COP' | 'EUR'; period?: 'month' | 'year' };
+export type Subscription = { plan?: string; price?: number | null; currency?: 'USD' | 'COP' | 'EUR'; period?: 'month' | 'year' | 'usage' | 'once' };
+export type Payer = 'braindy' | 'client';
+export type AppStatus = 'active' | 'paused' | 'cancelled';
 export type AccessEvent = { id: string; platform: string; action: 'added' | 'updated' | 'deleted' | 'revealed' | 'copied'; byName: string; at?: Timestamp };
 
 /** Credential metadata of a brand. `denied` = the user is not an owner (rules refuse the read). */
@@ -40,7 +44,7 @@ export function useAccessLog(brandId?: string, max = 8) {
 }
 
 const base = (brandId: string) => `/v1/brands/${encodeURIComponent(brandId)}/accesses`;
-export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string };
+export type AccessInput = { platform: string; username: string; password?: string; link?: string; notes?: string; sharedWithBraindy?: boolean; subscription?: Subscription | null; signIn?: SignIn; group?: string; purpose?: string; payer?: Payer | null; renews?: string | null; status?: AppStatus };
 
 export const accessesApi = {
   add: (brandId: string, a: AccessInput) => api<{ id: string }>(base(brandId), { method: 'POST', body: JSON.stringify(a) }),

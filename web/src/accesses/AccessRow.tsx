@@ -18,6 +18,7 @@ export const gridFor = (cols: AccessCol[]) => ['minmax(0,1fr)', ...cols.map((c) 
 export function useSubline(a: Access) {
   const { t, lang } = useI18n();
   const date = a.updatedAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'short', day: 'numeric' });
+  if (a.purpose) return a.status && a.status !== 'active' ? `${t(a.status === 'paused' ? 'acc.statusPaused' : 'acc.statusCancelled')} · ${a.purpose}` : a.purpose;
   return a.sharedWithBraindy ? t('acc.shared') : [date, a.updatedByName].filter(Boolean).join(' · ');
 }
 
@@ -34,7 +35,7 @@ export function AccessRow({ brandId, a, cols, logo, drag, onEdit }: { brandId: s
   };
 
   return (
-    <div className={`trow acc-row${drag.className}`} {...drag.bind} style={{ gridTemplateColumns: gridFor(cols), minHeight: '4rem', minWidth: `${(260 + cols.length * 170) / 16}rem` }}>
+    <div className={`trow acc-row${drag.className}`} {...drag.bind} style={{ opacity: a.status && a.status !== 'active' ? 0.6 : 1,  gridTemplateColumns: gridFor(cols), minHeight: '4rem', minWidth: `${(260 + cols.length * 170) / 16}rem` }}>
       <span className="row g12 min-w-0">
         {drag.enabled && <DragHandle label={t('apps.move', { name: a.platform })} onMove={drag.move} />}
         <AppLogo name={a.platform} domain={logo} />

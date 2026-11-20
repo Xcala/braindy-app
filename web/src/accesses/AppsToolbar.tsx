@@ -4,7 +4,7 @@ import type { AppsView } from './appsView';
 
 const SORTS: [AppsView['sort'], StringKey][] = [['manual', 'apps.sortManual'], ['az', 'apps.sortAz'], ['price', 'apps.sortPrice'], ['recent', 'apps.sortRecent']];
 const GROUPS: [AppsView['groupBy'], StringKey][] = [['none', 'apps.groupNone'], ['group', 'apps.groupGroup'], ['signIn', 'apps.groupSignIn'], ['account', 'apps.groupAccount']];
-const FILTERS: [AppsView['filter'], StringKey][] = [['all', 'apps.filterAll'], ['subs', 'apps.filterSubs'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft'], ['missing', 'apps.filterMissing']];
+const FILTERS: [AppsView['filter'], StringKey][] = [['all', 'apps.filterAll'], ['subs', 'apps.filterSubs'], ['direct', 'acc.payClient'], ['braindy', 'acc.payBraindy'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft'], ['missing', 'apps.filterMissing']];
 
 const ListIcon = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>;
 const GridIcon = <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>;
