@@ -38,6 +38,8 @@ import { meWhatsapp } from './wa/contacts.js';
 import { adminWhatsapp } from './wa/admin.js';
 import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
+import { voiceTools } from './voice/tools.js';
+import { voiceCalls, voiceWebhook } from './voice/history.js';
 import { help } from './help/route.js';
 import { resources } from './resources.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
@@ -92,6 +94,9 @@ app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
 app.route('/webhooks', stripeWebhook);
 app.route('/webhooks', granolaWebhook);
 app.route('/webhooks', whatsappWebhook);
+// AI receptionist: ElevenLabs tools (shared key header) and post-call webhook (HMAC signature).
+app.route('/webhooks', voiceTools);
+app.route('/webhooks', voiceWebhook);
 // Notices for work delivered from Nicolas's PC (Google identity token of an admin).
 app.use('/internal/*', rateLimit('internal', 30, 60_000));
 app.route('/', relay);
@@ -165,6 +170,7 @@ app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
 app.route('/v1/admin', adminAiHealth);
 app.route('/v1', criterio);
+app.route('/v1', voiceCalls);
 app.route('/v1', shareLinks);
 app.use('/v1/help/chat', rateLimit('help', 20, 60_000));
 app.route('/v1', help);
