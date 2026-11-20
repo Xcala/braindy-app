@@ -14,7 +14,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export const aiConfigured = () => !!KEY;
 
-export type Block = { type: string; text?: string; id?: string; name?: string; input?: unknown };
+export type Block = { type: string; text?: string; id?: string; name?: string; input?: unknown; thinking?: string; signature?: string };
 type Answer = { model?: string; usage?: ClaudeUsage; content?: Block[]; stop_reason?: string };
 
 /** One request with retries. Returns the answer and how many attempts it took; throws the last error. */

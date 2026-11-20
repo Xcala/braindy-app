@@ -62,6 +62,9 @@ export async function claudeTurnStream(system: string, messages: unknown[], tool
           const b = blocks[ev.index]!;
           if (ev.delta?.type === 'text_delta') { b.text = (b.text ?? '') + ev.delta.text; onText(ev.delta.text); }
           else if (ev.delta?.type === 'input_json_delta') json[ev.index] += ev.delta.partial_json ?? '';
+          // Thinking must go back whole (text + signature) in the next round after a tool call.
+          else if (ev.delta?.type === 'thinking_delta') b.thinking = (b.thinking ?? '') + (ev.delta.thinking ?? '');
+          else if (ev.delta?.type === 'signature_delta') b.signature = (b.signature ?? '') + (ev.delta.signature ?? '');
         } else if (ev.type === 'content_block_stop') {
           const b = blocks[ev.index];
           if (b?.type === 'tool_use') { try { b.input = json[ev.index] ? JSON.parse(json[ev.index]!) : {}; } catch { b.input = {}; } }
