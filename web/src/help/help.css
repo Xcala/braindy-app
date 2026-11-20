@@ -180,3 +180,59 @@ html[data-theme="dark"] .help-send:disabled{background:rgba(255,255,255,.12)}
 .ai-list li{display:flex;gap:0.625rem;align-items:flex-start;font-size:0.9375rem;line-height:1.35}
 .ai-list li>span:first-child{flex:none;width:1.75rem;height:1.75rem;border-radius:0.5rem;background:var(--fog,#F1F3F8);display:grid;place-items:center;font-size:1rem}
 html[data-theme="dark"] .ai-list li>span:first-child{background:rgba(255,255,255,.08)}
+/* Header name + Beta; hovering the name opens what the assistant can do. */
+.cap-wrap{position:relative;flex:1;min-width:0}
+.cap-name{font:inherit;color:inherit;background:none;border:0;padding:0.125rem 0.25rem;margin:-0.125rem -0.25rem;border-radius:0.375rem;cursor:pointer}
+.cap-name:hover,.cap-name[aria-expanded="true"]{text-decoration:underline;text-underline-offset:3px}
+.cap-name:focus-visible{outline:3px solid var(--azul);outline-offset:1px}
+.help-beta{font:700 0.6875rem/1 var(--f-text);color:var(--graphite);background:rgba(11,18,32,.07);border-radius:0.375rem;padding:0.25rem 0.4375rem;letter-spacing:.01em}
+.cap-pop{position:fixed;z-index:60;width:min(22rem,calc(100vw - 2rem));background:var(--white);border:1px solid var(--line);border-radius:0.875rem;box-shadow:0 18px 40px -16px rgba(11,18,32,.35);padding:0.5rem;animation:cap-in .14s ease-out}
+@keyframes cap-in{from{opacity:0;transform:translateY(-4px)}}
+.cap-head{margin:0.25rem 0.5rem 0.375rem;font:700 0.8125rem/1.25rem var(--f-text);color:var(--ink)}
+.cap-item{display:flex;align-items:center;gap:0.625rem;width:100%;text-align:left;border:0;background:none;padding:0.5rem;border-radius:0.625rem;cursor:pointer;font:inherit;color:var(--ink)}
+.cap-item:hover,.cap-item:focus-visible{background:var(--fog,#F4F6FB);outline:none}
+.cap-ico{font-size:1.125rem;width:1.5rem;text-align:center;flex:none}
+.cap-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.cap-txt b{font:600 0.8125rem/1.125rem var(--f-text)}
+.cap-txt span{font-size:0.75rem;line-height:1rem;color:var(--graphite)}
+.cap-go{flex:none;width:1.75rem;height:1.75rem;border-radius:50%;display:grid;place-items:center;background:var(--azul);color:#fff;opacity:0;transform:scale(.8);transition:opacity .12s,transform .12s}
+.cap-item:hover .cap-go,.cap-item:focus-visible .cap-go{opacity:1;transform:none}
+@media (hover:none){.cap-go{opacity:1;transform:none;background:none;color:var(--azul)}}
+/* The AI note under the message box. */
+.help-ainote{margin:-0.25rem 1rem 0.625rem;text-align:center;font-size:0.6875rem;line-height:1rem;color:var(--graphite)}
+.help-panel.is-dock .help-ainote{margin:-0.5rem 1rem 0.75rem}
+/* «Your chats» */
+.hh{display:flex;flex-direction:column;gap:0.5rem}
+.hh-top{display:flex;align-items:center;justify-content:space-between;gap:0.5rem}
+.hh-new{display:inline-flex;align-items:center;gap:0.25rem;border:1px solid var(--line);background:var(--white);border-radius:6rem;padding:0.3125rem 0.75rem;font:600 0.75rem/1 var(--f-text);color:var(--ink);cursor:pointer}
+.hh-new:hover{border-color:var(--azul);color:var(--azul)}
+.hh-search{width:100%;border:1px solid var(--line);border-radius:0.625rem;padding:0.5rem 0.75rem;font:inherit;font-size:0.8125rem;background:var(--white);color:var(--ink)}
+.hh-group{display:flex;flex-direction:column}
+.hh-when{margin:0.5rem 0.5rem 0.25rem;font:700 0.6875rem/1 var(--f-text);text-transform:uppercase;letter-spacing:.06em;color:var(--graphite)}
+.hh-row{position:relative;display:flex;align-items:center;border-radius:0.625rem}
+.hh-row:hover,.hh-row.is-menu{background:rgba(11,18,32,.05)}
+.hh-row.is-on{background:rgba(42,127,255,.1)}
+.hh-pick{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.125rem;text-align:left;border:0;background:none;padding:0.5rem 0.625rem;cursor:pointer;font:inherit;color:var(--ink);border-radius:inherit}
+.hh-pick b{font:600 0.8125rem/1.125rem var(--f-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hh-pick span{font-size:0.6875rem;color:var(--graphite)}
+.hh-pick:focus-visible,.hh-more:focus-visible{outline:3px solid var(--azul);outline-offset:-2px}
+.hh-more{flex:none;width:2rem;height:2rem;margin-right:0.25rem;border:0;background:none;border-radius:50%;display:grid;place-items:center;color:var(--graphite);cursor:pointer;opacity:0}
+.hh-row:hover .hh-more,.hh-row.is-menu .hh-more,.hh-more:focus-visible{opacity:1}
+.hh-more:hover{background:rgba(11,18,32,.08)}
+@media (hover:none){.hh-more{opacity:1}}
+.hh-menu{position:absolute;z-index:20;right:0.25rem;top:calc(100% - 0.25rem);background:var(--white);border:1px solid var(--line);border-radius:0.75rem;box-shadow:0 14px 30px -14px rgba(11,18,32,.35);padding:0.25rem;min-width:10rem}
+.hh-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:0.5rem 0.625rem;border-radius:0.5rem;font:500 0.8125rem/1.125rem var(--f-text);color:var(--ink);cursor:pointer}
+.hh-menu button:hover{background:var(--fog,#F4F6FB)}
+.hh-menu .is-del{color:var(--rojo,#C62828)}
+.hh-edit{flex:1;display:flex;gap:0.375rem;padding:0.25rem}
+.hh-edit input{flex:1;min-width:0;border:1px solid var(--azul);border-radius:0.5rem;padding:0.375rem 0.5rem;font:inherit;font-size:0.8125rem;background:var(--white);color:var(--ink)}
+.hh-ok,.hh-yes,.hh-no{border:0;border-radius:6rem;padding:0.375rem 0.75rem;font:600 0.75rem/1 var(--f-text);cursor:pointer}
+.hh-ok{background:var(--azul);color:#fff}
+.hh-ask{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:0.375rem;padding:0.5rem 0.625rem;font-size:0.8125rem;color:var(--ink)}
+.hh-ask span{flex:1 1 100%}
+.hh-yes{background:var(--rojo,#C62828);color:#fff}
+.hh-no{background:rgba(11,18,32,.07);color:var(--ink)}
+html[data-theme="dark"] .help-beta{background:rgba(255,255,255,.1)}
+html[data-theme="dark"] .cap-pop,html[data-theme="dark"] .hh-menu{border-color:rgba(255,255,255,.1)}
+html[data-theme="dark"] .cap-item:hover,html[data-theme="dark"] .hh-menu button:hover,html[data-theme="dark"] .hh-row:hover,html[data-theme="dark"] .hh-row.is-menu{background:rgba(255,255,255,.07)}
+html[data-theme="dark"] .hh-no{background:rgba(255,255,255,.1)}

@@ -110,8 +110,8 @@ help.get('/help/chats', async (c) => {
   const brandId = String(c.req.query('brandId') ?? '');
   if (!/^[\w-]{1,80}$/.test(brandId)) return c.json({ error: 'bad_request' }, 400);
   // Two equalities and no order: no composite index needed; sorted here.
-  const snap = await db.collection('helpChats').where('uid', '==', uid).where('brandId', '==', brandId).select('title', 'updatedAt', 'view').limit(200).get();
-  const chats = snap.docs.filter((d) => Array.isArray(d.get('view')) && d.get('title'))
+  const snap = await db.collection('helpChats').where('uid', '==', uid).where('brandId', '==', brandId).select('title', 'updatedAt', 'view', 'hidden').limit(200).get();
+  const chats = snap.docs.filter((d) => Array.isArray(d.get('view')) && d.get('title') && !d.get('hidden'))
     .map((d) => ({ id: d.id, title: String(d.get('title')), at: (d.get('updatedAt') as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0 }))
     .sort((a, b) => b.at - a.at).slice(0, 30);
   return c.json({ chats });
@@ -122,6 +122,30 @@ help.get('/help/chats/:id', async (c) => {
   const id = c.req.param('id');
   if (!/^[\w-]{6,40}$/.test(id)) return c.json({ error: 'bad_request' }, 400);
   const snap = await db.doc(`helpChats/${id}`).get();
-  if (!snap.exists || snap.get('uid') !== c.get('user').uid) return c.json({ error: 'not_found' }, 404);
+  if (!snap.exists || snap.get('uid') !== c.get('user').uid || snap.get('hidden')) return c.json({ error: 'not_found' }, 404);
   return c.json({ id, brandId: snap.get('brandId'), view: snap.get('view') ?? [] });
+});
+
+/** Rename one of the person's chats (only its title in «Your chats»). */
+help.patch('/help/chats/:id', async (c) => {
+  const id = c.req.param('id');
+  const { title } = (await c.req.json().catch(() => ({}))) as { title?: unknown };
+  const clean = typeof title === 'string' ? title.replace(/\s+/g, ' ').trim().slice(0, 80) : '';
+  if (!/^[\w-]{6,40}$/.test(id) || !clean) return c.json({ error: 'bad_request' }, 400);
+  const ref = db.doc(`helpChats/${id}`);
+  const snap = await ref.get();
+  if (!snap.exists || snap.get('uid') !== c.get('user').uid) return c.json({ error: 'not_found' }, 404);
+  await ref.update({ title: clean });
+  return c.json({ ok: true, title: clean });
+});
+
+/** Delete from «Your chats»: it leaves the person's list for good; the record stays server-side so NickMark can improve the guide. */
+help.delete('/help/chats/:id', async (c) => {
+  const id = c.req.param('id');
+  if (!/^[\w-]{6,40}$/.test(id)) return c.json({ error: 'bad_request' }, 400);
+  const ref = db.doc(`helpChats/${id}`);
+  const snap = await ref.get();
+  if (!snap.exists || snap.get('uid') !== c.get('user').uid) return c.json({ error: 'not_found' }, 404);
+  await ref.update({ hidden: true, hiddenAt: FieldValue.serverTimestamp() });
+  return c.json({ ok: true });
 });
