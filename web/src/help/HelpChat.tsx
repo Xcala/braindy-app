@@ -146,7 +146,7 @@ export function HelpChat() {
     try {
       // The answer shows up as it is written; the full one (cards, buttons) replaces it at the end.
       const r = await streamChat<{ text: string; next: Msg['next']; draft?: Draft | null; cards?: AnyCard[]; follow?: string[]; chatId: string }>(
-        { brandId, lang, path: pathname, chatId: base.chatId, tools: true, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) },
+        { brandId, lang, path: pathname, chatId: base.chatId, tools: true, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, site: viewingSite() ?? undefined, files, messages: msgs.filter((m) => !m.error).map(asTurn) },
         (soFar) => setLive(soFar));
       update({ chatId: r.chatId, msgs: [...msgs, { role: 'assistant', content: r.text, next: r.next, draft: r.draft ?? null, cards: r.cards ?? [], follow: r.follow ?? [], ...(files.length ? { files } : {}) }] });
     } catch (e) {

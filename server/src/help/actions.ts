@@ -12,7 +12,7 @@ export type ActCard =
   | { kind: 'act'; act: 'add'; ref: string; requestId: string; title: string; text: string }
   | MoreCard;
 
-export type ActCtx = Ctx & { uid: string; site?: string };
+export type ActCtx = Ctx & { uid: string; site?: string; tz?: string };
 type Out = { text: string; card?: ActCard };
 
 const cut = (s: unknown, n: number) => String(s ?? '').trim().slice(0, n);

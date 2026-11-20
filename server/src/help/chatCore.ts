@@ -15,7 +15,7 @@ const PER_DAY = 60; // questions per person per day
 const TURNS = 12;
 const CHARS = 1500;
 
-export type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown; files?: unknown };
+export type Body = { brandId?: unknown; lang?: unknown; path?: unknown; messages?: unknown; chatId?: unknown; tools?: unknown; site?: unknown; files?: unknown; tz?: unknown };
 type User = { uid: string; email?: string | null; name?: string };
 
 function turnsOf(raw: unknown): ChatTurn[] | null {
@@ -44,6 +44,8 @@ export async function chat(user: User, b: Body, on?: Live) {
   const lang = b.lang === 'en' ? 'en' : 'es';
   const path = typeof b.path === 'string' ? b.path.slice(0, 120) : '/';
   const turns = turnsOf(b.messages);
+  // The person's time zone (dates and reminders are in their clock); Bogotá when missing or unknown.
+  const tz = typeof b.tz === 'string' && b.tz.length < 60 && (() => { try { new Intl.DateTimeFormat('en', { timeZone: b.tz as string }); return true; } catch { return false; } })() ? b.tz : 'America/Bogota';
   if (!brandId || !turns) return { status: 400 as const, body: { error: 'bad_request' } };
   if (!aiConfigured()) return { status: 503 as const, body: { error: 'ai_off' } };
   const access = await brandAccess(user.uid, brandId);
@@ -66,7 +68,7 @@ ${taste}
 
 ` : '') + helpSystem({ tools,
     lang, path, sections: group ? access.sections.filter((s) => s === 'learn') : access.sections, group, role: access.admin ? 'admin' : access.role,
-    canAsk: !group && (access.admin || access.sections.includes('requests')), today: new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Bogota' }),
+    canAsk: !group && (access.admin || access.sections.includes('requests')), today: new Date().toLocaleDateString('sv-SE', { timeZone: tz }),
     name: String(me.get('name') ?? me.get('displayName') ?? user.name ?? ''), brand: String(brand.get('name') ?? brandId),
   });
   let answer: ReturnType<typeof readAnswer>;
@@ -74,7 +76,7 @@ ${taste}
   try {
     const meta = { brandId, kind: 'help' };
     if (tools) {
-      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true }, { model: MODEL, meta, extra: att.blocks, on });
+      const out = await answerWithTools(system, turns, { brandId, access, lang, uid: user.uid, site: typeof b.site === 'string' ? b.site.slice(0, 300) : undefined, resultsOn: brand.get('resultsOn') === true, tz }, { model: MODEL, meta, extra: att.blocks, on });
       answer = readAnswer(out.text);
       cards = [...answer.show.map((r) => out.cards.get(r)).filter((x): x is ChatCard => !!x), ...out.acts];
     } else answer = readAnswer(await claudeChat(system, turns, { model: MODEL, maxTokens: 1000, meta }));
