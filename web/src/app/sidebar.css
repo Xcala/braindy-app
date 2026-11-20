@@ -42,3 +42,6 @@ html[data-theme="dark"] .sbar-dot { border-color: #0B1020; }
 html.help-docked .sbar-ai { background: #F1EBFF; }
 html[data-theme="dark"] .sbar-ai { color: #B79BFF; }
 html[data-theme="dark"].help-docked .sbar-ai { background: #231A3D; }
+/* The logo goes home, like «Inicio». */
+.sbar-home { display: flex; align-items: center; border-radius: 0.5rem; }
+.sbar-home:focus-visible { outline: 2px solid var(--azul, #2A7FFF); outline-offset: 3px; }

@@ -44,7 +44,7 @@ export function AppShell() {
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="flex min-h-full min-w-0 flex-1 flex-col">
         <header ref={head} className="topbar shell-top" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
-          <span className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></span>
+          <Link to={adminSpace ? '/admin/today' : '/home'} className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></Link>
           <div className="vsep hidden sm:block md:hidden" style={{ height: '2rem', margin: 0 }} />
           {adminSpace ? (
             <>

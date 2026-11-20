@@ -29,7 +29,7 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   return (
     <aside className={`sbar${slim ? ' is-slim' : ''}`} aria-label={t('nav.sections')}>
       <div className="sbar-logo">
-        <img src={slim ? '/brand/braindy-mark.svg' : '/brand/braindy-logo.svg'} alt="Braindy" />
+        <NavLink to={admin ? '/admin/today' : '/home'} className="sbar-home" aria-label={t('nav.home')} title={t('nav.home')}><img src={slim ? '/brand/braindy-mark.svg' : '/brand/braindy-logo.svg'} alt="Braindy" /></NavLink>
         {admin && !slim && <span className="sbar-tag">admin</span>}
       </div>
       <nav className="sbar-main">{admin ? items.map((i) => <Link key={i.to} item={i} slim={slim} />) : <ClientSections slim={slim} />}</nav>
