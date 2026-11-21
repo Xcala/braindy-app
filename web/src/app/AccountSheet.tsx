@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { AccountBody } from '../pages/Account';
@@ -48,6 +48,7 @@ export function AccountMenu() {
         <div className="acct-sheet" role="dialog" aria-modal="true" aria-label={t('acct.account')}>
           <div className="acct-sheet-bar">
             <img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" />
+            {profile?.role === 'admin' && !pathname.startsWith('/admin') && <Link to="/admin/today" className="btn btn-secondary btn-sm" style={{ marginLeft: 'auto', marginRight: '0.5rem' }}>{t('nav.backToAdmin')}</Link>}
             <button ref={closeBtn} type="button" className="acct-x" onClick={close} aria-label={t('lb.close')}>{x}</button>
           </div>
           <div className="acct-sheet-body"><AccountBody onPick={() => setOpen(false)} /></div>
