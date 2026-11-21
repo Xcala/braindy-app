@@ -88,6 +88,10 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
             );
           })}
         </div>
+        {/* Phones: one compact picker showing the version in view (cut-off tabs read as clutter, 2026-11-21). */}
+        <select className="input vw-vsel" aria-label={t('req.versions')} value={current?.id ?? ''} onChange={(e) => { onPick(e.target.value); onFile(0); }}>
+          {versions.map((v) => { const st = state(v); return <option key={v.id} value={v.id}>{`v${v.n}${date(v) ? ` · ${date(v)}` : ''}${st ? ` · ${t(`vs.${st}`)}` : ''}`}</option>; })}
+        </select>
         <div className="vw-acts">
           {count > 1 && <span className="vw-count" aria-live="polite">{t('vw.counter', { i: fileIndex + 1, n: count })}</span>}
           {kind === 'image' && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)} aria-label={t('req.markOnPiece')} title={t('req.markOnPiece')}><Icon name="pencil" size={16} /><span className="vw-lbl">{t('req.markOnPiece')}</span></button>}
