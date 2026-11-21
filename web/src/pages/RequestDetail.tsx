@@ -26,6 +26,7 @@ import { BriefSummary } from '../requests/BriefSummary';
 import { AddendaList, AddendumForm } from '../requests/Addenda';
 import { RequestNav } from '../requests/RequestNav';
 import { EditableTitle } from '../requests/EditableTitle';
+import { HowLink } from '../learn/tutorials';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -63,16 +64,24 @@ export function RequestDetail() {
   return (
     <div className="col g20">
       <div className="req-top"><nav className="crumbs min-w-0" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav><RequestNav brandId={current.id} id={r.id} /></div>
-      <div className="flex flex-wrap items-end justify-between gap-6">
+      {/* Phones (2026-11-21): title, one line of facts, a thin progress line; cancel and the video sit under «⋯». */}
+      <div className="req-head flex flex-wrap items-end justify-between gap-6">
         <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
-          <div className="row g12 wrap"><EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={mine} /><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.cancelled && <span className="chip c-type">{t('rc.chip')}</span>}{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
-          <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
+          <div className="row g8 req-title-row" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={mine} />
+            <details className="req-more sm:hidden">
+              <summary className="btn btn-ghost btn-sm btn-icon" aria-label={t('req.more')}><Icon name="more" size={18} /></summary>
+              <div className="card col g8 req-more-menu"><HowLink />{mine && <CancelButton brandId={current.id} r={r} />}</div>
+            </details>
+          </div>
+          <div className="row g8 wrap req-meta"><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.cancelled && <span className="chip c-type">{t('rc.chip')}</span>}{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}
+            <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span></div>
         </div>
-        <div className="col g8" style={{ alignItems: 'flex-end' }}><Progress r={r} />{mine && <CancelButton brandId={current.id} r={r} />}</div>
+        <div className="col g8 req-prog" style={{ alignItems: 'flex-end' }}><Progress r={r} />{mine && <span className="hidden sm:block"><CancelButton brandId={current.id} r={r} /></span>}</div>
       </div>
       <CancelledBanner brandId={current.id} r={r} canUndo={mine} />
 
-      {(r.status === 'in_production' || r.status === 'to_approve') && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
+      {r.status === 'in_production' && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
       {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (

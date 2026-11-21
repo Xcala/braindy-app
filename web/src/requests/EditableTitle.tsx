@@ -59,7 +59,7 @@ export function EditableTitle({ brandId, requestId, title, canEdit, onSave, head
 
   if (!editing) {
     return (
-      <span className="row g8" style={{ minWidth: 0, alignItems: 'center', flexWrap: 'wrap' }}>
+      <span className="row g8 et-row" style={{ minWidth: 0, alignItems: 'center', flexWrap: 'wrap' }}>
         <h1 className={headingClass} style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{title}</h1>
         {canEdit && (
           <button type="button" className="btn btn-ghost btn-sm" onClick={start} aria-label={t('as.rename')} title={t('as.rename')}>
