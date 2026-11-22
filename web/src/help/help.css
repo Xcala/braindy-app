@@ -279,3 +279,8 @@ html[data-theme="dark"] .help-dbtn.is-voice,html[data-theme="dark"] .help-x.is-v
   .help-panel .help-form{margin:0 0.75rem 0.75rem}
 }
 @media (max-width:767px){html[data-theme="dark"] .help-panel{background:linear-gradient(180deg,#1F1530 0%,#171631 55%,#111A33 100%)}}
+/* Phones, while typing (keyboard up): the welcome, the «what I can do» cards and the AI note step aside so the message being
+   written and the chat stay in view (2026-11-21). The urgent pill stays: one tap still works. */
+@media (max-width:767px){
+  .help-panel:has(.help-input:focus) :is(.help-welcome,.cd-h,.cd-grid,.cd-steps,.help-ainote){display:none}
+}
