@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
@@ -24,7 +24,10 @@ const savedSlim = () => { try { return localStorage.getItem(KEY) === 'slim'; } c
  */
 export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   const { t } = useI18n();
-  const [slim, setSlimState] = useState(savedSlim);
+  const [saved, setSlimState] = useState(savedSlim);
+  // Phones open it as a push drawer (PushDrawer): always wide there.
+  const phone = usePhone();
+  const slim = saved && !phone;
   const setSlim = (v: boolean) => { setSlimState(v); try { localStorage.setItem(KEY, v ? 'slim' : 'wide'); } catch { /* private mode */ } };
   return (
     <aside className={`sbar${slim ? ' is-slim' : ''}`} aria-label={t('nav.sections')}>
@@ -40,7 +43,7 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
             <span className="sbar-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4zM15 8.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" /></svg></span>{!slim && <span>{t('help.dock')}</span>}
           </button>
         )}
-        <button type="button" className="sbar-link" onClick={() => setSlim(!slim)} title={slim ? t('nav.expand') : undefined} aria-label={t(slim ? 'nav.expand' : 'nav.collapse')}>
+        <button type="button" className="sbar-link sbar-collapse" onClick={() => setSlim(!slim)} title={slim ? t('nav.expand') : undefined} aria-label={t(slim ? 'nav.expand' : 'nav.collapse')}>
           <span className="sbar-ico">{NAV_ICON[slim ? 'expand' : 'collapse']}</span>{!slim && <span>{t('nav.collapse')}</span>}
         </button>
       </div>
@@ -93,4 +96,11 @@ function Groups({ groups, slim, waiting, learned }: { groups: NavGroup[]; slim: 
 
 function ClientFoot({ slim }: { slim: boolean }) {
   return <Groups groups={FOOT_NAV} slim={slim} />;
+}
+
+function usePhone() {
+  const q = '(max-width: 767px)';
+  const [phone, setPhone] = useState(() => window.matchMedia(q).matches);
+  useEffect(() => { const m = window.matchMedia(q); const on = () => setPhone(m.matches); m.addEventListener('change', on); return () => m.removeEventListener('change', on); }, []);
+  return phone;
 }

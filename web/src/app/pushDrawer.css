@@ -1,0 +1,19 @@
+/* Phones: push drawer (see PushDrawer.tsx). The sidebar waits behind the app; opening slides the app right and shows it. */
+:root { --pd-w: min(80vw, 20rem); }
+.pd-scrim { display: none; }
+@media (max-width: 767px) {
+  .shell { background: var(--chrome); }
+  .pd-app { position: relative; z-index: 1; background: var(--niebla); transition: transform .3s cubic-bezier(.22, .8, .24, 1), border-radius .3s, box-shadow .3s; }
+  html.nav-open, html.nav-open body { overflow: hidden; }
+  html.nav-open .pd-app { height: 100dvh; overflow: hidden; transform: translateX(var(--pd-w)); border-radius: 1.5rem 0 0 1.5rem;
+    box-shadow: -12px 0 40px rgba(11, 18, 32, .18); }
+  .pd-scrim { display: block; position: fixed; inset: 0; z-index: 80; background: transparent; border: 0; padding: 0; cursor: pointer; }
+
+  .sbar { display: flex; flex-direction: column; gap: 0.5rem; position: fixed; inset: 0 auto 0 0; width: var(--pd-w); height: 100dvh; z-index: 0;
+    padding: max(1.125rem, env(safe-area-inset-top)) 0.875rem max(0.875rem, env(safe-area-inset-bottom)); background: transparent;
+    visibility: hidden; opacity: 0; transform: translateX(-1.5rem); transition: opacity .3s, transform .3s cubic-bezier(.22, .8, .24, 1), visibility 0s .3s; }
+  html.nav-open .sbar { visibility: visible; opacity: 1; transform: none; transition: opacity .3s, transform .3s cubic-bezier(.22, .8, .24, 1); }
+  .sbar .sbar-link { height: 3rem; font-size: 1rem; }
+  .sbar .sbar-collapse { display: none; }
+}
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) { .pd-app, .sbar, html.nav-open .sbar { transition: none; } }
