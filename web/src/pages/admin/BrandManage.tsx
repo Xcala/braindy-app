@@ -25,7 +25,10 @@ export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onTogg
   return createPortal(
     <div className="acct-sheet" role="dialog" aria-modal="true" aria-label={t('anav.manageTitle', { name: brand.name })}>
       <div className="acct-sheet-bar">
-        <span className="row g12" style={{ minWidth: 0 }}><span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none', flex: 'none' }}><BrandMark brand={brand} /></span><span className="w7 truncate">{brand.name}</span></span>
+        <span className="row g8" style={{ minWidth: 0 }}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('anav.allBrands')} style={{ paddingLeft: '0.5rem' }}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg><span className="hidden sm:inline">{t('anav.allBrands')}</span></button>
+          <span className="row g12" style={{ minWidth: 0 }}><span className="sel" style={{ border: 0, height: 'auto', padding: 0, background: 'none', flex: 'none' }}><BrandMark brand={brand} /></span><span className="w7 truncate">{brand.name}</span></span>
+        </span>
         <button ref={closeBtn} type="button" className="acct-x" onClick={onClose} aria-label={t('lb.close')}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
         </button>
