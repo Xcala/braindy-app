@@ -5,6 +5,7 @@ import { useBrands, type Brand } from '../../brands/BrandProvider';
 import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import { MembersCard } from '../../team/MembersCard';
+import { BrandIdentityEdit } from './BrandIdentityEdit';
 
 /** Everything about one brand in one place: open it, switch it on or off, its people with their permissions. Admin's only per-brand page. */
 export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onToggle: () => void; onClose: () => void }) {
@@ -38,6 +39,7 @@ export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onTogg
             <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />
           </span>
         </div>
+        <BrandIdentityEdit key={brand.id} brand={brand} />
         <p className="label">{t('anav.people')}</p>
         <MembersCard key={brand.id} brandId={brand.id} brandName={brand.name} />
         <p className="t-xs t-mute">{t('team.membersHint')}</p>

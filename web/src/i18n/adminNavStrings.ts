@@ -19,6 +19,13 @@ export const adminNavEn = {
   'anav.newHint': 'It starts active. Next you add its people.',
   'anav.newDone': '{name} created',
   'anav.newError': 'Could not create it. Try again.',
+  'anav.identity': 'Name and image',
+  'anav.save': 'Save',
+  'anav.saved': 'Saved',
+  'anav.saveError': 'Could not save it. Try again.',
+  'anav.image': 'Change image',
+  'anav.imageRemove': 'Remove image',
+  'anav.imageHint': 'A square logo or symbol works best. It shows in the brand menu and the lists.',
 };
 export const adminNavEs: Record<keyof typeof adminNavEn, string> = {
   'anav.admin': 'Admin',
@@ -40,4 +47,11 @@ export const adminNavEs: Record<keyof typeof adminNavEn, string> = {
   'anav.newHint': 'Queda activa. Después agregas a su gente.',
   'anav.newDone': '{name} creada',
   'anav.newError': 'No se pudo crear. Intenta de nuevo.',
+  'anav.identity': 'Nombre e imagen',
+  'anav.save': 'Guardar',
+  'anav.saved': 'Guardado',
+  'anav.saveError': 'No se pudo guardar. Intenta de nuevo.',
+  'anav.image': 'Cambiar imagen',
+  'anav.imageRemove': 'Quitar imagen',
+  'anav.imageHint': 'Funciona mejor un logo o símbolo cuadrado. Se ve en el menú de marcas y en las listas.',
 };
