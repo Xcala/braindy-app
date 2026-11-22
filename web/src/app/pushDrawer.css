@@ -17,3 +17,5 @@
   .sbar .sbar-collapse { display: none; }
 }
 @media (max-width: 767px) and (prefers-reduced-motion: reduce) { .pd-app, .sbar, html.nav-open .sbar { transition: none; } }
+/* Computers have the sidebar in view: no menu button (the .btn display would beat Tailwind's md:hidden). */
+@media (min-width: 768px) { .pd-btn { display: none !important; } }
