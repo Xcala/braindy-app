@@ -364,7 +364,7 @@ Ver: ${APP}/brand`;
   }, run(async ({ brandId, all }) => {
     await requireBrand(brandId);
     const list = await listRequests(brandId, all);
-    return list.length ? list.map((r) => `${r.id} · ${r.title} · ${r.status}${r.versionCount ? ` · v${r.versionCount}` : ''}${r.dueDate ? ` · para ${r.dueDate}` : ''}`).join('\n') : 'No hay solicitudes abiertas.';
+    return list.length ? list.map((r) => `${r.id} · ${r.title} · ${r.status}${r.versionCount ? ` · v${r.versionCount}` : ''}${r.dueDate ? ` · para ${r.dueDate}` : ''}${r.held ? ` · EN ESPERA de Nico (${r.held.versionId})${r.held.note ? `: pide ajustar «${r.held.note}»` : ''}` : ''}`).join('\n') : 'No hay solicitudes abiertas.';
   }));
 
   server.registerTool('braindy_create_request', {
@@ -385,21 +385,29 @@ Ver: ${APP}/brand`;
 
   server.registerTool('braindy_deliver_version', {
     title: 'Entregar una versión al cliente',
-    description: 'Delivers a new version of a request: uploads its files with a short note and sends it to the client for approval, signed by NickMark '
-      + '(the request moves to "Por aprobar" and the review link goes out). Only when Nicolas explicitly says to deliver it. '
+    description: 'Delivers a new version of a request: uploads its files with a short note and routes it by lane, signed by NickMark. '
+      + 'DIRECT (to the client now, "Por aprobar"): adaptations and sizes, corrections the client asked for (v2+), small site adjustments, results reports. '
+      + 'AFTER (to the client now; Nicolas gets a daily summary): new pieces inside a line already approved. '
+      + 'HELD for Nicolas (he approves and sends from his phone): branding, naming, strategy, campaigns and ads, prices or legal, the first piece of its kind, '
+      + 'a brand in its first month, and anything under 90 or without a brand check (run braindy_quality_report first). '
+      + 'The app decides the lane; the answer says which and why. If it comes back held, tell Nicolas and do not deliver again. '
       + (ctx.mode === 'local' ? 'Files are absolute paths.' : `Files go as base64 or https links (up to ${REMOTE_MAX_FILE / 1024 ** 2} MB each).`),
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
       notes: z.string().max(4000).describe('What it is and what changed, in Spanish, for the client, written to scan: short sections on their own line ending in ":" '
         + '(e.g. "Qué es:", "Recorrido:", "Incluye:", "Para revisar:"), then one point per line starting with "- " and its keyword in **bold** '
         + '("- **PDF** para LinkedIn."). One idea per line; no long paragraphs, no arrows chaining ideas.'),
+      nico_lo_vio: z.boolean().optional().describe('true ONLY when Nicolas reviewed this exact piece in this conversation and said to send it: it goes straight to the client'),
+      para_nico: z.boolean().optional().describe('true to hold it for Nicolas whatever the lane (when in doubt)'),
       ...(ctx.mode === 'local' ? { paths: z.array(z.string()).min(1).max(20) } : { files: z.array(REMOTE_FILE).min(1).max(20) }),
     },
-  }, run(async (a: { brandId: string; requestId: string; notes: string; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {
+  }, run(async (a: { brandId: string; requestId: string; notes: string; nico_lo_vio?: boolean; para_nico?: boolean; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {
     const name = await requireBrand(a.brandId);
     const writers: FileWriter[] = a.paths ? await Promise.all(a.paths.map(localWriter)) : await Promise.all((a.files ?? []).map(remoteWriter));
-    const { n, notice } = await deliverVersion(a.brandId, a.requestId, ctx.uid, writers, a.notes);
-    return `${name}: versión ${n} entregada; la solicitud pasó a Por aprobar.${notice && 'status' in notice ? ` Aviso: ${notice.status}.` : ''}\nVer: ${APP}/requests/${a.requestId}`;
+    const { n, lane, why, notice } = await deliverVersion(a.brandId, a.requestId, ctx.uid, writers, a.notes, { seen: a.nico_lo_vio, hold: a.para_nico });
+    const see = `\nVer: ${APP}/requests/${a.requestId}`;
+    if (lane === 'nico') return `${name}: versión ${n} subida y EN ESPERA de Nico (${why}). El cliente aún no la ve; a Nico le llegó «Para tu ojo» al celular para aprobar y enviar, o ajustar.${see}`;
+    return `${name}: versión ${n} entregada al cliente (${why}); la solicitud pasó a Por aprobar.${lane === 'after' ? ' Nico la ve en su resumen del día.' : ''}${notice && 'status' in notice ? ` Aviso: ${notice.status}.` : ''}${see}`;
   }));
 }
 

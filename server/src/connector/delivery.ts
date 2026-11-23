@@ -8,12 +8,13 @@ import { contentTypeOf } from '../lib/mime.js';
 import { whatsappConfigured } from '../whatsapp.js';
 import { relayDelivery } from '../wa/relay.js';
 import { assertOwnBrand } from './brandGuard.js';
+import { holdForNico, laneOf, noteForDigest } from './lanes.js';
 
 export type FileWriter = { name: string; size: number; write: (file: ReturnType<ReturnType<typeof bucket>['file']>, contentType: string) => Promise<void> };
 
 export async function listRequests(brandId: string, all = false) {
   const snap = await db.collection(`brands/${brandId}/requests`).orderBy('createdAt', 'desc').limit(40).get();
-  return snap.docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), status: String(d.get('status') ?? ''), stage: String(d.get('stage') ?? ''), versionCount: Number(d.get('versionCount') ?? 0), dueDate: d.get('dueDate') ?? null, cancelled: !!d.get('cancelled') }))
+  return snap.docs.map((d) => ({ id: d.id, title: String(d.get('title') ?? ''), status: String(d.get('status') ?? ''), stage: String(d.get('stage') ?? ''), versionCount: Number(d.get('versionCount') ?? 0), dueDate: d.get('dueDate') ?? null, cancelled: !!d.get('cancelled'), held: (d.get('held') ?? null) as { versionId?: string; note?: string } | null }))
     // A request the client cancelled is not work: shown only with all, marked.
     .filter((r) => (all || ((r.status === 'in_production' || r.status === 'to_approve') && !r.cancelled)))
     .map((r) => (r.cancelled ? { ...r, status: `${r.status} · CANCELADO por el cliente` } : r));
@@ -28,8 +29,8 @@ export async function newRequest(brandId: string, uid: string, r: { text: string
   return out.requestId;
 }
 
-/** Creates version n+1 with the given files, uploads them and publishes it to the client. */
-export async function deliverVersion(brandId: string, requestId: string, uid: string, files: FileWriter[], notes: string) {
+/** Creates version n+1 with the given files and uploads them. Its lane (lanes.ts) decides: to the client now, or held for Nicolas. */
+export async function deliverVersion(brandId: string, requestId: string, uid: string, files: FileWriter[], notes: string, o: { seen?: boolean; hold?: boolean } = {}) {
   if (!files.length) throw new Error('Una versión necesita al menos un archivo.');
   if (files.length > 20) throw new Error('Máximo 20 archivos por versión.');
   await assertOwnBrand(brandId, files.map((f) => f.name));
@@ -54,13 +55,16 @@ export async function deliverVersion(brandId: string, requestId: string, uid: st
     await f.write(bucket().file(storagePath), contentType);
     stored.push({ name, contentType, size: f.size, storagePath });
   }
+  const { lane, why } = await laneOf(brandId, cur, n, notes, o);
   await reqRef.collection('versions').doc(`v${n}`).set({
     n, files: stored, notes: notes.slice(0, 4000), reason: '', brain: null, via: 'connector',
-    published: false, approval: { state: 'pending' }, createdAt: FieldValue.serverTimestamp(), createdBy: uid,
+    published: false, approval: { state: 'pending' }, createdAt: FieldValue.serverTimestamp(), createdBy: uid, lane, laneWhy: why,
   });
+  if (lane === 'nico') { await holdForNico(brandId, cur, `v${n}`, why); return { n, lane, why, notice: null }; }
   const r = await publishVersion(brandId, requestId, `v${n}`, uid);
   if ('error' in r) throw new Error(`La versión v${n} quedó guardada pero no se publicó (${r.error}).`);
   // On the PC there is no WhatsApp key: the backend sends the notice.
-  if (!whatsappConfigured()) return { n, notice: { status: await relayDelivery(brandId, requestId, `v${n}`) } };
-  return { n, notice: r.notice };
+  if (lane === 'after') await noteForDigest(brandId, cur, `v${n}`).catch(() => undefined);
+  if (!whatsappConfigured()) return { n, lane, why, notice: { status: await relayDelivery(brandId, requestId, `v${n}`) } };
+  return { n, lane, why, notice: r.notice };
 }

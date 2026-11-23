@@ -341,7 +341,7 @@ export async function publishVersion(brandId: string, requestId: string, version
   }
   await db.batch()
     .update(verRef, { published: true, publishedAt: now(), reviewedBy: uid })
-    .update(reqRef, { status: 'to_approve', stage: 'clientApproval', latestVersion: versionId, updatedAt: now() })
+    .update(reqRef, { status: 'to_approve', stage: 'clientApproval', latestVersion: versionId, held: FieldValue.delete(), updatedAt: now() })
     .commit();
   // Review link to the brand's WhatsApp approver (sent by the API, or a wa.me link for Nicolas).
   const notice = await notifyDelivery(brandId, requestId, versionId, uid).catch(() => ({ status: 'error' as const }));
