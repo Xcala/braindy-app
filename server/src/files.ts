@@ -6,7 +6,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import { db } from './firebase.js';
 import { recordFileEvent } from './brains/brainEvents.js';
-import { brandAccess, fileFilter } from './access.js';
+import { brandAccess, fileFilter, folderFilter } from './access.js';
 import type { AuthEnv } from './auth.js';
 import { bumpIndex } from './fileOps.js';
 import { forgetSearch } from './search.js';
@@ -68,6 +68,40 @@ files.post('/brands/:brandId/assets/urls', async (c) => {
   return c.json({ urls });
 });
 
+const cleanFolder = (p: unknown) => String(p ?? '').split('/').map((x) => x.replace(/[\\\r\n]/g, ' ').trim()).filter(Boolean).join('/').slice(0, 500);
+/** Folders the client may put things in: the ones they see, except approved deliveries, internal ones and Uploads itself. */
+async function clientFolderOk(brandId: string) {
+  const seen = await folderFilter(brandId);
+  return (folder: string) => {
+    const top = folder.split('/')[0] ?? '';
+    return !!top && top !== 'Entregas aprobadas' && top !== 'Interno Braindy' && seen(folder);
+  };
+}
+
+/** A new, empty folder. It lives in fileIndex.made until a file lands in it (rebuildIndex keeps that field). The client
+ * can make one at the root or inside a folder they may add to; a new top folder becomes visible to them right away. */
+files.post('/brands/:brandId/newfolder', async (c) => {
+  const { brandId } = c.req.param();
+  const uid = c.get('user').uid;
+  const access = await brandAccess(uid, brandId);
+  if (!access.member || !access.sections.includes('files')) return c.json({ error: 'forbidden' }, 403);
+  const b = await c.req.json<{ parent?: string; name?: string }>().catch(() => ({} as { parent?: string; name?: string }));
+  const parent = cleanFolder(b.parent);
+  const name = String(b.name ?? '').replace(/[\\/\r\n]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+  if (!name || name === 'Uploads' || parent.split('/')[0] === 'Uploads') return c.json({ error: 'invalid' }, 400);
+  const path = parent ? `${parent}/${name}` : name;
+  if (!access.admin && parent && !(await clientFolderOk(brandId))(parent)) return c.json({ error: 'forbidden' }, 403);
+  if (!access.admin && !parent && (name === 'Entregas aprobadas' || name === 'Interno Braindy')) return c.json({ error: 'invalid' }, 400);
+  await db.doc(`brands/${brandId}/context/fileIndex`).set({ made: FieldValue.arrayUnion(path) }, { merge: true });
+  if (!parent && !access.admin) {
+    const brandRef = db.doc(`brands/${brandId}`);
+    const fa = (await brandRef.get()).get('fileAccess') as { mode?: string; folders?: string[] } | undefined;
+    if (fa?.mode === 'selected' && !fa.folders?.includes(name)) await brandRef.update({ 'fileAccess.folders': FieldValue.arrayUnion(name) });
+  }
+  await db.collection('audit').doc().set({ type: 'folder_created', brandId, path, by: uid, at: FieldValue.serverTimestamp() });
+  return c.json({ ok: true, path });
+});
+
 /** Starts a client upload: registers a pending asset and returns a signed PUT URL. */
 files.post('/brands/:brandId/uploads', async (c) => {
   const { brandId } = c.req.param();
@@ -82,8 +116,10 @@ files.post('/brands/:brandId/uploads', async (c) => {
   if (!fileName || !Number.isFinite(size) || size <= 0) return c.json({ error: 'invalid' }, 400);
   if (size > MAX_UPLOAD_BYTES) return c.json({ error: 'too_large', maxBytes: MAX_UPLOAD_BYTES }, 413);
 
-  // NickMark can upload straight into any folder; everyone else uploads to Uploads.
-  const folder = access.admin && body.folder ? String(body.folder).split('/').map((p) => p.trim()).filter(Boolean).join('/').slice(0, 500) : 'Uploads';
+  // NickMark can upload straight into any folder; the client into any folder they see (not approved deliveries or
+  // internal ones); everything else lands in Uploads.
+  const wanted = cleanFolder(body.folder);
+  const folder = wanted && (access.admin || (await clientFolderOk(brandId))(wanted)) ? wanted : 'Uploads';
   const id = `upl-${randomUUID()}`;
   const storagePath = `brands/${brandId}/uploads/${id}/${fileName}`;
   await db.doc(`brands/${brandId}/assets/${id}`).set({

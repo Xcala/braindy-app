@@ -12,7 +12,9 @@ import { Preview } from './Preview';
 import { useThumbs } from './useThumbs';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
-import { APPROVED, folderVisible, UPLOADS } from './folderRules';
+import { APPROVED, canAddTo, folderVisible, UPLOADS } from './folderRules';
+import { useOpenFolder } from './openFolder';
+import { NewFolderButton } from './NewFolderButton';
 
 import { useFolderShare } from './useFolderShare';
 import { pinBrandFile, unpinBrandFile, type BrandFile } from '../brands/identity/BrandFiles';
@@ -57,7 +59,7 @@ function repeatedCopies(files: FileItem[]) {
 /** hideApproved: Library leaves out the approved-deliveries folder at the root (it has its own tab, Deliveries). */
 export function FileExplorer({ brandId, brandName, startPath = '', openId, hideApproved = false }: { brandId: string; brandName: string; startPath?: string; openId?: string; hideApproved?: boolean }) {
   const { t } = useI18n();
-  const [path, setPath] = useState(startPath);
+  const [path, setPath] = useOpenFolder(brandId);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [q, setQ] = useState('');
   const [everywhere, setEverywhere] = useState(false);
@@ -75,7 +77,20 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
   const [dragging, setDragging] = useState(false);
   const [hideAsk, setHideAsk] = useState(false);
   const index = useBrandDoc(brandId, 'context/fileIndex');
-  const folders = (index.data?.folders as Folder[] | undefined) ?? [];
+  // Indexed folders plus the ones made empty (fileIndex.made, with their parents) until a file lands in them.
+  const folders = useMemo(() => {
+    const list = (index.data?.folders as Folder[] | undefined) ?? [];
+    const have = new Set(list.map((f) => f.path));
+    const extra: Folder[] = [];
+    for (const m of (index.data?.made as string[] | undefined) ?? []) {
+      const parts = m.split('/');
+      for (let i = 1; i <= parts.length; i++) {
+        const p = parts.slice(0, i).join('/');
+        if (!have.has(p)) { have.add(p); extra.push({ path: p, files: 0, bytes: 0 }); }
+      }
+    }
+    return extra.length ? [...list, ...extra] : list;
+  }, [index.data]);
   const realAdmin = useAuth().profile?.role === 'admin';
   // "View as client": NickMark sees exactly the client's page, without his controls.
   const [asClient, setAsClient] = useState(false);
@@ -149,8 +164,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
   }, [openId, files]);
   const open = (f: FileItem) => (previewKind(f.contentType) ? setPreview(f) : download(brandId, f.id));
   const goFolder = (p: string) => { setEverywhere(false); setQ(''); setPath(p); };
-  // NickMark drops files from the desktop straight into the open folder.
-  const canDrop = isAdmin && !!path && path !== UPLOADS && !trashOpen;
+  // Files dropped from the desktop go straight into the open folder (NickMark anywhere, the client where they may add).
+  const addable = canAddTo(brand ?? { fileAccess: null }, isAdmin);
+  const canDrop = addable(path) && !trashOpen;
+  const canMake = !trashOpen && !needle && (!path || addable(path));
   const dragProps = canDrop ? {
     onDragOver: (e: DragEvent) => { if (e.dataTransfer.types.includes('Files')) { e.preventDefault(); setDragging(true); } },
     onDragLeave: (e: DragEvent) => { if (e.currentTarget === e.target) setDragging(false); },
@@ -161,7 +178,10 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
     <section className={`card fx${dragging ? ' is-drop' : ''}`} style={{ padding: 0, overflow: 'clip', position: 'relative' }} aria-labelledby="files-crumbs" {...dragProps}>
       <ExplorerToolbar path={path} setPath={goFolder} q={q} setQ={setQ} everywhere={everywhere} setEverywhere={setEverywhere}
         filter={filter} setFilter={setFilter} sort={sort} setSort={setSort} view={view} setView={setView}
-        actions={canDrop ? <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary /> : undefined} />
+        actions={(canMake || (isAdmin && canDrop)) ? <>
+          {isAdmin && canDrop && <UploadButton brandId={brandId} folder={path} label={t('files.uploadHere')} secondary />}
+          {canMake && <NewFolderButton brandId={brandId} parent={path} onMade={goFolder} />}
+        </> : undefined} />
       {dragging && <div className="fdrop" aria-hidden="true"><Icon name="upload" size={28} />{t('files.dropHere', { name: path.split('/').pop() ?? '' })}</div>}
       <div className="col g24 p-4 sm:p-6">
         {asClient && (

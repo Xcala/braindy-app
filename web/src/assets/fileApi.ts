@@ -26,6 +26,9 @@ export const purgeFile = (brandId: string, id: string) => api(`/v1/brands/${bran
 export const renameFolder = (brandId: string, path: string, name: string) => api<{ path: string }>(`/v1/brands/${brandId}/folders/rename`, { method: 'POST', body: JSON.stringify({ path, name }) });
 export const trashFolder = (brandId: string, path: string) => api<{ ids: string[] }>(`/v1/brands/${brandId}/folders/trash`, { method: 'POST', body: JSON.stringify({ path }) });
 
+/** A new empty folder inside `parent` ('' = the root). Returns its path. */
+export const createFolder = (brandId: string, parent: string, name: string) => api<{ path: string }>(`/v1/brands/${brandId}/newfolder`, { method: 'POST', body: JSON.stringify({ parent, name }) }).then((r) => r.path);
+
 /** Several files in one .zip, built on the server and saved by the browser. */
 export async function downloadZip(brandId: string, ids: string[], name: string) {
   const res = await apiResponse(`/v1/brands/${brandId}/assets/zip`, { method: 'POST', body: JSON.stringify({ ids }) });
@@ -56,9 +59,10 @@ export async function upload(brandId: string, file: File, onProgress: (p: number
     xhr.send(file);
   });
   const token = await auth.currentUser?.getIdToken();
-  await fetch(`${API_URL}/v1/brands/${brandId}/uploads/${start.assetId}/complete`, {
+  const done = await fetch(`${API_URL}/v1/brands/${brandId}/uploads/${start.assetId}/complete`, {
     method: 'POST', headers: { Authorization: `Bearer ${token}` },
   });
+  if (!done.ok) throw new Error(`Upload complete ${done.status}`);
   return start.assetId;
 }
 

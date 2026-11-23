@@ -3,13 +3,13 @@ import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { useUploader } from './useUploader';
 
-/** Upload button with its progress. Without `folder` files go to Uploads; NickMark can pass the open folder. */
-export function UploadButton({ brandId, folder, label, secondary }: { brandId: string; folder?: string; label?: string; secondary?: boolean }) {
+/** Upload button with its progress. Without `folder` files go to Uploads; else into that folder (server/src/files.ts decides who may). */
+export function UploadButton({ brandId, folder, label, secondary, onDone }: { brandId: string; folder?: string; label?: string; secondary?: boolean; onDone?: () => void }) {
   const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   const up = useUploader(brandId);
   const onFiles = async (list: FileList | null) => {
-    await up.run(list, folder);
+    if (await up.run(list, folder)) onDone?.();
     if (input.current) input.current.value = '';
   };
 
