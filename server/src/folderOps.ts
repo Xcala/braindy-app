@@ -1,4 +1,5 @@
-// NickMark's folder housekeeping in Files: rename a folder and send a whole folder to the trash. Only Braindy's
+// Folder housekeeping in Files: rename a folder and send a whole folder to the trash (NickMark any folder, the client
+// only the folders their team made). Only Braindy's
 // records change: the bucket objects stay put and Drive is never touched. Each trashed file can be restored for 30
 // days like any other, and the Drive import does not bring back what was trashed (tombstones).
 import { Hono } from 'hono';
@@ -38,10 +39,26 @@ async function assetsUnder(brandId: string, path: string) {
 }
 
 export const folderOps = new Hono<AuthEnv>();
-folderOps.use('/brands/:brandId/folders/*', async (c, next) => {
-  if (!(await brandAccess(c.get('user').uid, c.req.param('brandId') ?? '')).admin) return c.json({ error: 'forbidden' }, 403);
-  await next();
-});
+const PROTECTED = new Set(['Uploads', APPROVED_FOLDER, 'Interno Braindy']);
+const indexRef = (brandId: string) => db.doc(`brands/${brandId}/context/fileIndex`);
+/** Folders the client team made (POST /newfolder), with everything inside them: theirs to rename and trash. */
+export async function clientFolders(brandId: string) {
+  return ((await indexRef(brandId).get()).get('clientMade') as string[] | undefined) ?? [];
+}
+/** NickMark any folder; a client member with Files only the folders their team made (and what is inside them). */
+async function mayManage(uid: string, brandId: string, path: string) {
+  const a = await brandAccess(uid, brandId);
+  if (a.admin) return { ok: true, admin: true };
+  if (!a.member || !a.sections.includes('files')) return { ok: false, admin: false };
+  return { ok: (await clientFolders(brandId)).some((m) => under(path, m)), admin: false };
+}
+/** fileIndex.made and clientMade follow a rename (prefix swap) or a trash (to = null drops them). */
+async function moveMade(brandId: string, path: string, to: string | null) {
+  const ref = indexRef(brandId);
+  const snap = await ref.get();
+  const swap = (list: string[] | undefined) => (list ?? []).flatMap((m) => (!under(m, path) ? [m] : to === null ? [] : [to + m.slice(path.length)]));
+  if (snap.exists) await ref.set({ made: swap(snap.get('made')), clientMade: swap(snap.get('clientMade')) }, { merge: true });
+}
 
 /** New name for a folder (same parent). Everything inside keeps its place under the new name. */
 folderOps.post('/brands/:brandId/folders/rename', async (c) => {
@@ -51,6 +68,9 @@ folderOps.post('/brands/:brandId/folders/rename', async (c) => {
   const name = String(b.name ?? '').replace(/[\\/\r\n]/g, ' ').trim().slice(0, 120);
   const top = path.split('/')[0];
   if (!path || !name || top === 'Uploads' || path === APPROVED_FOLDER) return c.json({ error: 'invalid' }, 400);
+  const who = await mayManage(c.get('user').uid, brandId, path);
+  if (!who.ok) return c.json({ error: 'forbidden' }, 403);
+  if (!who.admin && !path.includes('/') && PROTECTED.has(name)) return c.json({ error: 'invalid' }, 400);
   const to = path.includes('/') ? `${path.slice(0, path.lastIndexOf('/'))}/${name}` : name;
   if (to === path) return c.json({ ok: true, path: to });
   const docs = await assetsUnder(brandId, path);
@@ -65,6 +85,7 @@ folderOps.post('/brands/:brandId/folders/rename', async (c) => {
     const fa = (await brandRef.get()).get('fileAccess') as { mode?: string; folders?: string[] } | undefined;
     if (fa?.mode === 'selected' && fa.folders?.includes(path)) await brandRef.update({ 'fileAccess.folders': fa.folders.map((f) => (f === path ? to : f)) });
   }
+  await moveMade(brandId, path, to);
   await rebuildIndex(brandId);
   await db.collection('audit').doc().set({ type: 'folder_renamed', brandId, from: path, to, files: docs.length, by: c.get('user').uid, at: FieldValue.serverTimestamp() });
   forgetSearch(brandId);
@@ -77,6 +98,8 @@ folderOps.post('/brands/:brandId/folders/trash', async (c) => {
   const uid = c.get('user').uid;
   const path = clean((await c.req.json<{ path?: string }>().catch(() => ({} as { path?: string }))).path);
   if (!path || path.split('/')[0] === 'Uploads') return c.json({ error: 'invalid' }, 400);
+  const who = await mayManage(uid, brandId, path);
+  if (!who.ok) return c.json({ error: 'forbidden' }, 403);
   const docs = await assetsUnder(brandId, path);
   const ids = new Set(docs.map((d) => d.id));
   for (let i = 0; i < docs.length; i += 150) {
@@ -84,7 +107,7 @@ folderOps.post('/brands/:brandId/folders/trash', async (c) => {
     const batch = db.batch();
     for (const a of full.filter((x) => x.exists)) {
       batch.set(db.doc(`brands/${brandId}/deletedAssets/${a.id}`), { title: a.get('title') ?? null, relPath: a.get('relPath') ?? null, deletedBy: uid, deletedAt: FieldValue.serverTimestamp() });
-      batch.set(db.doc(`brands/${brandId}/trash/${a.id}`), { ...a.data(), trashedBy: uid, trashedAt: FieldValue.serverTimestamp() });
+      batch.set(db.doc(`brands/${brandId}/trash/${a.id}`), { ...a.data(), trashedBy: uid, trashedAt: FieldValue.serverTimestamp(), fromFolder: path, ...(who.admin ? {} : { clientTrash: true }) });
       batch.delete(a.ref);
     }
     await batch.commit();
@@ -92,6 +115,7 @@ folderOps.post('/brands/:brandId/folders/trash', async (c) => {
   const idRef = db.doc(`brands/${brandId}/context/identity`);
   const pinned = ((await idRef.get()).get('documents') as Array<{ id?: string }> | undefined) ?? [];
   if (pinned.some((d) => d.id && ids.has(d.id))) await idRef.update({ documents: pinned.filter((d) => !d.id || !ids.has(d.id)) });
+  await moveMade(brandId, path, null);
   await rebuildIndex(brandId);
   await db.collection('audit').doc().set({ type: 'folder_trashed', brandId, path, files: docs.length, by: uid, at: FieldValue.serverTimestamp() });
   forgetSearch(brandId);

@@ -91,6 +91,9 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
     }
     return extra.length ? [...list, ...extra] : list;
   }, [index.data]);
+  // Folders the client team made: theirs to rename and send to the trash (server/src/folderOps.ts mayManage).
+  const clientMade = (index.data?.clientMade as string[] | undefined) ?? [];
+  const ownFolder = (p: string) => clientMade.some((m) => p === m || p.startsWith(`${m}/`));
   const realAdmin = useAuth().profile?.role === 'admin';
   // "View as client": NickMark sees exactly the client's page, without his controls.
   const [asClient, setAsClient] = useState(false);
@@ -190,7 +193,7 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAsClient(false)}>{t('fa.exitClient')}</button>
           </div>
         )}
-        {trashOpen ? <TrashView brandId={brandId} onBack={() => setTrashOpen(false)} /> : <>
+        {trashOpen ? <TrashView brandId={brandId} canPurge={isAdmin} onBack={() => setTrashOpen(false)} /> : <>
         {subfolders.length > 0 && !needle && (
           <div className="col g12">
             <p className="label">{t('files.folders')} · {subfolders.length}</p>
@@ -210,6 +213,11 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
                 </div>
               </div>
             )}
+            {!realAdmin && !path && (
+              <div className="row g8" style={{ justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setTrashOpen(true)}><Icon name="trash" size={16} />{t('files.trash')}</button>
+              </div>
+            )}
             {isAdmin && !path && tops.length > 0 && share.count === 0 && (
               <div className="fnote" role="status">
                 <span className="t-sm">{t('fa.none')}</span>
@@ -217,7 +225,8 @@ export function FileExplorer({ brandId, brandName, startPath = '', openId, hideA
               </div>
             )}
             <FolderGrid folders={allFolders ? subfolders : subfolders.slice(0, FOLDERS_FIRST)} onOpen={setPath}
-              menu={isAdmin ? (p) => <FolderMenu path={p} actions={actions} canRename={p !== APPROVED} /> : undefined} />
+              menu={(p) => (isAdmin ? <FolderMenu path={p} actions={actions} canRename={p !== APPROVED} />
+                : ownFolder(p) && !asClient ? <FolderMenu path={p} actions={actions} canRename /> : null)} />
             {subfolders.length > FOLDERS_FIRST && (
               <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setAllFolders((a) => !a)}>
                 {allFolders ? t('common.showLess') : t('common.showAll', { n: String(subfolders.length) })}

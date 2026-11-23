@@ -92,7 +92,8 @@ files.post('/brands/:brandId/newfolder', async (c) => {
   const path = parent ? `${parent}/${name}` : name;
   if (!access.admin && parent && !(await clientFolderOk(brandId))(parent)) return c.json({ error: 'forbidden' }, 403);
   if (!access.admin && !parent && (name === 'Entregas aprobadas' || name === 'Interno Braindy')) return c.json({ error: 'invalid' }, 400);
-  await db.doc(`brands/${brandId}/context/fileIndex`).set({ made: FieldValue.arrayUnion(path) }, { merge: true });
+  // The client team's own folders are theirs to rename and trash (folderOps.ts).
+  await db.doc(`brands/${brandId}/context/fileIndex`).set({ made: FieldValue.arrayUnion(path), ...(access.admin ? {} : { clientMade: FieldValue.arrayUnion(path) }) }, { merge: true });
   if (!parent && !access.admin) {
     const brandRef = db.doc(`brands/${brandId}`);
     const fa = (await brandRef.get()).get('fileAccess') as { mode?: string; folders?: string[] } | undefined;
