@@ -88,31 +88,48 @@ fileOps.delete('/brands/:brandId/assets/:assetId', async (c) => {
   return ok ? c.json({ ok: true }) : c.json({ error: 'not_found' }, 404);
 });
 
+/** Who may see and restore a trashed file: NickMark all; a client member only what their team trashed, while they see it. */
+async function restorable(uid: string, brandId: string) {
+  const a = await brandAccess(uid, brandId);
+  if (a.admin) return () => true;
+  if (!a.member || !a.sections.includes('files')) return null;
+  const seen = await fileFilter(brandId);
+  return (t: FirebaseFirestore.DocumentSnapshot) => t.get('clientTrash') === true && seen(t);
+}
+
 fileOps.get('/brands/:brandId/trash', async (c) => {
   const { brandId } = c.req.param();
-  if (!(await adminOnly(c.get('user').uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const mine = await restorable(c.get('user').uid, brandId);
+  if (!mine) return c.json({ error: 'forbidden' }, 403);
   await purgeExpired(brandId);
   const s = await db.collection(`brands/${brandId}/trash`).orderBy('trashedAt', 'desc').limit(300).get();
   return c.json({
     days: TRASH_DAYS,
-    files: s.docs.map((d) => ({ id: d.id, title: d.get('title'), folder: d.get('folder') ?? '', size: d.get('size') ?? 0, contentType: d.get('contentType') ?? '', trashedAt: d.get('trashedAt')?.toMillis?.() ?? null })),
+    files: s.docs.filter(mine).map((d) => ({ id: d.id, title: d.get('title'), folder: d.get('folder') ?? '', size: d.get('size') ?? 0, contentType: d.get('contentType') ?? '', trashedAt: d.get('trashedAt')?.toMillis?.() ?? null })),
   });
 });
 
 fileOps.post('/brands/:brandId/trash/:assetId/restore', async (c) => {
   const { brandId, assetId } = c.req.param();
-  if (!(await adminOnly(c.get('user').uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const mine = await restorable(c.get('user').uid, brandId);
+  if (!mine) return c.json({ error: 'forbidden' }, 403);
   const tRef = db.doc(`brands/${brandId}/trash/${assetId}`);
+  const first = await tRef.get();
+  if (first.exists && !mine(first)) return c.json({ error: 'forbidden' }, 403);
   const ok = await db.runTransaction(async (tx) => {
     const t = await tx.get(tRef);
     if (!t.exists) return false;
-    const { trashedBy: _b, trashedAt: _a, ...data } = t.data()!;
+    const { trashedBy: _b, trashedAt: _a, fromFolder: _f, clientTrash: _c, ...data } = t.data()!;
     await bumpIndex(tx, brandId, [String(data.folder ?? ''), 1, Number(data.size ?? 0)]);
     tx.set(db.doc(`brands/${brandId}/assets/${assetId}`), data);
     tx.delete(db.doc(`brands/${brandId}/deletedAssets/${assetId}`));
     tx.delete(tRef);
     return true;
   });
+  // A folder the client team made comes back as theirs again (to rename or trash).
+  if (ok && first.get('clientTrash') === true && first.get('fromFolder')) {
+    await db.doc(`brands/${brandId}/context/fileIndex`).set({ clientMade: FieldValue.arrayUnion(String(first.get('fromFolder'))) }, { merge: true });
+  }
   forgetSearch(brandId);
   return ok ? c.json({ ok: true }) : c.json({ error: 'not_found' }, 404);
 });

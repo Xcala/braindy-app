@@ -58,6 +58,12 @@ export async function promptInstall() {
 /** Switches to the waiting version; the page reloads when it takes over. */
 export function applyUpdate() {
   asked = true;
-  if (waiting) waiting.postMessage('SKIP_WAITING');
-  else location.reload();
+  // Several deploys in a row leave the version we saw replaced by a newer one (2026-11-21: «Update» did nothing), so ask
+  // the registration for the one waiting now; if nothing takes over within 3 s, a plain reload still brings the new page.
+  const fallback = setTimeout(() => location.reload(), 3000);
+  navigator.serviceWorker?.getRegistration().then((reg) => {
+    const w = reg?.waiting ?? (waiting?.state === 'installed' ? waiting : null);
+    if (w) w.postMessage('SKIP_WAITING');
+    else { clearTimeout(fallback); location.reload(); }
+  }).catch(() => { clearTimeout(fallback); location.reload(); });
 }

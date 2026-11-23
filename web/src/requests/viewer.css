@@ -59,3 +59,45 @@ html[data-theme="dark"] .rv-split > :last-child { border-color: var(--line-stron
   .rv-split > :last-child { contain: size; overflow-y: auto; overscroll-behavior: contain; }
   .rv-split { min-height: 34rem; }
 }
+
+/* Bar above the piece (2026-11-21, phones felt cramped): versions on the left, actions on the right, one line each.
+   On phones the version tabs scroll sideways and the actions keep only their icons, so nothing wraps or crowds. */
+.vw-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; flex-wrap: wrap; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--line); }
+.vw-acts { display: flex; align-items: center; gap: 0.25rem; flex-wrap: nowrap; }
+.vw-acts .btn { gap: 0.375rem; }
+@media (max-width: 639px) {
+  .vw-bar { padding: 0.5rem 0.75rem; flex-wrap: nowrap; }
+  .vw-tabs { min-width: 0; flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; flex-wrap: nowrap; }
+  .vw-tabs::-webkit-scrollbar { display: none; }
+  .vw-tabs button { white-space: nowrap; flex: none; }
+  .vw-acts { flex: none; }
+  .vw-acts .btn { width: 2.25rem; padding: 0; justify-content: center; }
+  .vw-acts .vw-lbl { display: none; }
+  .vw-count { font-size: 0.75rem; margin-right: 0.125rem; }
+}
+@media (max-width: 639px) { .vw-acts .vw-lbl + svg { display: none; } }
+
+.vw-vsel { display: none; }
+@media (max-width: 639px) { .vw-tabs { display: none; } .vw-vsel { display: block; width: auto; min-width: 0; flex: 0 1 auto; height: 2.25rem; padding: 0 2rem 0 0.75rem; font-weight: 700; font-size: 0.875rem; } }
+
+/* Request header on phones (2026-11-21): «‹ Pedidos» and the counter on one line, a mid-size title with its pencil,
+   one line of facts, a thin progress line; «⋯» holds the video and Cancel. Desktop unchanged. */
+.req-more { position: relative; flex: none; }
+.req-more > summary { list-style: none; cursor: pointer; }
+.req-more > summary::-webkit-details-marker { display: none; }
+.req-more-menu { position: absolute; right: 0; top: calc(100% + 0.25rem); z-index: 30; min-width: 12rem; padding: 0.75rem; box-shadow: 0 18px 40px rgba(11,18,32,.14); }
+@media (max-width: 639px) {
+  .req-top { flex-wrap: nowrap; margin-bottom: -0.5rem; }
+  .req-top .crumbs .cur, .req-top .crumbs > svg { display: none; }
+  .req-top .crumbs a::before { content: "‹"; margin-right: 0.375rem; font-size: 1.125rem; line-height: 1; }
+  .req-nav-btn { width: 2rem; height: 2rem; }
+  .req-head { gap: 0.75rem; }
+  .req-head .et-row { display: block; }
+  .req-head .et-row h1 { display: inline; font-size: 1.375rem; line-height: 1.25; }
+  .req-head .et-row > button { display: inline-flex; vertical-align: middle; height: 1.75rem; padding: 0 0.375rem; }
+  .req-meta { gap: 0.375rem; align-items: center; }
+  .req-meta .chip { height: 1.5rem; padding: 0 0.5rem; font-size: 0.75rem; }
+  .req-meta .t-sm { font-size: 0.75rem; }
+  .req-prog { width: 100%; }
+  .req-prog .t-xs { display: none; }
+}

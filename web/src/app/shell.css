@@ -21,3 +21,6 @@ html[data-theme="dark"] { --chrome: #060913; }
 .sel-who { font: 700 0.875rem/1.15 var(--f-text); color: var(--ink); max-width: 14rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sel-brand { font-size: 0.75rem; color: var(--graphite); max-width: 14rem; overflow: hidden; }
 .sel-brand * { font-weight: 600 !important; font-size: 0.75rem !important; color: var(--graphite) !important; }
+
+/* Phones: the brand selector shows only the brand, on one line (who is in is in the account menu). */
+@media (max-width: 639px) { .sel-who { display: none; } .sel-brand, .sel-brand * { font: 700 0.9375rem/1.25rem var(--f-text) !important; color: var(--ink) !important; max-width: 11rem; } }

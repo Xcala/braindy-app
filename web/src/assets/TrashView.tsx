@@ -5,8 +5,8 @@ import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import { formatBytes, listTrash, purgeFile, restoreFile, type TrashItem } from './fileApi';
 
-/** NickMark only: files sent to the trash in the last 30 days, to restore or delete for good. */
-export function TrashView({ brandId, onBack }: { brandId: string; onBack: () => void }) {
+/** Files sent to the trash in the last 30 days, to restore (the client sees only what their team trashed); only NickMark deletes for good. */
+export function TrashView({ brandId, onBack, canPurge = true }: { brandId: string; onBack: () => void; canPurge?: boolean }) {
   const { t, lang } = useI18n();
   const [list, setList] = useState<TrashItem[] | null>(null);
   const [days, setDays] = useState(30);
@@ -42,8 +42,8 @@ export function TrashView({ brandId, onBack }: { brandId: string; onBack: () => 
                 <span className="t-xs t-mute">{lang === 'es' ? `${left(f.trashedAt)} días` : `${left(f.trashedAt)} days`}</span>
                 <span className="row g4" style={{ justifyContent: 'flex-end' }}>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => act(restoreFile(brandId, f.id), t('files.restoredN', { n: '1' }))}><Icon name="restore" size={14} /> {t('files.restore')}</button>
-                  <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }}
-                    onClick={() => setPurge(f)}>{t('files.purge')}</button>
+                  {canPurge && <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }}
+                    onClick={() => setPurge(f)}>{t('files.purge')}</button>}
                 </span>
               </div>
             ))}

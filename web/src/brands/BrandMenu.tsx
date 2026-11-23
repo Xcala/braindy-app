@@ -86,10 +86,10 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
               value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           {isAdmin && !enter && !found && (
-            <Link to="/admin/brands" onClick={() => setOpen(false)} className="menu-item" style={{ background: 'var(--ink)', color: '#fff' }}>
+            <Link to="/admin/today" onClick={() => setOpen(false)} className="menu-item" style={{ background: 'var(--ink)', color: '#fff' }}>
               <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: '1.25rem', height: '1.25rem' }} /></span>
-              <span className="grow">{t('brand.admin')}</span>
-              <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('nav.brands')}</span>
+              <span className="grow">{t('nav.backToAdmin')}</span>
+              <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('brand.admin')}</span>
             </Link>
           )}
           {found ? (

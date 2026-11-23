@@ -13,6 +13,7 @@ import { sectionOfPath, useMySections } from '../team/sections';
 import { SubNav } from './SubNav';
 import { HowItWorks } from '../learn/tutorials';
 import { Sidebar } from './Sidebar';
+import { DrawerScrim, MenuButton } from './PushDrawer';
 import { useEffect, useRef } from 'react';
 import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
 import { HelpChat } from '../help/HelpChat';
@@ -44,8 +45,9 @@ export function AppShell() {
       <Toaster>
       <div className="shell flex min-h-full">
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
-      <div className="flex min-h-full min-w-0 flex-1 flex-col">
+      <div className="pd-app flex min-h-full min-w-0 flex-1 flex-col">
         <header ref={head} className="topbar shell-top" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
+          <MenuButton />
           <Link to={adminSpace ? '/admin/today' : '/home'} className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></Link>
           <div className="vsep hidden sm:block md:hidden" style={{ height: '2rem', margin: 0 }} />
           {adminSpace ? (
@@ -57,7 +59,8 @@ export function AppShell() {
           ) : (
             <>
               <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
-              {isAdmin && <Link to="/admin/today" className="btn btn-secondary btn-sm shrink-0" aria-label={t('nav.backToAdmin')}><span className="sm:hidden">{t('anav.admin')}</span><span className="hidden sm:inline">{t('nav.backToAdmin')}</span></Link>}
+              {/* Phones: the way back to admin lives in the brand menu and the account menu, so the brand keeps the room (2026-11-21). */}
+              {isAdmin && <span className="hidden shrink-0 sm:inline-flex"><Link to="/admin/today" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
             </>
           )}
           <div className="grow" />
@@ -74,6 +77,7 @@ export function AppShell() {
         </div>
         {!adminSpace && <><IdeasPanel /><HelpChat /><AssistantIntro /></>}
         <AlertsInvite />
+        <DrawerScrim />
       </div>
       </div>
       </Toaster>

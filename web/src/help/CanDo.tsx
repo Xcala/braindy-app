@@ -37,7 +37,7 @@ export function CanDo({ brandId, client, onAsk, onHist }: { brandId: string; cli
   return (
     <div className="cd">
       {now && (
-        <button type="button" className="cd-now" onClick={() => onAsk(nowQ)}>
+        <button type="button" className="cd-now" onMouseDown={keepFocus} onClick={() => onAsk(nowQ)}>
           <span className="cd-dot" aria-hidden="true" /><span>{now}</span>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
@@ -47,7 +47,7 @@ export function CanDo({ brandId, client, onAsk, onHist }: { brandId: string; cli
         {order.map((k) => {
           const c = CARDS.find((x) => x.k === k)!;
           return (
-            <button key={k} type="button" className="cd-card" onClick={() => run(act(k))}>
+            <button key={k} type="button" className="cd-card" onMouseDown={keepFocus} onClick={() => run(act(k))}>
               <span className="cd-ic" aria-hidden="true">{c.icon}</span>
               <b>{t(`cd.${k}`)}</b>
               <span className="cd-try">{t(`cd.${k}Try`)}</span>
@@ -75,3 +75,6 @@ export function CanDo({ brandId, client, onAsk, onHist }: { brandId: string; cli
     </div>
   );
 }
+
+/** A tap on a suggestion while typing keeps the keyboard up (no jump while the cards change size under the finger). */
+const keepFocus = (e: React.MouseEvent) => e.preventDefault();

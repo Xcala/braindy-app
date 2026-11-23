@@ -76,8 +76,8 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
 
   return (
     <div className="col min-w-0 vw-stage">
-      <div className="row between g8 wrap vw-bar" style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid var(--line)' }}>
-        <div className="seg" role="tablist" aria-label={t('req.versions')}>
+      <div className="vw-bar">
+        <div className="seg vw-tabs" role="tablist" aria-label={t('req.versions')}>
           {versions.map((v) => {
             const st = state(v);
             const label = st ? t(`vs.${st}`) : undefined;
@@ -88,13 +88,17 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
             );
           })}
         </div>
-        <div className="row g8 wrap">
+        {/* Phones: one compact picker showing the version in view (cut-off tabs read as clutter, 2026-11-21). */}
+        <select className="input vw-vsel" aria-label={t('req.versions')} value={current?.id ?? ''} onChange={(e) => { onPick(e.target.value); onFile(0); }}>
+          {versions.map((v) => { const st = state(v); return <option key={v.id} value={v.id}>{`v${v.n}${date(v) ? ` · ${date(v)}` : ''}${st ? ` · ${t(`vs.${st}`)}` : ''}`}</option>; })}
+        </select>
+        <div className="vw-acts">
           {count > 1 && <span className="vw-count" aria-live="polite">{t('vw.counter', { i: fileIndex + 1, n: count })}</span>}
-          {kind === 'image' && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)}>{t('req.markOnPiece')}</button>}
-          {kind === 'video' && <button className="btn btn-ghost btn-sm" onClick={markMoment}>{t('vm.commentHere')}</button>}
-          {versions.length > 1 && (kind === 'image' || kind === 'video') && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare}>{t('req.compare')}</button>}
+          {kind === 'image' && <button data-tour="review-mark" className="btn btn-ghost btn-sm" aria-pressed={marking} style={marking ? { background: 'var(--hielo)' } : undefined} onClick={() => setMarking((m) => !m)} aria-label={t('req.markOnPiece')} title={t('req.markOnPiece')}><Icon name="pencil" size={16} /><span className="vw-lbl">{t('req.markOnPiece')}</span></button>}
+          {kind === 'video' && <button className="btn btn-ghost btn-sm" onClick={markMoment} aria-label={t('vm.commentHere')} title={t('vm.commentHere')}><Icon name="pencil" size={16} /><span className="vw-lbl">{t('vm.commentHere')}</span></button>}
+          {versions.length > 1 && (kind === 'image' || kind === 'video') && <button data-tour="review-compare" className="btn btn-ghost btn-sm" onClick={onCompare} aria-label={t('req.compare')} title={t('req.compare')}><Icon name="grid" size={16} /><span className="vw-lbl">{t('req.compare')}</span></button>}
           {current && file && (count > 1 ? (
-            <Popover align="right" className="btn btn-ghost btn-sm" label={<><Icon name="download" />{t('common.download')}<Icon name="chevronDown" size={14} /></>}>
+            <Popover align="right" className="btn btn-ghost btn-sm" label={<><Icon name="download" /><span className="vw-lbl">{t('common.download')}</span><Icon name="chevronDown" size={14} /></>}>
               {(close) => (
                 <div className="col g8">
                   <button className="btn btn-secondary btn-sm" onClick={() => { close(); void getOne(); }}>{t('vw.thisFile')}</button>
@@ -102,10 +106,10 @@ export function VersionViewer({ brandId, requestId, versions, current, onPick, f
                 </div>
               )}
             </Popover>
-          ) : <button className="btn btn-ghost btn-sm" onClick={getOne}><Icon name="download" />{t('common.download')}</button>)}
+          ) : <button className="btn btn-ghost btn-sm" onClick={getOne} aria-label={t('common.download')} title={t('common.download')}><Icon name="download" /><span className="vw-lbl">{t('common.download')}</span></button>)}
         </div>
       </div>
-      <div className="vw-stage flex min-h-[26.25rem] flex-1 items-center justify-center p-4 sm:px-16 sm:py-7"
+      <div className="vw-stage flex min-h-[12rem] flex-1 items-center justify-center p-3 sm:min-h-[26.25rem] sm:px-16 sm:py-7"
         onTouchStart={(e) => { swipe.current = marking ? null : e.touches[0]!.clientX; }}
         onTouchEnd={(e) => { if (swipe.current === null) return; const dx = e.changedTouches[0]!.clientX - swipe.current; swipe.current = null; if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1); }}>
         {count > 1 && <button className="vw-arrow is-prev" aria-label={t('vw.prev')} disabled={fileIndex === 0} onClick={() => go(-1)}><Icon name="arrowLeft" size={18} /></button>}

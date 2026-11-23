@@ -45,6 +45,8 @@ export function TutorialShelf({ list }: { list: Lesson[] }) {
 export function HowItWorks() {
   const { pathname } = useLocation();
   if (HEADER_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return null;
+  // A request on a phone keeps it under its «⋯» menu, so the piece comes up sooner.
+  if (/^\/requests\/[^/]+/.test(pathname)) return <div className="hidden sm:block"><HowLink row /></div>;
   return <HowLink row />;
 }
 /** Pages that carry their own header (PageHeader), with this link inside it. */
