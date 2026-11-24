@@ -20,6 +20,7 @@ import { CapabilitiesMenu } from './CapabilitiesMenu';
 import { canVoice, useVoiceMode } from './useVoiceMode';
 import { streamChat } from './streamChat';
 import { CanDo } from './CanDo';
+import { useKeyboardFit } from './useKeyboardFit';
 import { markStep } from './firstSteps';
 import { useChatTour } from './useChatTour';
 import type { AttachedFile } from '../requests/types';
@@ -102,6 +103,7 @@ export function HelpChat() {
   }, [setOpen]);
   const shown = !!current && !pathname.startsWith('/ask');
   const docked = open && desk && shown;
+  useKeyboardFit(open && !desk);
   const lastMsg = s.msgs[s.msgs.length - 1];
   const voice = useVoiceMode(lang, lastMsg?.role === 'assistant' && !lastMsg.error ? { key: `${s.chatId}:${s.msgs.length}`, text: lastMsg.content } : null, open);
   useEffect(() => {
