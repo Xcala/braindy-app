@@ -20,6 +20,7 @@ import { HelpChat } from '../help/HelpChat';
 import { IdeasPanel } from '../wishes/IdeasPanel';
 import { AlertsInvite } from '../pwa/AlertsInvite';
 import { AssistantIntro } from '../help/AssistantIntro';
+import { usePageViews } from '../lib/usage';
 import './shell.css';
 
 export function AppShell() {
@@ -88,6 +89,7 @@ export function AppShell() {
 function SectionGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { ready, can } = useMySections();
+  usePageViews(pathname);
   if (ready && !can(sectionOfPath(pathname))) return <Navigate to="/home" replace />;
   return <>{children}</>;
 }
