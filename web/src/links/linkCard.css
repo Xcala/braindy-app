@@ -1,0 +1,6 @@
+/* My apps card (UX #12): a lower cover; without a screenshot, a short neutral strip with the domain. */
+.lcard .cover{border:0;width:100%;padding:0;cursor:pointer;color:var(--graphite)}
+.lcard .cover.lc-shot{height:8.5rem;background:var(--col)}
+.lcard .cover.lc-strip{height:2.75rem;background:var(--col);border-bottom:1px solid var(--line)}
+.lcard .body{gap:0.625rem}
+.lcard .lc-actions{margin-top:0.25rem}
