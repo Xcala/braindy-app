@@ -48,3 +48,9 @@ html[data-theme="dark"].help-docked .sbar-ai { background: #231A3D; }
 /* The logo goes home, like «Inicio». */
 .sbar-home { display: flex; align-items: center; border-radius: 0.5rem; }
 .sbar-home:focus-visible { outline: 2px solid var(--azul, #2A7FFF); outline-offset: 3px; }
+
+/* Admin (#9): Work · Sales · Team. 2 px between rows of a group, 12 px between groups; the grey label starts on the text line. */
+.sbar-main.is-grouped { gap: 0.75rem; }
+.sbar-group { display: flex; flex-direction: column; gap: 2px; }
+.sbar-glabel { margin: 0; padding: 0 0.75rem 0.25rem 2.5rem; }
+.sbar.is-slim .sbar-group + .sbar-group { padding-top: 0.75rem; border-top: 1px solid var(--line); }
