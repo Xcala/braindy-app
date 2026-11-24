@@ -15,6 +15,7 @@ export const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/billing', label: 'nav.billing' },
   { to: '/admin/costs', label: 'cost.nav' },
   { to: '/admin/ai', label: 'aih.nav' },
+  { to: '/admin/usage', label: 'pv.nav' },
   { to: '/admin/whatsapp', label: 'waa.nav' },
   { to: '/admin/criterio', label: 'cra.nav' },
 ];

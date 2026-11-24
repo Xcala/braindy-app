@@ -462,6 +462,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ---------- first-party usage analytics: daily aggregate counters (no uid, no events). Admin reads, backend writes ----------
+    match /pageViews/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
     match /{path=**}/requests/{requestId} {
       allow read: if isAdmin();
