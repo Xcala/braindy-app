@@ -57,21 +57,31 @@ function useUsage() {
   }, [days, error]);
 }
 
+/** Section keys as people say them (the counts store the short key). */
+const SECTION_NAME: Record<string, [string, string]> = {
+  home: ['Inicio', 'Home'], brand: ['Mi marca', 'My brand'], requests: ['Pedidos', 'Requests'], files: ['Archivos y entregas', 'Files and deliveries'],
+  apps: ['Sitios y apps', 'Sites and apps'], research: ['Investigación', 'Research'], results: ['Resultados', 'Results'], learn: ['Aprende', 'Learn'],
+  accesses: ['Accesos', 'Accesses'], billing: ['Plan y pagos', 'Plan and billing'], admin: ['Admin', 'Admin'], account: ['Cuenta', 'Account'],
+  settings: ['Ajustes', 'Settings'], resources: ['Recursos', 'Resources'], wishlist: ['Wishlist', 'Wishlist'], onboarding: ['Onboarding', 'Onboarding'],
+  team: ['Equipo', 'Team'], alerts: ['Avisos', 'Alerts'], open: ['Archivo abierto', 'Opened file'], conectar: ['Conectar', 'Connect'], ask: ['Pedir', 'Ask'], other: ['Otras', 'Other'],
+};
+
 /** Admin · Usage: visits per section and page, phone vs desktop and client vs admin (first-party counts). */
 export function AdminUsage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { brands } = useBrands();
+  const name = (key: string, bySection: boolean) => (bySection ? SECTION_NAME[key]?.[lang === 'es' ? 0 : 1] ?? key : key);
   const { data: u, error } = useUsage();
   const pct = (a: number, b: number) => `${b ? Math.round((a / b) * 100) : 0}%`;
 
-  const table = (rows: Row[]) => (
+  const table = (rows: Row[], bySection = false) => (
     <div className="table overflow-x-auto">
       <div className="trow head label min-w-[36rem]" style={{ gridTemplateColumns: COLS }}>
         <span>{t('pv.c.what')}</span><span>{t('pv.c.total')}</span><span>{t('pv.c.cp')}</span><span>{t('pv.c.cd')}</span><span>{t('pv.c.ap')}</span><span>{t('pv.c.ad')}</span>
       </div>
       {rows.map((r) => (
         <div key={r.key} className="trow min-w-[36rem] t-sm" style={{ gridTemplateColumns: COLS }}>
-          <span className="w7 truncate" title={r.key}>{r.key}</span><span className="w7">{r.total}</span>
+          <span className="w7 truncate" title={r.key}>{name(r.key, bySection)}</span><span className="w7">{r.total}</span>
           <span>{r.cp}</span><span>{r.cd}</span><span className="t-mute">{r.ap}</span><span className="t-mute">{r.ad}</span>
         </div>
       ))}
@@ -91,7 +101,7 @@ export function AdminUsage() {
             <div className="card col g4"><span className="t-sm t-mute w7">{t('pv.phone')}</span><span className="h1">{pct(u.total.cp + u.total.ap, u.total.total)}</span></div>
             <div className="card col g4"><span className="t-sm t-mute w7">{t('pv.days')}</span><span className="h1">{u.days}</span></div>
           </div>
-          <section className="col g12"><h2 className="h3">{t('pv.bySection')}</h2>{table(u.bySection)}</section>
+          <section className="col g12"><h2 className="h3">{t('pv.bySection')}</h2>{table(u.bySection, true)}</section>
           <section className="col g12"><h2 className="h3">{t('pv.byPage')}</h2>{table(u.byPage)}</section>
           <section className="card col g8" aria-label={t('pv.byBrand')}>
             <h2 className="h3">{t('pv.byBrand')}</h2>

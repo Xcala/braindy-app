@@ -51,7 +51,7 @@ function BrandCard({ brand, depth, h, onManage, onToggle }: { brand: Brand; dept
           <span className="bcard-name">{brand.name}</span>
           <span className="row g8 wrap t-xs t-mute">
             {!on ? <span>{t(`status.${brand.status}`)}</span>
-              : h?.late ? <span className="chip bcard-late">{t('brands.lateN', { n: h.late })}</span>
+              : h?.late ? <span className="chip bcard-late">{h.late === 1 ? t('brands.lateOne') : t('brands.lateN', { n: h.late })}</span>
               : h?.open ? <span className="chip c-active">{t('brands.ok')}</span>
               : <span className="chip chip-plain">{t('brands.quiet')}</span>}
             {meta ? <span>{meta}</span> : null}

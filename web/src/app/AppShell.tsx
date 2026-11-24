@@ -64,7 +64,7 @@ export function AppShell() {
             </>
           ) : (
             <>
-              <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
+              <span className="min-w-0 shrink md:min-w-[11rem]"><BrandMenu isAdmin={isAdmin} /></span>
               {/* Phones: the way back to admin lives in the brand menu and the account menu, so the brand keeps the room (2026-11-21). */}
               {isAdmin && <span className="hidden shrink-0 sm:inline-flex"><Link to="/admin/today" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
             </>

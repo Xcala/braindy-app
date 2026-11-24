@@ -112,7 +112,7 @@ function AdminGroups({ items, slim }: { items: Item[]; slim: boolean }) {
   return <>{groups.map((g) => (
     <div key={g.label ?? 'rest'} className="sbar-group" role="group" aria-label={g.label ? t(g.label) : undefined}>
       {g.label && !slim && <p className="label sbar-glabel">{t(g.label)}</p>}
-      {g.items.map((i) => <Link key={i.to} item={i} slim={slim} badge={i.to === '/admin/today' && late ? late : undefined} badgeLabel={t('anav.lateN', { n: String(late) })} />)}
+      {g.items.map((i) => <Link key={i.to} item={i} slim={slim} badge={i.to === '/admin/today' && late ? late : undefined} badgeLabel={late === 1 ? t('anav.lateOne') : t('anav.lateN', { n: String(late) })} />)}
     </div>
   ))}</>;
 }

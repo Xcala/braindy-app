@@ -7,6 +7,7 @@ export const menuEn = {
   'anav.g.sales': 'Sales',
   'anav.g.team': 'Team',
   'anav.lateN': '{n} overdue',
+  'anav.lateOne': '1 overdue',
   'sub.researchShort': 'Study',
 } as const;
 
@@ -18,5 +19,6 @@ export const menuEs: Record<keyof typeof menuEn, string> = {
   'anav.g.sales': 'Ventas',
   'anav.g.team': 'Equipo',
   'anav.lateN': '{n} atrasados',
+  'anav.lateOne': '1 atrasado',
   'sub.researchShort': 'Estudio',
 };
