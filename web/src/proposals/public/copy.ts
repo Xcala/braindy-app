@@ -39,7 +39,7 @@ const en = {
   sigCard: 'Nicolas · NickMark',
   opt1: 'Where', opt2: 'are you starting?', optSub: "Three ways in. You don't buy hours or tools: you get the work done. Every one includes your Brand Brain and is directed by NickMark. We report sales, not likes.",
   allBrains1: 'All four Brains work on every path.', allBrains2: 'The Researcher finds, the Marketer says it, the Creator designs, the Builder builds.',
-  recommended: 'Recommended', price: '[Price]',
+  recommended: 'Recommended', price: '[Price]', included: 'Included', notIncluded: 'Not included', trustedBy: 'Brands that trusted Nicolas',
   options: {
     launch: { num: '01 · For a new brand', name: 'Launch', lead: 'Your new brand, ready to sell.', groups: [['One project', ['Your strategy, decided', 'Your brand, ready to use', 'Your website, selling']]], per: 'one project', note: 'Then keep it moving with Continuity, if you want.', cta: 'Start with Launch' },
     transform: { num: '02 · For a brand that needs rebuilding', name: 'Transform', lead: 'Your brand, rebuilt and kept moving.', groups: [['First, the transformation', ['Your strategy, decided', 'Your brand, rebuilt', 'Your website, selling']], ['Then, every month', ['Your content of the month, published', 'Your website, always up to date', 'Your report: sales, not likes']]], per: 'per month, transformation included', note: 'Or pay the transformation as a project, then the monthly fee.', cta: 'Start with Transform' },
@@ -103,7 +103,7 @@ const es: PublicCopy = {
   sigCard: 'Nicolas · NicoMarca',
   opt1: '¿Por dónde', opt2: 'empiezas?', optSub: 'Tres caminos. No compras horas ni herramientas: recibes el trabajo hecho. Todos incluyen tu Brand Brain y los dirige NicoMarca. Reportamos ventas, no likes.',
   allBrains1: 'Los cuatro Brains trabajan en cada camino.', allBrains2: 'El Researcher encuentra, el Marketer lo dice, el Creator diseña, el Builder construye.',
-  recommended: 'Recomendado', price: '[Precio]',
+  recommended: 'Recomendado', price: '[Precio]', included: 'Incluido', notIncluded: 'No incluido', trustedBy: 'Marcas que confiaron en Nicolas',
   options: {
     launch: { num: '01 · Para una marca nueva', name: 'Launch', lead: 'Tu marca nueva, lista para vender.', groups: [['Un proyecto', ['Tu estrategia, decidida', 'Tu marca, lista para usar', 'Tu web, vendiendo']]], per: 'un proyecto', note: 'Después, si quieres, la mantienes en movimiento con Continuity.', cta: 'Empezar con Launch' },
     transform: { num: '02 · Para una marca que hay que reconstruir', name: 'Transform', lead: 'Tu marca, reconstruida y en movimiento.', groups: [['Primero, la transformación', ['Tu estrategia, decidida', 'Tu marca, reconstruida', 'Tu web, vendiendo']], ['Después, cada mes', ['Tu contenido del mes, publicado', 'Tu web, siempre al día', 'Tu reporte: ventas, no likes']]], per: 'al mes, transformación incluida', note: 'O pagas la transformación como proyecto y luego el fee mensual.', cta: 'Empezar con Transform' },

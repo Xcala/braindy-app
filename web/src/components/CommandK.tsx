@@ -14,6 +14,8 @@ import type { StringKey } from '../i18n/strings';
 import { folderVisible } from '../assets/folderRules';
 import { useFileSearch, useSearchSources } from './useSearchSources';
 import { useMySections } from '../team/sections';
+import { CommandKEmpty } from './CommandKEmpty';
+import { suggestQuery } from './searchSuggest';
 
 type Item = { id: string; group: StringKey; icon?: React.ReactNode; label: string; hint?: string; run: () => void; brand?: { name: string; logoUrl: string | null }; swatch?: string; path?: string };
 
@@ -96,6 +98,8 @@ function Palette({ onClose }: { onClose: () => void }) {
     shown.splice(24);
     shown.push(...files);
   }
+  const empty = !!needle && shown.length === 0 && !fileHits.loading;
+  const suggestion = useMemo(() => (empty ? suggestQuery(q, items.filter((i) => i.group !== 'search.recent').map((i) => i.label)) : null), [empty, q, items]);
   useEffect(() => setActive(0), [q]);
 
   const onKey = (e: React.KeyboardEvent) => {
@@ -115,7 +119,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             aria-label={t('search.title')} role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-activedescendant={shown[active]?.id} />
         </div>
         <div id="cmdk-list" role="listbox" className="col overflow-y-auto" style={{ maxHeight: '60vh', marginTop: '0.375rem' }}>
-          {shown.length === 0 && !fileHits.loading && <p className="t-sm t-mute" style={{ padding: '0.75rem' }}>{t('search.noResults')}</p>}
+          {empty && <CommandKEmpty query={q} suggestion={suggestion} onSuggest={setQ} onAsk={can('requests') ? () => { navigate('/requests?new=1'); onClose(); } : undefined} onFiles={can('files') ? () => { navigate('/assets'); onClose(); } : undefined} />}
           {shown.map((i, n) => {
             const header = i.group !== lastGroup ? <p className="label" style={{ padding: '0.5rem 0.75rem 0.25rem' }}>{t(i.group)}</p> : null;
             lastGroup = i.group;

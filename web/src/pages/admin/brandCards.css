@@ -1,0 +1,7 @@
+/* Admin · Brands on a phone (UX #10): one light card per brand; tokens only, so dark mode follows. */
+.bcard{display:flex;align-items:center;gap:0.75rem;background:var(--white);border:1px solid var(--line);border-radius:var(--r-md);padding:0.75rem 0.875rem}
+.bcard.is-off{opacity:.7}
+.bcard-main{display:flex;align-items:center;gap:0.75rem;flex:1;min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.bcard-mark{flex:none;display:inline-flex}
+.bcard-name{font-weight:700;line-height:1.25rem;overflow-wrap:anywhere}
+.bcard-late{background:var(--danger-bg);color:var(--danger)}
