@@ -5,7 +5,7 @@ import { Icon, type IconName } from '../components/Icon';
 import type { FileItem } from './fileKinds';
 import type { FileActions } from './useFileActions';
 
-type Item = [IconName, string, () => void, boolean?];
+export type Item = [IconName, string, () => void, boolean?];
 
 /** The ⋯ menu of one file: NickMark renames, copies a 7-day link, moves and trashes; a client only renames. */
 export function FileMenu({ f, actions, style, admin = true }: { f: FileItem; actions: FileActions; style?: CSSProperties; admin?: boolean }) {
@@ -28,7 +28,7 @@ export function FolderMenu({ path, actions, canRename }: { path: string; actions
   ]} />;
 }
 
-function MoreMenu({ label, items, style }: { label: string; items: Item[]; style?: CSSProperties }) {
+export function MoreMenu({ label, items, style }: { label: string; items: Item[]; style?: CSSProperties }) {
   const { t } = useI18n();
   // In a portal on <body>, fixed to the viewport: a tile's clipped corners or an animated page cannot cut or shift it.
   const [open, setOpen] = useState<{ top?: number; bottom?: number; right: number } | null>(null);

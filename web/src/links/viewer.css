@@ -152,3 +152,15 @@ button.spanel-pct { appearance: none; border: 0; background: none; padding: 0; c
   html.help-docked .lview-ai-rail { display: none; }
   html[data-theme="dark"] .lview-ai-rail { background: #231A3D; color: #C9B5FF; }
 }
+
+/* Phones (2026-11-24, UX #1): one top row — back arrow, site name, ↗ — and the modes under it. «Volver» already closes, so no ✕; the assistant lives in its own button. */
+@media (max-width: 767px) {
+  .lview-bar { gap: 0.5rem; padding-left: 0.75rem; padding-right: 0.75rem; }
+  .lview-back { width: 2.25rem; padding: 0; justify-content: center; }
+  .lview-back span { display: none; }
+  .lview-bar > .col { flex: 1 1 0; }
+  .lview-nt { width: 2.25rem; padding: 0; justify-content: center; }
+  .lview-nt-label { display: none; }
+  .lview-bar .lview-x, .lview-bar .lview-ai { display: none; }
+  .lview-bar .lview-modes { order: 10; }
+}

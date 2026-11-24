@@ -6,7 +6,9 @@ import { Icon } from '../components/Icon';
 import { LinkViewer } from './LinkViewer';
 import { LinkAdjust } from './LinkAdjust';
 import { useSiteChanges } from './SiteChanges';
-import { addLink, isHttps, removeLink, saveLink, type BrandLink, type LinkInput, type LinkKind, type LinkSection } from './useBrandLinks';
+import { MoreMenu } from '../assets/FileMenu';
+import { useToast } from '../components/Toaster';
+import { addLink, isHttps, removeLink, restoreLink, saveLink, type BrandLink, type LinkInput, type LinkKind, type LinkSection } from './useBrandLinks';
 
 const COVERS: Record<LinkKind, string> = {
   web: 'radial-gradient(120% 90% at 85% 0%, rgba(42,127,255,.9), transparent 55%), radial-gradient(90% 80% at 0% 100%, rgba(6,182,212,.6), transparent 60%), #1F3596',
@@ -34,6 +36,12 @@ export function LinkGrid({ brandId, section, links, adding, onAdding }: {
   const changes = useSiteChanges(brandId);
   useEffect(() => { if (adding) setEditing('new'); }, [adding]);
   const close = () => { setEditing(null); onAdding?.(false); };
+  // Delete at once, with Undo in the toast (the link comes back with the same id).
+  const toast = useToast();
+  const remove = async (l: BrandLink) => {
+    await removeLink(brandId, l.id);
+    toast({ text: t('links.deleted', { title: l.title }), undo: () => restoreLink(brandId, l) });
+  };
 
   return (
     <div className="col g16">
@@ -64,10 +72,10 @@ export function LinkGrid({ brandId, section, links, adding, onAdding }: {
                   <a href={l.url} target="_blank" rel="noreferrer" className="t-sm" style={{ color: 'var(--graphite)' }} title={t('lv.newTab')} aria-label={`${t('lv.newTab')}: ${l.title}`}>↗</a>
                 </span>
                 {isAdmin && (
-                  <span className="row g8">
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(l)}>{t('links.edit')}</button>
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => removeLink(brandId, l.id)}>{t('links.delete')}</button>
-                  </span>
+                  <MoreMenu label={l.title} items={[
+                    ['pencil', t('links.edit'), () => setEditing(l)],
+                    ['trash', t('links.delete'), () => remove(l), true],
+                  ]} />
                 )}
               </div>
             </div>

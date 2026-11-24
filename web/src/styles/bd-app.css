@@ -637,8 +637,9 @@ html[data-theme="dark"] .tab{color:var(--graphite)} html[data-theme="dark"] .tab
 @media (prefers-reduced-motion:reduce){.acct-sheet{animation:none}}
 .talk-ico.is-cal{background:var(--hielo);color:var(--azul)}
 /* Website adjustments (Mis apps): Builder's craft, signed by NickMark */
-.sx{--sx-delivered:var(--success);--sx-in_progress:var(--builder);--sx-decision:var(--marketer);--sx-client:var(--warning);--sx-discarded:var(--graphite)}
-.sx .is-delivered{--c:var(--sx-delivered)}.sx .is-in_progress{--c:var(--sx-in_progress)}.sx .is-decision{--c:var(--sx-decision)}.sx .is-client{--c:#F5B301}.sx .is-discarded{--c:var(--sx-discarded)}
+/* Status colors are their own palette, never a Brain color (2026-11-24, decision 2): green done, blue in progress, amber waiting on someone, grey discarded. --t is the readable text tone for chips. */
+.sx{--sx-delivered:var(--success);--sx-in_progress:var(--azul);--sx-decision:#B07A00;--sx-client:#F5B301;--sx-discarded:var(--graphite)}
+.sx .is-delivered{--c:var(--sx-delivered)}.sx .is-in_progress{--c:var(--sx-in_progress)}.sx .is-decision{--c:var(--sx-decision);--t:#7A4F00}.sx .is-client{--c:var(--sx-client);--t:#7A4F00}.sx .is-discarded{--c:var(--sx-discarded)}
 .sx-head{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:1.125rem;padding:1.5rem;border-radius:var(--r-frame);background:radial-gradient(120% 140% at 100% 0%,var(--builder-bg),transparent 60%),var(--white);border:1px solid var(--line)}
 .sx-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
 .sx-by{display:inline-flex;align-items:center;gap:0.5rem;font:700 0.75rem/1 var(--f-text);letter-spacing:.06em;text-transform:uppercase;color:var(--builder-ink)}
@@ -671,7 +672,7 @@ html[data-theme="dark"] .tab{color:var(--graphite)} html[data-theme="dark"] .tab
 .sx-item.is-discarded{opacity:.62}
 .sx-itop{display:flex;align-items:center;justify-content:space-between;gap:0.625rem}
 .sx-key{font:700 0.75rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;padding:0.375rem 0.5625rem;border-radius:0.5rem;background:var(--white);color:var(--graphite);border:1px solid var(--line)}
-.sx-status{display:inline-flex;align-items:center;gap:0.375rem;height:1.875rem;padding:0 0.75rem;border-radius:999px;border:0;font:700 0.75rem/1 var(--f-text);color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent)}
+.sx-status{display:inline-flex;align-items:center;gap:0.375rem;height:1.875rem;padding:0 0.75rem;border-radius:999px;border:0;font:700 0.75rem/1 var(--f-text);color:var(--t,var(--c));background:color-mix(in srgb,var(--c) 13%,transparent)}
 select.sx-status{appearance:none;-webkit-appearance:none;padding-right:1.875rem;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C6375' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 0.625rem center;background-size:0.875rem}
 select.sx-status option{color:var(--ink);background:var(--white)}
 .sx-ititle{margin:0;font:800 1.1875rem/1.25 var(--f-display);color:var(--ink)}
@@ -816,3 +817,5 @@ html[data-theme="dark"] img[src="/brand/braindy-logo.svg"]{content:url(/brand/br
 .quota-link:disabled{opacity:.6;cursor:default}
 html[data-theme="dark"] .quota{background:var(--white)!important;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){.quota-bar>span{transition:none}}
+
+html[data-theme="dark"] .sx .is-decision,html[data-theme="dark"] .sx .is-client{--t:#F5C04A}

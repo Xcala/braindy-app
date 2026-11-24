@@ -4,7 +4,6 @@ import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { NAV_ICON } from './navIcons';
-import { MoreButton } from './MoreSheet';
 
 const ITEMS: Array<{ to: string; label: StringKey; icon: React.ReactNode; fab?: boolean }> = [
   { to: '/home', label: 'nav.homeShort', icon: NAV_ICON['/home'] },
@@ -29,7 +28,8 @@ export function BottomNav() {
           {t(i.label)}
         </NavLink>
       ))}
-      <MoreButton />
+      {/* «More» opens the same sheet as your photo (UX #40): one list for everything that is not daily. */}
+      <button type="button" aria-haspopup="dialog" onClick={() => window.dispatchEvent(new Event('bd:account'))}>{NAV_ICON.more}{t('nav.more')}</button>
     </nav></div>
   );
 }
