@@ -51,6 +51,9 @@ const INTRO = 'bd-help-intro';
 const DOCK = 'bd-help-dock';
 const DESK = '(min-width: 768px)';
 const dockSaved = () => { try { return window.matchMedia(DESK).matches && localStorage.getItem(DOCK) === '1'; } catch { return false; } };
+// Phones (2026-11-23): the chat opens with the app, unless it was closed in this visit or the link goes to one request.
+const SHUT = 'bd-help-phone-shut';
+const phoneStart = () => { try { return !window.matchMedia(DESK).matches && sessionStorage.getItem(SHUT) !== '1' && !/^\/requests\/[^/]+/.test(location.pathname); } catch { return false; } };
 const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
 
 /** The AI assistant: a chat that knows how Braindy works and hands off to Nick when it can't help. On computers it docks as a
@@ -61,11 +64,13 @@ export function HelpChat() {
   const { current } = useBrands();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const [open, setOpenState] = useState(dockSaved);
+  const [open, setOpenState] = useState(() => dockSaved() || phoneStart());
+  // Opened by itself on a phone: no keyboard until the person taps the box.
+  const quiet = useRef(open && !window.matchMedia(DESK).matches);
   const [desk, setDesk] = useState(() => window.matchMedia(DESK).matches);
   const setOpen = useCallback((v: boolean | ((o: boolean) => boolean)) => setOpenState((o) => {
     const next = typeof v === 'function' ? v(o) : v;
-    try { if (window.matchMedia(DESK).matches) localStorage.setItem(DOCK, next ? '1' : '0'); } catch { /* private mode */ }
+    try { if (window.matchMedia(DESK).matches) localStorage.setItem(DOCK, next ? '1' : '0'); else sessionStorage.setItem(SHUT, next ? '0' : '1'); } catch { /* private mode */ }
     return next;
   }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
@@ -123,7 +128,7 @@ export function HelpChat() {
     navigate({ pathname, search: rest.toString() ? `?${rest}` : '' }, { replace: true });
   }, [search, pathname, navigate, setOpen, t]);
   useEffect(() => { if (pending && brandId && !busy && (!pending.brand || pending.brand === brandId)) { askRef.current(pending.q, [], true); setPending(null); } }, [pending, brandId, busy]);
-  useEffect(() => { if (open) input.current?.focus(); }, [open]);
+  useEffect(() => { if (open && !quiet.current) input.current?.focus(); quiet.current = false; }, [open]);
   useChatTour(open && !hist && s.msgs.length === 0 && !!current);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [s.msgs.length, busy, open, live]);
   useEffect(() => {
