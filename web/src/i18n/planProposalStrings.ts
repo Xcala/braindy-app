@@ -25,6 +25,14 @@ export const planProposalEn = {
   'pp.uploading': 'Uploading {n}%',
   'pp.error': 'It could not be saved. Try again.',
   'pp.saved': 'Proposal saved',
+  'pp.for': 'Proposal for {brand}',
+  'pp.removed': 'Proposal removed',
+  'pp.none': 'No proposal yet. Add the one you made for this brand.',
+  'pe.open': 'Edit plan',
+  'pe.title': 'Edit plan',
+  'pe.sub': 'Only you see this. The client sees the page behind it.',
+  'pe.proposal': 'Proposal',
+  'plan.preparing': 'Your plan is being prepared. What you contracted, the contract and how it moves will show up here.',
 } as const;
 
 export const planProposalEs: Record<keyof typeof planProposalEn, string> = {
@@ -53,4 +61,12 @@ export const planProposalEs: Record<keyof typeof planProposalEn, string> = {
   'pp.uploading': 'Subiendo {n}%',
   'pp.error': 'No se pudo guardar. Intenta de nuevo.',
   'pp.saved': 'Propuesta guardada',
+  'pp.for': 'Propuesta para {brand}',
+  'pp.removed': 'Propuesta quitada',
+  'pp.none': 'Todavía no hay propuesta. Agrega la que le hiciste a esta marca.',
+  'pe.open': 'Editar plan',
+  'pe.title': 'Editar plan',
+  'pe.sub': 'Solo tú ves esto. El cliente ve la página de atrás.',
+  'pe.proposal': 'Propuesta',
+  'plan.preparing': 'Tu plan se está preparando. Aquí verás lo que contrataste, el contrato y cómo avanza.',
 };

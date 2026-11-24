@@ -42,3 +42,12 @@
 .seg.seg-scroll[data-more="left"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); }
 .seg.seg-scroll[data-more="both"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); }
 .seg.seg-fit a > span, .seg.seg-fit button > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A choice of 2–3 long options: side by side when they fit, stacked when they don't (Mi plan › proposal source, 2026-11-24). */
+.seg.seg-stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); border-radius: 1.25rem; }
+.seg.seg-stack button { min-width: 0; white-space: normal; text-align: center; }
+/* Mi plan › «Edit plan»: a side panel from the right; full screen on a phone (2026-11-24). */
+.plan-editor { width: min(38rem, 100%); height: 100%; overflow-y: auto; background: var(--white); box-shadow: var(--sh-3); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; animation: bd-slide-in var(--dur) var(--ease-out) both; }
+@media (min-width: 640px) { .plan-editor { padding: 2rem; border-radius: var(--r-frame) 0 0 var(--r-frame); } }
+.plan-editor-rule { border: 0; border-top: 1px solid var(--border); margin: 0; }
+@keyframes bd-slide-in { from { transform: translateX(2rem); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .plan-editor { animation: none; } }

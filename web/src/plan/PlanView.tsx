@@ -29,6 +29,8 @@ export interface PlanViewProps {
   payments?: ReactNode;
   /** Third-party apps and their access: the Apps tab. */
   apps?: ReactNode;
+  /** Admin: the «Edit plan» button, top right of the summary header. */
+  action?: ReactNode;
   /** A fold to open on arrival (?open=schedule|apps). */
   openFold?: string;
   brandName: string;
@@ -44,26 +46,30 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, action, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
   // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
   // Every tab other than the summary gets a plain title with its own name (not «Mi plan» above the apps).
-  const head = tab !== 'summary' || (!plan && !schedule) ? (
+  // One summary header with or without a plan (2026-11-24); without one it says the plan is being prepared.
+  const head = tab !== 'summary' ? (
     <header className="col g4">
       <p className="label" style={{ margin: 0 }}>{brandName}</p>
       {/* Apps: the list's own heading («Las apps con las que opera tu marca») is the title. */}
-      {tab !== 'apps' && <h1 className="h1">{t(tab === 'summary' ? 'plan.title' : `plan.tab.${tab}`)}</h1>}
+      {tab !== 'apps' && <h1 className="h1">{t(`plan.tab.${tab}`)}</h1>}
     </header>
   ) : null;
   return (
     <div className="col g32">
       {head ?? <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
-        <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
+        <div className="row between g12" style={{ alignItems: 'center' }}>
+          <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
+          {action}
+        </div>
         <h1 className="h1" style={{ color: '#fff' }}><span className="w3">{t('plan.title')}{plan ? ' · ' : ''}</span>{plan && <span className="w9">{plan.title}</span>}</h1>
-        {plan?.summary && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan.summary}</p>}
+        {(plan ? plan.summary : t('plan.preparing')) && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan ? plan.summary : t('plan.preparing')}</p>}
         <div className="row g24" style={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
           {(plan?.start || plan?.end) && (
             <div className="col"><span className="label" style={{ color: '#8FA0FF' }}>{t('plan.dates')}</span><span className="w7">{fmt(plan.start, lang)}{plan.end ? ` → ${fmt(plan.end, lang)}` : ''}</span></div>
