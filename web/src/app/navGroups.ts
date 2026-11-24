@@ -6,7 +6,8 @@ import type { StringKey } from '../i18n/strings';
  * My brand also holds what used to be Deliveries. Essence, Brain and Research sit in the same row (2026-11-16; before, under a «Strategy» tab).
  * Routes and section permissions stay the same, so old links keep working.
  */
-export type NavPage = { to: string; label: StringKey; tab?: StringKey };
+/** `short`: a shorter tab label for phones (audit #38), so the row fits instead of cutting the last tab. */
+export type NavPage = { to: string; label: StringKey; tab?: StringKey; short?: StringKey };
 export type NavGroup = { label: StringKey; short: StringKey; pages: NavPage[] };
 
 export const NAV: NavGroup[] = [
@@ -20,7 +21,7 @@ export const NAV: NavGroup[] = [
     { to: '/apps', label: 'sub.sites' },
     { to: '/brand', label: 'sub.essence' },
     { to: '/brand/brain', label: 'sub.brain' },
-    { to: '/research', label: 'sub.research' },
+    { to: '/research', label: 'sub.research', short: 'sub.researchShort' },
   ] },
   // Results shows only on brands with resultsOn. The social calendar moved to My brand, third tab (2026-11-17).
   { label: 'nav.report', short: 'nav.reportShort', pages: [{ to: '/report', label: 'sub.stats' }] },
