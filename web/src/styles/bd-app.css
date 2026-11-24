@@ -757,7 +757,7 @@ html[data-theme="dark"] .trk-next{background:#22305A}
 .aih-days{display:flex;align-items:flex-end;gap:0.375rem;height:8.75rem;overflow-x:auto;padding-bottom:2px}
 .aih-day{flex:1 0 1.125rem;max-width:2.5rem;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:0.375rem}
 .aih-bar{width:100%;min-height:0.25rem;border-radius:0.25rem 0.25rem 0 0;background:var(--azul,#2F4DE0);display:flex;flex-direction:column;overflow:hidden}
-.aih-bar i{display:block;background:#C0362C;border-bottom:2px solid var(--white,#fff)}
+.aih-bar i{display:block;background:var(--danger);border-bottom:2px solid var(--white,#fff)}
 /* Phones: «More» tab and its list of every page. */
 .bnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.25rem;font:600 0.6875rem/0.875rem var(--f-text);color:var(--graphite);min-height:3rem;border-radius:0.75rem;background:none;border:0;padding:0;cursor:pointer}
 .bnav button.is-active{color:var(--azul)}

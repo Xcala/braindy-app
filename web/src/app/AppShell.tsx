@@ -38,6 +38,12 @@ export function AppShell() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // UX #27: a short fade-and-rise when the page changes, so the move reads as one place to the next (none with reduced motion).
+  const main = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    main.current?.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }, [pathname]);
   // Admin is its own space (design 24): never mixed with the client tabs.
   const adminSpace = isAdmin && pathname.startsWith('/admin');
 
@@ -70,7 +76,7 @@ export function AppShell() {
           <AccountMenu />
         </header>
         <div className="shell-card">
-        <main className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
+        <main ref={main} className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
           <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}

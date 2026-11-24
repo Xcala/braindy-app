@@ -1,3 +1,4 @@
+import { Button } from './Button';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -36,8 +37,8 @@ export function ConfirmDialog({ title, children, confirmLabel, danger, busy, onC
         </div>
         {children && <div className="t-mute">{children}</div>}
         <div className="row g12 wrap" style={{ justifyContent: 'flex-end' }}>
-          <button type="button" className="btn btn-secondary" onClick={onCancel} data-autofocus>{t('common.cancel')}</button>
-          <button type="button" className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} onClick={onConfirm} disabled={busy}>{confirmLabel}</button>
+          <Button onClick={onCancel} data-autofocus>{t('common.cancel')}</Button>
+          <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm} disabled={busy}>{confirmLabel}</Button>
         </div>
       </div>
     </div>
