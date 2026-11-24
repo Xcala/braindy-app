@@ -51,6 +51,7 @@ import { publicShare, shareLinks } from './shareLinks.js';
 import { accessLinks, publicAccess } from './accessLinks.js';
 import { push } from './push/routes.js';
 import { events } from './push/events.js';
+import { pageViews } from './pageViews.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -179,6 +180,8 @@ app.route('/v1', help);
 app.route('/v1', reminders);
 app.route('/v1', resources);
 app.route('/v1', push);
+app.use('/v1/usage', rateLimit('usage', 30, 60_000));
+app.route('/v1', pageViews);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));
