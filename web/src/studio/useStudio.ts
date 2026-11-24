@@ -18,7 +18,7 @@ const byDue = (a: WorkItem, b: WorkItem) => String(a.dueDate ?? '9999').localeCo
 
 /** What NickMark has to sign: plans to approve and versions he reviews before the client sees them. */
 export const needsSignature = (i: WorkItem) =>
-  i.stage === 'plan' || (i.approvalLevel === 'nicolas' && i.stage === 'work' && (i.versionCount ?? 0) > 0);
+  i.stage === 'plan' || !!i.held || (i.approvalLevel === 'nicolas' && i.stage === 'work' && (i.versionCount ?? 0) > 0);
 
 function useInbox() {
   const [notes, setNotes] = useState<InboxNote[]>([]);

@@ -18,6 +18,7 @@ import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
 import { CompareView } from '../requests/CompareView';
 import { AdminVersionPanel } from '../requests/AdminVersionPanel';
+import { EyeBanner } from '../requests/EyeBanner';
 import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
@@ -51,7 +52,7 @@ export function RequestDetail() {
   const [fileIndex, setFileIndex] = useState(0);
   const [seek, setSeek] = useState<{ t: number; n: number } | null>(null);
 
-  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); setFileIndex(0); },[r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setVersionId((isAdmin && r?.held?.versionId) || (r?.latestVersion ?? versions[versions.length - 1]?.id)); setFileIndex(0); },[r?.latestVersion, r?.held?.versionId, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTour('review', () => reviewSteps(lang), versions.length > 0, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
@@ -82,6 +83,7 @@ export function RequestDetail() {
       <CancelledBanner brandId={current.id} r={r} canUndo={mine} />
 
       {r.status === 'in_production' && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
+      {isAdmin && <EyeBanner brandId={current.id} r={r} onShow={setVersionId} />}
       {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (

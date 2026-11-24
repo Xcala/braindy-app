@@ -1,5 +1,6 @@
 // Endpoints that put the Brains to work. Admin: re-propose a plan, draft the monthly report, run the
 // competitor watch, see the task log. Owners and admin: analyze a group. Cron: weekly watch for every brand.
+import { pushLaneDigest } from '../connector/lanes.js';
 import { Hono } from 'hono';
 import { FieldValue } from 'firebase-admin/firestore';
 import { OAuth2Client } from 'google-auth-library';
@@ -87,4 +88,4 @@ cron.post('/weekly', async (c) => {
 });
 
 /** Daily: WhatsApp the brand the day before a request is due (once per due date). */
-cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()), hosting: await hostingDunning(), ...(await pushDueReminders()) }));
+cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()), hosting: await hostingDunning(), ...(await pushDueReminders()), ...(await pushLaneDigest().catch(() => ({ laneDigest: 0 }))) }));

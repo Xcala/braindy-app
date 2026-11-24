@@ -33,6 +33,8 @@ export interface BrandRequest {
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;
   latestVersion?: string;
+  /** A version uploaded by the team that waits for NickMark before the client sees it. */
+  held?: { versionId: string; why?: string; note?: string } | null;
   createdBy: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
