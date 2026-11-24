@@ -7,6 +7,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useBrandsRequests } from '../requests/useBrandsRequests';
 import { HomeHero } from '../home/HomeHero';
 import { HomeDelivered } from '../home/HomeDelivered';
+import { Launches } from '../studio/Launches';
 import { HomeProduction } from '../home/HomeProduction';
 import { HomeMeetingsRow, NextMeetingTop } from '../home/HomeMeetingsRow';
 import { InsightsCard } from '../brains/BrainPanels';
@@ -51,11 +52,14 @@ export function Home() {
       )}
       {current.onboarding?.step === 'live' && <LiveBanner liveAt={current.onboarding.liveAt} />}
       <NextMeetingTop brandId={current.id} brandName={current.name} />
-      <HomeHero brandName={current.name} needsYou={needsYou} open={all} />
+      <HomeHero brandName={current.name} needsYou={needsYou} />
+      {/* Right under the ask box: both on the first screen (2026-11-24). */}
+      <HomeDelivered items={needsYou} />
       {current.kind === 'brand' && <HomeBrainLoop brandId={current.id} />}
       <HomeThisMonth brandId={current.id} requests={all} />
-      <HomeDelivered items={needsYou} />
       <HomeProduction items={inProd} />
+      {/* «Just launched» used to sit under the studio; it stays on Home on its own. */}
+      <Launches />
       <div data-tour="home-meetings"><HomeMeetingsRow brandId={current.id} brandName={current.name} /></div>
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <LessonOfTheWeek />
