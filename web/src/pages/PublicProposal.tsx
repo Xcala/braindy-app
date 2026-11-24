@@ -65,7 +65,7 @@ export function PublicProposal() {
         {offer && <AppTour lang={lang} />}
         {data.acceptance && <Signed c={c} acceptance={data.acceptance} locale={locale} paid={new URLSearchParams(window.location.search).get('paid')}
           onPayAgain={() => publicApi.pay(token).then((r) => { if (r.payUrl) window.location.href = r.payUrl; }).catch(() => undefined)} />}
-        <Talk c={c} files={data.files} onFile={openFile} onAccept={pick} />
+        <Talk c={c} files={data.files} onFile={openFile} onAccept={pick} logos={data.clientLogos} />
         <footer className="row between g16 wrap px-5 py-10 sm:px-14" style={{ borderTop: '1px solid var(--line)' }}>
           <img src="/brand/braindy-logo.svg" alt="Braindy" style={{ height: '1.75rem' }} />
           <p className="t-sm t-mute">{c.footer}</p>
