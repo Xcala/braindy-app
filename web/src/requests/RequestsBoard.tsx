@@ -2,12 +2,13 @@ import { useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName } from '../components/BrainStack';
-import { STATUS_CHIP, type BrandRequest, type RequestStatus } from './types';
+import type { BrandRequest, RequestStatus } from './types';
 import { moveRequest } from './moveRequest';
 import { missingOf, pieceLabel, smartDate } from './requestBits';
+import './board.css';
 
 export const COLUMNS: Array<{ status: RequestStatus; bg: string }> = [
-  { status: 'in_production', bg: 'var(--col)' }, { status: 'to_approve', bg: 'var(--warning-bg)' },
+  { status: 'in_production', bg: 'var(--col)' }, { status: 'to_approve', bg: 'var(--col)' },
   { status: 'approved', bg: 'var(--col)' }, { status: 'published', bg: 'var(--col)' },
 ];
 // Each column starts short; the rest opens on request so the page does not run for metres.
@@ -15,7 +16,7 @@ const COL_FIRST = 8;
 
 export function TagChips({ tags }: { tags?: string[] }) {
   if (!tags?.length) return null;
-  return <span className="row g4 wrap">{tags.map((g) => <span key={g} className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: 'var(--hielo)', color: 'var(--azul)' }}>#{g}</span>)}</span>;
+  return <span className="rb-tags">{tags.map((g) => `#${g}`).join(' ')}</span>;
 }
 
 /** NickMark only: what an open request still lacks ("Missing: date · where"). */
@@ -23,7 +24,7 @@ export function MissingChip({ r }: { r: BrandRequest }) {
   const { t } = useI18n();
   const m = missingOf(r);
   if (!m.length) return null;
-  return <span className="chip chip-plain" style={{ height: '1.375rem', fontSize: '0.6875rem', background: 'var(--warning-bg)', color: 'var(--warning)' }}>{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
+  return <span className="rb-missing">{t('rr.missing', { what: m.map((k) => t(`rr.miss.${k}`)).join(' · ') })}</span>;
 }
 
 /**
@@ -61,7 +62,7 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
           return (
             <section key={status} {...target} className="col g8 rounded-[1.25rem] p-3" aria-label={t(`req.status.${status}`)}
               style={{ background: bg, minHeight: all.length || dragId ? '12rem' : undefined, outline: overCol === status ? '2px dashed var(--azul)' : undefined, outlineOffset: -2 }}>
-              <div className="row between g8" style={{ padding: '0.125rem 0.25rem' }}><span className={`chip ${STATUS_CHIP[status]}`}>{t(`req.status.${status}`)}</span><span className="t-sm t-mute">{all.length}</span></div>
+              <div className="row between g8" style={{ padding: '0.125rem 0.25rem' }}><h3 className={`rb-head ${status === 'to_approve' ? 'is-act' : ''}`} style={{ margin: 0 }}>{t(`req.status.${status}`)} <span className="rb-n">· {all.length}</span></h3></div>
               {items.map((r) => {
                 const d = smartDate(r, lang, t);
                 const kind = pieceLabel(r, lang);
@@ -69,7 +70,7 @@ export function RequestsBoard({ brandId, shown, columns, isAdmin }: { brandId: s
                   <Link key={r.id} to={`/requests/${r.id}`} className="card col rb-card" draggable={isAdmin}
                     onDragStart={isAdmin ? (e) => { setDragId(r.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', r.id); } : undefined}
                     onDragEnd={() => { setDragId(null); setOverCol(null); }}
-                    style={{ borderColor: status === 'to_approve' ? '#F5D98A' : undefined, cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
+                    style={{ cursor: isAdmin ? 'grab' : undefined, opacity: dragId === r.id ? 0.5 : 1 }}>
                     <span className="rb-title" title={r.title}>{r.title}</span>
                     <span className="t-xs t-mute">
                       {kind}{kind && d.text ? ' · ' : ''}{d.text && <span style={{ color: d.late ? 'var(--danger)' : undefined }}>{d.text}</span>}

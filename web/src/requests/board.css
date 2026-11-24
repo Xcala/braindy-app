@@ -1,0 +1,5 @@
+/* Requests board (UX #24): neutral columns, one accent. Only «To approve» (the client must act) uses the brand blue; red is only for late dates. */
+.rb-head{font-weight:700;font-size:0.8125rem;line-height:1.125rem;color:var(--ink)}
+.rb-head .rb-n{color:var(--graphite);font-weight:500}
+.rb-head.is-act,.rb-head.is-act .rb-n{color:var(--azul)}
+.rb-tags,.rb-missing{font-size:0.6875rem;line-height:1rem;color:var(--graphite)}
