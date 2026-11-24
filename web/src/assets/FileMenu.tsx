@@ -55,8 +55,8 @@ export function MoreMenu({ label, items, style }: { label: string; items: Item[]
       {open && createPortal(
         <span ref={pop} role="menu" className="fmenu" style={open}>
           {items.map(([icon, text, act, danger]) => (
-            <button key={text} type="button" role="menuitem" onClick={() => { setOpen(null); act(); }} style={danger ? { color: 'var(--danger)' } : undefined}>
-              <Icon name={icon} size={16} />{text}
+            <button key={text} type="button" role="menuitem" className="menu-row" onClick={() => { setOpen(null); act(); }} style={danger ? { color: 'var(--danger)' } : undefined}>
+              <Icon name={icon} size={20} />{text}
             </button>
           ))}
         </span>, document.body,

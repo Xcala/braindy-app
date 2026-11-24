@@ -14,9 +14,11 @@
 .menu-row > .menu-ico svg, .acct-ico svg { width: var(--mr-ico); height: var(--mr-ico); display: block; }
 .menu-row > :not(svg):not(.menu-ico) { min-width: 0; }
 
-/* ⋯ menus: the row takes .menu-row; here only its box. 40px rows, 44px on phones. */
-.fmenu .menu-row { min-height: 2.5rem; height: auto; padding: 0 0.75rem; font-weight: 600; }
-@media (max-width: 767px) { .fmenu .menu-row { min-height: 2.75rem; } }
+/* ⋯ menus: rows take .menu-row (wins over `.fmenu button` in assets/files.css). 40px rows, 44px on phones. */
+.fmenu button.menu-row { gap: var(--mr-gap); font-size: var(--mr-fs); line-height: var(--mr-lh); min-height: 2.5rem; height: auto; padding: 0 0.75rem; }
+@media (max-width: 767px) { .fmenu button.menu-row { min-height: 2.75rem; } }
+/* «See all» at the foot of the notifications. */
+.notif-all { padding: 0.625rem 0.75rem 0.375rem; font-weight: 700; }
 
 /* Brand picker (#35): groups 12px apart, rows 2px apart inside, every row the same: mark 20, text 14/20, gap 8, 44px tall. */
 .bmenu { gap: 0.75rem; }
