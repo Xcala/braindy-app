@@ -48,29 +48,27 @@ const save = (brandId: string, s: Saved) => { try { sessionStorage.setItem(KEY(b
 
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
 const INTRO = 'bd-help-intro';
-const DOCK = 'bd-help-dock';
 const DESK = '(min-width: 768px)';
-const dockSaved = () => { try { return window.matchMedia(DESK).matches && localStorage.getItem(DOCK) === '1'; } catch { return false; } };
-// Phones (2026-11-23): the chat opens with the app, unless it was closed in this visit or the link goes to one request.
-const SHUT = 'bd-help-phone-shut';
-const phoneStart = () => { try { return !window.matchMedia(DESK).matches && sessionStorage.getItem(SHUT) !== '1' && !/^\/requests\/[^/]+/.test(location.pathname); } catch { return false; } };
+// 2026-11-23: the chat opens with the app (computers and phones), unless it was closed in this visit; on phones a link to one request opens without it.
+const SHUT = 'bd-help-shut';
+const startOpen = () => { try { return sessionStorage.getItem(SHUT) !== '1' && (window.matchMedia(DESK).matches || !/^\/requests\/[^/]+/.test(location.pathname)); } catch { return false; } };
 const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
 
 /** The AI assistant: a chat that knows how Braindy works and hands off to Nick when it can't help. On computers it docks as a
- * tinted panel on the left that pushes the app (open or closed is remembered); on phones it is a bottom sheet. */
+ * tinted panel on the left that pushes the app (open with the app; closing it lasts the visit); on phones it is a bottom sheet. */
 export function HelpChat() {
   const { t, lang } = useI18n();
   const { profile } = useAuth();
   const { current } = useBrands();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const [open, setOpenState] = useState(() => dockSaved() || phoneStart());
-  // Opened by itself on a phone: no keyboard until the person taps the box.
-  const quiet = useRef(open && !window.matchMedia(DESK).matches);
+  const [open, setOpenState] = useState(startOpen);
+  // Opened by itself: no keyboard or focus jump until the person taps the box.
+  const quiet = useRef(open);
   const [desk, setDesk] = useState(() => window.matchMedia(DESK).matches);
   const setOpen = useCallback((v: boolean | ((o: boolean) => boolean)) => setOpenState((o) => {
     const next = typeof v === 'function' ? v(o) : v;
-    try { if (window.matchMedia(DESK).matches) localStorage.setItem(DOCK, next ? '1' : '0'); else sessionStorage.setItem(SHUT, next ? '0' : '1'); } catch { /* private mode */ }
+    try { sessionStorage.setItem(SHUT, next ? '0' : '1'); } catch { /* private mode */ }
     return next;
   }), []);
   const [s, setS] = useState<Saved>({ msgs: [], chatId: null });
