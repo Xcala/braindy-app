@@ -9,6 +9,7 @@ import { db } from './firebase.js';
 import { brandAccess } from './access.js';
 import { open, seal } from './vault.js';
 import type { AuthEnv } from './auth.js';
+import { finishGmail } from './mail/gmail.js';
 
 const CLIENT_ID = process.env.GOOGLE_CAL_CLIENT_ID ?? '';
 const CLIENT_SECRET = process.env.GOOGLE_CAL_CLIENT_SECRET ?? '';
@@ -126,6 +127,8 @@ calendarCallback.get('/integrations/google-calendar/callback', async (c) => {
   await ref.delete();
   const at = (st.get('at') as { toMillis?: () => number } | undefined)?.toMillis?.() ?? 0;
   if (!st.exists || Date.now() - at > 10 * 60_000 || !(await isAdmin(st.get('uid')))) return back(false);
+  // The requests mailbox uses this same registered callback; its state says so.
+  if (st.get('kind') === 'gmail') return c.redirect(`${WEB_URL}/admin/whatsapp?correo=${(await finishGmail(code, REDIRECT, st.get('uid'))) ? 'ok' : 'error'}`);
   const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ code, client_id: CLIENT_ID, client_secret: CLIENT_SECRET, redirect_uri: REDIRECT, grant_type: 'authorization_code' }) });
   if (!r.ok) return back(false);
