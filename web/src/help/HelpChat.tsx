@@ -49,9 +49,9 @@ const save = (brandId: string, s: Saved) => { try { sessionStorage.setItem(KEY(b
 const BRAINS = ['researcher', 'marketer', 'creator', 'builder'] as const;
 const INTRO = 'bd-help-intro';
 const DESK = '(min-width: 768px)';
-// 2026-11-23: the chat opens with the app (computers and phones), unless it was closed in this visit; on phones a link to one request opens without it.
+// 2026-11-23: on computers the chat opens with the app, unless it was closed in this visit. Phones start closed, as before.
 const SHUT = 'bd-help-shut';
-const startOpen = () => { try { return sessionStorage.getItem(SHUT) !== '1' && (window.matchMedia(DESK).matches || !/^\/requests\/[^/]+/.test(location.pathname)); } catch { return false; } };
+const startOpen = () => { try { return window.matchMedia(DESK).matches && sessionStorage.getItem(SHUT) !== '1'; } catch { return false; } };
 const introSeen = () => { try { return localStorage.getItem(INTRO) === '1'; } catch { return true; } };
 
 /** The AI assistant: a chat that knows how Braindy works and hands off to Nick when it can't help. On computers it docks as a
