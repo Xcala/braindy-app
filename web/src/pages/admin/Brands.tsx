@@ -102,7 +102,7 @@ export function AdminBrands() {
         <button type="button" className="btn btn-primary" onClick={() => setAdding(true)}><Icon name="plus" size={16} /> {t('anav.new')}</button>
       </div>
 
-      <BrandCards rows={rows} health={health} onManage={manage} />
+      <BrandCards rows={rows} health={health} searching={!!q.trim()} onManage={manage} onToggle={toggle} />
       <div className="hidden md:block"><div className="table overflow-x-auto">
         <div className="trow head label min-w-[61.875rem]" style={{ gridTemplateColumns: COLS }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
