@@ -66,7 +66,7 @@ export function Notifications() {
           {toApprove.map(item)}
           {recent.length > 0 && <p className="label" style={{ padding: '0.75rem 0.75rem 2px' }}>{t('notif.recent')}</p>}
           {recent.map(item)}
-          <Link to="/requests" onClick={() => setOpen(false)} className="t-sm w7 row g4" style={{ padding: '0.625rem 0.75rem 0.375rem' }}>{t('notif.all')} <Icon name="chevronRight" size={14} /></Link>
+          <Link to="/requests" onClick={() => setOpen(false)} className="menu-row is-sm notif-all">{t('notif.all')}<Icon name="chevronRight" size={16} /></Link>
         </div>
       )}
     </div>

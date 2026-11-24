@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { Link, useLocation } from 'react-router';
+import { useScrollFade } from '../components/useScrollFade';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandLinks } from '../links/useBrandLinks';
@@ -30,15 +32,23 @@ export function SubNav() {
   const plan = usePlanTabs(tabs.some((p) => p.to === '/plan'));
   const flat = tabs.flatMap((p) => (p.to === '/plan' ? plan.pages : p.to === '/settings' ? settingsPages : [p]));
   const row = tabs.some((p) => p.to === '/plan') ? [...flat].sort(byAccountOrder) : flat;
+  // Audit #38: up to four tabs share the width (nothing cut); longer rows scroll with a fade and keep the active tab in view.
+  const rowRef = useRef<HTMLElement>(null);
+  const subRef = useRef<HTMLElement>(null);
+  useScrollFade(rowRef, `${pathname}${search}${row.length}`);
+  useScrollFade(subRef, `${pathname}${search}${inTab.length}`);
   if (row.length < 2 && inTab.length < 2) return null;
   const on = (p: NavPage) => (p.to.startsWith('/plan') ? pathname === '/plan' && plan.isOn(p.to) : p.to.startsWith('/settings') ? pathname === '/settings' && settingsOn(p.to, search) : p.tab ? here?.tab === p.tab : here?.to === p.to);
+  const label = (p: NavPage) => (!p.tab && p.short
+    ? <span className="has-short"><span className="seg-full">{t(p.label)}</span><span className="seg-short" aria-hidden="true">{t(p.short)}</span></span>
+    : <span>{t(p.tab ?? p.label)}</span>);
   return (
     <div className="col g8" style={{ marginBottom: '1.5rem' }}>
-      {row.length > 1 && <nav className="seg seg-scroll" aria-label={t(group!.label)}>
-        {row.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined}>{t(p.tab ?? p.label)}</Link>)}
+      {row.length > 1 && <nav ref={rowRef} className={`seg ${row.length <= 4 ? 'seg-fit' : 'seg-scroll'}`} aria-label={t(group!.label)}>
+        {row.map((p) => <Link key={p.to} to={p.to} className={on(p) ? 'is-on' : ''} aria-current={on(p) ? 'page' : undefined} title={p.short ? t(p.label) : undefined}>{label(p)}</Link>)}
       </nav>}
-      {inTab.length > 1 && <nav className="seg seg-scroll seg-sm" aria-label={t(here!.tab!)}>
-        {inTab.map((p) => <Link key={p.to} to={p.to} className={here?.to === p.to ? 'is-on' : ''} aria-current={here?.to === p.to ? 'page' : undefined}>{t(p.label)}</Link>)}
+      {inTab.length > 1 && <nav ref={subRef} className={`seg seg-sm ${inTab.length <= 4 ? 'seg-fit' : 'seg-scroll'}`} aria-label={t(here!.tab!)}>
+        {inTab.map((p) => <Link key={p.to} to={p.to} className={here?.to === p.to ? 'is-on' : ''} aria-current={here?.to === p.to ? 'page' : undefined}>{label({ ...p, tab: undefined })}</Link>)}
       </nav>}
     </div>
   );
