@@ -11,6 +11,8 @@
 @import "@fontsource/red-hat-mono/500.css";
 /* Design system from the "Braindy app · Design v1" canvas. Unlayered, so it wins over Tailwind utilities. */
 @import "./styles/bd-app.css";
+/* Menus after lessons 01 and 02: one row rule, brand picker groups, section tabs. */
+@import "./styles/menus.css";
 
 @theme {
   --font-sans: "Red Hat Text", system-ui, sans-serif;

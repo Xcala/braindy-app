@@ -18,7 +18,7 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
   // Who is in, then which brand (bold name over the brand, as in the top bar of the reference Nicolas liked).
   const who = String((useAuth().profile as { name?: string } | null)?.name ?? '').trim();
   const { brands, current, select } = useBrands();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const box = useRef<HTMLDivElement>(null);
@@ -32,8 +32,7 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
   }, [open]);
 
-  const tree = useMemo(() => asTree(brands), [brands]);
-  const childCount = (id: string) => brands.filter((b) => b.groupId === id).length;
+  const sections = useMemo(() => brandSections(brands, lang), [brands, lang]);
   const needle = normalizeSearch(q);
   const found = needle ? brands.filter((b) => [b.name, ...b.previousNames].some((n) => normalizeSearch(n).includes(needle))) : null;
   const recent = readRecent().map((id) => brands.find((b) => b.id === id)).filter((b): b is Brand => !!b);
@@ -45,16 +44,16 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
     return <div className="sel" style={{ cursor: 'default' }}><BrandMark brand={current} /><BrandName name={current.name} /></div>;
   }
 
-  const item = (b: Brand, depth = 0) => (
+  const item = (b: Brand) => (
     <button key={b.id} type="button" role="option" aria-selected={!enter && b.id === current.id} onClick={() => choose(b.id)}
-      className={`menu-item w-full text-left ${!enter && b.id === current.id ? 'is-on' : ''} ${depth === 1 ? 'tree-1' : depth >= 2 ? 'tree-2' : ''}`}
+      className={`menu-item w-full text-left ${!enter && b.id === current.id ? 'is-on' : ''}`}
       style={{ border: 0, background: undefined, cursor: 'pointer' }}>
       <BrandMark brand={b} />
       <span className="grow col min-w-0" style={{ opacity: b.status === 'archived' ? 0.55 : 1 }}>
         <span className="truncate">{b.name}</span>
         {b.previousNames.length > 0 && <span className="t-xs t-mute truncate">{t('ver.before', { name: b.previousNames.join(', ') })}</span>}
       </span>
-      {b.kind === 'group' && <span className="chip c-group">{t('brand.group')} · {childCount(b.id)}</span>}
+      {b.kind === 'group' && <span className="chip c-group">{t('brand.group')}</span>}
       {b.status === 'archived' && b.kind !== 'group' && <span className="chip c-archived">{t('status.archived')}</span>}
       {!enter && b.id === current.id && <Icon name="check" size={16} />}
     </button>
@@ -79,31 +78,48 @@ export function BrandMenu({ isAdmin, onPicked, enter }: { isAdmin: boolean; onPi
       </button>
       )}
       {open && (
-        <div className="menu absolute left-0 top-[3.5rem] z-40 flex max-h-[70vh] w-[min(380px,calc(100vw-32px))] flex-col gap-0.5 overflow-y-auto" role="listbox" aria-label={t('brand.choose')}>
-          <div className="search" style={{ margin: '0.25rem 0.25rem 0.5rem' }}>
+        <div className="menu bmenu absolute left-0 top-[3.5rem] z-40 flex max-h-[70vh] w-[min(380px,calc(100vw-32px))] flex-col overflow-y-auto" role="listbox" aria-label={t('brand.choose')}>
+          <div className="search" style={{ margin: '0.25rem 0.25rem 0' }}>
             <Icon name="search" />
             <input className="input" autoFocus placeholder={t('brand.searchN', { n: brands.length })} aria-label={t('brand.search')}
               value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
           {isAdmin && !enter && !found && (
             <Link to="/admin/today" onClick={() => setOpen(false)} className="menu-item" style={{ background: 'var(--ink)', color: '#fff' }}>
-              <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: '1.25rem', height: '1.25rem' }} /></span>
+              <span className="mark" style={{ background: '#fff' }}><img src="/brand/braindy-mark.svg" alt="" style={{ width: '0.875rem', height: '0.875rem' }} /></span>
               <span className="grow">{t('nav.backToAdmin')}</span>
               <span className="t-xs" style={{ color: '#C9D0DE' }}>{t('brand.admin')}</span>
             </Link>
           )}
           {found ? (
-            found.length ? found.map((b) => item(b)) : <p className="t-sm t-mute" style={{ padding: '0.5rem 0.75rem' }}>{t('brand.noMatch')}</p>
+            <div className="bmenu-group">
+              {found.length ? found.map((b) => item(b)) : <p className="t-sm t-mute" style={{ padding: '0.5rem 0.75rem' }}>{t('brand.noMatch')}</p>}
+            </div>
           ) : (
             <>
               {recent.length > 0 && (
-                <>
-                  <p className="label" style={{ padding: '0.375rem 0.75rem' }}>{t('brand.recent')}</p>
+                <div className="bmenu-group" role="group" aria-label={t('brand.recent')}>
+                  <p className="label bmenu-label">{t('brand.recent')}</p>
                   {recent.map((b) => item(b))}
-                  <div className="divider" style={{ margin: '0.375rem 0' }} />
-                </>
+                </div>
               )}
-              {tree.map(({ brand, depth }) => item(brand, depth))}
+              {sections.groups.map(({ group, members }) => {
+                const label = t(members.length === 1 ? 'bmenu.groupOne' : 'bmenu.groupN', { name: group.name, n: String(members.length) });
+                const on = !enter && group.id === current.id;
+                return (
+                  <div key={group.id} className="bmenu-group" role="group" aria-label={label}>
+                    {/* The group's name is the label, not one more brand row; it still opens the group's own page. */}
+                    <button type="button" role="option" aria-selected={on} onClick={() => choose(group.id)} className={`label bmenu-label is-link${on ? ' is-on' : ''}`}>{label}</button>
+                    {members.map((b) => item(b))}
+                  </div>
+                );
+              })}
+              {sections.loose.length > 0 && (
+                <div className="bmenu-group" role="group" aria-label={t('bmenu.all')}>
+                  {(recent.length > 0 || sections.groups.length > 0) && <p className="label bmenu-label">{t('bmenu.all')}</p>}
+                  {sections.loose.map((b) => item(b))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -125,4 +141,21 @@ function BrandName({ name }: { name: string }) {
       {long && <span className="bname-short" aria-hidden="true">{initials(name)}</span>}
     </span>
   );
+}
+
+/** The picker's groups (lesson 01): each top-level group with every brand under it, then the brands outside any group, A–Z. */
+function brandSections(brands: Brand[], lang: string) {
+  const groups: Array<{ group: Brand; members: Brand[] }> = [];
+  const loose: Brand[] = [];
+  const tree = asTree(brands);
+  let open: { group: Brand; members: Brand[] } | null = null;
+  tree.forEach(({ brand, depth }, i) => {
+    if (depth > 0 && open) { open.members.push(brand); return; }
+    const hasKids = (tree[i + 1]?.depth ?? 0) > depth;
+    if (brand.kind === 'group' || hasKids) { open = { group: brand, members: [] }; groups.push(open); return; }
+    open = null;
+    loose.push(brand);
+  });
+  loose.sort((a, b) => a.name.localeCompare(b.name, lang, { sensitivity: 'base' }));
+  return { groups, loose };
 }
