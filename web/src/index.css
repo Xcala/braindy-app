@@ -59,10 +59,6 @@ body {
 /* NickMark photos: keep his face in frame wherever the portrait is cropped (circles, cards). */
 img[src$="nicolas.jpg"] { object-position: 50% 18%; }
 
-/* Typing caret for the rotating product in the home hero. */
-.typed-caret { display: inline-block; width: 2px; height: 1.05em; margin-left: 1px; vertical-align: -0.15em; background: #fff; animation: caret-blink 1s steps(1) infinite; }
-@keyframes caret-blink { 50% { opacity: 0; } }
-
 /* Results › Overview: one column per source (website, social, ads) from desktop width; inside each, two cards per row and a smaller number. */
 @media (min-width: 1024px) { .res-cols { grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); } }
 .res-cols .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }

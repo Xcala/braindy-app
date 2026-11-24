@@ -3,7 +3,7 @@
 :root{
   --azul:#2F4DE0; --azul-fill:#2F4DE0; --azul-hover:#2741C9; --azul-press:#1F3596; --azul-on-dark:#8FA0FF;
   --rosa:#F4C8CA; --profundo:#1F3596; --noche:#060D1E; --negro:#05070D;
-  --ink:#0B1220; --graphite:#5C6375; --graphite-2:#6B7285;
+  --ink:#0B1220; --graphite:#5C6375; --graphite-2:#6B7285; --mute:var(--graphite-2);
   --white:#FFFFFF; --niebla:#F4F6FB; --fog:var(--niebla); --col:#EEF1F7; --hielo:#EAF0FF; --line:#E3E7F0; --line-strong:#C9D0DE;
   --success:#0E7A4E; --success-bg:#E4F5EC; --warning:#8A5A00; --warning-bg:#FFF3D1;
   --danger:#C0262D; --danger-bg:#FDE9E9; --danger-hover:#A51F25;
@@ -819,3 +819,18 @@ html[data-theme="dark"] .quota{background:var(--white)!important;color:var(--ink
 @media (prefers-reduced-motion:reduce){.quota-bar>span{transition:none}}
 
 html[data-theme="dark"] .sx .is-decision,html[data-theme="dark"] .sx .is-client{--t:#F5C04A}
+
+/* UX #19 + #25: modals fade and scale in; close ✕ in the title row */
+.scrim{animation:bd-fade .18s ease-out both}
+.modal{animation:bd-pop .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes bd-fade{from{opacity:0}}
+@keyframes bd-pop{from{opacity:0;transform:translateY(6px) scale(.97)}}
+.modal-x{flex:none;width:2.25rem;height:2.25rem;margin:-.375rem -.5rem 0 0;border:0;border-radius:.625rem;background:none;color:var(--graphite);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.modal-x:hover{background:var(--niebla);color:var(--ink)}
+.modal-x:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+/* UX #28: no shimmer or modal motion when the person asks for less motion */
+@media (prefers-reduced-motion: reduce){.skel{animation:none}.scrim,.modal{animation:none}}
+/* UX #23: a picked option is a soft fill with a ✓, so the blue primary stays for the one action that sends */
+.btn.btn-secondary.is-picked{background:var(--hielo);border-color:var(--azul);color:var(--azul)}
+.btn.is-picked::before{content:"";flex:none;width:.875rem;height:.875rem;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
+html[data-theme="dark"] .btn.btn-secondary.is-picked{background:rgba(143,160,255,.16);border-color:var(--azul-on-dark);color:var(--azul-on-dark)}

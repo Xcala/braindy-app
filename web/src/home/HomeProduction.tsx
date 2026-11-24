@@ -31,7 +31,12 @@ export function HomeProduction({ items }: { items: ScopedRequest[] }) {
         <h2 className="h3" id="h-prod">{t('hg.prod')}</h2>
         <p className="t-sm t-mute">{t('hg.prodSub')}</p>
       </div>
-      {items.length === 0 && <div className="card t-mute">{t('hg.nothingProd')}</div>}
+      {items.length === 0 && (
+        <div className="card col g12">
+          <p className="t-mute">{t('hg.nothingProd')}</p>
+          <Link to="/ask" className="btn btn-primary btn-sm self-start">{t('hg.askCta')}</Link>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {items.slice(0, FIRST).map((r) => {
           const c = clock(r, now);

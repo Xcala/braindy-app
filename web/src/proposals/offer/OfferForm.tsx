@@ -62,7 +62,7 @@ export function OfferForm({ p }: { p: Proposal }) {
 
       <div className="col g8"><p className="label">{L(['BOS · cada mes', 'BOS · every month'])}</p>
         <div className="row g8 wrap">
-          {[null, ...BOS_KEYS].map((k) => <button key={k ?? 'none'} type="button" className={`btn btn-sm ${o.bos === k ? 'btn-primary' : 'btn-secondary'}`}
+          {[null, ...BOS_KEYS].map((k) => <button key={k ?? 'none'} type="button" className={`btn btn-sm btn-secondary${o.bos === k ? ' is-picked' : ''}`}
             onClick={() => save({ ...o, bos: k as BosKey | null })}>{k ? BOS[k].name : L(['Sin BOS', 'No BOS'])}</button>)}
         </div>
         {o.bos && (

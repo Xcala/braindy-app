@@ -70,7 +70,7 @@ export function BookMeeting({ brandId, onClose }: { brandId: string; onClose: ()
                   </div>
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-4" role="radiogroup" aria-label={t('bk.time')}>
                     {times.map((s) => (
-                      <button key={s} type="button" role="radio" aria-checked={pick === s} className={`btn btn-sm ${pick === s ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setPick(s)}>{fmtTime(s)}</button>
+                      <button key={s} type="button" role="radio" aria-checked={pick === s} className={`btn btn-sm btn-secondary${pick === s ? ' is-picked' : ''}`} onClick={() => setPick(s)}>{fmtTime(s)}</button>
                     ))}
                   </div>
                   {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}

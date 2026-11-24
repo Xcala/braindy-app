@@ -63,8 +63,8 @@ export function Calendar() {
       </div>
       {nets.length > 1 && (
         <div className="row g8 wrap" role="group" aria-label={t('cal.networks')}>
-          <button type="button" className={`btn btn-sm ${!net ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={!net} onClick={() => setNet('')}>{t('cal.all')}</button>
-          {nets.map((n) => <button key={n} type="button" className={`btn btn-sm ${net === n ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={net === n} onClick={() => setNet(net === n ? '' : n)}><NetBadge network={n} /> {netInfo(n).label}</button>)}
+          <button type="button" className={`btn btn-sm btn-secondary${!net ? ' is-picked' : ''}`} aria-pressed={!net} onClick={() => setNet('')}>{t('cal.all')}</button>
+          {nets.map((n) => <button key={n} type="button" className={`btn btn-sm btn-secondary${net === n ? ' is-picked' : ''}`} aria-pressed={net === n} onClick={() => setNet(net === n ? '' : n)}><NetBadge network={n} /> {netInfo(n).label}</button>)}
         </div>
       )}
 

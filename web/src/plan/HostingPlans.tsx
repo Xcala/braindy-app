@@ -1,3 +1,4 @@
+import { useConfirm } from '../components/useConfirm';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { ADDONS, CHECKOUT, ENTERPRISE, MODULES, WEB_PLANS, type Bill, type Cur, type WebPlan } from './hostingData';
@@ -32,6 +33,7 @@ function useLadder(dep: unknown) {
  *  toggles, plan cards (the brand's current plan marked), plan finder, comparison, add-ons, agency note and modules. */
 export function HostingPlans({ current, brandName, brandId, paid, billing }: { current?: WebPlan | null; brandName: string; brandId?: string; paid?: boolean; billing?: Billing | null }) {
   const { lang } = useI18n();
+  const [dialog, ask] = useConfirm();
   const L = useL();
   const wa = useNicoWhatsApp();
   const [tab, setTab] = useState<'web' | 'ent'>('web');
@@ -55,7 +57,7 @@ export function HostingPlans({ current, brandName, brandId, paid, billing }: { c
     : back === 'canceled' ? { ok: false, text: L(['No se hizo ningún cobro. Puedes intentarlo de nuevo o escribirnos.', 'Nothing was charged. Try again or write us.']), plan: '' } : null);
   const buy = async (p: WebPlan, name: string, c: Cur = cur, b: Bill = bill) => {
     if (!brandId) return;
-    if (paid && current && !window.confirm(L(['¿Cambiar tu hosting al plan ' + name + '? La diferencia se ajusta en tu próximo cobro.', 'Switch your hosting to ' + name + '? The difference is adjusted on your next charge.']))) return;
+    if (paid && current && !(await ask({ title: L(['¿Cambiar tu hosting al plan ' + name + '?', 'Switch your hosting to ' + name + '?']), body: L(['La diferencia se ajusta en tu próximo cobro.', 'The difference is adjusted on your next charge.']), confirmLabel: L(['Cambiar de plan', 'Switch plan']) }))) return;
     setBusy(p); setMsg(null);
     try {
       const r = await billingApi.hosting(brandId, { plan: p, cur: c, bill: b });
@@ -76,6 +78,7 @@ export function HostingPlans({ current, brandName, brandId, paid, billing }: { c
 
   return (
     <div ref={ref} className="hp" aria-labelledby="hp-title">
+      {dialog}
       {brandId && current && <HostingStatus plan={billing ?? null} onAct={onAct} />}
       {late && !plans && msg && <p role="status" className={`hp-msg${msg.ok ? ' ok' : ''}`}>{msg.text}</p>}
 

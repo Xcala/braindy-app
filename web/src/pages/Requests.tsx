@@ -41,8 +41,10 @@ export function Requests() {
   useEffect(() => { if (hash === '#ask') { const p = new URLSearchParams(params); p.set('new', '1'); setParams(p, { replace: true }); } }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
+  // UX #30: on a phone the list ("Your turn" first) beats a board you have to scroll sideways.
+  const phone = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
   const f = filtersFromParams(params);
-  const view: View = VIEWS.includes(params.get('view') as View) ? (params.get('view') as View) : viewLocal ?? (isAdmin ? 'board' : 'list');
+  const view: View = VIEWS.includes(params.get('view') as View) ? (params.get('view') as View) : viewLocal ?? (isAdmin && !phone ? 'board' : 'list');
   const asking = params.get('new') === '1';
   const setParam = (k: string, v: string | null) => { const p = new URLSearchParams(params); if (v == null) p.delete(k); else p.set(k, v); setParams(p, { replace: k !== 'new' }); };
   const setFilters = (next: ReqFilters) => setParams(filtersToParams(next, params), { replace: true });

@@ -106,11 +106,13 @@ export function NoticesCard({ brandId }: { brandId: string }) {
               onClick={() => set({ notices: { ...s.notices, [k]: !on(k) } })} />
           </div>
         ))}
-        <div className="field" style={{ maxWidth: '15rem' }}>
-          <label htmlFor="wa-lang">{t('set.noticeLang')}</label>
-          <select id="wa-lang" className="input" value={s.lang ?? 'es'} onChange={(e) => set({ lang: e.target.value as 'es' | 'en' })}>
-            <option value="es">Español</option><option value="en">English</option>
-          </select>
+        <div className="col g6">
+          <span className="t-sm w7" id="wa-lang">{t('set.noticeLang')}</span>
+          <div className="seg self-start" role="radiogroup" aria-labelledby="wa-lang">
+            {([['es', 'Español'], ['en', 'English']] as const).map(([v, label]) => (
+              <button key={v} type="button" role="radio" aria-checked={(s.lang ?? 'es') === v} className={(s.lang ?? 'es') === v ? 'is-on' : ''} onClick={() => set({ lang: v })}>{label}</button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

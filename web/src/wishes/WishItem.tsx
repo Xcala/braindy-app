@@ -69,7 +69,7 @@ export function WishItem({ w }: { w: Wish }) {
             <div className="row g8 wrap" role="radiogroup" aria-label={t('wl.adm.status')}>
               {WISH_STATUSES.map((st) => (
                 <button key={st} type="button" role="radio" aria-checked={status === st} onClick={() => setStatus(st)}
-                  className={`btn btn-sm ${status === st ? 'btn-primary' : 'btn-secondary'}`}>{t(`wl.st.${st}`)}</button>
+                  className={`btn btn-sm btn-secondary${status === st ? ' is-picked' : ''}`}>{t(`wl.st.${st}`)}</button>
               ))}
             </div>
             <textarea className="input" rows={2} maxLength={1000} value={reply} onChange={(e) => setReply(e.target.value)} placeholder={t('wl.adm.reply')} aria-label={t('wl.adm.reply')} />

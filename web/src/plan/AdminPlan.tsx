@@ -1,3 +1,4 @@
+import { useConfirm } from '../components/useConfirm';
 import { useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { planApi } from './usePlan';
@@ -16,6 +17,7 @@ interface AdminProps<T> {
 /** A collapsible admin form with save, load example and delete; the server validates and says what is missing. */
 function Admin<T>({ title, help, value, empty, example, save, remove, form }: AdminProps<T>) {
   const { t } = useI18n();
+  const [dialog, ask] = useConfirm();
   const [open, setOpen] = useState(!value);
   const [v, setV] = useState<T>(() => structuredClone(value ?? empty));
   const [busy, setBusy] = useState(false);
@@ -32,12 +34,13 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
     } finally { setBusy(false); }
   }
   async function onRemove() {
-    if (!window.confirm(t('plan.a.removeConfirm'))) return;
+    if (!(await ask({ title: t('plan.a.removeConfirm'), confirmLabel: t('acc.delete'), danger: true }))) return;
     await remove(); set(structuredClone(empty));
   }
 
   return (
     <section className="card card-tight col g12" style={{ borderStyle: 'dashed' }} aria-label={title}>
+      {dialog}
       <div className="row g8" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="col" style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit' }}>
           <span className="label">{t('bill.a.only')}</span><span className="w7">{title}</span>

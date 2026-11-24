@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { PageHeader } from '../components/PageHeader';
@@ -27,7 +28,12 @@ export function MyApps() {
         actions={isAdmin && <button type="button" className="btn btn-primary" onClick={() => setAdding(true)}>+ {t('links.add')}</button>} />
       <VersionBar brand={current} versions={versions} viewing={ver} onView={setVer} work />
       <LinkGrid brandId={current.id} section="apps" links={links} adding={adding} onAdding={setAdding} />
-      {!loading && links.length === 0 && <div className="card t-mute">{t('apps.empty')}</div>}
+      {!loading && links.length === 0 && (
+        <div className="card col g12">
+          <p className="t-mute">{t('apps.empty')}</p>
+          {!isAdmin && <Link to="/ask" className="btn btn-primary btn-sm self-start">{t('apps.askCta')}</Link>}
+        </div>
+      )}
     </div>
   );
 }

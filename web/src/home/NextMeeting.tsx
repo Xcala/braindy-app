@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../lib/api';
 import { useNextPrefs } from './nextPrefs';
+import { BookMeeting } from './BookMeeting';
 
 export type Next = { title: string; start: string | null; end: string | null; link: string | null };
 
@@ -28,6 +29,7 @@ export function useNextMeeting(brandId: string) {
 
 /** «Next meeting», with its own menu: make it small, move it to the top of Home or back, or close it. */
 export function NextMeetingCard({ brandId, brandName, m, mkey }: { brandId: string; brandName: string; m: Next | null; mkey: string }) {
+  const [booking, setBooking] = useState(false);
   const { t, lang } = useI18n();
   const admin = useAuth().profile?.role === 'admin';
   const [prefs, setPrefs] = useNextPrefs();
@@ -94,7 +96,13 @@ export function NextMeetingCard({ brandId, brandName, m, mkey }: { brandId: stri
           <a className="btn btn-secondary btn-sm" href={googleUrl(m, brandName)} target="_blank" rel="noreferrer">{t('hg.addGoogle')}</a>
           <a className="t-xs w7" href={icsUrl(m, brandName)} download="braindy-reunion.ics">{t('hg.addOther')}</a>
         </>
-      ) : <p className="t-sm t-mute">{t('hg.noNext')}</p>}
+      ) : (
+        <div className="col g8">
+          <p className="t-sm t-mute">{t('hg.noNext')}</p>
+          {!admin && <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setBooking(true)}>{t('hg.book')}</button>}
+        </div>
+      )}
+      {booking && <BookMeeting brandId={brandId} onClose={() => setBooking(false)} />}
       {admin && cal && !cal.connected && (
         <div className="col g6" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.75rem' }}>
           {cal.ready ? <button type="button" className="btn btn-secondary btn-sm" onClick={connect}>{t('hg.connectCal')}</button> : null}

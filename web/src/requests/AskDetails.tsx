@@ -18,7 +18,7 @@ export function AskDetails({ cat, value, onChange }: { cat: string; value: AskDe
           <div className="row g8 wrap">
             {category.subs.map((s) => (
               <button key={s.id} aria-pressed={s.id === value.sub} onClick={() => set({ sub: s.id, type: '' })}
-                className={`btn btn-sm ${s.id === value.sub ? 'btn-primary' : 'btn-secondary'}`}>{s.label[lang]}</button>
+                className={`btn btn-sm btn-secondary${s.id === value.sub ? ' is-picked' : ''}`}>{s.label[lang]}</button>
             ))}
           </div>
           {subcat && (

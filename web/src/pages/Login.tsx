@@ -91,7 +91,7 @@ export function Login() {
           <div className="field">
             <label htmlFor="em">{t('login.email')}</label>
             <input className="input" id="em" type="email" required autoComplete="email"
-              placeholder="you@yourcompany.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              placeholder={t('login.emailPlaceholder')} value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           {withPassword && !fromLink && (
             <div className="field">
@@ -110,13 +110,13 @@ export function Login() {
             {fromLink ? t('login.linkFinish') : withPassword ? t('login.submit') : t('login.sendLink')}
           </button>
           {!fromLink && (
-            <p className="t-sm t-mute text-center">
+            <p className="t-sm t-mute">
               {withPassword ? <button type="button" className="t-sm w7" style={linkBtn} onClick={() => setWithPassword(false)}>{t('login.useLink')}</button>
                 : <>{t('login.linkHint')} <button type="button" className="t-sm w7" style={linkBtn} onClick={() => setWithPassword(true)}>{t('login.usePassword')}</button></>}
             </p>
           )}
         </>}
-        <p className="t-sm t-mute text-center">
+        <p className="t-sm t-mute">
           {t('login.invite')} <a href="mailto:nicolas@braindy.co" className="w7">{t('login.writeNicolas')}</a>
         </p>
       </form>
