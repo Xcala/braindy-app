@@ -100,8 +100,12 @@ html[data-theme="dark"] .fx .lrow.is-picked { background: #141C36; }
 .dg-title{font:700 0.9375rem/1.25rem var(--f-text);color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media (prefers-reduced-motion:reduce){.dg-card{transition:none}.dg-card:hover{transform:none}}
 
-/* Grid tiles (2026-11-25): the tick, the «⋯» and the type chip sit on the picture, so they get a solid edge and a soft
-   shadow to stand apart from logos and light artwork. */
-.tile .fx-check, .tile .fx-ibtn, .tile .fx-pin, .tile .thumb .badge { border-color: var(--line-strong); box-shadow: 0 2px 8px rgba(11, 18, 32, .22), 0 0 0 1px rgba(255, 255, 255, .6); }
-.tile .fx-ibtn { color: var(--ink); }
-.tile .fx-check input { width: 1.125rem; height: 1.125rem; }
+/* Grid tiles (2026-11-25): the tick, the «⋯» and the type chip sit on the picture. A dark band fades in at the bottom of
+   the picture and the two buttons are dark glass with white marks, so they read on white, navy or busy artwork alike. */
+.tile .thumb::after { content: ''; position: absolute; inset: auto 0 0 0; height: 4.5rem; background: linear-gradient(to top, rgba(6, 13, 30, .55), rgba(6, 13, 30, 0)); pointer-events: none; }
+.tile .fx-check, .tile .fx-ibtn { background: rgba(6, 13, 30, .72); border: 1px solid rgba(255, 255, 255, .55); color: #fff; box-shadow: 0 2px 10px rgba(6, 13, 30, .35); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.tile .fx-ibtn:hover { color: #fff; background: rgba(6, 13, 30, .85); border-color: #fff; }
+.tile .fx-check input { width: 1.125rem; height: 1.125rem; accent-color: #fff; }
+.tile.is-picked .fx-check { background: var(--azul); border-color: #fff; }
+.tile .thumb .badge { border-color: var(--line-strong); box-shadow: 0 2px 8px rgba(6, 13, 30, .25); }
+html[data-theme="dark"] .tile .fx-check, html[data-theme="dark"] .tile .fx-ibtn { background: rgba(6, 13, 30, .72); }
