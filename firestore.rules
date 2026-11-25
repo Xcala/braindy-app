@@ -260,6 +260,16 @@ service cloud.firestore {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
         allow write: if false;
       }
+      // Pauta: paid campaigns on any platform with their ads, pieces and texts (connector writes). Whoever sees the brand's
+      // files sees them; their numbers sit apart (stats) behind the same Results switch as the other numbers. Nobody edits from the app.
+      match /adCampaigns/{campaignId} {
+        allow read: if isAdmin() || can(brandId, 'files');
+        allow write: if false;
+        match /stats/{statId} {
+          allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+          allow write: if false;
+        }
+      }
       // Ads (Metricool) and sales (DoorDash…) results: same switch as the social numbers. Backend writes.
       match /adStats/{platform} {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);

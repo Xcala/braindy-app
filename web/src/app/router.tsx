@@ -10,6 +10,7 @@ import { BrandBrain } from '../pages/BrandBrain';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
 import { Calendar } from '../pages/Calendar';
+import { Pauta } from '../pages/Pauta';
 import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -72,6 +73,7 @@ export const router = createBrowserRouter([
           { path: 'deliveries', element: <MyAssets deliveries /> },
           { path: 'apps', element: <MyApps /> },
           { path: 'calendar', element: <Calendar /> },
+          { path: 'pauta', element: <Pauta /> },
           { path: 'research', element: <MyResearch /> },
           { path: 'ask', element: <Navigate to="/requests?new=1" replace /> },
           { path: 'requests', element: <Requests /> },

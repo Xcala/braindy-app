@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { db } from '../firebase.js';
 import { requireBrand } from './store.js';
 
-export const AD_PLATFORMS = ['meta', 'google', 'tiktok'] as const;
+export const AD_PLATFORMS = ['meta', 'google', 'tiktok', 'linkedin', 'microsoft', 'pinterest', 'chatgpt', 'x', 'snapchat', 'reddit', 'spotify', 'amazon'] as const;
 export const AD_DAILY_KEYS = ['spend', 'impressions', 'reach', 'clicks', 'results', 'convValue'] as const;
 export const AD_PERIODS = ['30', '90', 'month', 'lastMonth', '365'] as const;
 const CAMPAIGN_KEYS = ['spend', 'impressions', 'reach', 'clicks', 'results', 'convValue'] as const;

@@ -17,6 +17,7 @@ export const NAV: NavGroup[] = [
     { to: '/brand/visual', label: 'sub.kit' },
     { to: '/deliveries', label: 'sub.deliveries' },
     { to: '/calendar', label: 'sub.socialCal' },
+    { to: '/pauta', label: 'sub.pauta' },
     { to: '/assets', label: 'sub.library' },
     { to: '/apps', label: 'sub.sites' },
     { to: '/brand', label: 'sub.essence' },

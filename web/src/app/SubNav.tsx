@@ -5,6 +5,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
 import { useBrandLinks } from '../links/useBrandLinks';
 import { useHasSocial } from '../calendar/useSocialPosts';
+import { useHasPauta } from '../pauta/usePauta';
 import { useLegacyAssets } from '../assets/useLegacyAssets';
 import { useBrandDoc } from '../brands/useBrandDoc';
 import { useI18n } from '../i18n/I18nProvider';
@@ -62,10 +63,11 @@ export function useFilled() {
   const research = useBrandLinks(brandId, 'research');
   const legacy = useLegacyAssets(brandId);
   const social = useHasSocial(brandId);
+  const pauta = useHasPauta(brandId);
   const maps = legacy.some((a) => a.type === 'marketmap');
   const id = (useBrandDoc(brandId, 'context/identity').data ?? {}) as Record<string, unknown[] | object | undefined>;
   const has = (k: string) => Array.isArray(id[k]) ? (id[k] as unknown[]).length > 0 : !!id[k];
   const visual = has('logos') || has('colors') || has('typography') || has('concept') || legacy.some((a) => a.type === 'logodeck');
-  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/calendar' ? social : to === '/research' ? research.links.length > 0 || maps
+  return (to: string) => (to === '/apps' ? apps.links.length > 0 : to === '/calendar' ? social : to === '/pauta' ? pauta : to === '/research' ? research.links.length > 0 || maps
     : to === '/brand/visual' ? visual : to === '/brand/docs' ? has('documents') : true);
 }
