@@ -10,6 +10,7 @@ import { brandBasics, findFiles, getRequest, listPosts, listRequests, results, s
 import { brandSites, propose, type ActCard, type ActCtx } from './actions.js';
 import { siteText } from './siteText.js';
 import { ALL_BRANDS, allBrands } from './allBrands.js';
+import { EYE, eyeList } from './eye.js';
 
 const ROUNDS = 4; // tool rounds per question, then it must answer
 
@@ -32,8 +33,8 @@ const TOOLS: Tool[] = [
     input_schema: { type: 'object', properties: {} } },
   { name: 'leer_sitio', description: 'Lee el texto visible de una página del sitio de la marca (por defecto la que está viendo la persona). Úsala antes de opinar, dar ideas o alternativas sobre textos del sitio (ej. la frase del hero).',
     input_schema: { type: 'object', properties: { url: { type: 'string', description: 'https de un sitio de la marca; vacío = la página que está viendo' } } } },
-  { name: 'proponer', description: 'Propone una acción como tarjeta con botón; la persona la confirma, tú nunca la ejecutas. ajuste_sitio: un cambio a su sitio web (texto = qué cambiar y dónde; sitio = url si hay varios). aprobar: aprobar la versión que espera aprobación (pedido_id). pedir_cambios: pedir cambios a esa versión (pedido_id + texto con los cambios). agregar_al_pedido: sumar información o material a un pedido en curso (pedido_id + texto). invitar: invitar a alguien al equipo de la marca (email + nombre). reunion: agendar una reunión con Nico (la tarjeta muestra sus horas libres). compartir_archivo: un enlace para compartir un archivo (archivo_id de «archivos»). recordar_gusto: guardar un gusto o regla de la marca para siempre (texto; tema evitar si es algo que no se debe hacer). recordatorio: recordarle algo a la persona (texto + cuando). cancelar_pedido: cancelar un pedido enviado por error o duplicado (pedido_id; búscalo antes con «pedidos» y, si hay dos parecidos, pregunta cuál).',
-    input_schema: { type: 'object', properties: { accion: { type: 'string', enum: ['ajuste_sitio', 'aprobar', 'pedir_cambios', 'agregar_al_pedido', 'invitar', 'reunion', 'compartir_archivo', 'recordar_gusto', 'recordatorio', 'cancelar_pedido'] }, pedido_id: { type: 'string' }, sitio: { type: 'string' }, titulo: { type: 'string' }, texto: { type: 'string' }, email: { type: 'string' }, nombre: { type: 'string' }, archivo_id: { type: 'string' }, tema: { type: 'string', enum: ['voz', 'evitar'] }, cuando: { type: 'string', description: 'AAAA-MM-DDTHH:mm, hora local de la persona' } }, required: ['accion'] } },
+  { name: 'proponer', description: 'Propone una acción como tarjeta con botón; la persona la confirma, tú nunca la ejecutas. ajuste_sitio: un cambio a su sitio web (texto = qué cambiar y dónde; sitio = url si hay varios). aprobar: aprobar la versión que espera aprobación (pedido_id). pedir_cambios: pedir cambios a esa versión (pedido_id + texto con los cambios). agregar_al_pedido: sumar información o material a un pedido en curso (pedido_id + texto). invitar: invitar a alguien al equipo de la marca (email + nombre). reunion: agendar una reunión con Nico (la tarjeta muestra sus horas libres). compartir_archivo: un enlace para compartir un archivo (archivo_id de «archivos»). recordar_gusto: guardar un gusto o regla de la marca para siempre (texto; tema evitar si es algo que no se debe hacer). recordatorio: recordarle algo a la persona (texto + cuando). cancelar_pedido: cancelar un pedido enviado por error o duplicado (pedido_id; búscalo antes con «pedidos» y, si hay dos parecidos, pregunta cuál). wishlist: una idea o un arreglo para la app de Braindy misma, no para la marca (texto con sus palabras; tipo mejora o arreglo). aprobar_y_enviar: solo NickMark, aprobar y enviar al cliente una entrega en espera de su ojo (marca_id + pedido_id de «para_tu_ojo»).',
+    input_schema: { type: 'object', properties: { accion: { type: 'string', enum: ['ajuste_sitio', 'aprobar', 'pedir_cambios', 'agregar_al_pedido', 'invitar', 'reunion', 'compartir_archivo', 'recordar_gusto', 'recordatorio', 'cancelar_pedido', 'wishlist', 'aprobar_y_enviar'] }, pedido_id: { type: 'string' }, marca_id: { type: 'string' }, tipo: { type: 'string', enum: ['mejora', 'arreglo'] }, sitio: { type: 'string' }, titulo: { type: 'string' }, texto: { type: 'string' }, email: { type: 'string' }, nombre: { type: 'string' }, archivo_id: { type: 'string' }, tema: { type: 'string', enum: ['voz', 'evitar'] }, cuando: { type: 'string', description: 'AAAA-MM-DDTHH:mm, hora local de la persona' } }, required: ['accion'] } },
 ];
 
 type In = Record<string, unknown>;
@@ -52,6 +53,7 @@ async function run(c: ActCtx, name: string, i: In): Promise<Out> {
     case 'leer_sitio': return { ...(await siteText(c, i)), cards: [] };
     case 'sitios': return { ...(await brandSites(c)), cards: [] };
     case 'todas_las_marcas': return allBrands(c, s(i.marca));
+    case 'para_tu_ojo': return eyeList(c);
     case 'proponer': { const p = await propose(c, i); return { text: p.text, cards: [], act: p.card }; }
     default: return { text: 'Herramienta desconocida.', cards: [] };
   }
@@ -70,7 +72,7 @@ export async function answerWithTools(system: string, turns: ChatTurn[], c: ActC
   let call = 0;
   for (let round = 0; round <= ROUNDS; round++) {
     const last = round === ROUNDS;
-    const tools = c.access.admin ? [...TOOLS, ALL_BRANDS] : TOOLS;
+    const tools = c.access.admin ? [...TOOLS, ALL_BRANDS, EYE] : TOOLS;
     const opts = { model: o.model, maxTokens: 1500, meta: o.meta, noTools: last };
     const { content, stop } = o.on ? await claudeTurnStream(system, messages, tools, o.on.text, opts) : await claudeTurn(system, messages, tools, opts);
     const uses = content.filter((b): b is Block & { id: string; name: string } => b.type === 'tool_use' && !!b.id && !!b.name);

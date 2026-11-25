@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
+import { addWish } from '../wishes/useWishes';
 import { useI18n } from '../i18n/I18nProvider';
 import { useAuth } from '../auth/AuthProvider';
 import { api } from '../lib/api';
@@ -13,12 +15,14 @@ export type MoreCard =
   | { kind: 'act'; act: 'share'; ref: string; assetId: string; title: string; text: string; done?: string }
   | { kind: 'act'; act: 'remember'; ref: string; topic: 'voice' | 'avoid'; title: string; text: string; done?: string }
   | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string; done?: string }
-  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string; done?: string };
-export const MORE = new Set(['invite', 'meeting', 'share', 'remember', 'reminder', 'cancel']);
+  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string; done?: string }
+  | { kind: 'act'; act: 'wish'; ref: string; wish: 'improve' | 'fix'; title: string; text: string; done?: string }
+  | { kind: 'act'; act: 'eye'; ref: string; brandId: string; brand: string; requestId: string; versionId: string; title: string; text: string; done?: string };
+export const MORE = new Set(['invite', 'meeting', 'share', 'remember', 'reminder', 'cancel', 'wish', 'eye']);
 
 export function MoreAction({ brandId, card, onDone }: { brandId: string; card: MoreCard; onDone: (done: string, text: string) => void }) {
   const { t, lang } = useI18n();
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [book, setBook] = useState(false);
@@ -41,6 +45,14 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
       } else if (card.act === 'reminder') {
         await api('/v1/help/reminders', { method: 'POST', body: JSON.stringify({ brandId, at: card.at, text: card.text }) });
         onDone('1', card.text);
+      } else if (card.act === 'wish') {
+        if (!user) throw new Error('auth');
+        await addWish(brandId, card.text.slice(0, 2000), card.wish, user.uid, profile?.name || user.displayName || '');
+        onDone('1', card.text);
+      } else if (card.act === 'eye') {
+        // Same call as «Approve and send» on the request (EyeBanner); the brand is the card's, not the one open.
+        await api(`/v1/admin/brands/${card.brandId}/requests/${card.requestId}/versions/${card.versionId}/publish`, { method: 'POST', body: '{}' });
+        onDone('1', '');
       } else if (card.act === 'cancel') {
         // Same call as «Cancel request» on the request; «Undo» puts it back.
         await api(`/v1/brands/${brandId}/requests/${card.requestId}/cancel`, { method: 'POST', body: JSON.stringify({ undo: !!card.done }) });
@@ -52,6 +64,7 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
   const when = card.act === 'reminder' ? new Date(card.at).toLocaleString(loc, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';
   const tag = t(`ma.${card.act}` as 'ma.invite');
   const body = card.act === 'invite' ? (card.name ? `${card.name} · ${card.email}` : card.email)
+    : card.act === 'eye' ? `${card.brand} · ${card.title} · ${card.versionId}${card.text ? `\n${card.text}` : ''}`
     : card.act === 'reminder' ? `${when} · ${card.text}` : card.act === 'share' ? card.title : card.text || card.title;
   const done = !!card.done && card.act !== 'meeting';
   const undo = done && card.act === 'cancel';
@@ -63,6 +76,7 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
       {!done && (
         <div className="row g8 wrap">
           <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => void go()}>{busy ? '…' : t(`ma.${card.act}Go` as 'ma.inviteGo')}</button>
+          {card.act === 'eye' && <Link className="btn btn-ghost btn-sm" to={`/requests/${card.requestId}?brand=${encodeURIComponent(card.brandId)}`}>{t('ma.eyeSee')}</Link>}
         </div>
       )}
       {undo && <button type="button" className="btn btn-ghost btn-sm self-start" disabled={busy} onClick={() => void go()}>{t('ma.cancelUndo')}</button>}

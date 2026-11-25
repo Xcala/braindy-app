@@ -4,6 +4,7 @@
 import { db } from '../firebase.js';
 import type { ActCtx } from './actions.js';
 import { canApprove } from '../requests.js';
+import { proposeEye, type EyeCard } from './eye.js';
 
 export type MoreCard =
   | { kind: 'act'; act: 'invite'; ref: string; email: string; name: string; title: string; text: string }
@@ -11,7 +12,9 @@ export type MoreCard =
   | { kind: 'act'; act: 'share'; ref: string; assetId: string; title: string; text: string }
   | { kind: 'act'; act: 'remember'; ref: string; topic: 'voice' | 'avoid'; title: string; text: string }
   | { kind: 'act'; act: 'reminder'; ref: string; at: string; title: string; text: string }
-  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string };
+  | { kind: 'act'; act: 'cancel'; ref: string; requestId: string; title: string; text: string }
+  | { kind: 'act'; act: 'wish'; ref: string; wish: 'improve' | 'fix'; title: string; text: string }
+  | EyeCard;
 
 const cut = (s: unknown, n: number) => String(s ?? '').trim().slice(0, n);
 const OK = 'TARJETA_LISTA: la persona la revisa y la confirma con el botón. No digas que ya se hizo.';
@@ -53,6 +56,12 @@ export async function proposeMore(c: ActCtx, accion: string, i: Record<string, u
     if (!Number.isFinite(t) || t < Date.now() - 60_000 || t > Date.now() + 366 * 86_400_000) return { text: 'Falta cuándo (fecha y hora, en el próximo año): pregúntalo. Usa AAAA-MM-DDTHH:mm, hora local de la persona.' };
     return { text: OK, card: { kind: 'act', act: 'reminder', ref: '', at: new Date(t).toISOString(), title: texto.slice(0, 70), text: texto } };
   }
+  if (accion === 'wishlist') {
+    if (texto.length < 3) return { text: 'Falta la idea o lo que hay que arreglar en la app: pregúntalo.' };
+    const wish = i.tipo === 'arreglo' || /\b(no funciona|falla|error|bug|se da[ñn]a|broken|does not work)\b/i.test(texto) ? 'fix' : 'improve';
+    return { text: `${OK} Al confirmar queda en la Wishlist y Nico la ve.`, card: { kind: 'act', act: 'wish', ref: '', wish, title: texto.slice(0, 70), text: texto } };
+  }
+  if (accion === 'aprobar_y_enviar') return proposeEye(c, i);
   if (accion === 'cancelar_pedido') {
     const id = cut(i.pedido_id, 80);
     const r = /^[\w-]{4,80}$/.test(id) ? await db.doc(`brands/${c.brandId}/requests/${id}`).get() : null;
