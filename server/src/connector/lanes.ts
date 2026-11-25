@@ -15,12 +15,17 @@ const NEW_BRAND_DAYS = 30;
 const ALWAYS_NICO = /\b(naming|nombre de (la )?marca|estrategia|strategy|campa[ñn]a|campaign|pauta|ads|anuncios|precios?|tarifas?|cotizaci[oó]n|legal|contrato|t[ée]rminos)\b/i;
 const DIRECT = /\b(adapta(ci[oó]n|r)?|resize|redimension|tama[ñn]os?|formatos?|versi[oó]n para|reporte|informe|resultados del mes|ajuste del sitio|site adjustment)\b/i;
 
+const SITE_TITLE = /^\s*(ajuste del sitio|site adjustment)\b/i;
+
 const ms = (v: unknown) => (v && typeof (v as { toMillis?: () => number }).toMillis === 'function' ? (v as { toMillis: () => number }).toMillis() : 0);
 
 /** The lane for version n of this request, with the reason in a few words (shown to Nicolas and to Claude). */
 export async function laneOf(brandId: string, req: DocumentSnapshot, n: number, notes: string, o: { seen?: boolean; hold?: boolean } = {}): Promise<{ lane: Lane; why: string }> {
   if (o.hold) return { lane: 'nico', why: 'pediste revisarla' };
   if (o.seen) return { lane: 'direct', why: 'Nico ya la vio' };
+  // A site adjustment (the flag, or its title from the site panel and the chat card) is small by definition: it goes
+  // straight out, with no brand check and whatever its words say (2026-11-24: 16 of Sanuteam's were held by mistake).
+  if (req.get('siteAdjust') === true || SITE_TITLE.test(String(req.get('title') ?? ''))) return { lane: 'direct', why: 'ajuste del sitio' };
   const q = req.get('quality') as { score?: number } | undefined;
   if (!q || typeof q.score !== 'number') return { lane: 'nico', why: 'sin revisión de marca' };
   if (q.score < MIN_SCORE) return { lane: 'nico', why: `revisión de marca ${q.score}/100` };
@@ -33,7 +38,7 @@ export async function laneOf(brandId: string, req: DocumentSnapshot, n: number, 
   const brand = await db.doc(`brands/${brandId}`).get();
   const born = ms(brand.get('createdAt'));
   if (born && Date.now() - born < NEW_BRAND_DAYS * 86_400_000) return { lane: 'nico', why: 'primer mes de la marca' };
-  if (req.get('siteAdjust') === true || DIRECT.test(text)) return { lane: 'direct', why: 'adaptación, ajuste o reporte' };
+  if (DIRECT.test(text)) return { lane: 'direct', why: 'adaptación, ajuste o reporte' };
   // First piece of its kind for this brand: the one that sets the line.
   const sub = String(req.get('subcategory') ?? '');
   const done = await db.collection(`brands/${brandId}/requests`).where('category', '==', category).where('status', 'in', ['approved', 'published']).limit(20).get();
