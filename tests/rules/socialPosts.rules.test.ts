@@ -1,7 +1,7 @@
 // Social media calendar (mirrored from Metricool by the server). The brand only reads it; nobody writes from the browser.
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { assertFails, assertSucceeds, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, getDoc, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
 import { ADMIN, MEMBER, OUTSIDER, OWNER, as, createEnv, seed } from './setup';
 
 let env: RulesTestEnvironment;
@@ -32,5 +32,23 @@ describe('Social calendar', () => {
       await assertFails(updateDoc(doc(as(env, who), 'brands/brand-a/socialPosts/p1'), { status: 'scheduled' }));
       await assertFails(deleteDoc(doc(as(env, who), 'brands/brand-a/socialPosts/p1')));
     }
+  });
+});
+
+describe('Calendar «Update» request', () => {
+  const ask = (uid: string) => ({ at: serverTimestamp(), by: uid, state: 'queued' });
+  it('anyone who sees the brand asks for an update, as themselves', async () => {
+    await assertSucceeds(setDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/social'), ask(MEMBER)));
+    await assertSucceeds(setDoc(doc(as(env, ADMIN), 'brands/brand-a/syncRequests/social'), ask(ADMIN)));
+    await assertSucceeds(getDoc(doc(as(env, OWNER), 'brands/brand-a/syncRequests/social')));
+  });
+  it('other brands, other names, other states and other kinds are refused', async () => {
+    await assertFails(setDoc(doc(as(env, OUTSIDER), 'brands/brand-a/syncRequests/social'), ask(OUTSIDER)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), 'brands/brand-a/syncRequests/social')));
+    await assertFails(setDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/social'), ask(OWNER)));
+    await assertFails(setDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/social'), { ...ask(MEMBER), state: 'done' }));
+    await assertFails(setDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/social'), { ...ask(MEMBER), doneAt: serverTimestamp() }));
+    await assertFails(setDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/stats'), ask(MEMBER)));
+    await assertFails(deleteDoc(doc(as(env, MEMBER), 'brands/brand-a/syncRequests/social')));
   });
 });

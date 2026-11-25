@@ -7,6 +7,7 @@ import { useSocialStats } from '../report/useSocialStats';
 import { statFor } from '../report/askMore';
 import { useSocialPosts, type SocialPost } from '../calendar/useSocialPosts';
 import { MiniMonth, dayKey } from '../calendar/MiniMonth';
+import { SyncButton } from '../calendar/SyncButton';
 import '../calendar/calendar.css';
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -60,6 +61,7 @@ export function Calendar() {
           <span className="cal-dot is-published" /> {t('cal.nPublished', { n: count('published') })} · <span className="cal-dot is-scheduled" /> {t('cal.nScheduled', { n: count('scheduled') })}
           {count('error') > 0 && <> · <span className="cal-dot is-error" /> {t('cal.nError', { n: count('error') })}</>}
         </p>
+        <SyncButton brandId={current.id} />
       </div>
       {nets.length > 1 && (
         <div className="row g8 wrap" role="group" aria-label={t('cal.networks')}>
