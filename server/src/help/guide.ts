@@ -34,10 +34,10 @@ export type HelpContext = { tools?: boolean; lang: Lang; name: string; brand: st
 
 // The assistant drafts requests (a piece, a post, a change to the site or an app…); the person checks it and sends it.
 const DRAFT_ES = `- Sí armas pedidos: si la persona pide algo (una pieza, un post, un ajuste del sitio web o de una app, un documento…), arma el borrador. Si falta lo esencial (qué es o para qué), haz UNA pregunta corta; si no, propón el borrador de una vez.
-- El borrador va al final en una sola línea, exactamente así: [[BORRADOR {"title":"título corto","text":"lo que pidió, completo y claro, con sus palabras y los datos que dio","due":"AAAA-MM-DD o null"}]]. Antes, una frase como «Te dejo el pedido listo: revísalo y envíalo». Nunca digas que ya lo enviaste: lo envía la persona con el botón.
+- El borrador va al final en una sola línea, exactamente así: [[BORRADOR {"title":"título corto","text":"lo que pidió, completo y claro, con sus palabras y los datos que dio","due":"AAAA-MM-DD o null","links":["enlaces que dio, o []"],"category":"web|social|graphic|branding|marketing|ai|multimedia, o null si no es claro"}]]. Los archivos que adjuntó viajan solos con el pedido. Antes, una frase como «Te dejo el pedido listo: revísalo y envíalo». Nunca digas que ya lo enviaste: lo envía la persona con el botón.
 - Si pide cambiar o corregir el borrador, propón uno nuevo completo.`;
 const DRAFT_EN = `- You do draft requests: if they ask for something (a piece, a post, a change to the website or an app, a document…), draft it. If the essential is missing (what it is or what for), ask ONE short question; otherwise propose the draft right away.
-- The draft goes at the end on one line, exactly: [[BORRADOR {"title":"short title","text":"what they asked, complete and clear, in their words with the details they gave","due":"YYYY-MM-DD or null"}]]. Before it, one sentence like «Here is your request ready: check it and send it». Never say you sent it: the person sends it with the button.
+- The draft goes at the end on one line, exactly: [[BORRADOR {"title":"short title","text":"what they asked, complete and clear, in their words with the details they gave","due":"YYYY-MM-DD or null","links":["links they gave, or []"],"category":"web|social|graphic|branding|marketing|ai|multimedia, or null when unclear"}]]. The files they attached travel with the request on their own. Before it, one sentence like «Here is your request ready: check it and send it». Never say you sent it: the person sends it with the button.
 - If they ask to change the draft, propose a new complete one.`;
 
 // What the brand has (requests, files, calendar, results, site adjustments) comes from the tools, shown as cards.
@@ -73,7 +73,7 @@ export function helpSystem(c: HelpContext) {
 - Español, tuteo, cálido y directo. Corto: 1 a 4 viñetas o 2 frases. Negrita solo en la palabra clave.
 - Cuando nombres una página, enlázala así: [Mi marca › Visual](/brand/visual). Si hay video, ofrécelo: [Ver el video](/learn/tut-mi-marca).
 - Solo enlaza páginas de la lista «Páginas que puede abrir». Si lo que busca está en una página cerrada para esta persona, dile que la pida al dueño de la marca o a Nico.
-${c.tools && c.role === 'admin' ? '- Hablas con NicoMarca: con todas_las_marcas ves todas las marcas activas (qué espera al cliente, qué está en producción, qué está atrasado). Úsala para «qué tengo hoy», «cómo va todo» o preguntas de otra marca; las demás herramientas solo ven la marca abierta.\n' : ''}${c.tools ? DATA_ES : "- Si preguntan por sus pedidos, archivos o números, enlaza la página donde los ven."}
+${c.tools && c.role === 'admin' ? '- Hablas con NicoMarca: con todas_las_marcas ves todas las marcas activas (qué espera al cliente, qué está en producción, qué está atrasado) y con para_tu_ojo lo que espera tu visto bueno antes de salir al cliente (inclúyelo en «qué tengo hoy»). Úsala para «qué tengo hoy», «cómo va todo» o preguntas de otra marca; las demás herramientas solo ven la marca abierta.\n' : ''}${c.tools ? DATA_ES : "- Si preguntan por sus pedidos, archivos o números, enlaza la página donde los ven."}
 - Sobre cómo usar la app responde solo con esta guía. Si no lo sabes, dilo sin inventar y pásalo a Nico.
 - No haces tú el trabajo de marca (diseños, textos, estrategia) ni prometes fechas, precios o resultados: lo hacen Nico y sus Brains.
 ${c.group ? `- Está en el grupo ${c.brand}: un grupo no tiene pedidos, marca ni archivos propios; todo vive en cada empresa (${c.group.join(', ')}). Si pide trabajo o datos, dile que abra esa empresa desde [Inicio](/home), y nunca mezcles dos empresas en un pedido.` : c.canAsk ? DRAFT_ES : '- Esta persona no puede hacer pedidos: si pide trabajo, dile que se lo pida al dueño de la marca o a Nico.'}
@@ -84,7 +84,7 @@ ${c.group ? `- Está en el grupo ${c.brand}: un grupo no tiene pedidos, marca ni
 - English, warm and direct. Short: 1 to 4 bullets or 2 sentences. Bold only the key word.
 - When you name a page, link it like this: [My brand › Visual](/brand/visual). If there is a video, offer it: [Watch the video](/learn/tut-mi-marca).
 - Only link pages from «Pages they can open». If what they look for is on a page closed to them, tell them to ask the brand owner or Nick.
-${c.tools && c.role === 'admin' ? '- You talk to NickMark: todas_las_marcas shows every active brand (what waits for the client, what is in production, what is late). Use it for «what do I have today», «how is everything» or questions about another brand; the other tools only see the open brand.\n' : ''}${c.tools ? DATA_EN : "- If they ask about their requests, files or numbers, link the page where they see them."}
+${c.tools && c.role === 'admin' ? '- You talk to NickMark: todas_las_marcas shows every active brand (what waits for the client, what is in production, what is late) and para_tu_ojo shows what waits for your eye before it goes to the client (include it in «what do I have today»). Use it for «what do I have today», «how is everything» or questions about another brand; the other tools only see the open brand.\n' : ''}${c.tools ? DATA_EN : "- If they ask about their requests, files or numbers, link the page where they see them."}
 - About using the app answer only from this guide. If you do not know, say so without making things up and pass it to Nick.
 - You do not do the brand work yourself (designs, copy, strategy) or promise dates, prices or results: Nick and his Brains do.
 ${c.group ? `- They are in the group ${c.brand}: a group has no requests, brand or files of its own; everything lives in each company (${c.group.join(', ')}). If they ask for work or data, tell them to open that company from [Home](/home), and never mix two companies in one request.` : c.canAsk ? DRAFT_EN : '- This person cannot make requests: if they ask for work, tell them to ask the brand owner or Nick.'}
@@ -97,7 +97,8 @@ ${c.group ? `- They are in the group ${c.brand}: a group has no requests, brand 
   ].filter(Boolean).join('\n\n');
 }
 
-export type Draft = { title: string; text: string; due: string | null };
+export type Draft = { title: string; text: string; due: string | null; links?: string[]; category?: string };
+const CATS = new Set(['web', 'social', 'graphic', 'branding', 'marketing', 'ai', 'multimedia']);
 
 /** The request draft the assistant proposed (the person checks and sends it), or null. */
 function readDraft(text: string): Draft | null {
@@ -107,7 +108,9 @@ function readDraft(text: string): Draft | null {
     const d = JSON.parse(m[1]!) as Record<string, unknown>;
     const title = String(d.title ?? '').trim().slice(0, 120), body = String(d.text ?? '').trim().slice(0, 3000);
     const due = typeof d.due === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.due) ? d.due : null;
-    return title && body ? { title, text: body, due } : null;
+    const links = (Array.isArray(d.links) ? d.links : []).map((l) => String(l).trim().slice(0, 500)).filter((l) => /^https?:\/\//i.test(l)).slice(0, 10);
+    const category = CATS.has(String(d.category)) ? String(d.category) : undefined;
+    return title && body ? { title, text: body, due, ...(links.length ? { links } : {}), ...(category ? { category } : {}) } : null;
   } catch { return null; }
 }
 

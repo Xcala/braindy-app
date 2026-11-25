@@ -4,7 +4,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import { createRequest } from '../requests/api';
 import type { AttachedFile } from '../requests/types';
 
-export type Draft = { title: string; text: string; due: string | null };
+export type Draft = { title: string; text: string; due: string | null; links?: string[]; category?: string };
 
 const dayLabel = (iso: string, lang: string) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -24,7 +24,7 @@ export function DraftCard({ brandId, draft, files, sentId, onSent, onClose }: { 
     if (!d.title.trim() || !d.text.trim()) return;
     setBusy(true); setError(false);
     try {
-      const { requestId } = await createRequest(brandId, { title: d.title.trim(), cards: { product: { text: d.text.trim(), files: files ?? [] } }, dueDate: d.due ?? '', source: 'assistant' }) as { requestId: string };
+      const { requestId } = await createRequest(brandId, { title: d.title.trim(), ...(d.category ? { category: d.category } : {}), cards: { product: { text: d.text.trim(), links: d.links ?? [], files: files ?? [] } }, dueDate: d.due ?? '', source: 'assistant' }) as { requestId: string };
       onSent(requestId, d);
     } catch { setError(true); } finally { setBusy(false); }
   }
@@ -56,6 +56,7 @@ export function DraftCard({ brandId, draft, files, sentId, onSent, onClose }: { 
           <b>{d.title}</b>
           <p>{d.text}</p>
           <span className="t-xs t-mute">{d.due ? `${t('help.draftDue')}: ${dayLabel(d.due, lang)}` : t('help.draftNoDue')}</span>
+          {!!d.links?.length && <span className="t-xs t-mute" style={{ overflowWrap: 'anywhere' }}>🔗 {d.links.join(' · ')}</span>}
           {!!files?.length && <span className="t-xs t-mute">📎 {files.map((x) => x.name).join(', ')}</span>}
         </>
       )}
