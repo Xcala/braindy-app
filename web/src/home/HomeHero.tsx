@@ -1,15 +1,14 @@
 import { useI18n } from '../i18n/I18nProvider';
 import type { ScopedRequest } from '../requests/useBrandsRequests';
-import { HomeStudio } from './HomeStudio';
 import { TalkToNico } from './TalkToNico';
 import { HomeAsk } from './HomeAsk';
 
 /**
- * Home hero: the studio is the screen. Above it, one line (date + what needs you, or "anything is possible")
- * and "Talk to Nick" with every way to reach him. The studio already shows him and his Brains, so the hero
- * repeats neither.
+ * Home hero: one line (date + what needs you, or "anything is possible"), "Talk to Nick" with every way to reach him,
+ * and the ask box. The studio scene left Home on 2026-11-24 (Nicolas: the ask box and what waits for approval must show
+ * together on the first screen); it lives in its own page.
  */
-export function HomeHero({ brandName, needsYou, open }: { brandName: string; needsYou: ScopedRequest[]; open: ScopedRequest[] }) {
+export function HomeHero({ brandName, needsYou }: { brandName: string; needsYou: ScopedRequest[] }) {
   const { t, lang } = useI18n();
   const today = new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -26,8 +25,7 @@ export function HomeHero({ brandName, needsYou, open }: { brandName: string; nee
         </div>
         <TalkToNico brandName={brandName} />
       </div>
-      <HomeAsk />
-      <div data-tour="home-brains"><HomeStudio requests={open} /></div>
+      <div data-tour="home-ask"><HomeAsk /></div>
     </section>
   );
 }

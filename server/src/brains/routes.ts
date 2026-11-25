@@ -15,6 +15,7 @@ import { analyzeGroup } from './group.js';
 import { remindDueTomorrow } from '../dueReminders.js';
 import { hostingDunning } from '../sitePause.js';
 import { pushDueReminders } from '../help/reminders.js';
+import { checkInbox } from '../mail/inbound.js';
 
 export const adminBrains = new Hono<AuthEnv>();
 adminBrains.use('/brands/:brandId/brains/*', async (c, next) => {
@@ -88,4 +89,6 @@ cron.post('/weekly', async (c) => {
 });
 
 /** Daily: WhatsApp the brand the day before a request is due (once per due date). */
+/** Every 2 minutes: emails to the requests address become requests or comments (mail/inbound.ts). */
+cron.post('/mail', async (c) => c.json({ ok: true, ...(await checkInbox()) }));
 cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()), hosting: await hostingDunning(), ...(await pushDueReminders()), ...(await pushLaneDigest().catch(() => ({ laneDigest: 0 }))) }));

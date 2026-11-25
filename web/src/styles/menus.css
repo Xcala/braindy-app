@@ -1,0 +1,53 @@
+/* Menus after lessons 01 and 02 (audit #35, #37, #38, #39).
+   L01: one column, groups with a small grey label, ~2px inside a group and ~12px between groups, rows start on the same line, ≥44px rows on phones.
+   L02: the icon is as tall as the line it sits on (20 × 20 next to 14/20 text, 8px gap), centred with align-items:center. */
+
+/* One icon rule for menu rows. Default: icon 20, text 14/20, gap 8 (⋯ menus, brand picker). */
+.menu-row { --mr-ico: 1.25rem; --mr-fs: 0.875rem; --mr-lh: 1.25rem; --mr-gap: 0.5rem;
+  display: flex; align-items: center; gap: var(--mr-gap); font-size: var(--mr-fs); line-height: var(--mr-lh); }
+/* Small: icon 16, text 13/16, gap 6 («See all» in the notifications). */
+.menu-row.is-sm { --mr-ico: 1rem; --mr-fs: 0.8125rem; --mr-lh: 1rem; --mr-gap: 0.375rem; }
+/* Large: icon 24, text 17/24, gap 12 (account sheet). The account rows take it without a class change. */
+.menu-row.is-lg, .acct-row { --mr-ico: 1.5rem; --mr-fs: 1.0625rem; --mr-lh: 1.5rem; --mr-gap: 0.75rem; }
+.acct-row { gap: var(--mr-gap); font-size: var(--mr-fs); line-height: var(--mr-lh); }
+.menu-row > svg, .menu-row > .menu-ico, .acct-ico { width: var(--mr-ico); height: var(--mr-ico); flex: none; display: grid; place-items: center; }
+.menu-row > .menu-ico svg, .acct-ico svg { width: var(--mr-ico); height: var(--mr-ico); display: block; }
+.menu-row > :not(svg):not(.menu-ico) { min-width: 0; }
+
+/* ⋯ menus: rows take .menu-row (wins over `.fmenu button` in assets/files.css). 40px rows, 44px on phones. */
+.fmenu button.menu-row { gap: var(--mr-gap); font-size: var(--mr-fs); line-height: var(--mr-lh); min-height: 2.5rem; height: auto; padding: 0 0.75rem; }
+@media (max-width: 767px) { .fmenu button.menu-row { min-height: 2.75rem; } }
+/* «See all» at the foot of the notifications. */
+.notif-all { padding: 0.625rem 0.75rem 0.375rem; font-weight: 700; }
+
+/* Brand picker (#35): groups 12px apart, rows 2px apart inside, every row the same: mark 20, text 14/20, gap 8, 44px tall. */
+.bmenu { gap: 0.75rem; }
+.bmenu-group { display: flex; flex-direction: column; gap: 2px; }
+.bmenu-label { display: block; margin: 0; padding: 0 0.75rem 0.25rem; }
+.bmenu-label.is-link { appearance: none; border: 0; background: none; text-align: left; cursor: pointer; font-family: var(--f-text); border-radius: 0.5rem; }
+.bmenu-label.is-link:hover, .bmenu-label.is-link.is-on { color: var(--ink); }
+.bmenu-label.is-link:focus-visible { outline: 2px solid var(--azul, #2A7FFF); outline-offset: 2px; }
+.bmenu .menu-item { gap: 0.5rem; min-height: 2.75rem; padding: 0.375rem 0.75rem; font-size: 0.875rem; line-height: 1.25rem; }
+.bmenu .menu-item .mark { width: 1.25rem; height: 1.25rem; font-size: 0.5625rem; letter-spacing: -0.02em; }
+.bmenu .menu-item .mark-img img { width: 80%; height: 80%; }
+.bmenu .menu-item > svg { width: 1.25rem; height: 1.25rem; flex: none; }
+
+/* Section tabs (#38). Up to four tabs share the width on phones; longer rows scroll with a fade on the edge that has more. */
+.seg.seg-fit { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
+.seg.seg-fit a, .seg.seg-fit button { justify-content: center; min-width: 0; padding: 0 0.5rem; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 640px) { .seg.seg-fit { display: inline-flex; width: auto; align-self: flex-start; } .seg.seg-fit a, .seg.seg-fit button { padding: 0 1rem; } }
+.seg-short { display: none; }
+@media (max-width: 639px) { .seg .has-short .seg-full { display: none; } .seg .has-short .seg-short { display: inline; } }
+.seg.seg-scroll[data-more="right"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); }
+.seg.seg-scroll[data-more="left"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); }
+.seg.seg-scroll[data-more="both"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); }
+.seg.seg-fit a > span, .seg.seg-fit button > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A choice of 2–3 long options: side by side when they fit, stacked when they don't (Mi plan › proposal source, 2026-11-24). */
+.seg.seg-stack { display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr)); border-radius: 1.25rem; }
+.seg.seg-stack button { min-width: 0; white-space: normal; text-align: center; }
+/* Mi plan › «Edit plan»: a side panel from the right; full screen on a phone (2026-11-24). */
+.plan-editor { width: min(38rem, 100%); height: 100%; overflow-y: auto; background: var(--white); box-shadow: var(--sh-3); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; animation: bd-slide-in var(--dur) var(--ease-out) both; }
+@media (min-width: 640px) { .plan-editor { padding: 2rem; border-radius: var(--r-frame) 0 0 var(--r-frame); } }
+.plan-editor-rule { border: 0; border-top: 1px solid var(--border); margin: 0; }
+@keyframes bd-slide-in { from { transform: translateX(2rem); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .plan-editor { animation: none; } }

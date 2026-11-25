@@ -1,3 +1,4 @@
+import { useConfirm } from '../components/useConfirm';
 import { useState, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { planApi } from './usePlan';
@@ -11,12 +12,16 @@ interface AdminProps<T> {
   title: string; help: string; value: T | null; empty: T; example: T;
   save: (v: T) => Promise<{ summary: string }>; remove: () => Promise<unknown>;
   form: (v: T, set: (v: T) => void) => ReactNode;
+  /** Inside the «Edit plan» panel: always open, no frame, no fold. */
+  flat?: boolean;
 }
 
 /** A collapsible admin form with save, load example and delete; the server validates and says what is missing. */
-function Admin<T>({ title, help, value, empty, example, save, remove, form }: AdminProps<T>) {
+function Admin<T>({ title, help, value, empty, example, save, remove, form, flat }: AdminProps<T>) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(!value);
+  const [dialog, ask] = useConfirm();
+  const [folded, setOpen] = useState(!value);
+  const open = flat || folded;
   const [v, setV] = useState<T>(() => structuredClone(value ?? empty));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -32,15 +37,16 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
     } finally { setBusy(false); }
   }
   async function onRemove() {
-    if (!window.confirm(t('plan.a.removeConfirm'))) return;
+    if (!(await ask({ title: t('plan.a.removeConfirm'), confirmLabel: t('acc.delete'), danger: true }))) return;
     await remove(); set(structuredClone(empty));
   }
 
   return (
-    <section className="card card-tight col g12" style={{ borderStyle: 'dashed' }} aria-label={title}>
+    <section className={flat ? 'col g12' : 'card card-tight col g12'} style={flat ? undefined : { borderStyle: 'dashed' }} aria-label={title}>
+      {dialog}
       <div className="row g8" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="col" style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit' }}>
-          <span className="label">{t('bill.a.only')}</span><span className="w7">{title}</span>
+        <button type="button" onClick={() => !flat && setOpen((o) => !o)} aria-expanded={open} className="col" style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', font: 'inherit' }}>
+          {!flat && <span className="label">{t('bill.a.only')}</span>}<span className={flat ? 'h3' : 'w7'}>{title}</span>
         </button>
         {open
           ? <button type="button" className="btn btn-primary btn-sm" onClick={onSave} disabled={busy}>{busy ? `${t('common.loading')}…` : msg?.ok ? `✓ ${t('set.saved').replace(/\.$/, '')}` : t('set.save')}</button>
@@ -56,7 +62,7 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
             <button type="button" className="btn btn-primary btn-sm" onClick={onSave} disabled={busy}>{t('set.save')}</button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => set(structuredClone(example))}>{t('plan.a.example')}</button>
             {value != null && <button type="button" className="btn btn-ghost btn-sm" onClick={onRemove}>{t('plan.a.remove')}</button>}
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>{t('plan.a.hide')}</button>
+            {!flat && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>{t('plan.a.hide')}</button>}
           </div>
         </>
       )}
@@ -66,12 +72,12 @@ function Admin<T>({ title, help, value, empty, example, save, remove, form }: Ad
 
 /** Admin only · What the brand contracted (connector tool braindy_plan), as a form. Its apps live in Apps de terceros (accesses) since 2026-11-20.
  *  The schedule is edited in the contract panel (Onboarding), where it is Anexo 2. */
-export function AdminPlan({ brandId, plan }: { brandId: string; plan: BrandPlan | null }) {
+export function AdminPlan({ brandId, plan, flat }: { brandId: string; plan: BrandPlan | null; flat?: boolean }) {
   const { t } = useI18n();
   return (
     <div className="col g12">
       <Admin<BrandPlan> title={t('plan.a.title')} help={t('plan.a.help')} value={plan} empty={EMPTY_PLAN} example={EXAMPLE}
-        save={(v) => planApi.set(brandId, v)} remove={() => planApi.remove(brandId)} form={(v, set) => <PlanForm v={v} set={set} />} />
+        save={(v) => planApi.set(brandId, v)} remove={() => planApi.remove(brandId)} form={(v, set) => <PlanForm v={v} set={set} />} flat={flat} />
     </div>
   );
 }

@@ -76,7 +76,7 @@ export function SitePanel({ brandId, link, links, frame, jobs }: { brandId: stri
 
       <div className="seg sc-tabs" role="tablist" aria-label={t('site.title')}>
         {tabs.map(([id, label, n]) => (
-          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}>{label}{n ? ` (${n})` : ''}</button>
+          <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => setTab(id)}><span>{label}</span><span className="sc-tab-n">{n}</span></button>
         ))}
       </div>
 

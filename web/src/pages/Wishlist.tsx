@@ -34,7 +34,7 @@ export function Wishlist() {
       {present.length > 1 && (
         <div className="row g8 wrap" role="group" aria-label={t('wl.adm.status')}>
           {(['all', ...present] as const).map((s) => (
-            <button key={s} type="button" aria-pressed={filter === s} onClick={() => setFilter(s)} className={`btn btn-sm ${filter === s ? 'btn-primary' : 'btn-secondary'}`}>
+            <button key={s} type="button" aria-pressed={filter === s} onClick={() => setFilter(s)} className={`btn btn-sm btn-secondary${filter === s ? ' is-picked' : ''}`}>
               {t(s === 'all' ? 'wl.all' : `wl.st.${s}`)} <span className="apps-n">{s === 'all' ? list.length : list.filter((w) => w.status === s).length}</span>
             </button>
           ))}

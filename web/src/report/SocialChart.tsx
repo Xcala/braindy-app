@@ -51,7 +51,7 @@ export function SocialChart({ net, range, keys, metrics = METRICS, prefix = 'soc
         <h3 className="h3">{t(`${prefix}.${metric}` as StringKey)} · {t(`soc.by.${unit}` as StringKey)}</h3>
         <div className="row g6 wrap print:hidden" role="group" aria-label={t('soc.metric')}>
           {options.map((m) => (
-            <button key={m} type="button" aria-pressed={m === metric} onClick={() => setPick(m)} className={`btn btn-sm ${m === metric ? 'btn-primary' : 'btn-secondary'}`}>{t(`${prefix}.${m}` as StringKey)}</button>
+            <button key={m} type="button" aria-pressed={m === metric} onClick={() => setPick(m)} className={`btn btn-sm btn-secondary${m === metric ? ' is-picked' : ''}`}>{t(`${prefix}.${m}` as StringKey)}</button>
           ))}
         </div>
       </div>

@@ -55,7 +55,6 @@ export function Login() {
     setMessage({ kind: 'info', text: t('login.forgotSent') });
   }
 
-  const linkBtn = { background: 'none', border: 0, color: 'var(--azul)', cursor: 'pointer', padding: 0 } as const;
   return (
     <AuthLayout>
       <form onSubmit={onSubmit} className="col g24 w-full max-w-[26.25rem]">
@@ -67,7 +66,7 @@ export function Login() {
           <div className="card col g8" role="status" style={{ background: '#EAF7EF', border: 0 }}>
             <span className="w7">{t('login.linkSentTitle')}</span>
             <span className="t-sm">{t('login.linkSent', { email })}</span>
-            <button type="button" className="t-sm w7 self-start" style={linkBtn} onClick={() => setLinkSent(false)}>{t('login.linkOther')}</button>
+            <button type="button" className="btn-text t-sm w7 self-start" onClick={() => setLinkSent(false)}>{t('login.linkOther')}</button>
           </div>
         ) : <>
           {!fromLink && <>
@@ -91,13 +90,13 @@ export function Login() {
           <div className="field">
             <label htmlFor="em">{t('login.email')}</label>
             <input className="input" id="em" type="email" required autoComplete="email"
-              placeholder="you@yourcompany.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              placeholder={t('login.emailPlaceholder')} value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           {withPassword && !fromLink && (
             <div className="field">
               <div className="row between" style={{ alignItems: 'baseline' }}>
                 <label htmlFor="pw">{t('login.password')}</label>
-                <button type="button" onClick={forgot} className="t-sm w7" style={linkBtn}>{t('login.forgot')}</button>
+                <button type="button" onClick={forgot} className="btn-text t-sm w7">{t('login.forgot')}</button>
               </div>
               <input className="input" id="pw" type="password" required autoComplete="current-password"
                 placeholder={t('login.passwordPlaceholder')} value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -110,13 +109,13 @@ export function Login() {
             {fromLink ? t('login.linkFinish') : withPassword ? t('login.submit') : t('login.sendLink')}
           </button>
           {!fromLink && (
-            <p className="t-sm t-mute text-center">
-              {withPassword ? <button type="button" className="t-sm w7" style={linkBtn} onClick={() => setWithPassword(false)}>{t('login.useLink')}</button>
-                : <>{t('login.linkHint')} <button type="button" className="t-sm w7" style={linkBtn} onClick={() => setWithPassword(true)}>{t('login.usePassword')}</button></>}
+            <p className="t-sm t-mute">
+              {withPassword ? <button type="button" className="btn-text t-sm w7" onClick={() => setWithPassword(false)}>{t('login.useLink')}</button>
+                : <>{t('login.linkHint')} <button type="button" className="btn-text t-sm w7" onClick={() => setWithPassword(true)}>{t('login.usePassword')}</button></>}
             </p>
           )}
         </>}
-        <p className="t-sm t-mute text-center">
+        <p className="t-sm t-mute">
           {t('login.invite')} <a href="mailto:nicolas@braindy.co" className="w7">{t('login.writeNicolas')}</a>
         </p>
       </form>

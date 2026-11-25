@@ -1,3 +1,4 @@
+import { Button } from './Button';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -28,11 +29,16 @@ export function ConfirmDialog({ title, children, confirmLabel, danger, busy, onC
   return (
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onCancel()}>
       <div ref={ref} className="modal w-full max-w-[30rem]" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
-        <h2 className="h2" id="confirm-title">{title}</h2>
+        <div className="row between g12" style={{ alignItems: 'flex-start' }}>
+          <h2 className="h2" id="confirm-title" style={{ margin: 0 }}>{title}</h2>
+          <button type="button" className="modal-x" onClick={onCancel} aria-label={t('lb.close')}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
         {children && <div className="t-mute">{children}</div>}
         <div className="row g12 wrap" style={{ justifyContent: 'flex-end' }}>
-          <button className="btn btn-secondary" onClick={onCancel} data-autofocus>{t('common.cancel')}</button>
-          <button className={`btn ${danger ? 'btn-danger' : 'btn-primary'}`} onClick={onConfirm} disabled={busy}>{confirmLabel}</button>
+          <Button onClick={onCancel} data-autofocus>{t('common.cancel')}</Button>
+          <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm} disabled={busy}>{confirmLabel}</Button>
         </div>
       </div>
     </div>

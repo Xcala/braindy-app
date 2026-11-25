@@ -290,3 +290,6 @@ html[data-theme="dark"] .help-dbtn.is-voice,html[data-theme="dark"] .help-x.is-v
   .help-panel:has(.help-input:focus) .cd-card b{font-size:0.8125rem}
   .help-panel:has(.help-input:focus) .cd-ic{font-size:1rem;margin:0}
 }
+
+/* Phones: the full-screen chat fits the part of the screen the keyboard leaves (useKeyboardFit). */
+@media (max-width:767px){.help-panel:not(.is-dock){top:var(--vv-top,0);bottom:auto;height:var(--vv-h,100dvh)}}

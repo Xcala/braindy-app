@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { PaymentsTab } from '../plan/PaymentsTab';
 import { useAuth } from '../auth/AuthProvider';
@@ -9,7 +10,8 @@ import type { ChecklistItem, Contract, RowStatus, Schedule } from '../contracts/
 import { PlanView, type PlanTab } from '../plan/PlanView';
 import { ContractCard } from '../plan/ContractCard';
 import { ProposalCard } from '../plan/ProposalCard';
-import { AdminPlan } from '../plan/AdminPlan';
+import { PlanEditor } from '../plan/PlanEditor';
+import { Button } from '../components/Button';
 import { Subscription } from '../plan/Subscription';
 import { BrandPieces } from '../plan/BrandPieces';
 import { PaymentsIntro, SiteIntro, SummaryIntro } from '../plan/PlanIntros';
@@ -32,6 +34,7 @@ export function MyPlan() {
   const admin = profile?.role === 'admin';
   const [params] = useSearchParams();
   const { can } = useMySections();
+  const [editing, setEditing] = useState(false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (plan === undefined || (contractId && contractDoc.loading)) return <p className="t-mute">{t('common.loading')}…</p>;
 
@@ -62,11 +65,12 @@ export function MyPlan() {
         payments={<PaymentsTab brand={current} />} openFold={openFold}
         apps={can('accesses') ? <Accesses embedded /> : undefined}
         brandName={current.name} plan={plan} schedule={schedule} kickoff={kickoff}
-        contract={<><ProposalCard brandId={id} admin={admin} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
+        action={admin && tab === 'summary' ? <Button size="sm" onClick={() => setEditing(true)}>✎ {t('pe.open')}</Button> : undefined}
+        contract={<><ProposalCard brandId={id} brandName={current.name} /><ContractCard brandId={id} contract={contract} noPlan={!plan} /></>}
         onPackStatus={admin ? (i, st) => { void planApi.packStatus(id, i, st); } : undefined}
         onRowStatus={admin && editable ? setRow : undefined}
         onTick={(itemId, done) => { contractsApi.tick(id, itemId, done).catch(() => undefined); }} />
-      {admin && tab === 'summary' && <AdminPlan key={id} brandId={id} plan={plan} />}
+      {admin && editing && <PlanEditor key={id} brandId={id} brandName={current.name} plan={plan} onClose={() => setEditing(false)} />}
     </div>
   );
 }

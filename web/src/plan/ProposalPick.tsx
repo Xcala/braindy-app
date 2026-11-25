@@ -13,7 +13,7 @@ type Src = 'app' | 'link' | 'html';
 
 /** Admin only: choose the brand's proposal. One made in the app (a tracked link to its page), a Google Slides or other link,
  *  or an HTML file uploaded to the brand's Files («Propuesta» folder). */
-export function ProposalPick({ brandId, onDone, onCancel }: { brandId: string; onDone: () => void; onCancel?: () => void }) {
+export function ProposalPick({ brandId, onDone, onCancel, bare }: { brandId: string; onDone: () => void; onCancel?: () => void; bare?: boolean }) {
   const { t } = useI18n();
   const toast = useToast();
   const { list } = useProposals.optional(true);
@@ -58,13 +58,14 @@ export function ProposalPick({ brandId, onDone, onCancel }: { brandId: string; o
 
   const ready = src === 'app' ? !!chosen : src === 'link' ? /^https?:\/\/\S+$/.test(url.trim()) : false;
   return (
-    <section className="card col g16" aria-labelledby="pp-add" style={{ borderStyle: 'dashed' }}>
+    <section className={bare ? 'col g16' : 'card col g16'} aria-labelledby="pp-add" style={bare ? undefined : { borderStyle: 'dashed' }}>
       <div className="col g4">
-        <p className="label">{t('pp.admin')}</p>
+        {!bare && <p className="label">{t('pp.admin')}</p>}
         <h2 id="pp-add" className="h3">{t('pp.addTitle')}</h2>
         <p className="t-sm t-mute" style={{ margin: 0 }}>{t('pp.addHint')}</p>
       </div>
-      <div className="seg seg-scroll" role="radiogroup" aria-label={t('pp.addTitle')}>
+      {/* Stacks on a narrow screen instead of cutting «Google Slides o enlace» off (2026-11-24). */}
+      <div className="seg seg-stack" role="radiogroup" aria-label={t('pp.addTitle')}>
         {(['app', 'link', 'html'] as Src[]).map((k) => (
           <button key={k} type="button" role="radio" aria-checked={src === k} className={src === k ? 'is-on' : ''} onClick={() => setSrc(k)}>{t(`pp.src.${k}`)}</button>
         ))}

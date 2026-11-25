@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where, type Timestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, query, serverTimestamp, updateDoc, where, type Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 
@@ -50,3 +50,5 @@ export async function saveLink(brandId: string, id: string, section: LinkSection
   refreshPreview(brandId, id);
 }
 export const removeLink = (brandId: string, id: string) => deleteDoc(doc(db, 'brands', brandId, 'links', id));
+/** Undo for a delete: the link comes back with the same id, so its adjustments and comments hang from it again. */
+export const restoreLink = (brandId: string, { id, ...data }: BrandLink) => setDoc(doc(db, 'brands', brandId, 'links', id), data);

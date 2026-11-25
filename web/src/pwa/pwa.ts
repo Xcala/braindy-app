@@ -14,6 +14,14 @@ let waiting: ServiceWorker | null = null;
 // Set when the person taps Update: the first install also changes the controller and must not reload the page.
 let asked = false;
 const subs = new Set<() => void>();
+/** Away this long (another app, a locked phone) counts as coming back to the app. */
+const AWAY_MS = 2 * 60 * 1000;
+/** Something would be lost by a reload: text being written, or a dialog or side panel open. */
+const busy = () => {
+  const a = document.activeElement as HTMLElement | null;
+  const typing = !!a && (((a instanceof HTMLInputElement || a instanceof HTMLTextAreaElement) && a.value.trim() !== '') || (a.isContentEditable && !!a.textContent?.trim()));
+  return typing || !!document.querySelector('[aria-modal="true"]');
+};
 const set = (p: Partial<State>) => { state = { ...state, ...p }; subs.forEach((f) => f()); };
 
 /** Called once from main.tsx, before React: the install prompt fires early and would be lost otherwise. */
@@ -30,7 +38,16 @@ export function installPwa() {
   sw.addEventListener('controllerchange', () => { if (asked) { asked = false; location.reload(); } });
   addEventListener('load', () => {
     sw.register('/sw.js').then((reg) => {
-      const found = (w: ServiceWorker | null) => { if (w && sw.controller) { waiting = w; set({ update: true }); } };
+      // Coming back to the app after a while (the installed app is rarely closed, so it never reloads by itself): a new version
+      // found then is applied on its own, unless the person is in the middle of something (2026-11-24, Nicolas).
+      let returnedAt = 0;
+      let hiddenAt = 0;
+      const comingBack = () => Date.now() - returnedAt < 30_000;
+      const found = (w: ServiceWorker | null) => {
+        if (!w || !sw.controller) return;
+        waiting = w; set({ update: true });
+        if (comingBack() && !busy()) applyUpdate();
+      };
       if (reg.waiting) found(reg.waiting);
       reg.addEventListener('updatefound', () => {
         const w = reg.installing;
@@ -38,7 +55,12 @@ export function installPwa() {
       });
       // Long-open tabs look for a new version every hour and when they come back to the front.
       setInterval(() => reg.update().catch(() => undefined), 60 * 60 * 1000);
-      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => undefined); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') { hiddenAt = Date.now(); return; }
+        if (hiddenAt && Date.now() - hiddenAt > AWAY_MS) returnedAt = Date.now();
+        if (comingBack() && reg.waiting && !busy()) { applyUpdate(); return; }
+        reg.update().catch(() => undefined);
+      });
     }).catch(() => undefined);
   });
 }

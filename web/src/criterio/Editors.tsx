@@ -57,9 +57,9 @@ export function LessonEditor({ l, onClose }: { l?: Lesson; onClose: () => void }
         <div className="field"><label htmlFor="du">{t('cra.f.deck')}</label><input id="du" className="input" value={f.deckUrl ?? ''} onChange={(e) => set({ deckUrl: e.target.value.trim() })} /></div>
       </div>
       <div className="col g8"><span className="t-sm w7">{t('cra.f.categories')}</span>
-        <div className="row g8 wrap">{TAXONOMY.map((c) => <button key={c.id} className={`btn btn-sm ${f.categories.includes(c.id) ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={f.categories.includes(c.id)} onClick={() => set({ categories: toggle(f.categories, c.id) })}>{c.label.es}</button>)}</div></div>
+        <div className="row g8 wrap">{TAXONOMY.map((c) => <button key={c.id} className={`btn btn-sm btn-secondary${f.categories.includes(c.id) ? ' is-picked' : ''}`} aria-pressed={f.categories.includes(c.id)} onClick={() => set({ categories: toggle(f.categories, c.id) })}>{c.label.es}</button>)}</div></div>
       <div className="col g8"><span className="t-sm w7">{t('cra.f.stages')}</span>
-        <div className="row g8 wrap">{STAGES.map((s) => <button key={s} className={`btn btn-sm ${f.stages.includes(s) ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={f.stages.includes(s)} onClick={() => set({ stages: toggle(f.stages, s) })}>{t(`cra.stage.${s}`)}</button>)}</div></div>
+        <div className="row g8 wrap">{STAGES.map((s) => <button key={s} className={`btn btn-sm btn-secondary${f.stages.includes(s) ? ' is-picked' : ''}`} aria-pressed={f.stages.includes(s)} onClick={() => set({ stages: toggle(f.stages, s) })}>{t(`cra.stage.${s}`)}</button>)}</div></div>
       <div className="row g8 wrap">
         <button className="btn btn-primary" onClick={() => save('published')}>{t('cra.publish')}</button>
         <button className="btn btn-secondary" onClick={() => save(l?.status === 'published' ? 'published' : 'draft')}>{t('cra.save')}</button>

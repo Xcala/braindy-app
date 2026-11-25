@@ -13,13 +13,14 @@ import { sectionOfPath, useMySections } from '../team/sections';
 import { SubNav } from './SubNav';
 import { HowItWorks } from '../learn/tutorials';
 import { Sidebar } from './Sidebar';
-import { DrawerScrim, MenuButton } from './PushDrawer';
+import { DrawerScrim } from './PushDrawer';
 import { useEffect, useRef } from 'react';
 import { ADMIN_TABS, AdminBottomNav } from './AdminBottomNav';
 import { HelpChat } from '../help/HelpChat';
 import { IdeasPanel } from '../wishes/IdeasPanel';
 import { AlertsInvite } from '../pwa/AlertsInvite';
 import { AssistantIntro } from '../help/AssistantIntro';
+import { usePageViews } from '../lib/usage';
 import './shell.css';
 
 export function AppShell() {
@@ -37,6 +38,12 @@ export function AppShell() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // UX #27: a short fade-and-rise when the page changes, so the move reads as one place to the next (none with reduced motion).
+  const main = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    main.current?.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  }, [pathname]);
   // Admin is its own space (design 24): never mixed with the client tabs.
   const adminSpace = isAdmin && pathname.startsWith('/admin');
 
@@ -47,7 +54,6 @@ export function AppShell() {
       <Sidebar admin={adminSpace} items={ADMIN_TABS} />
       <div className="pd-app flex min-h-full min-w-0 flex-1 flex-col">
         <header ref={head} className="topbar shell-top" style={{ height: 'auto', minHeight: '3.5rem', flexWrap: 'nowrap', padding: '0.5rem 0.75rem', paddingTop: 'max(0.5rem, env(safe-area-inset-top))', gap: '0.5rem', position: 'sticky', top: 0 }}>
-          <MenuButton />
           <Link to={adminSpace ? '/admin/today' : '/home'} className="hidden sm:inline-flex md:hidden"><img className="logo" src="/brand/braindy-logo.svg" alt="Braindy" /></Link>
           <div className="vsep hidden sm:block md:hidden" style={{ height: '2rem', margin: 0 }} />
           {adminSpace ? (
@@ -58,7 +64,7 @@ export function AppShell() {
             </>
           ) : (
             <>
-              <span className="min-w-0 shrink"><BrandMenu isAdmin={isAdmin} /></span>
+              <span className="min-w-0 shrink md:min-w-[11rem]"><BrandMenu isAdmin={isAdmin} /></span>
               {/* Phones: the way back to admin lives in the brand menu and the account menu, so the brand keeps the room (2026-11-21). */}
               {isAdmin && <span className="hidden shrink-0 sm:inline-flex"><Link to="/admin/today" className="btn btn-secondary btn-sm">{t('nav.backToAdmin')}</Link></span>}
             </>
@@ -70,7 +76,7 @@ export function AppShell() {
           <AccountMenu />
         </header>
         <div className="shell-card">
-        <main className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
+        <main ref={main} className="mx-auto w-full max-w-[80rem] flex-1 px-4 pb-28 pt-8 sm:px-8 md:pb-16 lg:px-10">
           <SectionGate>{!adminSpace && <><SubNav /><HowItWorks /></>}<Outlet /></SectionGate>
         </main>
         {adminSpace ? <AdminBottomNav /> : <BottomNav />}
@@ -89,6 +95,7 @@ export function AppShell() {
 function SectionGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { ready, can } = useMySections();
+  usePageViews(pathname);
   if (ready && !can(sectionOfPath(pathname))) return <Navigate to="/home" replace />;
   return <>{children}</>;
 }

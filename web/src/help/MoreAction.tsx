@@ -71,7 +71,7 @@ export function MoreAction({ brandId, card, onDone }: { brandId: string; card: M
   return (
     <div className={`help-draft${done ? ' is-sent' : ''}`} aria-label={tag}>
       <span className="help-draft-tag">{done ? `✓ ${t(`ma.${card.act}Done` as 'ma.inviteDone')}` : tag}</span>
-      <p className="t-sm" style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{body}</p>
+      <p className="t-sm" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', margin: 0 }}>{body}</p>
       {card.act === 'share' && link && <input className="input" readOnly value={link} onFocus={(e) => e.currentTarget.select()} aria-label={t('ma.shareLink')} />}
       {!done && (
         <div className="row g8 wrap">

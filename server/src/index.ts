@@ -16,6 +16,7 @@ import { requestCancel } from './requestCancel.js';
 import { adjustQuota } from './adjustQuota.js';
 import { adminLaunches, launches } from './launches.js';
 import { adminCalendar, calendarCallback, meetings } from './meetings.js';
+import { adminMail } from './mail/routes.js';
 import { booking, publicBooking } from './booking.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
@@ -51,6 +52,7 @@ import { publicShare, shareLinks } from './shareLinks.js';
 import { accessLinks, publicAccess } from './accessLinks.js';
 import { push } from './push/routes.js';
 import { events } from './push/events.js';
+import { pageViews } from './pageViews.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -144,6 +146,7 @@ app.route('/v1', launches);
 app.route('/v1', meetings);
 app.route('/v1', booking);
 app.route('/v1/admin', adminCalendar);
+app.route('/v1/admin', adminMail);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
 app.route('/v1', accessLinks);
@@ -179,6 +182,8 @@ app.route('/v1', help);
 app.route('/v1', reminders);
 app.route('/v1', resources);
 app.route('/v1', push);
+app.use('/v1/usage', rateLimit('usage', 30, 60_000));
+app.route('/v1', pageViews);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

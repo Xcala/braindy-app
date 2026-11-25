@@ -39,6 +39,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
   const [links, setLinks] = useState<string[]>(seed.links ?? []);
   const [link, setLink] = useState('');
   const [busyFiles, setBusyFiles] = useState(0);
+  const [upPct, setUpPct] = useState<number | null>(null);
   const [when, setWhen] = useState<When>('');
   const [picked, setPicked] = useState('');
   const [noMaterial, setNoMaterial] = useState(false);
@@ -136,7 +137,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
         <div className="row g8 wrap">
           {(['today', 'thisWeek', 'nextWeek', 'noRush', 'pick'] as When[]).map((w) => (
             <button key={w} type="button" className={`fx-chip${when === w ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={when === w} onClick={() => setWhen(when === w ? '' : w)}>
-              {t(`as.w.${w}` as 'as.w.pick', { day: dayLabel(w === 'thisWeek' ? q.thisWeek : q.nextWeek, lang) })}
+              {when === w && <Icon name="check" size={14} />}{t(`as.w.${w}` as 'as.w.pick', { day: dayLabel(w === 'thisWeek' ? q.thisWeek : q.nextWeek, lang) })}
             </button>
           ))}
           {when === 'pick' && <input type="date" className="input" style={{ height: '2.25rem', width: '10rem' }} value={picked} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setPicked(e.target.value)} aria-label={t('ask.due')} />}
@@ -145,7 +146,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
 
       <div className="col g8">
         <span className="t-sm w7">{t('as.material')}</span>
-        <AskAttachments brandId={brandId} files={files} onChange={setFiles} onBusy={(b) => setBusyFiles((n) => n + (b ? 1 : -1))} />
+        <AskAttachments brandId={brandId} files={files} onChange={setFiles} onBusy={(b) => setBusyFiles((n) => n + (b ? 1 : -1))} onProgress={setUpPct} />
         <div className="row g8 wrap">
           <VoiceNote brandId={brandId} onAdd={(f) => setFiles((all) => [...all, f])} onBusy={(b) => setBusyFiles((n) => n + (b ? 1 : -1))} />
           <button type="button" className={`fx-chip${noMaterial ? ' is-on' : ''}`} style={{ height: '2.25rem' }} aria-pressed={noMaterial} onClick={() => setNoMaterial((v) => !v)}>{noMaterial && <Icon name="check" size={14} />}{t('as.noMaterial')}</button>
@@ -166,7 +167,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
           <div className="col g12">
             <div className="row g8 wrap">
               {TAXONOMY.map((c) => (
-                <button type="button" key={c.id} aria-pressed={c.id === cat} onClick={() => { setCat(c.id); setDetail((d) => ({ ...d, sub: '', type: '' })); }} className={`btn btn-sm ${c.id === cat ? 'btn-primary' : 'btn-secondary'}`}>{c.label[lang]}</button>
+                <button type="button" key={c.id} aria-pressed={c.id === cat} onClick={() => { setCat(c.id); setDetail((d) => ({ ...d, sub: '', type: '' })); }} className={`btn btn-sm btn-secondary${c.id === cat ? ' is-picked' : ''}`}>{c.label[lang]}</button>
               ))}
             </div>
             <AskDetails cat={cat} value={detail} onChange={setDetail} />
@@ -191,7 +192,7 @@ export function AskCompose({ brandId, seed, onBack }: { brandId: string; seed: S
       {error && <p className="t-sm" role="alert" style={{ color: 'var(--danger)', margin: 0 }}>{t('ask.error')}</p>}
       <div className="row between g12 wrap">
         <span className="t-xs t-mute" style={{ maxWidth: '18.75rem' }}>{missing.length ? t('as.missingNote', { what: missing.map((k) => t(`as.c.${k}`).toLowerCase()).join(', ') }) : t('as.allClear')}</span>
-        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={send}>{busyFiles ? t('ask.uploading') : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
+        <button type="button" className="btn btn-primary" disabled={!ready || busy} onClick={send}>{busyFiles ? `${t('ask.uploading')}${upPct != null ? ` ${upPct}%` : ''}` : t(missing.length ? 'as.sendAnyway' : 'ask.sendSimple')}</button>
       </div>
       {dup && (
         <ConfirmDialog title={t('rc.dupTitle', { title: dup.title })} confirmLabel={t('rc.dupOpen')} onConfirm={() => navigate(`/requests/${dup.id}`)} onCancel={() => setDup(null)}>

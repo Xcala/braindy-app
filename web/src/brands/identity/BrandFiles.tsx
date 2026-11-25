@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/useConfirm';
 import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useI18n } from '../../i18n/I18nProvider';
@@ -16,7 +17,10 @@ export const unpinBrandFile = (brandId: string, f: BrandFile) => updateDoc(ref(b
 
 export function BrandFiles({ brandId, files, isAdmin }: { brandId: string; files: BrandFile[]; isAdmin: boolean }) {
   const { t } = useI18n();
+  const [dialog, ask] = useConfirm();
   return (
+    <>
+    {dialog}
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {files.map((f) => (
         <div key={f.id} className="tile" style={{ padding: 0, position: 'relative' }}>
@@ -33,12 +37,13 @@ export function BrandFiles({ brandId, files, isAdmin }: { brandId: string; files
           </a>
           {isAdmin && (
             <button type="button" className="btn btn-ghost btn-sm" style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'var(--white)' }}
-              aria-label={`${t('bf.unpin')}: ${f.title}`} title={t('bf.unpin')} onClick={() => window.confirm(t('bf.unpinConfirm')) && unpinBrandFile(brandId, f)}>
+              aria-label={`${t('bf.unpin')}: ${f.title}`} title={t('bf.unpin')} onClick={async () => { if (await ask({ title: t('bf.unpin') + '?', body: t('bf.unpinConfirm'), confirmLabel: t('bf.unpin'), danger: true })) void unpinBrandFile(brandId, f); }}>
               <Icon name="x" size={14} />
             </button>
           )}
         </div>
       ))}
     </div>
+    </>
   );
 }

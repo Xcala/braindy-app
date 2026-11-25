@@ -3,6 +3,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { WhatsappAccess } from '../../whatsapp/WhatsappAccess';
 import { WhatsappInbox } from '../../whatsapp/WhatsappInbox';
 import { WhatsappProfileCard } from '../../whatsapp/WhatsappProfileCard';
+import { MailChannel } from '../../whatsapp/MailChannel';
 
 /**
  * Admin WhatsApp, in two zones that never mix: Braindy's own channel (status, unknown numbers, business profile),
@@ -26,6 +27,7 @@ export function AdminWhatsapp() {
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <WhatsappInbox />
             <WhatsappProfileCard />
+            <MailChannel />
           </div>
         </>
       ) : <WhatsappAccess />}

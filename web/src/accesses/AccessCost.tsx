@@ -40,7 +40,7 @@ export function AccessCost({ c, set }: { c: Cost; set: (p: Partial<Cost>) => voi
         <span id="acc-payer" className="label">{t('acc.payer')}</span>
         <div className="row g8 wrap" role="radiogroup" aria-labelledby="acc-payer">
           {PAYERS.map(([v, k]) => (
-            <button key={k} type="button" role="radio" aria-checked={c.payer === v} className={`btn btn-sm ${c.payer === v ? 'btn-primary' : 'btn-secondary'}`}
+            <button key={k} type="button" role="radio" aria-checked={c.payer === v} className={`btn btn-sm btn-secondary${c.payer === v ? ' is-picked' : ''}`}
               onClick={() => set({ payer: v })}>{t(k)}</button>
           ))}
         </div>

@@ -3,6 +3,7 @@ import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 import { useI18n } from '../i18n/I18nProvider';
+import { useToast } from '../components/Toaster';
 import { dayLabel } from '../lib/dates';
 import { MeetingNotes, topics } from './MeetingNotes';
 
@@ -36,7 +37,16 @@ export function HomeMeetings({ brandId, admin }: { brandId: string; admin: boole
     try { setPull(await api<Report>('/v1/admin/granola/folders?force=1', { method: 'POST', body: '{}' })); }
     catch (e) { setPull({ error: (e as Error).message }); }
   }
-  const shown = all ? list : list.slice(0, SHOW);
+  // Delete waits for the toast: Undo inside those seconds keeps the meeting (the server cannot bring it back).
+  const toast = useToast();
+  const [gone, setGone] = useState<string[]>([]);
+  function remove(m: Meeting) {
+    setGone((g) => [...g, m.id]);
+    const timer = window.setTimeout(() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'DELETE' }).catch(() => setGone((g) => g.filter((x) => x !== m.id))), 6500);
+    toast({ text: t('mt.deleted', { title: m.title }), undo: () => { window.clearTimeout(timer); setGone((g) => g.filter((x) => x !== m.id)); } });
+  }
+  const visible = list.filter((m) => !gone.includes(m.id));
+  const shown = all ? visible : visible.slice(0, SHOW);
   return (
     <section className="col g12" aria-labelledby="h-meetings">
       <div className="row between g8 wrap">
@@ -72,7 +82,7 @@ export function HomeMeetings({ brandId, admin }: { brandId: string; admin: boole
             {admin && <div className="row g8 wrap">
               <button type="button" className="btn btn-ghost btn-sm" onClick={() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'PATCH', body: JSON.stringify({ hidden: !m.hidden }) })}>{t(m.hidden ? 'mt.show' : 'mt.hide')}</button>
               {m.webUrl && <a href={m.webUrl} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }}>{t('mt.open')} ↗</a>}
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => api(`/v1/admin/brands/${brandId}/brains/meetings/${m.id}`, { method: 'DELETE' })}>{t('acc.delete')}</button>
+              <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--danger)' }} onClick={() => remove(m)}>{t('acc.delete')}</button>
             </div>}
           </div>
         </details>

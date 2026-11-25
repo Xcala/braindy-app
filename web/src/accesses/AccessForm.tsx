@@ -84,7 +84,7 @@ export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId
           <span id="acc-signin" className="label">{t('acc.signIn')}</span>
           <div className="row g8 wrap" role="radiogroup" aria-labelledby="acc-signin">
             {SIGN_IN.map(([v, k]) => (
-              <button key={v} type="button" role="radio" aria-checked={signIn === v} className={`btn btn-sm ${signIn === v ? 'btn-primary' : 'btn-secondary'}`}
+              <button key={v} type="button" role="radio" aria-checked={signIn === v} className={`btn btn-sm btn-secondary${signIn === v ? ' is-picked' : ''}`}
                 onClick={() => setSignIn(v)}>{t(k)}</button>
             ))}
           </div>

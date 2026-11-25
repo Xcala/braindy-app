@@ -1,6 +1,9 @@
 import { CONTACT, fill, type PublicCopy } from './copy';
 import { nicoWhatsApp } from '../../lib/nicoWhatsApp';
 import type { OptionKey } from '../types';
+import { ClientLogos, type ClientLogo } from './ClientLogos';
+
+const KEYS: OptionKey[] = ['launch', 'transform', 'continuity'];
 
 export interface PublicProposal {
   title: string;
@@ -14,6 +17,8 @@ export interface PublicProposal {
   currency?: string;
   files: Array<{ id: string; title: string }>;
   acceptance?: { name: string; role?: string; email?: string; at?: { _seconds?: number; seconds?: number } };
+  /** Client logos shown in grey near «Accept», when the server sends them (not yet: the row stays hidden). */
+  clientLogos?: ClientLogo[];
 }
 
 const img = (name: string) => `/brand/proposal/${name}.jpg`;
@@ -140,19 +145,26 @@ export function Days({ c }: { c: PublicCopy }) {
 
 export function Options({ c, p, onPick }: { c: PublicCopy; p: PublicProposal; onPick: (k: OptionKey) => void }) {
   const rec = p.recommended ?? 'transform';
+  // UX #33: every option lists the same features in the same order (the union of all), so they compare at a glance.
+  const feats = [...new Set(KEYS.flatMap((k) => c.options[k].groups.flatMap(([, items]) => items)))];
   return (
     <section id="options" className="col g32 px-5 py-16 sm:px-14" data-section="5">
       <div className="col g12"><span className="sec-num">05</span><h2 className="d-lg"><span className="w9">{c.opt1}</span> {c.opt2}</h2><p className="t-mute">{c.optSub}</p></div>
       <div className="stage row g12 rounded-2xl p-4"><img className="lighten" src="/brand/brains/four-brains.jpg" alt="" style={{ height: '3rem' }} /><span className="t-sm"><b>{c.allBrains1}</b> {c.allBrains2}</span></div>
       <div className="grid items-stretch gap-5 lg:grid-cols-3">
-        {(['launch', 'transform', 'continuity'] as OptionKey[]).map((k) => {
+        {KEYS.map((k) => {
           const o = c.options[k];
           const isRec = k === rec;
           return (
             <div key={k} className="card col g16" style={isRec ? { borderColor: 'var(--azul)', boxShadow: '0 0 0 1px var(--azul)' } : undefined}>
               <div className="row between"><span className="sec-num">{o.num}</span>{isRec && <span className="chip c-sent">{c.recommended}</span>}</div>
               <div className="col" style={{ gap: '0.375rem' }}><h3 className="d-lg w9">{o.name}</h3><p>{o.lead}</p></div>
-              {o.groups.map(([g, items]) => <div key={g} className="col g8"><p className="label">{g}</p><div className="row g8 wrap">{items.map((i) => <span key={i} className="chip chip-plain c-type">{i}</span>)}</div></div>)}
+              <ul className="opt-feats">
+                {feats.map((f) => {
+                  const on = o.groups.some(([, items]) => items.includes(f));
+                  return <li key={f} className={on ? '' : 'is-off'}><span className="ok" aria-hidden="true">✓</span><span><span className="sr-only">{on ? c.included : c.notIncluded}: </span>{f}</span></li>;
+                })}
+              </ul>
               <div className="col g4" style={{ marginTop: 'auto' }}><span className="d-lg w9" style={{ fontSize: '2.25rem' }}>{p.options?.[k]?.price || c.price}</span><span className="t-sm t-mute">{o.per}</span></div>
               <p className="t-sm t-mute">{o.note}</p>
               <button className={`btn ${isRec ? 'btn-primary' : 'btn-secondary'} btn-block`} onClick={() => onPick(k)}>{o.cta}</button>
@@ -168,7 +180,7 @@ export function Options({ c, p, onPick }: { c: PublicCopy; p: PublicProposal; on
   );
 }
 
-export function Talk({ c, onAccept, files, onFile }: { c: PublicCopy; onAccept: () => void; files: PublicProposal['files']; onFile: (id: string) => void }) {
+export function Talk({ c, onAccept, files, onFile, logos }: { c: PublicCopy; onAccept: () => void; files: PublicProposal['files']; onFile: (id: string) => void; logos?: ClientLogo[] }) {
   return (
     <section id="talk" className="grid gap-10 px-5 py-16 sm:px-14 lg:grid-cols-[1fr_420px]" data-section="6">
       <div className="col g20">
@@ -180,6 +192,7 @@ export function Talk({ c, onAccept, files, onFile }: { c: PublicCopy; onAccept: 
           <a className="btn btn-secondary" href={wa(c)} target="_blank" rel="noreferrer">{c.whatsapp}</a>
         </div>
         <div className="row g16 wrap t-sm t-mute">{c.steps.map((s) => <span key={s}>{s}</span>)}</div>
+        <ClientLogos logos={logos} label={c.trustedBy} />
         {files.length > 0 && (
           <div className="col g8"><p className="label">{c.files}</p>
             <div className="row g8 wrap">{files.map((f) => <button key={f.id} className="btn btn-secondary btn-sm" onClick={() => onFile(f.id)}>{f.title}</button>)}</div>
