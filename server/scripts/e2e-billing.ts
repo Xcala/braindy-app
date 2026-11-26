@@ -77,8 +77,8 @@ check('issued ones carry today\'s date and a PDF', docs.slice(0, 3).every((d) =>
 check('scheduled ones wait for the 5th of their month', docs.slice(3).map((d) => d.scheduledDate).join() === '2026-12-05,2027-01-05,2027-02-05', docs);
 r = await call(A, 'POST', `${B}/agreements/${agId}/activate`);
 check('activating twice is refused', r.status === 409, r);
-r = await call(A, 'PUT', `${B}/agreements/${agId}`, { stageProgress: [100, 60, 80], stageValue: [2500000, 4000000] });
-check('stage progress on an active project: rounded to 25s, one per stage, with its value', r.status === 200 && JSON.stringify(r.json.stageProgress) === '[100,50]' && JSON.stringify(r.json.stageValue) === '[2500000,4000000]', r.json);
+r = await call(A, 'PUT', `${B}/agreements/${agId}`, { stageProgress: [100, 37.4, 80], stageValue: [2500000, 4000000] });
+check('stage progress on an active project: whole %, one per stage, with its value', r.status === 200 && JSON.stringify(r.json.stageProgress) === '[100,37]' && JSON.stringify(r.json.stageValue) === '[2500000,4000000]', r.json);
 
 // PDF of cuenta 3 (saved to look at).
 const snap = await db.doc('brands/blacky/billingDocs/BM-06-03').get();

@@ -4,12 +4,11 @@ import { cuentasApi, fromMinor, money, toMinor, type Agreement } from '../api';
 import '../cuentas.css';
 
 const pct = (n: number, total: number) => (total > 0 ? Math.min(100, Math.round((n / total) * 100)) : 0);
-const STEPS = [0, 25, 50, 75, 100];
 /** Until NickMark sets them, the stages split the project total evenly (the last one takes the remainder). */
 const evenSplit = (total: number, n: number) => Array.from({ length: n }, (_, i) => (i < n - 1 ? Math.floor(total / n) : total - Math.floor(total / n) * (n - 1)));
 
 /** Paid vs work done on one project, one bar under the other. Stages (the project's packs) are not equal: each has
- *  what it is worth, and work done is the value of what is done (each stage at 0, 25, 50, 75 or 100 %). */
+ *  what it is worth, and work done is the value of what is done (each stage on a slider, 0–100 %). */
 export function ProjectBars({ brandId, agreement: a, paid, onSaved }: { brandId: string; agreement: Agreement; paid: number; onSaved: () => void }) {
   const { t } = useI18n();
   const cur = a.currency ?? 'COP';
@@ -57,9 +56,11 @@ export function ProjectBars({ brandId, agreement: a, paid, onSaved }: { brandId:
             <div key={i} className="cc-stage">
               <span className="t-sm" style={{ minWidth: 0 }}><b>{s.name}</b></span>
               <input className="input" inputMode="decimal" aria-label={`${t('cc.pb.value')} · ${s.name}`} value={vals[i]} onChange={(e) => setVals(vals.map((v, j) => (j === i ? e.target.value : v)))} />
-              <select className="input" aria-label={`${t('cc.pb.howFar')} · ${s.name}`} value={prog[i]} onChange={(e) => setProg(prog.map((v, j) => (j === i ? Number(e.target.value) : v)))}>
-                {STEPS.map((v) => <option key={v} value={v}>{v === 0 ? t('cc.pb.s0') : v === 100 ? t('cc.pb.s100') : `${v}%`}</option>)}
-              </select>
+              <span className="cc-range">
+                <input type="range" min={0} max={100} step={5} aria-label={`${t('cc.pb.howFar')} · ${s.name}`} value={prog[i]}
+                  onChange={(e) => setProg(prog.map((v, j) => (j === i ? Number(e.target.value) : v)))} />
+                <b className="t-sm">{prog[i] === 100 ? t('cc.pb.s100') : `${prog[i]}%`}</b>
+              </span>
             </div>
           ))}
           <p className="t-xs t-mute" style={{ margin: 0 }}>{t('cc.pb.weightHint')}{worth !== a.totalAmount ? ` ${t('cc.pb.sumOff', { sum: money(worth, cur), total: money(a.totalAmount, cur) })}` : ''}</p>

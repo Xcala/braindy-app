@@ -151,11 +151,11 @@ adminInvoicing.put('/brands/:brandId/invoicing/agreements/:id', async (c) => {
   const s = await ref.get();
   if (!s.exists) return c.json({ error: 'not_found' }, 404);
   const body = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
-  // How far each stage (pack) of the project is, 0–100 in steps of 25, and what each stage is worth (stages are not
+  // How far each stage (pack) of the project is, 0–100 (whole %), and what each stage is worth (stages are not
   // equal: a longer, harder one weighs more). «Avance» is the value done. Any status.
   if (Array.isArray(body.stageProgress)) {
     const n = ((s.get('packs') as unknown[]) ?? []).length;
-    const stageProgress = body.stageProgress.slice(0, n).map((v) => Math.min(100, Math.max(0, Math.round(Number(v) / 25) * 25)) || 0);
+    const stageProgress = body.stageProgress.slice(0, n).map((v) => Math.min(100, Math.max(0, Math.round(Number(v)))) || 0);
     const raw = Array.isArray(body.stageValue) ? body.stageValue.slice(0, n).map((v) => Math.max(0, Math.round(Number(v)) || 0)) : null;
     const stageValue = raw && raw.length === n && raw.some((v) => v > 0) ? raw : null;
     await ref.update({ stageProgress, ...(stageValue ? { stageValue } : {}), updatedAt: now() });
