@@ -9,10 +9,10 @@ type Status = {
   sending: boolean; receiving: boolean; lastWebhookAt: string | null; inbound: number;
   lastError: { code: number | null; title: string; at: string | null } | null;
 };
-type Item = { id: string; phone: string; name?: string; text?: string; media?: unknown[]; at?: { toDate: () => Date } };
+type Item = { id: string; phone: string; name?: string; text?: string; media?: unknown[]; at?: { toDate: () => Date }; kind?: 'chat'; uid?: string; brandId?: string };
 type Person = { uid: string; label: string };
 
-/** NickMark only: WhatsApp channel status and messages from numbers no brand knows yet. */
+/** NickMark only: WhatsApp channel status, messages from numbers no brand knows yet, and clients' chat (greetings, thanks) kept out of requests. */
 export function WhatsappInbox() {
   const { t } = useI18n();
   const { brands } = useBrands();
@@ -29,16 +29,24 @@ export function WhatsappInbox() {
     () => setItems([])), []);
   const active = brands.filter((b) => b.status === 'active').sort((a, b) => a.name.localeCompare(b.name));
 
-  async function pickBrand(id: string, brandId: string) {
-    setBrand({ ...brand, [id]: brandId }); setPerson({ ...person, [id]: '' });
+  async function loadPeople(brandId: string) {
     if (!brandId || people[brandId]) return;
     const snap = await getDocs(collection(db, 'brands', brandId, 'members')).catch(() => null);
     setPeople((p) => ({ ...p, [brandId]: (snap?.docs ?? []).map((d) => ({ uid: d.id, label: String(d.get('name') || d.get('email') || d.id) })) }));
   }
-  async function act(id: string, path: 'assign' | 'dismiss') {
+  function pickBrand(id: string, brandId: string) {
+    setBrand({ ...brand, [id]: brandId }); setPerson({ ...person, [id]: '' });
+    void loadPeople(brandId);
+  }
+  // A client's chat already knows its brand and person: both come filled in.
+  const brandOf = (i: Item) => brand[i.id] ?? i.brandId ?? '';
+  const personOf = (i: Item) => person[i.id] ?? (brand[i.id] === undefined ? i.uid : undefined) ?? '';
+  useEffect(() => { items.forEach((i) => { if (i.brandId) void loadPeople(i.brandId); }); }, [items]); // eslint-disable-line react-hooks/exhaustive-deps
+  async function act(item: Item, path: 'assign' | 'dismiss') {
+    const id = item.id;
     setMsg(null);
     try {
-      await api(`/v1/admin/whatsapp/inbox/${id}/${path}`, { method: 'POST', body: JSON.stringify(path === 'assign' ? { brandId: brand[id], uid: person[id] } : {}) });
+      await api(`/v1/admin/whatsapp/inbox/${id}/${path}`, { method: 'POST', body: JSON.stringify(path === 'assign' ? { brandId: brandOf(item), uid: personOf(item) } : {}) });
       if (path === 'assign') setMsg(t('wa.assigned'));
     } catch { setMsg(t('wa.error')); }
   }
@@ -61,20 +69,20 @@ export function WhatsappInbox() {
       {items.length === 0 && <p className="t-sm t-mute">{t('wa.empty')}</p>}
       {items.map((i) => (
         <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.625rem' }}>
-          <span className="t-sm"><b>{i.name || `+${i.phone}`}</b> <span className="t-mute">· +{i.phone}{i.at ? ` · ${i.at.toDate().toLocaleString()}` : ''}</span></span>
+          <span className="t-sm">{i.kind === 'chat' && <span className="chip c-sent" style={{ marginRight: 6 }}>{t('wa.chat')}</span>}<b>{i.name || `+${i.phone}`}</b> <span className="t-mute">· +{i.phone}{i.at ? ` · ${i.at.toDate().toLocaleString()}` : ''}</span></span>
           {i.text && <p className="t-sm" style={{ margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{i.text}</p>}
           {i.media?.length ? <span className="t-xs t-mute">{t('wa.files', { n: i.media.length })}</span> : null}
           <div className="row g8 wrap">
-            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} value={brand[i.id] ?? ''} onChange={(e) => pickBrand(i.id, e.target.value)} aria-label={t('wa.brand')}>
+            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} value={brandOf(i)} onChange={(e) => pickBrand(i.id, e.target.value)} aria-label={t('wa.brand')}>
               <option value="">{t('wa.brand')}</option>
               {active.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} disabled={!brand[i.id]} value={person[i.id] ?? ''} onChange={(e) => setPerson({ ...person, [i.id]: e.target.value })} aria-label={t('wa.person')}>
+            <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} disabled={!brandOf(i)} value={personOf(i)} onChange={(e) => setPerson({ ...person, [i.id]: e.target.value })} aria-label={t('wa.person')}>
               <option value="">{t('wa.person')}</option>
-              {(people[brand[i.id]] ?? []).map((p) => <option key={p.uid} value={p.uid}>{p.label}</option>)}
+              {(people[brandOf(i)] ?? []).map((p) => <option key={p.uid} value={p.uid}>{p.label}</option>)}
             </select>
-            <button className="btn btn-primary btn-sm" disabled={!brand[i.id] || !person[i.id]} onClick={() => act(i.id, 'assign')}>{t('wa.assign')}</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => act(i.id, 'dismiss')}>{t('wa.dismiss')}</button>
+            <button className="btn btn-primary btn-sm" disabled={!brandOf(i) || !personOf(i)} onClick={() => act(i, 'assign')}>{t(i.kind === 'chat' ? 'wa.toRequest' : 'wa.assign')}</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => act(i, 'dismiss')}>{t('wa.dismiss')}</button>
           </div>
         </div>
       ))}

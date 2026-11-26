@@ -11,6 +11,7 @@ import { brandsOf, contactRef, getContact, type Contact, type Pending } from './
 import { storeMedia, type InMedia } from './media.js';
 import { queueWork } from '../autopilot.js';
 import { replyWithLoginLink } from '../accessLinks.js';
+import { intentOf, isSmallTalk } from './intent.js';
 
 const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? 'https://braindy-app-staging.web.app';
 const FOLLOW_UP_MS = 15 * 60_000;
@@ -90,10 +91,11 @@ export function brandNamed(text: string, brands: { id: string; name: string }[])
   return hits.length === 1 ? hits[0] : undefined;
 }
 
-async function toInbox(m: WaMsg, name: string, text: string, media: InMedia[]) {
+/** Unknown numbers, and a known client's chat (`client` set): admin inbox only, never a request until NickMark files it. */
+async function toInbox(m: WaMsg, name: string, text: string, media: InMedia[], client?: { uid: string; brandId: string }) {
   await db.doc(`waInbox/${m.id}`).set({
     phone: m.from, name: name.slice(0, 80), text, type: m.type, media: media.map((x) => ({ id: x.id, name: x.name, contentType: x.contentType })),
-    status: 'new', at: now(),
+    status: 'new', at: now(), ...(client ? { kind: 'chat', uid: client.uid, brandId: client.brandId } : {}),
   });
 }
 
@@ -105,8 +107,8 @@ async function comment(brandId: string, requestId: string, uid: string, text: st
     .update(ref, { updatedAt: now() })
     .commit();
   const r = await ref.get();
-  // On free action, a follow-up on finished work (not yet approved) puts the Brains back on it.
-  if (r.get('work.state') === 'done' && r.get('status') !== 'approved' && r.get('status') !== 'published') await queueWork(brandId, requestId, 'comment');
+  // On free action, a follow-up on finished work (not yet approved) puts the Brains back on it. A "gracias" does not.
+  if (!(text && !media.length && isSmallTalk(text)) && r.get('work.state') === 'done' && r.get('status') !== 'approved' && r.get('status') !== 'published') await queueWork(brandId, requestId, 'comment');
   return String(r.get('title') ?? '');
 }
 
@@ -185,11 +187,18 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     return;
   }
 
-  const pending: Pending = { text, media, at: Date.now() };
-  if (brands.length === 1) return fileRequest(phone, uid, brands[0].id, pending, lang);
   // Several brands: the one the message names, else the one they last asked for. Only a first-time sender gets the list.
   const named = brandNamed(text, brands);
   const usual = brands.find((b) => b.id === last?.brandId);
+  // "Hola", "gracias", "¿cómo vas?": conversation, not work. It waits in the admin inbox; NickMark answers or files it.
+  const likely = brands.length === 1 ? brands[0] : (named ?? usual ?? brands[0]);
+  if ((await intentOf(text, media.length > 0, likely.id)) === 'chat') {
+    await toInbox(m, profileName, text, media, { uid, brandId: likely.id });
+    return;
+  }
+
+  const pending: Pending = { text, media, at: Date.now() };
+  if (brands.length === 1) return fileRequest(phone, uid, brands[0].id, pending, lang);
   if (named || usual) return fileRequest(phone, uid, (named ?? usual)!.id, pending, lang);
   await contactRef(phone).set({ state: { pending } }, { merge: true });
   return choose(phone, COPY[lang].which, brands.map((b) => ({ id: `br:${b.id}`, title: b.name })), lang === 'es' ? 'Marcas' : 'Brands');
