@@ -1,5 +1,12 @@
 /** Cuentas de cobro y recibos: the client's list, NickMark's management (agreements, import, payments) and his issuer data. */
 export const cuentasEn = {
+  'cc.w.noContact': 'No accounting email or WhatsApp.', 'cc.w.noContactHint': 'Cuentas will only show in their app.', 'cc.w.addContact': 'Add contact',
+  'cc.w.nobody': 'Nobody at this brand sees Billing.', 'cc.w.nobodyHint': 'What you send will not reach anyone in the app.', 'cc.w.grant': 'Give Billing access',
+  'cc.pr.row': '{p}% paid · {left} left',
+  'cc.iss.title': 'Issue {n} now', 'cc.iss.body': 'It will be dated today, {today}, not {day} as planned. Value {v}.', 'cc.iss.note': 'Once issued the date and number cannot change; you can still void it.', 'cc.iss.ok': 'Issue now',
+  'cc.all.hint': '{n} ready and not sent: the client does not see them yet.', 'cc.all.btn': 'Send pending ({n})', 'cc.all.title': 'Send {n} pending', 'cc.all.to': 'They go to {to} and to their app.', 'cc.all.noTo': 'No accounting email or WhatsApp: they will only show in their app.', 'cc.all.app': '{n} people with Billing get an alert.',
+  'cc.all.sending': 'Sending {i} of {n}…', 'cc.all.done': '{n} sent', 'cc.all.failed': 'Did not go out: {list}.', 'cc.all.ok': 'Send {n}', 'cc.all.close': 'Done',
+  'cc.sum.owed': 'Left to pay', 'cc.sum.none': 'Nothing pending', 'cc.sum.next': 'Oldest open', 'cc.s.otherPlans': 'Design plan (card)',
   'cc.title': 'Payment requests', 'cc.tagline': 'Each payment request of your project, with its PDF.',
   'cc.empty': 'No payment requests yet.',
   'cc.col.number': 'Number', 'cc.col.month': 'Month', 'cc.col.value': 'Amount', 'cc.col.status': 'Status', 'cc.col.paidOn': 'Paid on', 'cc.h.cuentas': 'Payment requests', 'cc.h.recibos': 'Payments received', 'cc.covers': 'Applied to {list}', 'cc.notSent': 'Not sent: the client does not see it', 'cc.st.delivered': 'Delivered',
@@ -48,6 +55,13 @@ export const cuentasEn = {
 } as const;
 
 export const cuentasEs: Record<keyof typeof cuentasEn, string> = {
+  'cc.w.noContact': 'Sin correo ni WhatsApp de contabilidad.', 'cc.w.noContactHint': 'Las cuentas solo quedarán en su app.', 'cc.w.addContact': 'Agregar contacto',
+  'cc.w.nobody': 'Nadie en esta marca ve Facturación.', 'cc.w.nobodyHint': 'Lo que envíes no le llega a nadie en la app.', 'cc.w.grant': 'Dar acceso a Facturación',
+  'cc.pr.row': '{p}% pagado · faltan {left}',
+  'cc.iss.title': 'Emitir {n} ya', 'cc.iss.body': 'Saldrá con fecha de hoy, {today}, y no del {day} como estaba planeada. Valor {v}.', 'cc.iss.note': 'Una vez emitida, la fecha y el número no cambian; sí la puedes anular.', 'cc.iss.ok': 'Emitir ya',
+  'cc.all.hint': '{n} listas sin enviar: el cliente todavía no las ve.', 'cc.all.btn': 'Enviar pendientes ({n})', 'cc.all.title': 'Enviar {n} pendientes', 'cc.all.to': 'Van a {to} y a su app.', 'cc.all.noTo': 'No hay correo ni WhatsApp de contabilidad: solo quedarán en su app.', 'cc.all.app': 'Avisamos a {n} personas con Facturación.',
+  'cc.all.sending': 'Enviando {i} de {n}…', 'cc.all.done': '{n} enviadas', 'cc.all.failed': 'No salieron: {list}.', 'cc.all.ok': 'Enviar {n}', 'cc.all.close': 'Listo',
+  'cc.sum.owed': 'Por pagar', 'cc.sum.none': 'Nada pendiente', 'cc.sum.next': 'La más antigua', 'cc.s.otherPlans': 'Plan de diseño (tarjeta)',
   'cc.title': 'Cuentas de cobro', 'cc.tagline': 'Cada cuenta de cobro de tu proyecto, con su PDF.',
   'cc.empty': 'Aún no hay cuentas de cobro.',
   'cc.col.number': 'Número', 'cc.col.month': 'Mes', 'cc.col.value': 'Valor', 'cc.col.status': 'Estado', 'cc.col.paidOn': 'Fecha del pago', 'cc.h.cuentas': 'Cuentas de cobro', 'cc.h.recibos': 'Pagos recibidos', 'cc.covers': 'Abono a {list}', 'cc.notSent': 'Sin enviar: el cliente no la ve', 'cc.st.delivered': 'Entregado',

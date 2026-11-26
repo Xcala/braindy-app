@@ -2,6 +2,9 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { money, type Agreement, type Cuenta } from '../api';
 import '../cuentas.css';
 
+/** What has been paid on a project: the paid part of its cuentas that are not void. */
+export const paidOf = (agreement: Agreement, docs: Cuenta[]) =>
+  docs.filter((d) => d.agreementId === agreement.id && d.type === 'cuenta_cobro' && d.status !== 'void').reduce((s, d) => s + (d.paid ?? 0), 0);
 const pct = (n: number, total: number) => (total > 0 ? Math.min(100, Math.round((n / total) * 100)) : 0);
 
 /** How much of a project is paid and how much is left, in money and %, and what this payment would make it. */
@@ -9,7 +12,7 @@ export function PayProgress({ agreement, docs, next }: { agreement: Agreement; d
   const { t } = useI18n();
   const cur = agreement.currency;
   const total = agreement.totalAmount;
-  const paid = docs.filter((d) => d.agreementId === agreement.id && d.type === 'cuenta_cobro' && d.status !== 'void').reduce((s, d) => s + (d.paid ?? 0), 0);
+  const paid = paidOf(agreement, docs);
   const left = Math.max(0, total - paid);
   const add = Math.min(Math.max(0, next), left);
   const p = pct(paid, total), pAfter = pct(paid + add, total);
