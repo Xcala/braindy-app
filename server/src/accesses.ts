@@ -50,7 +50,7 @@ function about(b: Record<string, unknown>) {
   return out;
 }
 /** How people sign in: a password kept here, or their Google / Microsoft account. */
-const signIn = (v: unknown) => (v === 'google' || v === 'microsoft' ? v : 'password');
+const signIn = (v: unknown) => (v === 'google' || v === 'microsoft' || v === 'facebook' || v === 'none' ? v : 'password');
 const secretRef =(brandId: string, id: string) => db.doc(`accessSecrets/${brandId}__${id}`);
 const aad = (brandId: string, id: string) => `brands/${brandId}/accesses/${id}`;
 

@@ -22,10 +22,10 @@ export function Accesses({ embedded = false }: { embedded?: boolean }) {
   const [view, setView] = useState<AppsView>(loadView);
   const set = (p: Partial<AppsView>) => setView((v) => { const next = { ...v, ...p }; saveView(next); return next; });
   const [q, setQ] = useState('');
-  const FILTERS: AppsView['filter'][] = ['all', 'subs', 'direct', 'braindy', 'google', 'microsoft', 'missing'];
+  const FILTERS: AppsView['filter'][] = ['all', 'subs', 'direct', 'braindy', 'google', 'microsoft', 'facebook', 'missing'];
   const counts = Object.fromEntries(FILTERS.map((f) => [f, list.filter((a) => passes(a, f)).length])) as Record<AppsView['filter'], number>;
   const groupNames = [...new Set(list.map((a) => a.group).filter((g): g is string => !!g))].sort();
-  const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('acc.password'), link: t('acc.link'), plan: t('acc.subscription'), notes: t('acc.notes') };
+  const label: Record<AccessCol, string> = { user: t('acc.user'), password: t('ct.a.how'), link: t('acc.link'), plan: t('acc.subscription'), notes: t('acc.notes') };
   const monthly = monthlyTotals(list);
   const subs = list.filter((a) => a.subscription).length;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;

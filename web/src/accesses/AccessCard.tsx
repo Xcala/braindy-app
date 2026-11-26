@@ -18,7 +18,7 @@ export function AccessCard({ brandId, a, logo, drag, onEdit }: { brandId: string
       </div>
       <dl className="acc-card-fields">
         <dt>{t('acc.user')}</dt><dd><UserCell a={a} /></dd>
-        <dt>{t('acc.password')}</dt><dd><PasswordCell brandId={brandId} a={a} onEdit={onEdit} /></dd>
+        <dt>{t('ct.a.how')}</dt><dd><PasswordCell brandId={brandId} a={a} onEdit={onEdit} /></dd>
         <dt>{t('acc.link')}</dt><dd><LinkCell a={a} /></dd>
         {(a.subscription || a.payer) && <><dt>{t('acc.subscription')}</dt><dd><PlanCell a={a} /></dd></>}
       </dl>

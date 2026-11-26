@@ -14,6 +14,18 @@ export function priceLabel(price: number, currency: string, period: 'month' | 'y
 const fmt = (s: number) => `0:${String(s).padStart(2, '0')}`;
 export const host = (url: string) => { try { return new URL(url).host.replace(/^www\./, ''); } catch { return url; } };
 
+/** The account each sign-in goes through: its logo and how it reads. */
+const OAUTH: Record<'google' | 'microsoft' | 'facebook', { domain: string; key: StringKey }> = {
+  google: { domain: 'google.com', key: 'ct.a.google' }, microsoft: { domain: 'outlook.com', key: 'acc.signInMicrosoft' }, facebook: { domain: 'facebook.com', key: 'ct.a.facebook' },
+};
+/** One line for phones: how you get in, or that the password is missing (audit C4). */
+export function HowLine({ a }: { a: Access }) {
+  const { t } = useI18n();
+  const s = signInOf(a);
+  if (s === 'password' && !a.hasSecret) return <span className="chip c-approve">{t('ct.a.missing')}</span>;
+  return <span className="t-xs t-mute truncate">{t(s === 'password' ? 'ct.a.pw' : s === 'none' ? 'ct.a.none' : OAUTH[s].key)}</span>;
+}
+
 /** A small copy button with "Copied" feedback. Copying a password is logged by the caller. */
 export function CopyBtn({ value, onCopied, label }: { value: string; onCopied?: () => void; label: string }) {
   const { t } = useI18n();
@@ -56,10 +68,9 @@ export function PasswordCell({ brandId, a, onEdit }: { brandId: string; a: Acces
   }
 
   const signIn = signInOf(a);
-  if (signIn !== 'password') {
-    return <span className="row g8 t-sm w7"><AppLogo name={signIn} domain={signIn === 'google' ? 'google.com' : 'outlook.com'} size={20} />{t(signIn === 'google' ? 'acc.signInGoogle' : 'acc.signInMicrosoft')}</span>;
-  }
-  if (!a.hasSecret) return <span className="row g8"><span className="chip c-approve">{t('acc.missing')}</span><button type="button" className="btn btn-secondary btn-sm" onClick={onEdit}>{t('acc.add')}</button></span>;
+  if (signIn === 'none') return <span className="t-sm t-mute">{t('ct.a.none')}</span>;
+  if (signIn !== 'password') return <span className="row g8 t-sm w7"><AppLogo name={signIn} domain={OAUTH[signIn].domain} size={20} />{t(OAUTH[signIn].key)}</span>;
+  if (!a.hasSecret) return <span className="row g8"><span className="chip c-approve">{t('ct.a.missing')}</span><button type="button" className="btn btn-secondary btn-sm" onClick={onEdit}>{t('acc.add')}</button></span>;
   return value ? (
     <span className="row g4 min-w-0">
       <span className="mono t-sm truncate" aria-live="polite">{value}</span>

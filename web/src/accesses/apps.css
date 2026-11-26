@@ -48,3 +48,11 @@ html[data-theme="dark"] .apps-chip[aria-pressed='true'], html[data-theme="dark"]
 .apps-cols[open] .apps-cols-btn, .apps-cols-btn:hover { color: var(--ink); border-color: var(--graphite); }
 .apps-cols-menu { position: absolute; right: 0; top: calc(100% + 0.5rem); z-index: 20; display: flex; flex-direction: column; gap: 0.5rem; min-width: 11rem; padding: 0.875rem 1rem; background: var(--white); border: 1px solid var(--line); border-radius: 0.875rem; box-shadow: 0 12px 32px rgba(11,18,32,.12); }
 .apps-cols-menu label { cursor: pointer; }
+/* Phones: the search and a «Filtros» button; the rest opens under it (audit C4, 2026-11-26). */
+.apps-bar .apps-filters-btn { display: none; }
+@media (max-width: 767px) {
+  .apps-bar { flex-wrap: wrap; align-items: center; }
+  .apps-bar .apps-search { flex: 1 1 0; }
+  .apps-bar .apps-filters-btn { display: inline-flex; height: 2.75rem; }
+  .apps-bar:not(.is-open) .apps-more, .apps-chips:not(.is-open) { display: none; }
+}

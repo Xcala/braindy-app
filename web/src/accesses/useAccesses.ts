@@ -9,11 +9,27 @@ export type Access = {
   /** What it is for, who pays it, when it renews and whether it is in use (2026-11-20: the old «apps» cards of Mi plan live here now). */
   purpose?: string; payer?: Payer | null; renews?: string | null; status?: AppStatus; updatedByName?: string; updatedAt?: Timestamp; lastRevealedAt?: Timestamp;
 };
-/** How people get in: their own password, or a Google / Microsoft (Outlook) account with nothing to keep here. */
-export type SignIn = 'password' | 'google' | 'microsoft';
-/** The saved choice; older accesses only said it in the notes ("ingresa con google"). */
-export const signInOf = (a: Pick<Access, 'signIn' | 'notes'>): SignIn =>
-  a.signIn ?? (/\bgoogle\b/i.test(a.notes ?? '') ? 'google' : /\b(outlook|microsoft|hotmail)\b/i.test(a.notes ?? '') ? 'microsoft' : 'password');
+/** How people get in: their own password, a Google / Microsoft (Outlook) / Facebook account with nothing to keep here, or
+ *  nothing at all (a public page, a QR). */
+export type SignIn = 'password' | 'google' | 'microsoft' | 'facebook' | 'none';
+const GOOGLE_HOST = /(^|\.)(analytics|ads|tagmanager|business|search|marketingplatform|lookerstudio|datastudio|merchants|console\.cloud|firebase)\.google\.com$|(^|\.)(youtube\.com|google\.com\/(analytics|ads))/i;
+const FACEBOOK_HOST = /(^|\.)(facebook|fb|instagram|meta)\.com$/i;
+const hostOf = (link?: string) => { try { return new URL(link!.startsWith('http') ? link! : `https://${link}`).host; } catch { return ''; } };
+/** The saved choice; older accesses only said it in the notes ("ingresa con google"). An old entry saved as «password» with
+ *  no password kept falls back to what its link says: Google Analytics or Ads is entered with Google, Meta with Facebook
+ *  (audit C3, 2026-11-26). Gmail keeps its password. */
+export const signInOf = (a: Pick<Access, 'signIn' | 'notes' | 'link' | 'platform' | 'hasSecret'>): SignIn => {
+  if (a.signIn && a.signIn !== 'password') return a.signIn;
+  const notes = a.notes ?? '';
+  const said: SignIn | null = /\bgoogle\b/i.test(notes) ? 'google' : /\b(outlook|microsoft|hotmail)\b/i.test(notes) ? 'microsoft' : /\bfacebook\b/i.test(notes) ? 'facebook' : null;
+  if (said && (!a.signIn || !a.hasSecret)) return said;
+  if (a.hasSecret) return 'password';
+  const host = hostOf(a.link);
+  if (/^mail\.google\.com$/i.test(host)) return 'password';
+  if (GOOGLE_HOST.test(host) || /\b(google analytics|ga4|google ads|tag manager|search console|google business)\b/i.test(a.platform ?? '')) return 'google';
+  if (FACEBOOK_HOST.test(host) || /\b(meta|facebook|instagram)\b/i.test(a.platform ?? '')) return 'facebook';
+  return 'password';
+};
 /** A paid plan on the platform: shown in its own column and added up below the table. */
 export type Subscription = { plan?: string; price?: number | null; currency?: 'USD' | 'COP' | 'EUR'; period?: 'month' | 'year' | 'usage' | 'once' };
 export type Payer = 'braindy' | 'client';
