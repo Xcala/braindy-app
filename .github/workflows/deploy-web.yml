@@ -1,0 +1,84 @@
+# Publishes the web app from GitHub, so no computer has to (2026-11-25, Nicolas: «arranca la ruta»).
+# - Every push to main → staging (free, for trying things).
+# - Production only when run by hand (Actions › Deploy web › Run workflow › production), later from the «Sube» button in
+#   Braindy › Admin. The rule does not change: nothing reaches app.braindy.co without Nicolas' «sube».
+# No keys live here: GitHub signs in to Google as github-deploy (hosting only) through Workload Identity Federation, and
+# the public Firebase web config is read at build time from the Firebase project itself.
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**', 'firebase.json', '.github/workflows/deploy-web.yml']
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Where to publish'
+        type: choice
+        options: [staging, production]
+        default: staging
+
+concurrency:
+  group: deploy-web-${{ github.event.inputs.target || 'staging' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TARGET: ${{ github.event.inputs.target || 'staging' }}
+      PROJECT: braindy-brand-guideline
+      WEB_APP_ID: '1:283103160183:web:fce82a279f18e7aa01e372'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/283103160183/locations/global/workloadIdentityPools/github/providers/github-xcala
+          service_account: github-deploy@braindy-brand-guideline.iam.gserviceaccount.com
+      - run: npm ci
+      - name: Firebase web config (public values, read from the project; never printed)
+        run: |
+          npx --yes firebase-tools@15 apps:sdkconfig WEB "$WEB_APP_ID" --project "$PROJECT" --json > /tmp/sdk.json
+          node -e '
+            const c = JSON.parse(require("fs").readFileSync("/tmp/sdk.json","utf8")).result.sdkConfig;
+            console.log("::add-mask::" + c.apiKey);
+            const out = [
+              "VITE_FIREBASE_API_KEY=" + c.apiKey,
+              "VITE_FIREBASE_AUTH_DOMAIN=" + c.authDomain,
+              "VITE_FIREBASE_PROJECT_ID=" + c.projectId,
+              "VITE_FIREBASE_STORAGE_BUCKET=" + c.storageBucket,
+              "VITE_FIREBASE_MESSAGING_SENDER_ID=" + c.messagingSenderId,
+              "VITE_FIREBASE_APP_ID=" + c.appId,
+              "VITE_USE_EMULATORS=false",
+            ].join("\n") + "\n";
+            require("fs").writeFileSync("web/.env.local", out);
+          '
+          rm /tmp/sdk.json
+      - name: Build
+        run: npm run build -w web
+        env:
+          VITE_RELEASE: ${{ github.sha }}
+      - name: The key is in the bundle exactly once
+        run: |
+          K=$(grep '^VITE_FIREBASE_API_KEY=' web/.env.local | cut -d= -f2-)
+          N=$(grep -l "$K" web/dist/assets/*.js | wc -l)
+          echo "key files: $N"
+          test "$N" = "1"
+      - name: Publish
+        run: npx --yes firebase-tools@15 deploy --only "hosting:$TARGET" --project "$PROJECT" --non-interactive
+      - name: Live check
+        run: |
+          case "$TARGET" in production) U=https://app.braindy.co ;; *) U=https://braindy-app-staging.web.app ;; esac
+          sleep 5
+          JS=$(curl -s "$U/?x=$RANDOM" | grep -o '/assets/index-[^"]*\.js' | head -1)
+          K=$(grep '^VITE_FIREBASE_API_KEY=' web/.env.local | cut -d= -f2-)
+          curl -s "$U$JS" | grep -q "$K" && echo "live: $U$JS" || (echo "live bundle not updated yet: $U$JS"; exit 1)
