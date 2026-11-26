@@ -71,7 +71,8 @@ app.onError((err, c) => {
 });
 app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type', 'X-Firebase-AppCheck'], allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] }));
 
-app.get('/health', (c) => c.json({ ok: true }));
+// release: the commit this server was built from (set by the GitHub deploy; empty when deployed from a computer).
+app.get('/health', (c) => c.json({ ok: true, release: process.env.RELEASE ?? null }));
 
 // Public proposal pages: no login, tracked per send.
 // braindy.co books meetings here too (the site's /book page), so the public routes also answer the site.
