@@ -113,7 +113,7 @@ export function registerAdTools(server: McpServer, app: string) {
       source: z.string().describe('doordash, ubereats, rappi, tienda…'),
       currency: z.string().optional(),
       note: z.string().optional().describe('Where the numbers come from, shown under them'),
-      months: z.array(ROW.and(z.object({ promos: z.array(ROW).max(20).optional(), insights: z.array(z.string()).max(6).optional(), costNotes: z.array(z.string()).max(4).optional() }))).max(36)
+      months: z.array(z.object({ promos: z.array(ROW).max(20).optional(), insights: z.array(z.string()).max(6).optional(), costNotes: z.array(z.string()).max(4).optional() }).catchall(z.union([z.number(), z.string(), z.null()]))).max(36)
         .describe('{ month: "YYYY-MM", period: "1 – 31 oct", readAt: "2 nov 2026" (day the portal was read), sales, orders, customers, newCustomers, adSales, adOrders, adSpend (net, after credits), credits, note, costNotes: ["how each cost is made, one line each"], insights: ["up to 6 short conclusions, in the brand language"], promos: [{ name, kind (promo|sponsored|ad), dates, orders, sales, grossCost, credit, cost (net) }] }'),
     },
   }, run(async ({ brandId, source, ...input }) => {
