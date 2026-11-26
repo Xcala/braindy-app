@@ -3,6 +3,7 @@
 // cuentas (issue now, send, void, PDF), payments and recibos.
 // Client (/v1): billing people of the brand list their cuentas, download the PDF and say «Ya pagué» with a proof.
 // Public (/public): the tokenized link sent to accounting redirects to a short signed URL of the frozen PDF.
+import { projectProgress } from './progress.js';
 import { randomUUID } from 'node:crypto';
 import { Hono, type MiddlewareHandler } from 'hono';
 import { db } from '../firebase.js';
@@ -102,9 +103,9 @@ adminInvoicing.put('/issuers/:id/:kind{signature|logo}', async (c) => {
 /** Everything about a brand's billing, for the admin screen. */
 adminInvoicing.get('/brands/:brandId/invoicing', async (c) => {
   const b = c.req.param('brandId');
-  const [p, ags, docs, people] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get(), peopleWithBilling(b).catch(() => [] as string[])]);
+  const [p, ags, docs, people, progress] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get(), peopleWithBilling(b).catch(() => [] as string[]), projectProgress(b).catch(() => null)]);
   return c.json({
-    profile: p.exists ? p.data() : null, billingPeople: people.length,
+    profile: p.exists ? p.data() : null, billingPeople: people.length, progress,
     agreements: ags.docs.map((s) => ({ id: s.id, ...s.data(), sourceSamplePath: undefined })),
     docs: docs.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>)).sort((x, y) => x.scheduledDate.localeCompare(y.scheduledDate) || x.number.localeCompare(y.number)),
   });

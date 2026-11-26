@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CuentasList } from '../CuentasList';
-import { cuentasApi, errKey, money, type Agreement, type Cuenta, type Profile } from '../api';
+import { cuentasApi, errKey, money, type Agreement, type Cuenta, type Profile, type Progress } from '../api';
 import { AgreementForm } from './AgreementForm';
 import { IssuerSettings } from './IssuerSettings';
 import { BillingFiles } from '../BillingFiles';
 import { PaymentForm } from './PaymentForm';
 import { paidOf } from './PayProgress';
+import { ProjectBars } from './ProjectBars';
 
 const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: '', accountingEmail: '', accountingWhatsApp: '' };
 
@@ -15,7 +16,7 @@ const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: ''
  *  client's billing data, the projects with what is paid and «Registrar pago» on each, every cuenta and recibo. */
 export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has: boolean) => void }) {
   const { t } = useI18n();
-  const [data, setData] = useState<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
+  const [data, setData] = useState<{ profile: Profile | null; billingPeople?: number; progress?: Progress | null; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [form, setForm] = useState<Agreement | 'new' | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
@@ -75,13 +76,11 @@ export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has
         </div>
         {data.agreements.map((a) => {
           const paid = paidOf(a, data.docs);
-          const p = a.totalAmount > 0 ? Math.min(100, Math.round((paid / a.totalAmount) * 100)) : 0;
           return (
             <div key={a.id} className="card card-tight col g8">
               <div className="row between g12 wrap">
                 <span className="col g2" style={{ minWidth: 0, flex: '1 1 16rem' }}>
                   <span className="t-sm"><b>{a.title}</b> · {money(a.totalAmount, a.currency)} · {a.installments} · {a.numberingPrefix}{a.currency === 'USD' ? ' · USA' : ''}</span>
-                  {a.status !== 'draft' && <span className="t-xs t-mute">{t('cc.pr.row', { p: String(p), left: money(Math.max(0, a.totalAmount - paid), a.currency) })}</span>}
                 </span>
                 <span className="row g8 wrap">
                   <span className="chip">{t(`cc.a.${a.status}` as never)}</span>
@@ -91,7 +90,7 @@ export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has
                   )}
                 </span>
               </div>
-              {a.status !== 'draft' && <div className="cc-bar" aria-hidden="true"><span className="is-paid" style={{ width: `${p}%` }} /></div>}
+              {a.status !== 'draft' && <ProjectBars agreement={a} paid={paid} progress={data.progress} />}
               {paying === a.id && <PaymentForm brandId={brandId} agreement={a} docs={data.docs} onDone={(m) => { setPaying(null); setMsg(m); load(); }} />}
             </div>
           );
