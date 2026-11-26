@@ -1,0 +1,33 @@
+/** Admin · Today: the «Sube» card that publishes the app to production from GitHub (no computer needed). */
+export const releaseEn = {
+  'rel.title': 'Publish the app',
+  'rel.upToDate': 'app.braindy.co is up to date.',
+  'rel.pending': '{n} changes ready to publish',
+  'rel.unknown': 'Changes ready to publish (production was published from a computer, so the exact list is not known).',
+  'rel.publish': 'Publish to app.braindy.co',
+  'rel.confirm': 'Publish these changes to app.braindy.co now?',
+  'rel.started': 'Publishing. It takes about 3 minutes.',
+  'rel.running': 'Publishing now…',
+  'rel.last': 'Last publish: {when}',
+  'rel.ok': 'done',
+  'rel.failed': 'failed',
+  'rel.see': 'See details',
+  'rel.off': 'The publish button is not connected yet.',
+  'rel.error': 'Could not reach GitHub. Try again in a minute.',
+};
+export const releaseEs: Record<keyof typeof releaseEn, string> = {
+  'rel.title': 'Publicar la app',
+  'rel.upToDate': 'app.braindy.co está al día.',
+  'rel.pending': '{n} cambios listos para publicar',
+  'rel.unknown': 'Hay cambios listos para publicar (producción salió desde un computador, así que no se sabe la lista exacta).',
+  'rel.publish': 'Subir a app.braindy.co',
+  'rel.confirm': '¿Subir estos cambios a app.braindy.co ahora?',
+  'rel.started': 'Subiendo. Tarda unos 3 minutos.',
+  'rel.running': 'Subiendo ahora…',
+  'rel.last': 'Última subida: {when}',
+  'rel.ok': 'lista',
+  'rel.failed': 'falló',
+  'rel.see': 'Ver detalle',
+  'rel.off': 'El botón de subir todavía no está conectado.',
+  'rel.error': 'No se pudo hablar con GitHub. Intenta en un minuto.',
+};
