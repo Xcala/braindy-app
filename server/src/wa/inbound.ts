@@ -200,7 +200,13 @@ ${offer.text}`, media: offer.media, at: offer.at }, lang);
   // Pilot brands: the agent talks, answers, offers requests or hands over to NickMark (unless he is talking himself).
   const agentBrand = brands.length === 1 ? brands[0] : (brandNamed(text, brands) ?? brands.find((b) => b.id === last?.brandId) ?? brands[0]);
   const paused = (contact?.agentPausedUntil?.toMillis() ?? 0) > Date.now();
-  if (!paused && (await agentOn(agentBrand.id))) return withAgent(m, phone, uid, agentBrand, text, media, lang, profileName);
+  if (await agentOn(agentBrand.id)) {
+    if (!paused) return withAgent(m, phone, uid, agentBrand, text, media, lang, profileName);
+    // NickMark is talking with them himself: no request, no comment, only memory (and the files, kept for a later request).
+    await remember(phone, agentBrand.id, [{ role: 'user', content: text || `[${media.length} archivo(s)]` }]);
+    if (media.length) await keepFiles(phone, agentBrand.id, media);
+    return;
+  }
 
   // Follow-up right after a request (more photos, "and make it blue") → comment on it, silently.
   if (last && Date.now() - last.at.toMillis() < FOLLOW_UP_MS && brands.some((b) => b.id === last.brandId)) {
@@ -255,10 +261,13 @@ ${c.offer}`, [{ id: 'rq:yes', title: c.yes }, { id: 'rq:no', title: c.no }]);
     return say(phone, said);
   }
   // A plain answer; a file sent with it waits in the inbox so it is not lost.
-  if (media.length) {
-    const offer = (await contactRef(phone).get()).get('state.offer') as Record<string, unknown> | undefined;
-    const kept = [...((offer?.media as InMedia[] | undefined) ?? []), ...media.map((x) => ({ id: x.id, name: x.name, contentType: x.contentType }))].slice(-10);
-    await contactRef(phone).set({ state: { offer: { ...(offer ?? { brandId: brand.id, title: '', text: '', at: Date.now() }), media: kept } } }, { merge: true });
-  }
+  if (media.length) await keepFiles(phone, brand.id, media);
   if (said) return say(phone, said);
+}
+
+/** Files sent in conversation (not yet a request) wait on the contact and travel with the next request the agent offers. */
+async function keepFiles(phone: string, brandId: string, media: InMedia[]) {
+  const offer = (await contactRef(phone).get()).get('state.offer') as Record<string, unknown> | undefined;
+  const kept = [...((offer?.media as InMedia[] | undefined) ?? []), ...media.map((x) => ({ id: x.id, name: x.name, contentType: x.contentType }))].slice(-10);
+  await contactRef(phone).set({ state: { offer: { ...(offer ?? { brandId, title: '', text: '', at: Date.now() }), media: kept } } }, { merge: true });
 }
