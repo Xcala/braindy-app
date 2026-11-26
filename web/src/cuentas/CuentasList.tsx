@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta, type Profile } from './api';
 import { SendDialog } from './admin/SendDialog';
-import { ConfirmIssue, SendAll } from './admin/ListDialogs';
+import { ConfirmIssue, SendAll, pendingWhat } from './admin/ListDialogs';
 import { PayDialog } from './PayDialog';
 import './cuentas.css';
 
@@ -80,7 +80,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
       {msg && <p className="t-sm" role="status">{msg}</p>}
       {pendingSend.length > 0 && (
         <div className="cc-warn row between g12 wrap">
-          <span className="t-sm" style={{ minWidth: 0, flex: '1 1 14rem' }}>{t('cc.all.hint', { n: String(pendingSend.length) })}</span>
+          <span className="t-sm" style={{ minWidth: 0, flex: '1 1 14rem' }}>{t('cc.all.hint', { n: pendingWhat(t as never, pendingSend) })}</span>
           <button className="btn btn-primary btn-sm" onClick={() => setSendAll(true)}>{t('cc.all.btn', { n: String(pendingSend.length) })}</button>
         </div>
       )}

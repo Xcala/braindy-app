@@ -3,6 +3,14 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { cuentasApi, money, type Cuenta, type Profile } from '../api';
 import '../cuentas.css';
 
+/** «6 cuentas de cobro y 1 recibo»: what is waiting to go out, said by kind so it matches the lists. */
+export function pendingWhat(t: (k: never, v?: Record<string, string>) => string, docs: Cuenta[]) {
+  const c = docs.filter((d) => d.type === 'cuenta_cobro').length, r = docs.length - c;
+  const part = (n: number, one: string, many: string) => (n === 1 ? t(one as never) : t(many as never, { n: String(n) }));
+  const parts = [c ? part(c, 'cc.all.c1', 'cc.all.cN') : '', r ? part(r, 'cc.all.r1', 'cc.all.rN') : ''].filter(Boolean);
+  return parts.length === 2 ? t('cc.all.and' as never, { a: parts[0], b: parts[1] }) : parts[0] ?? '';
+}
+
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
 const longDate = (ymd: string, lang: 'en' | 'es') => new Date(`${ymd}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -53,7 +61,7 @@ export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: 
   return (
     <Modal id="cc-all-h" onClose={() => step !== 'sending' && onClose(step === 'done')}>
       <div className="col g8">
-        <h2 className="h2" id="cc-all-h">{t('cc.all.title', { n: String(docs.length) })}</h2>
+        <h2 className="h2" id="cc-all-h">{t('cc.all.title', { n: pendingWhat(t as never, docs) })}</h2>
         <p className="t-sm">{docs.map((d) => d.number).join(', ')}</p>
         <p className="t-sm t-mute">{to ? t('cc.all.to', { to }) : t('cc.all.noTo')} {t('cc.all.app', { n: String(people) })}</p>
       </div>
