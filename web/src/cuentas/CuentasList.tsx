@@ -32,7 +32,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
   const canSend = (d: Cuenta) => !!admin && d.held && d.status !== 'void' && d.status !== 'scheduled';
   const pendingSend = [...cuentas, ...recibos].filter(canSend);
   const issue = (d: Cuenta) => run(d.id, () => cuentasApi.act(brandId, d.id, 'issue'));
-  const cols = { gridTemplateColumns: '7.5rem minmax(0,1fr) 8rem 9rem minmax(9rem,auto)' };
+  const cols = { gridTemplateColumns: '6.5rem minmax(0,1fr) 8rem 9rem 15rem' };
   // A recibo shows the day it was paid; older ones without it, the month of the payment.
   const dateOf = (d: Cuenta) => !d.paidOn ? monthName(d.billingMonth, lang) : new Date(`${d.paidOn}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
 
