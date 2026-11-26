@@ -12,11 +12,12 @@ export const AD_DAILY_KEYS = ['spend', 'impressions', 'reach', 'clicks', 'result
 export const AD_PERIODS = ['30', '90', 'month', 'lastMonth', '365'] as const;
 const CAMPAIGN_KEYS = ['spend', 'impressions', 'reach', 'clicks', 'results', 'convValue'] as const;
 const SALES_KEYS = ['sales', 'orders', 'customers', 'newCustomers', 'adSales', 'adOrders', 'adSpend', 'credits'] as const;
-const PROMO_KEYS = ['orders', 'sales', 'cost'] as const;
+// cost = net cost (after the portal credit); grossCost and credit when the portal shows them (2026-11-25, DoorDash like Estefanía's page).
+const PROMO_KEYS = ['orders', 'sales', 'cost', 'grossCost', 'credit'] as const;
 
 type Row = Record<string, number | string | null | undefined>;
 export interface AdInput { account?: string; currency?: string; daily: Row[]; campaigns?: Partial<Record<(typeof AD_PERIODS)[number], Row[]>> }
-export interface SalesInput { currency?: string; note?: string; months: Array<Row & { promos?: Row[] }> }
+export interface SalesInput { currency?: string; note?: string; months: Array<Row & { promos?: Row[]; insights?: string[]; costNotes?: string[] }> }
 
 const num = (v: unknown) => (v == null || v === '' || !isFinite(Number(v)) ? null : Math.round(Number(v) * 100) / 100);
 const str = (v: unknown, n: number) => String(v ?? '').slice(0, n);
@@ -61,8 +62,10 @@ export async function syncSalesStats(brandId: string, source: string, input: Sal
     const month = str(m.month, 7);
     if (!/^\d{4}-\d{2}$/.test(month)) continue;
     months.set(month, {
-      month, ...pick(m, SALES_KEYS), period: str(m.period, 60), note: str(m.note, 400),
-      promos: (m.promos ?? []).filter((x) => x.name).slice(0, 20).map((x) => ({ name: str(x.name, 120), dates: str(x.dates, 60), ...pick(x, PROMO_KEYS) })),
+      month, ...pick(m, SALES_KEYS), period: str(m.period, 60), note: str(m.note, 400), readAt: str(m.readAt, 40),
+      insights: (m.insights ?? []).slice(0, 6).map((x) => str(x, 300)).filter(Boolean),
+      costNotes: (m.costNotes ?? []).slice(0, 4).map((x) => str(x, 300)).filter(Boolean),
+      promos: (m.promos ?? []).filter((x) => x.name).slice(0, 20).map((x) => ({ name: str(x.name, 120), dates: str(x.dates, 60), kind: str(x.kind, 30), ...pick(x, PROMO_KEYS) })),
     });
   }
   const list = [...months.values()].sort((a, b) => String(a.month).localeCompare(String(b.month))).slice(-36);
@@ -110,8 +113,8 @@ export function registerAdTools(server: McpServer, app: string) {
       source: z.string().describe('doordash, ubereats, rappi, tienda…'),
       currency: z.string().optional(),
       note: z.string().optional().describe('Where the numbers come from, shown under them'),
-      months: z.array(ROW.and(z.object({ promos: z.array(ROW).max(20).optional() }))).max(36)
-        .describe('{ month: "YYYY-MM", period: "1 – 31 oct", sales, orders, customers, newCustomers, adSales, adOrders, adSpend, credits, note, promos: [{ name, dates, orders, sales, cost }] }'),
+      months: z.array(ROW.and(z.object({ promos: z.array(ROW).max(20).optional(), insights: z.array(z.string()).max(6).optional(), costNotes: z.array(z.string()).max(4).optional() }))).max(36)
+        .describe('{ month: "YYYY-MM", period: "1 – 31 oct", readAt: "2 nov 2026" (day the portal was read), sales, orders, customers, newCustomers, adSales, adOrders, adSpend (net, after credits), credits, note, costNotes: ["how each cost is made, one line each"], insights: ["up to 6 short conclusions, in the brand language"], promos: [{ name, kind (promo|sponsored|ad), dates, orders, sales, grossCost, credit, cost (net) }] }'),
     },
   }, run(async ({ brandId, source, ...input }) => {
     const name = await requireBrand(brandId);

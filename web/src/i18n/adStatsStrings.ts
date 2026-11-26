@@ -16,6 +16,9 @@ export const adStatsEn = {
   'sales.h.adSales': '{pct} of sales', 'sales.h.roas': 'Sales from promotions ÷ what they cost', 'sales.h.adSpend': 'After {src} credits',
   'sales.promos': 'Each promotion', 'sales.p.orders': '{n} orders', 'sales.p.cost': 'cost {v}',
   'sales.note': 'Numbers read from the {src} portal, by month.',
+  'sales.readAt': 'Read from the {src} portal on {d}', 'sales.vsPrev': '{d} vs {m}',
+  'sales.c.name': 'Promotion', 'sales.c.orders': 'Orders', 'sales.c.sales': 'Sales', 'sales.c.gross': 'Gross cost', 'sales.c.credit': '{src} credit', 'sales.c.net': 'Net cost', 'sales.c.roas': 'Return', 'sales.c.roasNet': 'Net return',
+  'sales.costs': 'How the costs add up', 'sales.insights': 'Conclusions',
 };
 export const adStatsEs: Record<keyof typeof adStatsEn, string> = {
   'ads.tab': 'Anuncios', 'ads.meta': 'Meta Ads', 'ads.google': 'Google Ads', 'ads.tiktok': 'TikTok Ads',
@@ -34,4 +37,7 @@ export const adStatsEs: Record<keyof typeof adStatsEn, string> = {
   'sales.h.adSales': '{pct} de las ventas', 'sales.h.roas': 'Ventas por promociones ÷ lo que costaron', 'sales.h.adSpend': 'Después de los créditos de {src}',
   'sales.promos': 'Cada promoción', 'sales.p.orders': '{n} pedidos', 'sales.p.cost': 'costo {v}',
   'sales.note': 'Cifras leídas del portal de {src}, por mes.',
+  'sales.readAt': 'Leído del portal de {src} el {d}', 'sales.vsPrev': '{d} vs {m}',
+  'sales.c.name': 'Promoción', 'sales.c.orders': 'Pedidos', 'sales.c.sales': 'Ventas', 'sales.c.gross': 'Costo bruto', 'sales.c.credit': 'Crédito de {src}', 'sales.c.net': 'Costo neto', 'sales.c.roas': 'Retorno', 'sales.c.roasNet': 'Retorno neto',
+  'sales.costs': 'Cómo se arman los costos', 'sales.insights': 'Conclusiones',
 };

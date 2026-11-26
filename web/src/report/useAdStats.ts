@@ -6,8 +6,9 @@ export type AdKey = 'spend' | 'impressions' | 'reach' | 'clicks' | 'results' | '
 export type AdDay = { d: string } & Partial<Record<AdKey, number | null>>;
 export type Campaign = { id: string; name: string; objective: string; status: string; resultLabel: string } & Partial<Record<AdKey, number | null>>;
 export type AdStats = { platform: string; currency: string; daily: AdDay[]; campaigns: Partial<Record<string, Campaign[]>>; updatedAt: Date | null };
-export type Promo = { name: string; dates?: string; orders?: number | null; sales?: number | null; cost?: number | null };
-export type SalesMonth = { month: string; period?: string; note?: string; promos?: Promo[] }
+/** cost = net (after the portal credit); grossCost and credit when the portal shows them. */
+export type Promo = { name: string; kind?: string; dates?: string; orders?: number | null; sales?: number | null; cost?: number | null; grossCost?: number | null; credit?: number | null };
+export type SalesMonth = { month: string; period?: string; note?: string; readAt?: string; insights?: string[]; costNotes?: string[]; promos?: Promo[] }
   & Partial<Record<'sales' | 'orders' | 'customers' | 'newCustomers' | 'adSales' | 'adOrders' | 'adSpend' | 'credits', number | null>>;
 export type SalesStats = { source: string; currency: string; note: string; months: SalesMonth[]; updatedAt: Date | null };
 
