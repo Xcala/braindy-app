@@ -15,7 +15,7 @@ import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
 import { billingPeople as peopleWithBilling } from './notifyBilling.js';
 import { billingFileRoutes, dataFile } from './files.js';
 import { cardFeePct, cuentaCheckout } from './card.js';
-import { claimPaid, confirmClaim, recordPayment, voidDoc } from './payments.js';
+import { claimPaid, confirmClaim, recordPayment, setOverdue, voidDoc } from './payments.js';
 import { extractSample } from './importSample.js';
 import {
   DEFAULT_ISSUER, ISSUERS, agreementProblems, isIssuerId, issuerStyle, agreementsCol, audit, docsCol, issuerRef, now, pickAgreement, pickIssuer, pickProfile, profileRef, saveFile, sha256,
@@ -179,13 +179,14 @@ adminInvoicing.post('/brands/:brandId/invoicing/agreements/:id/activate', async 
   catch (e) { return c.json({ error: err(e) }, 409); }
 });
 
-adminInvoicing.post('/brands/:brandId/invoicing/docs/:docId/:action{issue|send|void}', async (c) => {
+adminInvoicing.post('/brands/:brandId/invoicing/docs/:docId/:action{issue|send|void|overdue}', async (c) => {
   const { brandId, docId, action } = c.req.param();
   const by = c.get('user').uid;
   try {
     if (action === 'issue') return c.json(await issueDoc(brandId, docId, by));
     if (action === 'send') return c.json(await sendDoc(brandId, docId, by));
-    const { reason } = await c.req.json<{ reason?: string }>().catch(() => ({} as { reason?: string }));
+    const { reason, on } = await c.req.json<{ reason?: string; on?: boolean }>().catch(() => ({} as { reason?: string; on?: boolean }));
+    if (action === 'overdue') return c.json(await setOverdue(brandId, docId, by, on !== false));
     await voidDoc(brandId, docId, by, String(reason ?? ''));
     return c.json({ ok: true });
   } catch (e) { return c.json({ error: err(e) }, 409); }

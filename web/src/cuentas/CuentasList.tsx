@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta, type Profile } from './api';
 import { SendDialog } from './admin/SendDialog';
-import { ConfirmIssue, SendAll, pendingWhat } from './admin/ListDialogs';
+import { ConfirmIssue, MarkPaid, SendAll, pendingWhat } from './admin/ListDialogs';
 import { PayDialog } from './PayDialog';
 import './cuentas.css';
 
@@ -21,6 +21,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
   const [sending, setSending] = useState<Cuenta | null>(null);
   const [issuing, setIssuing] = useState<Cuenta | null>(null);
   const [sendAll, setSendAll] = useState(false);
+  const [marking, setMarking] = useState<Cuenta | null>(null);
 
   async function run(id: string, f: () => Promise<unknown>) {
     setBusy(id); setMsg(null);
@@ -53,7 +54,16 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
         <span className="col g2 cc-val"><span className="t-sm w7">{money(d.amount, d.currency)}</span>{d.paid > 0 && d.status !== 'paid' && !recibo && <span className="t-xs t-mute">{t('cc.paidPart', { v: money(d.paid, d.currency) })}</span>}</span>
         <span className="col g2 cc-st"><span><span className={`chip ${CHIP[st]}`}>{t(recibo && st === 'sent' ? 'cc.st.delivered' : `cc.st.${st}` as never)}</span></span>
           {pending && <span className="t-xs t-mute">{t('cc.pending')}</span>}
-          {admin && d.held && st === 'paid' && <span className="t-xs t-mute">{t('cc.notSent')}</span>}</span>
+          {admin && d.held && st === 'paid' && <span className="t-xs t-mute">{t('cc.notSent')}</span>}
+          {admin && open && !recibo && (
+            // NickMark says how it stands: paid (records what is owed), in mora, or back on time.
+            <select className="input cc-st-sel" aria-label={t('cc.mp.change', { n: d.number })} value="" disabled={busy === d.id}
+              onChange={(e) => { const v = e.target.value; if (v === 'paid') setMarking(d); else if (v) run(d.id, () => cuentasApi.overdue(brandId, d.id, v === 'overdue')); }}>
+              <option value="">{t('cc.mp.change', { n: '' }).trim()}</option>
+              <option value="paid">{t('cc.mp.paid')}</option>
+              {d.status === 'overdue' ? <option value="ontime">{t('cc.mp.ontime')}</option> : <option value="overdue">{t('cc.mp.overdue')}</option>}
+            </select>
+          )}</span>
         <span className="row g8 wrap cc-act" style={{ justifyContent: 'flex-end' }}>
           {d.hasPdf && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminPdf(brandId, d.id) : cuentasApi.pdf(brandId, d.id))}>{t('cc.pdf')}</button>}
           {!admin && open && !recibo && !pending && <button className="btn btn-primary btn-sm" onClick={() => setPaying(d)}>{t('cc.pay.btn')}</button>}
@@ -87,6 +97,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
       {cuentas.length > 0 && <div className="col g8"><p className="label">{t('cc.h.cuentas')}</p>{table(cuentas, t('cc.col.month'))}</div>}
       {recibos.length > 0 && <div className="col g8"><p className="label">{t('cc.h.recibos')}</p>{table(recibos, t('cc.col.paidOn'))}</div>}
       {sendAll && <SendAll brandId={brandId} docs={pendingSend} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSendAll(false); if (sent) reload(); }} />}
+      {marking && <MarkPaid brandId={brandId} doc={marking} onClose={(done) => { setMarking(null); if (done) reload(); }} />}
       {issuing && <ConfirmIssue doc={issuing} onClose={() => setIssuing(null)} onIssue={() => { const d = issuing; setIssuing(null); issue(d); }} />}
       {sending && <SendDialog brandId={brandId} doc={sending} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSending(null); if (sent) reload(); }} />}
       {paying && <PayDialog brandId={brandId} doc={paying} feePct={feePct} onClose={() => { setPaying(null); reload(); }} />}

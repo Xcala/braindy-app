@@ -163,7 +163,7 @@ export async function billingDaily() {
   const cutoff = new Date(Date.now() - OVERDUE_DAYS * 864e5).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   for (const st of ['issued', 'sent'] as const) {
     const late = await db.collectionGroup('billingDocs').where('status', '==', st).where('issueDate', '<=', cutoff).get();
-    for (const s of late.docs) { if (s.get('type') === 'cuenta_cobro') { await s.ref.update({ status: 'overdue' }); overdue++; } }
+    for (const s of late.docs) { if (s.get('type') === 'cuenta_cobro' && !s.get('overdueOff')) { await s.ref.update({ status: 'overdue' }); overdue++; } }
   }
   // Held cuentas wait for Nico («Para tu ojo»): one alert with how many.
   if (issued) await pushTo(await adminUids(), {

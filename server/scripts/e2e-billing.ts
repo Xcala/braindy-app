@@ -184,6 +184,17 @@ const paid2 = (await db.doc('brands/otra/billingDocs/OT-01-02').get()).data()!;
 const rc2 = (await db.doc('brands/otra/billingDocs/RC-US-0002').get()).data();
 check('card payment: cuenta paid without the fee, recibo sent to the app', paid2.status === 'paid' && paid2.paid === 108333 && rc2?.amount === 108333 && rc2?.held === false && /Stripe/.test(String(paid2.payments.at(-1).method)), { status: paid2.status, paid: paid2.paid, rc2: rc2 && { amount: rc2.amount, held: rc2.held } });
 
+// NickMark sets the state by hand: in mora, back on time (the daily check leaves it), paid.
+const OA = '/v1/admin/brands/otra/invoicing';
+r = await call(A, 'POST', `${OA}/docs/OT-01-03/overdue`, { on: true });
+const mora = r.json.status;
+r = await call(A, 'POST', `${OA}/docs/OT-01-03/overdue`, { on: false });
+const back = (await db.doc('brands/otra/billingDocs/OT-01-03').get()).data()!;
+check('mora by hand, then back on time (and the daily check leaves it)', mora === 'overdue' && r.json.status !== 'overdue' && back.overdueOff === true, { mora, r: r.json });
+r = await call(A, 'POST', `${OA}/payments`, { docIds: ['OT-01-03'], amount: back.amount - (back.paid ?? 0), date: todayBogota(), method: 'Transfer', receipt: false });
+const p3 = (await db.doc('brands/otra/billingDocs/OT-01-03').get()).data()!;
+check('«Pagada» on one cuenta records what it still owed', r.status === 200 && p3.status === 'paid' && p3.paid === p3.amount, { r, p3: p3.status });
+
 function wavePng() {
   const crc = (b: Buffer) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };
   const chunk = (type: string, data: Buffer) => {

@@ -104,3 +104,15 @@ export async function voidDoc(brandId: string, docId: string, by: string, reason
   await ref.update({ status: 'void', voidReason: reason.trim().slice(0, 300), voidedAt: now(), voidedBy: by });
   await audit('billing_doc_void', brandId, by, { docId, number: d.number, reason: reason.trim().slice(0, 300) });
 }
+
+/** NickMark says a cuenta is in mora, or back to on time («Al día»). Back on time stays so: the daily check no longer
+ *  marks it overdue by itself (overdueOff). Only open cuentas. */
+export async function setOverdue(brandId: string, docId: string, by: string, on: boolean) {
+  const ref = docsCol(brandId).doc(docId);
+  const d = (await ref.get()).data() as (BillingDoc & { sentAt?: unknown }) | undefined;
+  if (!d || d.type !== 'cuenta_cobro' || !['issued', 'sent', 'overdue'].includes(d.status)) throw new Error('not_open');
+  const status = on ? 'overdue' : d.sentAt || (d.sentVia ?? []).length ? 'sent' : 'issued';
+  await ref.update({ status, overdueOff: !on, updatedAt: now() });
+  await audit(on ? 'billing_overdue_on' : 'billing_overdue_off', brandId, by, { docId });
+  return { status };
+}

@@ -60,8 +60,9 @@ export const cuentasApi = {
   activate: (b: string, id: string) => api<{ issued: string[]; scheduled: string[] }>(`${A(b)}/agreements/${id}/activate`, json({})),
   act: (b: string, id: string, action: 'issue' | 'send' | 'void', reason?: string) =>
     api<SendResult>(`${A(b)}/docs/${id}/${action}`, json({ reason })),
+  overdue: (b: string, id: string, on: boolean) => api<{ status: string }>(`${A(b)}/docs/${id}/overdue`, json({ on })),
   adminPdf: (b: string, id: string) => api<{ url: string }>(`${A(b)}/docs/${id}/pdf`),
-  pay: (b: string, x: { agreementId?: string; date: string; amount: number; method: string; receipt: boolean }) =>
+  pay: (b: string, x: { agreementId?: string; docIds?: string[]; date: string; amount: number; method: string; receipt: boolean }) =>
     api<{ receipt: { number: string } | null }>(`${A(b)}/payments`, json(x)),
   confirm: (b: string, id: string, paymentId: string) => api<unknown>(`${A(b)}/docs/${id}/payments/${paymentId}/confirm`, json({ receipt: true })),
   issuers: () => api<{ issuers: Array<{ id: IssuerId; country: 'CO' | 'US'; currency: Currency; issuer: Issuer | null }> }>('/v1/admin/issuers'),
