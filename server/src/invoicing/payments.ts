@@ -81,7 +81,7 @@ export async function issueReceipt(brandId: string, by: string, r: { paymentId: 
   });
   const path = await saveFile(`brands/${brandId}/billing/${number}.pdf`, pdf, 'application/pdf');
   const doc: BillingDoc = {
-    agreementId: first.agreementId, type: 'recibo', number, index: n, of: 0, billingMonth: r.date.slice(0, 7), scheduledDate: issueDate, issueDate,
+    agreementId: first.agreementId, type: 'recibo', number, index: n, of: 0, billingMonth: r.date.slice(0, 7), scheduledDate: issueDate, issueDate, paidOn: r.date,
     amount, amountWords: amountInWords(amount, style.currency), currency: style.currency, status: 'issued', pdfStoragePath: path, pdfHash: sha256(pdf), covers: r.covers, payments: [], paid: amount, held: true,
   };
   await docsCol(brandId).doc(number).set({ ...doc, paymentId: r.paymentId, issuedAt: now(), issuedBy: by });

@@ -2,7 +2,7 @@
 export const cuentasEn = {
   'cc.title': 'Payment requests', 'cc.tagline': 'Each payment request of your project, with its PDF.',
   'cc.empty': 'No payment requests yet.',
-  'cc.col.number': 'Number', 'cc.col.month': 'Month', 'cc.col.value': 'Amount', 'cc.col.status': 'Status',
+  'cc.col.number': 'Number', 'cc.col.month': 'Month', 'cc.col.value': 'Amount', 'cc.col.status': 'Status', 'cc.col.paidOn': 'Paid on', 'cc.h.cuentas': 'Payment requests', 'cc.h.recibos': 'Payments received', 'cc.covers': 'Applied to {list}', 'cc.notSent': 'Not sent: the client does not see it', 'cc.st.delivered': 'Delivered',
   'cc.st.scheduled': 'Scheduled', 'cc.st.issued': 'Issued', 'cc.st.sent': 'Sent', 'cc.st.paid': 'Paid', 'cc.st.overdue': 'Overdue', 'cc.st.void': 'Voided', 'cc.st.held': 'For your eye',
   'cc.recibo': 'Receipt', 'cc.cuenta': 'Request {i} of {n}', 'cc.pdf': 'PDF', 'cc.paidPart': '{v} paid', 'cc.pending': 'Proof under review',
   'cc.iPaid': 'I paid', 'cc.paid.title': 'Tell NickMark you paid {n}', 'cc.paid.proof': 'Proof (photo or PDF)', 'cc.paid.date': 'Date paid', 'cc.paid.amount': 'Amount paid',
@@ -49,7 +49,7 @@ export const cuentasEn = {
 export const cuentasEs: Record<keyof typeof cuentasEn, string> = {
   'cc.title': 'Cuentas de cobro', 'cc.tagline': 'Cada cuenta de cobro de tu proyecto, con su PDF.',
   'cc.empty': 'Aún no hay cuentas de cobro.',
-  'cc.col.number': 'Número', 'cc.col.month': 'Mes', 'cc.col.value': 'Valor', 'cc.col.status': 'Estado',
+  'cc.col.number': 'Número', 'cc.col.month': 'Mes', 'cc.col.value': 'Valor', 'cc.col.status': 'Estado', 'cc.col.paidOn': 'Fecha del pago', 'cc.h.cuentas': 'Cuentas de cobro', 'cc.h.recibos': 'Pagos recibidos', 'cc.covers': 'Abono a {list}', 'cc.notSent': 'Sin enviar: el cliente no la ve', 'cc.st.delivered': 'Entregado',
   'cc.st.scheduled': 'Programada', 'cc.st.issued': 'Emitida', 'cc.st.sent': 'Enviada', 'cc.st.paid': 'Pagada', 'cc.st.overdue': 'Vencida', 'cc.st.void': 'Anulada', 'cc.st.held': 'Para tu ojo',
   'cc.recibo': 'Recibo', 'cc.cuenta': 'Cuenta {i} de {n}', 'cc.pdf': 'PDF', 'cc.paidPart': '{v} pagado', 'cc.pending': 'Comprobante en revisión',
   'cc.iPaid': 'Ya pagué', 'cc.paid.title': 'Avísale a NicoMarca que pagaste {n}', 'cc.paid.proof': 'Comprobante (foto o PDF)', 'cc.paid.date': 'Fecha del pago', 'cc.paid.amount': 'Valor pagado',

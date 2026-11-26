@@ -45,7 +45,7 @@ export type DocStatus = 'scheduled' | 'issued' | 'sent' | 'paid' | 'overdue' | '
 export type BillingDoc = {
   agreementId: string | null; type: 'cuenta_cobro' | 'recibo'; number: string; index: number; of: number;
   billingMonth: string; scheduledDate: string; issueDate: string | null; amount: number; amountWords: string;
-  status: DocStatus; held?: boolean; pdfStoragePath?: string | null; pdfHash?: string | null;
+  status: DocStatus; held?: boolean; paidOn?: string; pdfStoragePath?: string | null; pdfHash?: string | null;
   sentAt?: unknown; sentVia?: string[]; payments?: Payment[]; paid?: number; voidReason?: string | null;
   covers?: Array<{ docId: string; number: string; amount: number }>; publicTokenHash?: string | null; currency?: 'COP' | 'USD';
 };

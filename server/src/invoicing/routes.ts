@@ -26,7 +26,7 @@ const err = (e: unknown) => { const m = e instanceof Error ? e.message : String(
 export function publicDoc(id: string, d: BillingDoc & Record<string, unknown>) {
   return {
     id, type: d.type, number: d.number, index: d.index, of: d.of, billingMonth: d.billingMonth, scheduledDate: d.scheduledDate, issueDate: d.issueDate,
-    amount: d.amount, amountWords: d.amountWords, currency: d.currency ?? 'COP', status: d.status, held: !!d.held, paid: d.paid ?? 0, hasPdf: !!d.pdfStoragePath, sentVia: d.sentVia ?? [],
+    amount: d.amount, amountWords: d.amountWords, currency: d.currency ?? 'COP', status: d.status, held: !!d.held, paid: d.paid ?? 0, hasPdf: !!d.pdfStoragePath, sentVia: d.sentVia ?? [], paidOn: d.paidOn ?? null,
     voidReason: d.voidReason ?? null, covers: (d.covers ?? []).map((c) => ({ number: c.number, amount: c.amount })), agreementId: d.agreementId,
     pendingProof: !!d.pendingProof,
     payments: (d.payments ?? []).map((p) => ({ id: p.id, date: p.date, amount: p.amount, method: p.method, status: p.status, hasProof: !!p.proofStoragePath })),

@@ -5,7 +5,7 @@ export type CuentaPayment = { id: string; date: string; amount: number; method: 
 export type Cuenta = {
   id: string; type: 'cuenta_cobro' | 'recibo'; number: string; index: number; of: number; billingMonth: string; scheduledDate: string; issueDate: string | null;
   amount: number; amountWords: string; status: DocStatus; held: boolean; paid: number; hasPdf: boolean; sentVia: string[]; voidReason: string | null;
-  covers: Array<{ number: string; amount: number }>; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency;
+  covers: Array<{ number: string; amount: number }>; paidOn?: string | null; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency;
 };
 /** What «Enviar» did: channels that went out, a wa.me fallback, and how many people got the notice in the app. */
 export type SendResult = { via?: string[]; waMe?: string | null; people?: number; email?: string | null; whatsapp?: string | null };
