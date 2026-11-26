@@ -12,6 +12,7 @@ import { signaturePng } from '../contracts/store.js';
 import { adminUids, pushTo } from '../push/send.js';
 import { mask, nitValid, planOf } from './money.js';
 import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
+import { billingPeople as peopleWithBilling } from './notifyBilling.js';
 import { claimPaid, confirmClaim, recordPayment, voidDoc } from './payments.js';
 import { extractSample } from './importSample.js';
 import {
@@ -106,9 +107,9 @@ adminInvoicing.put('/issuers/:id/:kind{signature|logo}', async (c) => {
 /** Everything about a brand's billing, for the admin screen. */
 adminInvoicing.get('/brands/:brandId/invoicing', async (c) => {
   const b = c.req.param('brandId');
-  const [p, ags, docs] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get()]);
+  const [p, ags, docs, people] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get(), peopleWithBilling(b).catch(() => [] as string[])]);
   return c.json({
-    profile: p.exists ? p.data() : null,
+    profile: p.exists ? p.data() : null, billingPeople: people.length,
     agreements: ags.docs.map((s) => ({ id: s.id, ...s.data(), sourceSamplePath: undefined })),
     docs: docs.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>)).sort((x, y) => x.scheduledDate.localeCompare(y.scheduledDate) || x.number.localeCompare(y.number)),
   });

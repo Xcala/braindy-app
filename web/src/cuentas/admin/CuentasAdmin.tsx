@@ -4,6 +4,7 @@ import { CuentasList } from '../CuentasList';
 import { cuentasApi, errKey, money, toMinor, type Agreement, type Cuenta, type Profile } from '../api';
 import { AgreementForm } from './AgreementForm';
 import { IssuerSettings } from './IssuerSettings';
+import { PayProgress } from './PayProgress';
 
 const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: '', accountingEmail: '', accountingWhatsApp: '' };
 
@@ -11,7 +12,7 @@ const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: ''
  *  (import, preview, activate), every cuenta and recibo, and recording payments. */
 export function CuentasAdmin({ brandId }: { brandId: string }) {
   const { t } = useI18n();
-  const [data, setData] = useState<{ profile: Profile | null; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
+  const [data, setData] = useState<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [form, setForm] = useState<Agreement | 'new' | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -23,7 +24,8 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
 
   const saveProfile = () => cuentasApi.saveProfile(brandId, profile).then((r) => { setNitBad(r.nitOk === false); setMsg(t('cc.a.saved')); }).catch((e) => setMsg(t(errKey(e) as never)));
   const active = data.agreements.filter((a) => a.status === 'active');
-  const payCur = (active.find((a) => a.id === pay.agreementId) ?? active[0])?.currency ?? 'COP';
+  const payAg = active.find((a) => a.id === pay.agreementId) ?? active[0];
+  const payCur = payAg?.currency ?? 'COP';
   async function record() {
     setMsg(null);
     try {
@@ -65,11 +67,12 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
         {form && <AgreementForm brandId={brandId} initial={form === 'new' ? undefined : form} onDone={(m) => { setForm(null); if (m) setMsg(m); load(); }} />}
       </div>
 
-      <CuentasList brandId={brandId} docs={data.docs} admin reload={load} />
+      <CuentasList brandId={brandId} docs={data.docs} admin reload={load} sendTo={{ profile: data.profile, people: data.billingPeople ?? 0 }} />
 
       {active.length > 0 && (
         <div className="card col g12">
-          <p className="w7">{t('cc.a.payment')}</p>
+          <p className="w7">{t('cc.a.payment')}{active.length > 1 ? '' : ` · ${payAg.title}`}</p>
+          <PayProgress agreement={payAg} docs={data.docs} next={toMinor(pay.amount, payCur)} />
           <div className="grid gap-3 sm:grid-cols-4">
             {active.length > 1 && <div className="field"><label htmlFor="py-a">{t('cc.a.agreements')}</label>
               <select id="py-a" className="input" value={pay.agreementId} onChange={(e) => setPay({ ...pay, agreementId: e.target.value })}>{active.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}</select></div>}

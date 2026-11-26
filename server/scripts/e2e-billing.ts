@@ -89,7 +89,12 @@ r = await call(A, 'POST', `${B}/docs/BM-06-03/issue`);
 check('an issued cuenta cannot be issued again', r.status === 409 && r.json.error === 'already_issued', r);
 r = await call(owner.token, 'GET', '/v1/brands/blacky/cuentas');
 check('held cuentas wait for NickMark (client sees none yet)', r.status === 200 && r.json.docs.length === 0, r.json);
-await db.doc('brands/blacky/billingDocs/BM-06-01').update({ held: false }); // as if sent
+r = await call(A, 'GET', B);
+check('admin screen counts the people who see Billing', r.json.billingPeople === 1, r.json.billingPeople);
+// No email or WhatsApp on file: «Enviar» still puts it in the client's app and leaves a notice for the bell.
+r = await call(A, 'POST', `${B}/docs/BM-06-01/send`);
+const notice = await db.doc('brands/blacky/billingNotices/BM-06-01').get();
+check('send without channels releases it to the app and notifies', r.status === 200 && r.json.via.length === 0 && r.json.people === 1 && notice.get('number') === 'BM-06-01', r.json);
 r = await call(owner.token, 'GET', '/v1/brands/blacky/cuentas');
 check('the client sees the sent cuenta', r.json.docs.length === 1 && r.json.docs[0].number === 'BM-06-01' && !('pdfStoragePath' in r.json.docs[0]), r.json);
 r = await call(other.token, 'GET', '/v1/brands/blacky/cuentas');

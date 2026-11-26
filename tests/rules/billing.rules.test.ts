@@ -3,7 +3,7 @@
 // nobody writes from the browser, not even the admin (the backend issues, and an issued cuenta never changes).
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { assertFails, assertSucceeds, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, getDoc, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, setDoc, updateDoc, type Firestore } from 'firebase/firestore';
 import { ADMIN, MEMBER, OUTSIDER, OWNER, as, createEnv, seed } from './setup';
 
 let env: RulesTestEnvironment;
@@ -27,6 +27,7 @@ beforeEach(async () => {
     await setDoc(doc(db, A), { title: 'Blacky', totalAmount: 6500000, status: 'active' });
     await setDoc(doc(db, 'issuers/nicolas'), { name: 'N', bank: { accountNumber: '008700403465' } });
     await setDoc(doc(db, 'issuers/nicolas/numbers/BM-06-01'), { docPath: D });
+    await setDoc(doc(db, 'brands/brand-a/billingNotices/BM-06-01'), { number: 'BM-06-01', type: 'cuenta_cobro', amount: 1083333 });
     await setDoc(doc(db, 'brands/brand-a/billing/profile'), { legalName: 'Blacky Meals SAS', taxId: '902038455-4' });
   });
 });
@@ -39,6 +40,16 @@ describe('Cuentas de cobro', () => {
     await assertFails(getDoc(doc(as(env, MEMBER), D)));
     await assertFails(getDoc(doc(as(env, OUTSIDER), D)));
     await assertFails(getDoc(doc(as(env, OUTSIDER), 'brands/brand-a/billing/profile')));
+  });
+
+  it('the bell notice of a sent cuenta: billing people and admin read it, nobody writes it', async () => {
+    const N = 'brands/brand-a/billingNotices/BM-06-01';
+    await assertSucceeds(getDocs(query(collection(as(env, OWNER), 'brands/brand-a/billingNotices'), orderBy('at', 'desc'), limit(6))));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), N)));
+    await assertFails(getDoc(doc(as(env, MEMBER), N)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), N)));
+    await assertFails(setDoc(doc(as(env, OWNER), N), { number: 'X' }));
+    await assertFails(setDoc(doc(as(env, ADMIN), N), { number: 'X' }));
   });
 
   it('scheduled and held cuentas stay with the admin until they go out', async () => {

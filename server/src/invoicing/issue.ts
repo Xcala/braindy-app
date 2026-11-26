@@ -9,6 +9,7 @@ import { getContact, windowOpen } from '../wa/contacts.js';
 import { pdfUrl } from '../contracts/store.js';
 import { amountInWords, money, monthLabelL, planOf, todayBogota } from './money.js';
 import { renderBillingPdf, type PdfInput } from './pdf.js';
+import { notifyBilling } from './notifyBilling.js';
 import {
   agreementsCol, audit, docsCol, issuerRef, newToken, now, profileRef, readFile, saveFile, sha256,
   type Agreement, type BillingDoc, type Issuer, type Profile,
@@ -135,9 +136,11 @@ export async function sendDoc(brandId: string, docId: string, by: string) {
     const sent = windowOpen(await getContact(phone)) && (await sendText(phone, body)).sent;
     if (sent) via.push('whatsapp'); else waMe = waMeLink(phone, body);
   }
-  if (via.length) await ref.update({ status: d.status === 'issued' ? 'sent' : d.status, held: false, sentAt: now(), sentVia: via });
-  await audit('billing_doc_sent', brandId, by, { docId, number: d.number, via });
-  return { via, waMe, link };
+  // Sending always releases it to the client's app (Pagos), even when no email or WhatsApp went out.
+  await ref.update({ status: d.status === 'issued' ? 'sent' : d.status, held: false, sentAt: now(), sentVia: [...via, 'app'] });
+  const { people } = await notifyBilling(brandId, docId, d);
+  await audit('billing_doc_sent', brandId, by, { docId, number: d.number, via, people });
+  return { via, waMe, link, people, email: via.includes('email') ? p.accountingEmail ?? null : null, whatsapp: via.includes('whatsapp') || waMe ? p.accountingWhatsApp ?? null : null };
 }
 
 /** Private download: a short signed URL to the frozen PDF. */

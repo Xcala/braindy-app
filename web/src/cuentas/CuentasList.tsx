@@ -1,28 +1,26 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta } from './api';
+import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta, type Profile } from './api';
+import { SendDialog } from './admin/SendDialog';
 import { PaidDialog } from './PaidDialog';
 
 const CHIP: Record<string, string> = { scheduled: 'c-draft', issued: 'c-sent', sent: 'c-sent', paid: 'c-approved', overdue: 'c-lost', void: 'c-archived', held: 'c-approve' };
 
 /** The cuentas and recibos of a brand as a list: number, month, value, status, PDF. The client says «Ya pagué»;
  *  the admin issues, sends, voids and confirms proofs. */
-export function CuentasList({ brandId, docs, admin, reload }: { brandId: string; docs: Cuenta[]; admin?: boolean; reload: () => void }) {
+export function CuentasList({ brandId, docs, admin, reload, sendTo }: { brandId: string; docs: Cuenta[]; admin?: boolean; reload: () => void; sendTo?: { profile: Profile | null; people: number } }) {
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [paying, setPaying] = useState<Cuenta | null>(null);
   const [voiding, setVoiding] = useState<Cuenta | null>(null);
   const [reason, setReason] = useState('');
+  const [sending, setSending] = useState<Cuenta | null>(null);
 
   async function run(id: string, f: () => Promise<unknown>) {
     setBusy(id); setMsg(null);
     try { await f(); reload(); } catch (e) { setMsg(t(errKey(e) as never)); } finally { setBusy(null); }
   }
-  const send = (d: Cuenta) => run(d.id, async () => {
-    const r = await cuentasApi.act(brandId, d.id, 'send');
-    if (r.waMe) { setMsg(t('cc.a.waMe')); window.open(r.waMe, '_blank'); } else setMsg(t('cc.a.sent', { via: (r.via ?? []).join(' + ') || '—' }));
-  });
   if (!docs.length) return <p className="t-sm t-mute">{t('cc.empty')}</p>;
 
   return (
@@ -50,7 +48,7 @@ export function CuentasList({ brandId, docs, admin, reload }: { brandId: string;
                 {d.hasPdf && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminPdf(brandId, d.id) : cuentasApi.pdf(brandId, d.id))}>{t('cc.pdf')}</button>}
                 {!admin && open && d.type === 'cuenta_cobro' && !pending && <button className="btn btn-secondary btn-sm" onClick={() => setPaying(d)}>{t('cc.iPaid')}</button>}
                 {admin && d.status === 'scheduled' && <button className="btn btn-secondary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.act(brandId, d.id, 'issue'))}>{t('cc.a.issue')}</button>}
-                {admin && (d.status === 'issued' || (open && d.held)) && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => send(d)}>{t('cc.a.send')}</button>}
+                {admin && (d.status === 'issued' || (open && d.held)) && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => setSending(d)}>{t('cc.a.send')}</button>}
                 {admin && pending && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.confirm(brandId, d.id, pending.id))}>{t('cc.a.confirm')}</button>}
                 {admin && d.status !== 'void' && d.status !== 'paid' && d.paid === 0 && <button className="btn btn-ghost btn-sm" onClick={() => { setVoiding(d); setReason(''); }}>{t('cc.a.void')}</button>}
               </span>
@@ -58,6 +56,7 @@ export function CuentasList({ brandId, docs, admin, reload }: { brandId: string;
           );
         })}
       </div>
+      {sending && <SendDialog brandId={brandId} doc={sending} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSending(null); if (sent) reload(); }} />}
       {paying && <PaidDialog brandId={brandId} doc={paying} onClose={() => { setPaying(null); reload(); }} />}
       {voiding && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setVoiding(null)}>

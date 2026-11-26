@@ -8,7 +8,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 
 /** Admin kinds: requests, decisions. Client kinds: deliveries, done, due. Both: comments. */
-export const PUSH_KINDS = ['requests', 'comments', 'decisions', 'deliveries', 'done', 'due'] as const;
+export const PUSH_KINDS = ['requests', 'comments', 'decisions', 'deliveries', 'done', 'due', 'billing'] as const;
 export type PushKind = (typeof PUSH_KINDS)[number];
 export type Lang = 'es' | 'en';
 /** What a device shows. Text per language, chosen by the language the device was turned on in. */
