@@ -5,6 +5,7 @@ import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
 import { billingApi, HOSTING, money, type Plan } from '../../billing/useBilling';
 import { SiteHostingAdmin } from './SiteHostingAdmin';
+import { IssuerSettings } from '../../cuentas/admin/IssuerSettings';
 
 type Row = Plan & { brandId: string };
 type Transfer = { id: string; brandId: string; reference: string; amount: number | null };
@@ -64,6 +65,7 @@ export function AdminBilling() {
           );
         })}
       </div>
+      <IssuerSettings />
       <SiteHostingAdmin rows={rows} reload={() => setTick((x) => x + 1)} />
       {editing && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setEditing(null)}>

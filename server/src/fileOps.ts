@@ -63,15 +63,10 @@ async function purgeExpired(brandId: string) {
   for (const d of old.docs) { await d.ref.delete(); await dropObject(brandId, d.get('storagePath')); }
 }
 
-export const fileOps = new Hono<AuthEnv>();
-
-/** To the trash: the file disappears from Files (and from My brand) but can be restored for 30 days. */
-fileOps.delete('/brands/:brandId/assets/:assetId', async (c) => {
-  const { brandId, assetId } = c.req.param();
-  const uid = c.get('user').uid;
-  if (!(await adminOnly(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+/** Moves one asset to the trash (restorable for 30 days) and leaves a tombstone so the Drive import does not bring it back. */
+export async function trashAsset(brandId: string, assetId: string, uid: string): Promise<boolean> {
   const ref = db.doc(`brands/${brandId}/assets/${assetId}`);
-  const ok = await db.runTransaction(async (tx) => {
+  return db.runTransaction(async (tx) => {
     const asset = await tx.get(ref);
     if (!asset.exists) return false;
     const idRef = db.doc(`brands/${brandId}/context/identity`);
@@ -84,6 +79,16 @@ fileOps.delete('/brands/:brandId/assets/:assetId', async (c) => {
     tx.delete(ref);
     return true;
   });
+}
+
+export const fileOps = new Hono<AuthEnv>();
+
+/** To the trash: the file disappears from Files (and from My brand) but can be restored for 30 days. */
+fileOps.delete('/brands/:brandId/assets/:assetId', async (c) => {
+  const { brandId, assetId } = c.req.param();
+  const uid = c.get('user').uid;
+  if (!(await adminOnly(uid, brandId))) return c.json({ error: 'forbidden' }, 403);
+  const ok = await trashAsset(brandId, assetId, uid);
   forgetSearch(brandId);
   return ok ? c.json({ ok: true }) : c.json({ error: 'not_found' }, 404);
 });

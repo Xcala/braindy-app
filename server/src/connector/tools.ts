@@ -12,6 +12,7 @@ import { syncSocialPosts } from './social.js';
 import { syncSocialStats } from './socialStats.js';
 import { registerAdTools } from './adStats.js';
 import { registerPautaTools } from './adCreatives.js';
+import { registerBillingTools } from './billing.js';
 import { syncAllWebStats, syncWebStats } from '../webStats.js';
 import { syncAllSearchStats, syncSearchStats } from '../searchStats.js';
 import { db } from '../firebase.js';
@@ -42,6 +43,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   registerSiteCommentTools(server, ctx.uid);
   registerAdTools(server, APP);
   registerPautaTools(server, APP);
+  registerBillingTools(server, ctx, APP);
   registerStepTools(server);
   registerQualityTools(server);
   registerKnowledgeTools(server);

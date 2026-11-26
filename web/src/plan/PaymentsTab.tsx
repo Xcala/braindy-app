@@ -6,6 +6,7 @@ import { BillingCard } from '../settings/BillingCard';
 import { Invoices } from '../settings/Invoices';
 import { HostingStatus } from './HostingStatus';
 import { Subscription } from './Subscription';
+import { Cuentas } from '../cuentas/Cuentas';
 
 /** Mi plan › Pagos: every charge of the brand in one place. Website hosting (its action lives in Sitio), the design plan
  *  with services, next charge, card, invoices, invoice details and cancellation (it used to be Settings › Billing). */
@@ -17,6 +18,7 @@ export function PaymentsTab({ brand }: { brand: Brand }) {
   const design = !!plan && !!(plan.monthly || plan.project);
   return (
     <div className="col g24">
+      <Cuentas brandId={brand.id} />
       <HostingStatus plan={plan} compact onAct={() => { setParams({ tab: 'site' }, { replace: true }); window.scrollTo({ top: 0 }); }} />
       {design ? <BillingCard brandId={brand.id} /> : <><Subscription current={brand} part="design" /><Invoices invoices={invoices} /></>}
     </div>
