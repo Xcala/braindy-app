@@ -60,6 +60,7 @@ export const cuentasApi = {
   activate: (b: string, id: string) => api<{ issued: string[]; scheduled: string[] }>(`${A(b)}/agreements/${id}/activate`, json({})),
   act: (b: string, id: string, action: 'issue' | 'send' | 'void', reason?: string) =>
     api<SendResult>(`${A(b)}/docs/${id}/${action}`, json({ reason })),
+  batch: (b: string, docIds: string[]) => api<{ sent: string[]; via: string[]; waMe: string | null; people: number }>(`${A(b)}/send-batch`, json({ docIds })),
   overdue: (b: string, id: string, on: boolean) => api<{ status: string }>(`${A(b)}/docs/${id}/overdue`, json({ on })),
   adminPdf: (b: string, id: string) => api<{ url: string }>(`${A(b)}/docs/${id}/pdf`),
   pay: (b: string, x: { agreementId?: string; docIds?: string[]; date: string; amount: number; method: string; receipt: boolean }) =>

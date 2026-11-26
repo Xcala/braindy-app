@@ -12,6 +12,7 @@ import { signaturePng } from '../contracts/store.js';
 import { adminUids, pushTo } from '../push/send.js';
 import { mask, nitValid, planOf } from './money.js';
 import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
+import { sendBatch } from './sendBatch.js';
 import { billingPeople as peopleWithBilling } from './notifyBilling.js';
 import { billingFileRoutes, dataFile } from './files.js';
 import { cardFeePct, cuentaCheckout } from './card.js';
@@ -179,6 +180,14 @@ adminInvoicing.post('/brands/:brandId/invoicing/agreements/:id/activate', async 
   catch (e) { return c.json({ error: err(e) }, 409); }
 });
 
+// All the pending ones in a single email (and a single WhatsApp). Before the :docId route so «send-batch» is not a doc id.
+adminInvoicing.post('/brands/:brandId/invoicing/send-batch', async (c) => {
+  const b = await c.req.json<{ docIds?: unknown }>().catch(() => ({} as { docIds?: unknown }));
+  const ids = Array.isArray(b.docIds) ? b.docIds.filter((x): x is string => typeof x === 'string' && /^[\w-]{1,64}$/.test(x)) : [];
+  if (!ids.length) return c.json({ error: 'bad_request' }, 400);
+  try { return c.json(await sendBatch(c.req.param('brandId'), ids, c.get('user').uid)); }
+  catch (e) { return c.json({ error: err(e) }, 409); }
+});
 adminInvoicing.post('/brands/:brandId/invoicing/docs/:docId/:action{issue|send|void|overdue}', async (c) => {
   const { brandId, docId, action } = c.req.param();
   const by = c.get('user').uid;
