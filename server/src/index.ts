@@ -54,6 +54,7 @@ import { accessLinks, publicAccess } from './accessLinks.js';
 import { push } from './push/routes.js';
 import { events } from './push/events.js';
 import { pageViews } from './pageViews.js';
+import { adminInvoicing, invoicing, publicInvoicing } from './invoicing/routes.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -93,6 +94,7 @@ app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
 app.route('/public', publicShare);
 app.route('/public', publicAccess);
+app.route('/public', publicInvoicing);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -186,6 +188,8 @@ app.route('/v1', resources);
 app.route('/v1', push);
 app.use('/v1/usage', rateLimit('usage', 30, 60_000));
 app.route('/v1', pageViews);
+app.route('/v1', invoicing);
+app.route('/v1/admin', adminInvoicing);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

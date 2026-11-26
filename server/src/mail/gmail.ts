@@ -82,6 +82,19 @@ export const addLabel = async (messageId: string, name: string) =>
   gapi(`/messages/${messageId}/modify`, { method: 'POST', body: JSON.stringify({ addLabelIds: [await labelId(name)] }) });
 
 const enc = (s: string) => `=?UTF-8?B?${Buffer.from(s).toString('base64')}?=`;
+
+/** A new message from the connected mailbox with one attachment (cuentas de cobro and receipts). */
+export async function sendWithAttachment(to: string, subject: string, text: string, file: { name: string; type: string; bytes: Uint8Array }) {
+  const b = `braindy-${Date.now().toString(36)}`;
+  const wrap = (s: string) => s.replace(/.{1,76}/g, '$&\r\n');
+  const raw = [
+    `To: ${to}`, `Subject: ${enc(subject)}`, 'MIME-Version: 1.0', `Content-Type: multipart/mixed; boundary="${b}"`, '',
+    `--${b}`, 'Content-Type: text/plain; charset="UTF-8"', 'Content-Transfer-Encoding: base64', '', wrap(Buffer.from(text).toString('base64')),
+    `--${b}`, `Content-Type: ${file.type}; name="${enc(file.name)}"`, `Content-Disposition: attachment; filename="${enc(file.name)}"`,
+    'Content-Transfer-Encoding: base64', '', wrap(Buffer.from(file.bytes).toString('base64')), `--${b}--`,
+  ].join('\r\n');
+  return gapi<{ id: string }>('/messages/send', { method: 'POST', body: JSON.stringify({ raw: Buffer.from(raw).toString('base64url') }) });
+}
 /** A short plain-text reply in the same thread, from the connected mailbox. */
 export async function reply(to: string, subject: string, threadId: string, inReplyTo: string, text: string) {
   const subj = /^re:/i.test(subject) ? subject : `Re: ${subject || 'Solicitud'}`;

@@ -2,6 +2,7 @@
 // competitor watch, see the task log. Owners and admin: analyze a group. Cron: weekly watch for every brand.
 import { pushLaneDigest } from '../connector/lanes.js';
 import { Hono } from 'hono';
+import { billingDaily } from '../invoicing/issue.js';
 import { FieldValue } from 'firebase-admin/firestore';
 import { OAuth2Client } from 'google-auth-library';
 import { db } from '../firebase.js';
@@ -91,4 +92,4 @@ cron.post('/weekly', async (c) => {
 /** Daily: WhatsApp the brand the day before a request is due (once per due date). */
 /** Every 2 minutes: emails to the requests address become requests or comments (mail/inbound.ts). */
 cron.post('/mail', async (c) => c.json({ ok: true, ...(await checkInbox()) }));
-cron.post('/daily', async (c) => c.json({ ok: true, ...(await remindDueTomorrow()), hosting: await hostingDunning(), ...(await pushDueReminders()), ...(await pushLaneDigest().catch(() => ({ laneDigest: 0 }))) }));
+cron.post('/daily', async (c) => c.json({ ok: true, ...(await billingDaily().catch((e) => ({ billingError: String(e).slice(0, 80) }))), ...(await remindDueTomorrow()), hosting: await hostingDunning(), ...(await pushDueReminders()), ...(await pushLaneDigest().catch(() => ({ laneDigest: 0 }))) }));
