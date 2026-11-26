@@ -6,13 +6,14 @@ import { cuentasApi, errKey, readAsDataUrl, type Issuer } from '../api';
 const EMPTY: Issuer = { name: '', docType: 'CC', docNumber: '', docCity: '', city: 'Bogotá', bank: { bankName: '', accountType: 'Ahorros', accountNumber: '', holder: '' }, legalDeclarations: [], email: '', phone: '', web: '' };
 
 /** Admin › Billing: who charges on every cuenta de cobro (document, bank, legal lines, signature). */
-export function IssuerSettings() {
+export function IssuerSettings({ onlyIfMissing = false }: { onlyIfMissing?: boolean }) {
   const { t } = useI18n();
   const [i, setI] = useState<Issuer>(EMPTY);
   const [legal, setLegal] = useState('');
   const [sig, setSig] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  useEffect(() => { cuentasApi.issuer().then((r) => { if (r.issuer) { setI({ ...EMPTY, ...r.issuer }); setLegal((r.issuer.legalDeclarations ?? []).join('\n')); } }).catch(() => undefined); }, []);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => { cuentasApi.issuer().then((r) => { if (r.issuer) { setI({ ...EMPTY, ...r.issuer }); setLegal((r.issuer.legalDeclarations ?? []).join('\n')); } }).catch(() => undefined).finally(() => setLoaded(true)); }, []);
 
   const save = () => cuentasApi.saveIssuer({ ...i, legalDeclarations: legal.split('\n').map((l) => l.trim()).filter(Boolean) })
     .then((r) => { setI({ ...EMPTY, ...r.issuer, hasSignature: i.hasSignature }); setMsg(t('cc.a.saved')); }).catch((e) => setMsg(t(errKey(e) as never)));
@@ -22,8 +23,9 @@ export function IssuerSettings() {
   );
   const bank = (k: keyof Issuer['bank']) => (v: string) => setI({ ...i, bank: { ...i.bank, [k]: v } });
 
+  if (onlyIfMissing && (!loaded || (i.hasSignature && !msg))) return null;
   return (
-    <details className="card col g12">
+    <details className="card col g12" open={loaded && !i.hasSignature ? true : undefined}>
       <summary className="w7">{t('cc.i.title')}{i.name ? ` · ${i.name}` : ''}</summary>
       <p className="t-xs t-mute" style={{ marginTop: '0.5rem' }}>{t('cc.i.hint')}</p>
       <div className="grid gap-3 sm:grid-cols-2">

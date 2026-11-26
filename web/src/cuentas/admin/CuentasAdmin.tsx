@@ -3,6 +3,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 import { CuentasList } from '../CuentasList';
 import { cop, cuentasApi, errKey, type Agreement, type Cuenta, type Profile } from '../api';
 import { AgreementForm } from './AgreementForm';
+import { IssuerSettings } from './IssuerSettings';
 
 const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: '', accountingEmail: '', accountingWhatsApp: '' };
 
@@ -37,6 +38,7 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
     <section className="col g16" aria-labelledby="cc-admin-h">
       <div className="col g4"><p className="label">{t('cc.a.only')}</p><h2 className="h2" id="cc-admin-h">{t('cc.a.title')}</h2></div>
       {msg && <p className="t-sm" role="status">{msg}</p>}
+      <IssuerSettings onlyIfMissing />
 
       <details className="card col g12" open={!data.profile}>
         <summary className="w7">{t('cc.a.profile')}{data.profile ? ` · ${data.profile.legalName}` : ''}</summary>

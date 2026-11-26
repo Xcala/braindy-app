@@ -105,7 +105,7 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
         <div className="col g8">
           <p className="label">{t('cc.a.preview')}</p>
           <ul className="col g4 t-sm">
-            {prev.rows.map((r) => <li key={r.number} className="row g12 wrap"><b style={{ minWidth: '6.5rem' }}>{r.number}</b><span style={{ textTransform: 'capitalize', minWidth: '10rem' }}>{monthName(r.billingMonth, lang)}</span><span style={{ minWidth: '7rem' }}>{cop(r.amount)}</span><span className="t-mute">{r.issueNow ? t('cc.a.now') : t('cc.a.on', { day: r.scheduledDate })}</span></li>)}
+            {prev.rows.map((r) => <li key={r.number} className="row g12 wrap"><b style={{ minWidth: '6.5rem' }}>{r.number}</b><span style={{ minWidth: '10rem' }}>{monthName(r.billingMonth, lang)}</span><span style={{ minWidth: '7rem' }}>{cop(r.amount)}</span><span className="t-mute">{r.issueNow ? t('cc.a.now') : t('cc.a.on', { day: r.scheduledDate })}</span></li>)}
           </ul>
           <p className="t-sm w7" style={{ color: prev.matches ? undefined : 'var(--danger, #B42318)' }}>{t(prev.matches ? 'cc.a.sum' : 'cc.a.sumBad', { v: cop(prev.sum) })}</p>
         </div>

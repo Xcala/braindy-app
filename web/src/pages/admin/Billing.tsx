@@ -36,6 +36,7 @@ export function AdminBilling() {
   return (
     <div className="col g24">
       <div className="col g8"><p className="label">{t('bill.a.only')}</p><h1 className="h1">{t('set.tab.billing')}</h1></div>
+      <IssuerSettings />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.mrr')}</span><span className="h1">{money(mrr, cur, lang)}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.active')}</span><span className="h1">{rows.filter((r) => r.status === 'active').length}</span></div>
@@ -65,7 +66,6 @@ export function AdminBilling() {
           );
         })}
       </div>
-      <IssuerSettings />
       <SiteHostingAdmin rows={rows} reload={() => setTick((x) => x + 1)} />
       {editing && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setEditing(null)}>

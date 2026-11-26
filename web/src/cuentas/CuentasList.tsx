@@ -40,7 +40,7 @@ export function CuentasList({ brandId, docs, admin, reload }: { brandId: string;
             <div key={d.id} className="trow min-w-[40rem]" style={{ gridTemplateColumns: '7.5rem minmax(0,1fr) 8rem 8rem minmax(9rem,auto)', alignItems: 'center' }}>
               <span className="w7">{d.number}</span>
               <span className="col g2" style={{ minWidth: 0 }}>
-                <span className="t-sm" style={{ textTransform: 'capitalize' }}>{monthName(d.billingMonth, lang)}</span>
+                <span className="t-sm">{monthName(d.billingMonth, lang)}</span>
                 <span className="t-xs t-mute">{d.type === 'recibo' ? t('cc.recibo') : t('cc.cuenta', { i: d.index, n: d.of })}{admin && d.status === 'scheduled' ? ` · ${t('cc.a.on', { day: d.scheduledDate })}` : ''}</span>
                 {d.voidReason && <span className="t-xs t-mute">{d.voidReason}</span>}
               </span>

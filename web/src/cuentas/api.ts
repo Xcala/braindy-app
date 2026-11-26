@@ -60,6 +60,6 @@ export const errKey = (e: unknown) => {
   return ['no_issuer', 'no_profile', 'no_signature', 'number_taken', 'sum_mismatch', 'more_than_owed', 'nothing_open', 'has_payments'].includes(code) ? `cc.e.${code}` : 'cc.e.failed';
 };
 export const cop = (n: number) => `$${Math.round(n).toLocaleString('es-CO')}`;
-export const monthName = (ym: string, lang: 'en' | 'es') => new Date(`${ym}-15T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', year: 'numeric' });
+export const monthName = (ym: string, lang: 'en' | 'es') => { const s = new Date(`${ym}-15T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', year: 'numeric' }); return s.charAt(0).toUpperCase() + s.slice(1); };
 export const readAsDataUrl = (f: File) => new Promise<string>((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = ko; r.readAsDataURL(f); });
 export const openUrl = async (p: Promise<{ url: string }>) => { const w = window.open('', '_blank'); const { url } = await p; if (w) w.location.href = url; else window.location.href = url; };
