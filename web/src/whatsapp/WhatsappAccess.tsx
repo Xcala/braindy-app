@@ -12,18 +12,24 @@ export function WhatsappAccess() {
   const active = brands.filter((b) => b.status === 'active' && b.kind === 'brand').sort((a, b) => a.name.localeCompare(b.name));
   const [brandId, setBrandId] = useState(current?.kind === 'brand' ? current.id : '');
   const [people, setPeople] = useState<Person[] | null>(null);
+  const [agent, setAgent] = useState(false);
   const [phones, setPhones] = useState<Record<string, string>>({});
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(() => {
     if (!brandId) { setPeople([]); return; }
     setPeople(null);
-    api<{ people: Person[] }>(`/v1/admin/whatsapp/brands/${brandId}/people`)
-      .then((r) => { setPeople(r.people); setPhones(Object.fromEntries(r.people.map((p) => [p.uid, p.phone ? `+${p.phone}` : '']))); })
+    api<{ people: Person[]; agent?: boolean }>(`/v1/admin/whatsapp/brands/${brandId}/people`)
+      .then((r) => { setPeople(r.people); setAgent(r.agent === true); setPhones(Object.fromEntries(r.people.map((p) => [p.uid, p.phone ? `+${p.phone}` : '']))); })
       .catch(() => setPeople([]));
   }, [brandId]);
   useEffect(load, [load]);
 
+  async function saveAgent(on: boolean) {
+    setMsg(null);
+    try { await api(`/v1/admin/whatsapp/brands/${brandId}/agent`, { method: 'PUT', body: JSON.stringify({ on }) }); setAgent(on); setMsg({ ok: true, text: t('waa.saved') }); }
+    catch { setMsg({ ok: false, text: t('mywa.error') }); }
+  }
   async function save(p: Person, patch: { allowed?: boolean; phone?: string }) {
     setMsg(null);
     try {
@@ -46,6 +52,12 @@ export function WhatsappAccess() {
       </div>
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
       {!brandId && <p className="t-sm t-mute">{t('waa.pick')}</p>}
+      {brandId && people !== null && (
+        <div className="row g12 wrap" style={{ padding: '0.75rem', borderRadius: 12, background: 'var(--surface-2, var(--line))' }}>
+          <button className={`switch ${agent ? 'is-on' : ''}`} role="switch" aria-checked={agent} aria-label={t('waa.agent')} onClick={() => saveAgent(!agent)} />
+          <div className="col grow" style={{ minWidth: '12rem' }}><span className="w7 t-sm">{t('waa.agent')}</span><span className="t-xs t-mute">{t('waa.agentHint')}</span></div>
+        </div>
+      )}
       {brandId && people === null && <div className="skel" style={{ height: '5rem' }} />}
       {brandId && people?.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}
       {people?.map((p) => {

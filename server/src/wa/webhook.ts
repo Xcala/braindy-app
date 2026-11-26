@@ -8,6 +8,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { ownPhoneId } from '../whatsapp.js';
 import { handleMessage, type WaMsg } from './inbound.js';
+import { nickWrote } from './agent.js';
 
 const VERIFY = process.env.WHATSAPP_VERIFY_TOKEN?.trim();
 const KEY = process.env.WHATSAPP_WEBHOOK_KEY?.trim();
@@ -42,6 +43,11 @@ whatsappWebhook.post('/whatsapp/:key', async (c) => {
   const changes = (body.entry ?? []).flatMap((e) => e.changes ?? []);
   let messages = 0;
   for (const ch of changes) {
+    // NickMark answering from the phone app (coexistence): the WhatsApp agent steps back for that number.
+    if (ch.field === 'smb_message_echoes') {
+      for (const e of ch.value?.message_echoes ?? []) await nickWrote(String(e.to ?? ''), String(e.text?.body ?? '')).catch((x) => fail('echo', x));
+      continue;
+    }
     // Only our own number; history sync and echoes of messages sent from the phone app are not requests.
     if (ch.field !== 'messages' || (ownPhoneId() && ch.value?.metadata?.phone_number_id !== ownPhoneId())) continue;
     const names = Object.fromEntries((ch.value?.contacts ?? []).map((x) => [x.wa_id, x.profile?.name ?? '']));
@@ -63,7 +69,7 @@ type Change = {
   field?: string;
   value?: {
     metadata?: { phone_number_id?: string }; contacts?: Array<{ wa_id: string; profile?: { name?: string } }>;
-    messages?: WaMsg[]; statuses?: Array<{ id: string; status: string; errors?: Array<{ code?: number; title?: string }> }>;
+    messages?: WaMsg[]; message_echoes?: Array<{ to?: string; text?: { body?: string } }>; statuses?: Array<{ id: string; status: string; errors?: Array<{ code?: number; title?: string }> }>;
   };
 };
 

@@ -68,8 +68,10 @@ adminWhatsapp.post('/whatsapp/inbox/:id/dismiss', async (c) => {
 // ---------- who may use WhatsApp, brand by brand ----------
 adminWhatsapp.get('/whatsapp/brands/:brandId/people', async (c) => {
   const members = await db.collection(`brands/${c.req.param('brandId')}/members`).get();
+  const agent = (await db.doc(`brands/${c.req.param('brandId')}`).get()).get('waAgent.on') === true;
   const users = await Promise.all(members.docs.map((m) => db.doc(`users/${m.id}`).get()));
   return c.json({
+    agent,
     people: members.docs.map((m, i) => ({
       uid: m.id, name: String(m.get('name') ?? ''), email: String(m.get('email') ?? ''), role: String(m.get('role') ?? 'client_member'),
       allowed: m.get('whatsapp') !== false,
@@ -96,6 +98,18 @@ adminWhatsapp.put('/whatsapp/brands/:brandId/people/:uid', async (c) => {
   }
   if (typeof b.allowed === 'boolean') await member.set({ whatsapp: b.allowed }, { merge: true });
   await db.collection('audit').doc().set({ type: 'whatsapp_access', brandId, uid, allowed: b.allowed ?? null, phoneChanged: typeof b.phone === 'string', by: c.get('user').uid, at: FieldValue.serverTimestamp() });
+  return c.json({ ok: true });
+});
+
+/** The WhatsApp agent for this brand (pilot): it answers, offers requests and hands over to NickMark. */
+adminWhatsapp.put('/whatsapp/brands/:brandId/agent', async (c) => {
+  const { brandId } = c.req.param();
+  const brand = db.doc(`brands/${brandId}`);
+  if (!(await brand.get()).exists) return c.json({ error: 'not_found' }, 404);
+  const b = await c.req.json<{ on?: boolean }>().catch(() => ({} as { on?: boolean }));
+  if (typeof b.on !== 'boolean') return c.json({ error: 'bad_request' }, 400);
+  await brand.set({ waAgent: { on: b.on, by: c.get('user').uid, at: FieldValue.serverTimestamp() } }, { merge: true });
+  await db.collection('audit').doc().set({ type: 'whatsapp_agent', brandId, on: b.on, by: c.get('user').uid, at: FieldValue.serverTimestamp() });
   return c.json({ ok: true });
 });
 

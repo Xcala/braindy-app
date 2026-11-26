@@ -37,6 +37,18 @@ export const dateLabel = (ymd: string) => { const [y, m, d] = ymd.split('-').map
 /** Today in Bogotá as YYYY-MM-DD. */
 export const todayBogota = (at = new Date()) => at.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
 
+/** When a cuenta's 30 days start: the day it was issued, or its own planned day if it was issued early (2026-11-26:
+ *  Blacky's December–February cuentas were sent in November and must not turn «En mora» in December). */
+export const dueFrom = (d: { issueDate?: string | null; scheduledDate?: string | null }) =>
+  [d.issueDate ?? '', d.scheduledDate ?? ''].reduce((a, b) => (b > a ? b : a), '');
+/** Unpaid for more than `days` since dueFrom. `today` is YYYY-MM-DD in Bogotá. */
+export function isLate(d: { issueDate?: string | null; scheduledDate?: string | null }, today: string, days = 30) {
+  const from = dueFrom(d);
+  if (!from) return false;
+  const limit = new Date(`${from}T12:00:00Z`); limit.setUTCDate(limit.getUTCDate() + days);
+  return today > limit.toISOString().slice(0, 10);
+}
+
 export type PlanRow = { index: number; of: number; number: string; billingMonth: string; scheduledDate: string; amount: number; issueNow: boolean };
 
 /** The cuentas of an agreement. Months up to the current one are issued at activation (dated today, never backdated);
