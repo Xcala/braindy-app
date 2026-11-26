@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta, type Profile } from './api';
 import { SendDialog } from './admin/SendDialog';
-import { PaidDialog } from './PaidDialog';
+import { PayDialog } from './PayDialog';
 
 const CHIP: Record<string, string> = { scheduled: 'c-draft', issued: 'c-sent', sent: 'c-sent', paid: 'c-approved', overdue: 'c-lost', void: 'c-archived', held: 'c-approve' };
 
 /** The cuentas and recibos of a brand as a list: number, month, value, status, PDF. The client says «Ya pagué»;
  *  the admin issues, sends, voids and confirms proofs. */
-export function CuentasList({ brandId, docs, admin, reload, sendTo }: { brandId: string; docs: Cuenta[]; admin?: boolean; reload: () => void; sendTo?: { profile: Profile | null; people: number } }) {
+export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }: { brandId: string; docs: Cuenta[]; admin?: boolean; reload: () => void; feePct?: number; sendTo?: { profile: Profile | null; people: number } }) {
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
@@ -49,7 +49,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo }: { brandId:
           {admin && d.held && st === 'paid' && <span className="t-xs t-mute">{t('cc.notSent')}</span>}</span>
         <span className="row g8 wrap" style={{ justifyContent: 'flex-end' }}>
           {d.hasPdf && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminPdf(brandId, d.id) : cuentasApi.pdf(brandId, d.id))}>{t('cc.pdf')}</button>}
-          {!admin && open && !recibo && !pending && <button className="btn btn-secondary btn-sm" onClick={() => setPaying(d)}>{t('cc.iPaid')}</button>}
+          {!admin && open && !recibo && !pending && <button className="btn btn-primary btn-sm" onClick={() => setPaying(d)}>{t('cc.pay.btn')}</button>}
           {admin && d.status === 'scheduled' && <button className="btn btn-secondary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.act(brandId, d.id, 'issue'))}>{t('cc.a.issue')}</button>}
           {canSend && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => setSending(d)}>{t('cc.a.send')}</button>}
           {admin && pending?.hasProof && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(cuentasApi.proof(brandId, d.id, pending.id))}>{t('cc.a.seeProof')}</button>}
@@ -74,7 +74,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo }: { brandId:
       {cuentas.length > 0 && <div className="col g8"><p className="label">{t('cc.h.cuentas')}</p>{table(cuentas, t('cc.col.month'))}</div>}
       {recibos.length > 0 && <div className="col g8"><p className="label">{t('cc.h.recibos')}</p>{table(recibos, t('cc.col.paidOn'))}</div>}
       {sending && <SendDialog brandId={brandId} doc={sending} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSending(null); if (sent) reload(); }} />}
-      {paying && <PaidDialog brandId={brandId} doc={paying} onClose={() => { setPaying(null); reload(); }} />}
+      {paying && <PayDialog brandId={brandId} doc={paying} feePct={feePct} onClose={() => { setPaying(null); reload(); }} />}
       {voiding && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setVoiding(null)}>
           <div className="modal w-full max-w-[28rem] col g12" role="dialog" aria-modal="true" aria-labelledby="void-h">

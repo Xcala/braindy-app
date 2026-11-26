@@ -14,6 +14,7 @@ import { mask, nitValid, planOf } from './money.js';
 import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
 import { billingPeople as peopleWithBilling } from './notifyBilling.js';
 import { billingFileRoutes, dataFile } from './files.js';
+import { cardFeePct, cuentaCheckout } from './card.js';
 import { claimPaid, confirmClaim, recordPayment, voidDoc } from './payments.js';
 import { extractSample } from './importSample.js';
 import {
@@ -215,7 +216,7 @@ invoicing.use('/brands/:brandId/cuentas/*', billingPeople);
 invoicing.get('/brands/:brandId/cuentas', async (c) => {
   const q = await docsCol(c.req.param('brandId')).get();
   const docs = q.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>)).filter((d) => d.status !== 'scheduled' && !d.held);
-  return c.json({ docs: docs.sort((x, y) => (y.issueDate ?? '').localeCompare(x.issueDate ?? '') || y.number.localeCompare(x.number)) });
+  return c.json({ cardFeePct: cardFeePct(), docs: docs.sort((x, y) => (y.issueDate ?? '').localeCompare(x.issueDate ?? '') || y.number.localeCompare(x.number)) });
 });
 invoicing.get('/brands/:brandId/cuentas/:docId/pdf', async (c) => {
   const d = (await docsCol(c.req.param('brandId')).doc(c.req.param('docId')).get()).data() as BillingDoc | undefined;
@@ -244,6 +245,14 @@ invoicing.post('/brands/:brandId/cuentas/:docId/paid', async (c) => {
 });
 
 billingFileRoutes(adminInvoicing, invoicing);
+
+/** Pay a cuenta by card: a Stripe Checkout link for what is still owed on it. */
+invoicing.post('/brands/:brandId/cuentas/:docId/checkout', async (c) => {
+  const { brandId, docId } = c.req.param();
+  const { lang } = await c.req.json<{ lang?: string }>().catch(() => ({} as { lang?: string }));
+  try { return c.json(await cuentaCheckout(brandId, docId, c.get('user').uid, lang === 'en' ? 'en' : 'es')); }
+  catch (e) { const m = String((e as Error).message); return c.json({ error: m === 'not_open' || m === 'stripe_not_configured' ? m : 'failed' }, m === 'stripe_not_configured' ? 503 : 409); }
+});
 
 // ---------------- public ----------------
 export const publicInvoicing = new Hono();

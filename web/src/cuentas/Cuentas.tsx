@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { BillingFiles } from './BillingFiles';
@@ -13,9 +14,12 @@ export function Cuentas({ brandId }: { brandId: string }) {
   const { t } = useI18n();
   const { profile } = useAuth();
   const [docs, setDocs] = useState<Cuenta[] | null>(null);
+  const [feePct, setFeePct] = useState(0);
   const [paying, setPaying] = useState(false);
+  const [params] = useSearchParams();
+  const card = params.get('card');
   const admin = profile?.role === 'admin';
-  const load = useCallback(() => { if (!admin) cuentasApi.list(brandId).then((r) => setDocs(r.docs)).catch(() => setDocs([])); }, [brandId, admin]);
+  const load = useCallback(() => { if (!admin) cuentasApi.list(brandId).then((r) => { setDocs(r.docs); setFeePct(r.cardFeePct ?? 0); }).catch(() => setDocs([])); }, [brandId, admin]);
   useEffect(() => { load(); }, [load]);
   if (admin) return <CuentasAdmin brandId={brandId} />;
   if (docs === null) return null;
@@ -30,7 +34,9 @@ export function Cuentas({ brandId }: { brandId: string }) {
             <div className="col g4"><h2 className="h2" id="cc-h">{t('cc.title')}</h2><p className="t-sm t-mute">{t('cc.tagline')}</p></div>
             {open.length > 0 && <button className="btn btn-primary" onClick={() => setPaying(true)}>{t('cc.paid.upload')}</button>}
           </div>
-          <CuentasList brandId={brandId} docs={docs} reload={load} />
+          {card === 'paid' && <p className="card card-tight t-sm" role="status">{t('cc.pay.thanks')}</p>}
+          {card === 'canceled' && <p className="t-sm t-mute" role="status">{t('cc.pay.canceled')}</p>}
+          <CuentasList brandId={brandId} docs={docs} reload={load} feePct={feePct} />
         </>
       )}
       <BillingFiles brandId={brandId} />

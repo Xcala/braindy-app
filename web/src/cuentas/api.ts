@@ -38,9 +38,10 @@ const json = (body: unknown, method = 'POST'): RequestInit => ({ method, body: J
 const A = (b: string) => `/v1/admin/brands/${b}/invoicing`;
 
 export const cuentasApi = {
-  list: (b: string) => api<{ docs: Cuenta[] }>(`/v1/brands/${b}/cuentas`),
+  list: (b: string) => api<{ docs: Cuenta[]; cardFeePct?: number }>(`/v1/brands/${b}/cuentas`),
   pdf: (b: string, id: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/${id}/pdf`),
   paid: (b: string, id: string, x: { proof: string; date: string; amount: number; method: string }) => api<{ ok: true }>(`/v1/brands/${b}/cuentas/${id}/paid`, json(x)),
+  checkout: (b: string, id: string, lang: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/${id}/checkout`, json({ lang })),
   files: (b: string) => api<{ files: BillingFile[] }>(`/v1/brands/${b}/cuentas/files`),
   file: (b: string, id: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/files/${id}`),
   // admin
@@ -72,7 +73,7 @@ export const cuentasApi = {
 /** The server's short error code («no_profile»…) as a translation key. */
 export const errKey = (e: unknown) => {
   const code = String((e as { body?: { error?: string } })?.body?.error ?? 'failed');
-  return ['no_issuer', 'no_profile', 'no_signature', 'number_taken', 'sum_mismatch', 'more_than_owed', 'nothing_open', 'has_payments'].includes(code) ? `cc.e.${code}` : 'cc.e.failed';
+  return ['no_issuer', 'no_profile', 'no_signature', 'number_taken', 'sum_mismatch', 'more_than_owed', 'nothing_open', 'has_payments', 'not_open', 'stripe_not_configured'].includes(code) ? `cc.e.${code}` : 'cc.e.failed';
 };
 export const cop = (n: number) => `$${Math.round(n).toLocaleString('es-CO')}`;
 /** Amounts travel as integers: pesos for COP, cents for USD. */

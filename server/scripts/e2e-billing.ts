@@ -168,6 +168,20 @@ writeFileSync(process.env.E2E_OUT_US ?? join(tmpdir(), 'e2e-OT-01-01.pdf'), awai
 r = await call(A, 'POST', '/v1/admin/brands/otra/invoicing/payments', { agreementId: usId, amount: 108333, date: today, method: 'ACH', receipt: true });
 check('USD payment gives its own receipt RC-US-0001', r.json.receipt?.number === 'RC-US-0001', r.json);
 
+// Card payment: a held cuenta cannot be paid; Stripe is not reachable here (503). The webhook is simulated: the card
+// fee line (paid by the client) is not recorded as payment; the cuenta is paid and its recibo goes out by itself.
+r = await call(other.token, 'POST', '/v1/brands/otra/cuentas/OT-01-03/checkout', { lang: 'en' });
+const heldPay = r.status;
+await call(A, 'POST', '/v1/admin/brands/otra/invoicing/docs/OT-01-02/send');
+r = await call(other.token, 'POST', '/v1/brands/otra/cuentas/OT-01-02/checkout', { lang: 'en' });
+check('card checkout: held cuenta refused, no Stripe here', heldPay === 409 && r.status === 503, { heldPay, r });
+const { onCuentaPaid, cardFee } = await import('../src/invoicing/card.js');
+const fee = cardFee(108333);
+await onCuentaPaid({ id: 'cs_test_1', payment_status: 'paid', amount_total: 108333 + fee, metadata: { kind: 'cuenta', brandId: 'otra', docId: 'OT-01-02', amount: '108333', fee: String(fee) } });
+const paid2 = (await db.doc('brands/otra/billingDocs/OT-01-02').get()).data()!;
+const rc2 = (await db.doc('brands/otra/billingDocs/RC-US-0002').get()).data();
+check('card payment: cuenta paid without the fee, recibo sent to the app', paid2.status === 'paid' && paid2.paid === 108333 && rc2?.amount === 108333 && rc2?.held === false && /Stripe/.test(String(paid2.payments.at(-1).method)), { status: paid2.status, paid: paid2.paid, rc2: rc2 && { amount: rc2.amount, held: rc2.held } });
+
 function wavePng() {
   const crc = (b: Buffer) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };
   const chunk = (type: string, data: Buffer) => {
