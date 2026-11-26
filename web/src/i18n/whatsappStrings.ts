@@ -96,6 +96,8 @@ export const whatsappEn = {
   'waa.stopped': 'notices paused (wrote STOP)',
   'waa.noNumber': 'no number',
   'waa.saved': 'Saved.',
+  'waa.agent': 'Agent answers on WhatsApp',
+  'waa.agentHint': 'It talks with the client, looks up their requests and files, offers to create a request (they confirm with a button) and passes you complaints, prices or what it does not know. It goes quiet for 2 h when you write yourself.',
   'waa.hint': 'With WhatsApp off, their messages for this brand wait with the unknown numbers instead of becoming requests. People are added to a brand in Team.',
 } as const;
 
@@ -196,5 +198,7 @@ export const whatsappEs: Record<keyof typeof whatsappEn, string> = {
   'waa.stopped': 'avisos pausados (escribió STOP)',
   'waa.noNumber': 'sin número',
   'waa.saved': 'Guardado.',
+  'waa.agent': 'El agente responde en WhatsApp',
+  'waa.agentHint': 'Conversa con el cliente, busca sus pedidos y archivos, ofrece crear el pedido (el cliente confirma con un botón) y te pasa quejas, precios o lo que no sepa. Se calla 2 h cuando tú escribes.',
   'waa.hint': 'Con WhatsApp apagado, sus mensajes para esta marca quedan con los números desconocidos en vez de volverse solicitudes. Las personas se agregan a la marca en Equipo.',
 };

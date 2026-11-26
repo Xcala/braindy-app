@@ -8,6 +8,7 @@ import { createRequest } from '../requests.js';
 import { decideWithLink } from '../review.js';
 import { sendChoices, sendText } from '../whatsapp.js';
 import { brandsOf, contactRef, getContact, type Contact, type Pending } from './contacts.js';
+import { agentOn, agentTurn, handOff, remember } from './agent.js';
 import { storeMedia, type InMedia } from './media.js';
 import { queueWork } from '../autopilot.js';
 import { replyWithLoginLink } from '../accessLinks.js';
@@ -36,6 +37,8 @@ const COPY = {
     failed: 'No pude registrarlo. Ábrelo desde el enlace del mensaje.',
     stopped: 'Listo, no te enviaremos más avisos por WhatsApp. Escribe START para volver a activarlos.',
     started: 'Listo, los avisos por WhatsApp están activos de nuevo.',
+    offer: '¿Lo convierto en pedido para NicoMarca y su equipo?', yes: 'Sí, créalo', no: 'No todavía', notYet: 'Listo, no lo creo. Si cambias de idea, me dices.',
+    added: 'Listo, lo sumé al pedido.', handed: 'Le paso esto a NicoMarca; te escribe él.',
     files: 'Archivos enviados por WhatsApp',
   },
   en: {
@@ -48,6 +51,8 @@ const COPY = {
     failed: "I couldn't record it. Open it from the link in the message.",
     stopped: "Done, we won't send you more WhatsApp notices. Write START to turn them back on.",
     started: 'Done, WhatsApp notices are on again.',
+    offer: 'Shall I make it a request for NickMark and his team?', yes: 'Yes, create it', no: 'Not yet', notYet: "Ok, I won't create it. Tell me if you change your mind.",
+    added: 'Done, I added it to the request.', handed: "I'm passing this to NickMark; he will write to you.",
     files: 'Files sent by WhatsApp',
   },
 };
@@ -166,6 +171,17 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   }
   if (!text && media.length === 0 && !choice) return; // stickers, reactions, locations: nothing to file
 
+  // The agent's offer: the person confirms (or not) the request it drafted.
+  if (choice === 'rq:yes' || choice === 'rq:no') {
+    const offer = contact?.state?.offer;
+    if (!offer || !brands.some((b) => b.id === offer.brandId)) return;
+    await remember(phone, offer.brandId, [{ role: 'user', content: choice === 'rq:yes' ? COPY[lang].yes : COPY[lang].no }]);
+    if (choice === 'rq:no') { await contactRef(phone).set({ state: null }, { merge: true }); return say(phone, COPY[lang].notYet); }
+    return fileRequest(phone, uid, offer.brandId, { text: `${offer.title}
+
+${offer.text}`, media: offer.media, at: offer.at }, lang);
+  }
+
   // Brand chosen from the list we sent.
   if (choice.startsWith('br:')) {
     const brandId = choice.slice(3);
@@ -180,8 +196,13 @@ export async function handleMessage(m: WaMsg, profileName: string) {
     await comment(replied.get('brandId'), replied.get('requestId'), uid, text, media);
     return;
   }
-  // Follow-up right after a request (more photos, "and make it blue") → comment on it, silently.
   const last = contact?.lastRequest;
+  // Pilot brands: the agent talks, answers, offers requests or hands over to NickMark (unless he is talking himself).
+  const agentBrand = brands.length === 1 ? brands[0] : (brandNamed(text, brands) ?? brands.find((b) => b.id === last?.brandId) ?? brands[0]);
+  const paused = (contact?.agentPausedUntil?.toMillis() ?? 0) > Date.now();
+  if (!paused && (await agentOn(agentBrand.id))) return withAgent(m, phone, uid, agentBrand, text, media, lang, profileName);
+
+  // Follow-up right after a request (more photos, "and make it blue") → comment on it, silently.
   if (last && Date.now() - last.at.toMillis() < FOLLOW_UP_MS && brands.some((b) => b.id === last.brandId)) {
     await comment(last.brandId, last.requestId, uid, text, media);
     return;
@@ -202,4 +223,42 @@ export async function handleMessage(m: WaMsg, profileName: string) {
   if (named || usual) return fileRequest(phone, uid, (named ?? usual)!.id, pending, lang);
   await contactRef(phone).set({ state: { pending } }, { merge: true });
   return choose(phone, COPY[lang].which, brands.map((b) => ({ id: `br:${b.id}`, title: b.name })), lang === 'es' ? 'Marcas' : 'Brands');
+}
+
+/** Pilot brands: one turn with the agent, then do what it decided. If the agent fails, the old way (inbox) keeps the message. */
+async function withAgent(m: WaMsg, phone: string, uid: string, brand: { id: string; name: string }, text: string, media: InMedia[], lang: 'es' | 'en', profileName: string) {
+  const c = COPY[lang];
+  let out;
+  try { out = await agentTurn({ phone, uid, brandId: brand.id, lang, text, files: media.length }); } catch (e) {
+    console.warn('whatsapp agent failed', String(e).slice(0, 120));
+    return toInbox(m, profileName, text, media, { uid, brandId: brand.id });
+  }
+  const said = out.kind === 'add' ? out.text || c.added : out.kind === 'handoff' ? out.text || c.handed : out.text;
+  await remember(phone, brand.id, [{ role: 'user', content: text || `[${media.length} archivo(s)]` }, ...(said ? [{ role: 'assistant' as const, content: said }] : [])]);
+  if (out.kind === 'offer') {
+    // Files sent earlier in this conversation (kept on the offer) travel with the request too.
+    const prev = (await contactRef(phone).get()).get('state.offer.media') as InMedia[] | undefined;
+    await contactRef(phone).set({ state: { offer: { brandId: brand.id, title: out.title, text: out.body, media: [...(prev ?? []), ...media].slice(-10), at: Date.now() } } }, { merge: true });
+    if (out.text) await say(phone, out.text);
+    return choose(phone, `*${out.title}*
+${c.offer}`, [{ id: 'rq:yes', title: c.yes }, { id: 'rq:no', title: c.no }]);
+  }
+  if (out.kind === 'add') {
+    const ok = out.requestId && (await db.doc(`brands/${brand.id}/requests/${out.requestId}`).get()).exists;
+    if (ok) await comment(brand.id, out.requestId, uid, out.body, media);
+    else await toInbox(m, profileName, text, media, { uid, brandId: brand.id });
+    return say(phone, said);
+  }
+  if (out.kind === 'handoff') {
+    await toInbox(m, profileName, text, media, { uid, brandId: brand.id });
+    await handOff(phone, brand.id, brand.name, out.reason);
+    return say(phone, said);
+  }
+  // A plain answer; a file sent with it waits in the inbox so it is not lost.
+  if (media.length) {
+    const offer = (await contactRef(phone).get()).get('state.offer') as Record<string, unknown> | undefined;
+    const kept = [...((offer?.media as InMedia[] | undefined) ?? []), ...media.map((x) => ({ id: x.id, name: x.name, contentType: x.contentType }))].slice(-10);
+    await contactRef(phone).set({ state: { offer: { ...(offer ?? { brandId: brand.id, title: '', text: '', at: Date.now() }), media: kept } } }, { merge: true });
+  }
+  if (said) return say(phone, said);
 }

@@ -8,9 +8,13 @@ import type { AuthEnv } from '../auth.js';
 
 export type Contact = {
   uid?: string | null; optIn?: boolean; silent?: boolean; lastInboundAt?: Timestamp; politeAt?: Timestamp; lang?: 'es' | 'en';
-  state?: { awaitNote?: string; pending?: Pending } | null;
+  state?: { awaitNote?: string; pending?: Pending; offer?: Offer } | null;
+  /** The WhatsApp agent stays quiet with this number until then (NickMark is talking or took over). */
+  agentPausedUntil?: Timestamp | null;
   lastRequest?: { brandId: string; requestId: string; at: Timestamp } | null;
 };
+/** A request the agent offered to create; the person confirms with a button. */
+export type Offer = { brandId: string; title: string; text: string; media: Pending['media']; at: number };
 export type Pending = { text: string; media: Array<{ id: string; name: string; contentType: string }>; at: number };
 
 export const contactRef = (phone: string) => db.doc(`waContacts/${phone}`);
