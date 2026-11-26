@@ -15,7 +15,7 @@ import {
   type Agreement, type BillingDoc, type Issuer, type Profile,
 } from './store.js';
 
-const PUBLIC_API = process.env.PUBLIC_API_URL ?? 'https://braindy-api-283103160183.us-central1.run.app';
+export const PUBLIC_API = process.env.PUBLIC_API_URL ?? 'https://braindy-api-283103160183.us-central1.run.app';
 export const OVERDUE_DAYS = 30;
 
 export async function loadIssuer(id: string): Promise<Issuer> {
@@ -104,7 +104,7 @@ export async function issueDoc(brandId: string, docId: string, by: string) {
   return { number: d.number, pdfHash: sha256(pdf) };
 }
 
-const kindOf = (d: Pick<BillingDoc, 'type' | 'currency'>) =>
+export const kindOf = (d: Pick<BillingDoc, 'type' | 'currency'>) =>
   d.currency === 'USD' ? (d.type === 'recibo' ? 'Payment receipt' : 'Invoice') : (d.type === 'recibo' ? 'Recibo de pago' : 'Cuenta de cobro');
 export const fileNameOf = (d: Pick<BillingDoc, 'type' | 'number' | 'currency'>, brand: string) => `${kindOf(d)} ${d.number} · ${brand}.pdf`;
 

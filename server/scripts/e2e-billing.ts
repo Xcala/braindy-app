@@ -195,6 +195,13 @@ r = await call(A, 'POST', `${OA}/payments`, { docIds: ['OT-01-03'], amount: back
 const p3 = (await db.doc('brands/otra/billingDocs/OT-01-03').get()).data()!;
 check('«Pagada» on one cuenta records what it still owed', r.status === 200 && p3.status === 'paid' && p3.paid === p3.amount, { r, p3: p3.status });
 
+// «Todo en un solo correo»: several at once, one call; each one is released to the app; scheduled ones are skipped.
+r = await call(A, 'POST', `${B}/send-batch`, { docIds: ['BM-06-02', 'BM-06-03', 'BM-06-05'] });
+const sb = await Promise.all(['BM-06-02', 'BM-06-03'].map(async (id) => (await db.doc(`brands/blacky/billingDocs/${id}`).get()).data()!));
+check('send in one go: both go out, the scheduled one does not', r.status === 200 && JSON.stringify(r.json.sent) === '["BM-06-02","BM-06-03"]' && sb.every((d) => d.held === false && !!d.sentAt), r.json);
+r = await call(owner.token, 'POST', `${B}/send-batch`, { docIds: ['BM-06-02'] });
+check('the client cannot send in batch', r.status === 403, r);
+
 function wavePng() {
   const crc = (b: Buffer) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };
   const chunk = (type: string, data: Buffer) => {

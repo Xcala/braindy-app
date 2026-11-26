@@ -22,7 +22,8 @@ export async function billingPeople(brandId: string) {
   return [...out].filter((u) => !adm.has(u));
 }
 
-export async function notifyBilling(brandId: string, docId: string, d: BillingDoc) {
+/** quiet: only the notice in the app, no phone alert (a batch sends one alert for all). */
+export async function notifyBilling(brandId: string, docId: string, d: BillingDoc, quiet = false) {
   try {
     const cur = d.currency ?? 'COP';
     const recibo = d.type === 'recibo';
@@ -30,7 +31,7 @@ export async function notifyBilling(brandId: string, docId: string, d: BillingDo
       docId, number: d.number, type: d.type, amount: d.amount, currency: cur, billingMonth: d.billingMonth ?? null, at: FieldValue.serverTimestamp(),
     });
     const uids = await billingPeople(brandId);
-    if (!uids.length) return { people: 0 };
+    if (!uids.length || quiet) return { people: uids.length };
     const amt = money(d.amount, cur);
     await pushTo(uids, {
       kind: 'billing', tag: `billing-${docId}`, url: '/plan?tab=payments',

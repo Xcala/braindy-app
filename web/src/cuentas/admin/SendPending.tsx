@@ -39,6 +39,9 @@ export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: 
   const [day, setDay] = useState(defaultDay(docs));
   const [done, setDone] = useState(0);
   const [failed, setFailed] = useState<string[]>([]);
+  // Sent now: everything in one email (all PDFs attached, one WhatsApp) or one email each.
+  const [mode, setMode] = useState<'one' | 'each'>(docs.length > 1 ? 'one' : 'each');
+  const [one, setOne] = useState<{ via: string[]; waMe: string | null } | null>(null);
   const { to, line } = useTo(profile, people);
   const groups = [
     { key: 'paid', label: 'pg.s.gPaid', list: docs.filter((d) => d.type === 'cuenta_cobro' && d.status === 'paid') },
@@ -48,6 +51,10 @@ export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: 
 
   async function go() {
     setStep('sending');
+    if (when === 'now' && mode === 'one') {
+      try { setOne(await cuentasApi.batch(brandId, docs.map((d) => d.id))); setDone(docs.length); } catch { setFailed(docs.map((d) => d.number)); }
+      setStep('done'); return;
+    }
     const bad: string[] = [];
     for (const [i, d] of docs.entries()) {
       try { await (when === 'now' ? cuentasApi.act(brandId, d.id, 'send') : cuentasApi.schedule(brandId, d.id, day)); } catch { bad.push(d.number); }
@@ -73,6 +80,17 @@ export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: 
               <button key={w} type="button" role="radio" aria-checked={when === w} className={when === w ? 'is-on' : ''} onClick={() => setWhen(w)}>{t(w === 'now' ? 'pg.s.now' : 'pg.s.later')}</button>
             ))}
           </div>
+          {when === 'now' && docs.length > 1 && (
+            <fieldset className="col g8" style={{ border: 0, padding: 0, margin: 0 }}>
+              <legend className="label" style={{ marginBottom: '0.5rem' }}>{t('cc.all.how')}</legend>
+              {(['one', 'each'] as const).map((m) => (
+                <label key={m} className="row g8 t-sm" style={{ alignItems: 'flex-start' }}>
+                  <input type="radio" name="cc-all-mode" checked={mode === m} onChange={() => setMode(m)} style={{ marginTop: '0.2rem' }} />
+                  <span className="col g2"><b>{t(m === 'one' ? 'cc.all.one' : 'cc.all.each')}</b><span className="t-xs t-mute">{t(m === 'one' ? 'cc.all.oneHint' : 'cc.all.eachHint', { n: String(docs.length) })}</span></span>
+                </label>
+              ))}
+            </fieldset>
+          )}
           {when === 'later' && <div className="field"><label htmlFor="cc-all-day">{t('pg.s.date')}</label><input id="cc-all-day" className="input" type="date" min={today()} value={day} onChange={(e) => setDay(e.target.value)} /></div>}
           <p className="t-sm t-mute">{when === 'later' ? (to ? t('pg.s.laterHint', { to }) : t('pg.s.laterHintApp')) : line}</p>
         </div>
@@ -86,7 +104,8 @@ export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: 
       {step === 'done' && (
         <div className="row g12" role="status" style={{ alignItems: 'center' }}>
           <span className="cc-done" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-          <span className="t-sm"><b>{result}</b>{failed.length > 0 ? ` ${t('cc.all.failed', { list: failed.join(', ') })}` : ''}</span>
+          <span className="t-sm"><b>{result}</b>{failed.length > 0 ? ` ${t('cc.all.failed', { list: failed.join(', ') })}` : ''}{one ? ` ${one.via.includes('email') || !to ? t('cc.all.oneDone', { list: docs.map((d) => d.number).join(', ') }) : t('cc.all.oneNoMail')}` : ''}</span>
+          {one?.waMe && <a className="btn btn-secondary btn-sm" href={one.waMe} target="_blank" rel="noreferrer">{t('cc.all.wa')}</a>}
         </div>
       )}
       <div className="row g12" style={{ justifyContent: 'flex-end' }}>
