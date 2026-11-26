@@ -1,6 +1,6 @@
 /** Strings for "My plan": what the brand contracted (packs, contract, weekly schedule, care, apps stack), its design plan and site hosting plan. */
 export const planEn = {
-  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.apps': 'Third-party apps', 'plan.tab.payments': 'Payments',
+  'plan.tab.summary': 'Summary', 'plan.tab.schedule': 'Schedule', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Upgrade my plan', 'plan.tab.apps': 'Third-party apps', 'plan.tab.payments': 'Payments',
   'plan.foldSchedule': 'See the schedule', 'plan.foldScheduleSub': 'Weeks, deliveries and the kickoff checklist.',
   'plan.foldApps': 'Third-party apps', 'plan.foldAppsSub': 'The accounts your brand runs on, with their access kept safe.',
   'set.tab.people': 'Team and notices', 'set.foldNotices': 'WhatsApp notices', 'set.foldNoticesSub': 'Your number and what we let you know.',
@@ -90,7 +90,7 @@ export const planEn = {
   'plan.c.panel': 'Open contract panel',
   'plan.c.prep': 'In preparation',
   'plan.c.prepBody': 'Nicolas is preparing your contract. When it is ready you sign it right here.',
-  'plan.c.prepAdmin': 'No contract sent yet. Prepare, sign and send it from the contract panel; its schedule (Anexo 2) is the one shown below.',
+  'plan.c.prepAdmin': 'No contract sent yet. Prepare, sign and send it from the contract panel.',
   'plan.c.toSign': 'Ready to sign',
   'plan.c.toSignBody': 'Read it and sign it below. Nicolas already signed: when you sign, the PDF stays here.',
   'plan.c.waitingSigner': 'Waiting for {name} to sign.',
@@ -124,7 +124,7 @@ export const planEn = {
 };
 
 export const planEs: Record<keyof typeof planEn, string> = {
-  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Hosting', 'plan.tab.apps': 'Apps de terceros', 'plan.tab.payments': 'Pagos',
+  'plan.tab.summary': 'Resumen', 'plan.tab.schedule': 'Cronograma', 'plan.tab.brand': 'On-Brand AI Studio', 'plan.tab.site': 'Mejorar mi plan', 'plan.tab.apps': 'Apps de terceros', 'plan.tab.payments': 'Pagos',
   'plan.foldSchedule': 'Ver cronograma', 'plan.foldScheduleSub': 'Semanas, entregas y la lista de arranque.',
   'plan.foldApps': 'Apps de terceros', 'plan.foldAppsSub': 'Las cuentas con las que funciona tu marca, con sus accesos protegidos.',
   'set.tab.people': 'Equipo y avisos', 'set.foldNotices': 'Avisos por WhatsApp', 'set.foldNoticesSub': 'Tu número y lo que te avisamos.',
@@ -214,7 +214,7 @@ export const planEs: Record<keyof typeof planEn, string> = {
   'plan.c.panel': 'Abrir panel del contrato',
   'plan.c.prep': 'En preparación',
   'plan.c.prepBody': 'Nicolas está preparando tu contrato. Cuando esté listo lo firmas aquí mismo.',
-  'plan.c.prepAdmin': 'Aún no hay contrato enviado. Prepáralo, fírmalo y envíalo desde el panel del contrato; su cronograma (Anexo 2) es el que se ve abajo.',
+  'plan.c.prepAdmin': 'Aún no hay contrato enviado. Prepáralo, fírmalo y envíalo desde el panel del contrato.',
   'plan.c.toSign': 'Listo para firmar',
   'plan.c.toSignBody': 'Léelo y fírmalo abajo. Nicolas ya firmó: cuando firmes, el PDF queda aquí.',
   'plan.c.waitingSigner': 'Esperando la firma de {name}.',
