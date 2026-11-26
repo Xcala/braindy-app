@@ -28,18 +28,60 @@
 .cc-sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem; }
 .cc-sum > div { padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid var(--line); }
 
-/* The list is a table on wide screens and one card per cuenta on phones. */
-.cc-table .trow { min-width: 48rem; }
-@media (max-width: 640px) {
-  .cc-table .trow { min-width: 0; grid-template-columns: minmax(0, 1fr) auto !important; gap: 0.375rem 0.75rem; padding-block: 0.875rem; }
-  .cc-table .trow.head { display: none; }
-  .cc-table .cc-num { grid-column: 1; grid-row: 1; }
-  .cc-table .cc-val { grid-column: 2; grid-row: 1; text-align: right; }
-  .cc-table .cc-when { grid-column: 1; grid-row: 2; }
-  .cc-table .cc-st { grid-column: 2; grid-row: 2; align-items: flex-end; text-align: right; }
-  .cc-table .cc-act { grid-column: 1 / -1; grid-row: 3; justify-content: flex-start !important; }
-  .cc-table .cc-act:empty { display: none; }
+/* NickMark's list: a table while it fits its column, one card per row when it does not (container, not window:
+   the Asistente open on a laptop leaves the same room as a tablet). */
+.cc-list { container-type: inline-size; border: 1px solid var(--line); border-radius: 0.75rem; }
+.cc-r { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(7rem, 0.8fr) minmax(9rem, 1fr) auto; gap: 0.75rem; align-items: center; padding: 0.625rem 0.875rem; border-top: 1px solid var(--line); min-height: 3.5rem; }
+.cc-r:first-child { border-top: 0; }
+.cc-r > span { min-width: 0; display: flex; flex-direction: column; gap: 0.125rem; }
+.cc-r-what .t-sm, .cc-r-what .t-xs { overflow-wrap: anywhere; }
+.cc-r-st { align-items: flex-start; }
+.cc-r-act { flex-direction: row !important; align-items: center; justify-content: flex-end; gap: 0.375rem !important; }
+.cc-auto { color: var(--blue, #2A7FFF); }
+@container (max-width: 40rem) {
+  .cc-r { grid-template-columns: minmax(0, 1fr) auto; gap: 0.375rem 0.75rem; padding-block: 0.875rem; }
+  .cc-r-what { grid-column: 1; grid-row: 1; }
+  .cc-r-val { grid-column: 2; grid-row: 1; text-align: right; align-items: flex-end; }
+  .cc-r-st { grid-column: 1; grid-row: 2; flex-direction: row !important; flex-wrap: wrap; align-items: center; gap: 0.5rem !important; }
+  .cc-r-act { grid-column: 2; grid-row: 2; }
 }
+/* ⋯ menu */
+.cc-menu { position: relative; }
+.cc-menu-btn { min-width: 2rem; font-size: 1.125rem; line-height: 1; }
+.cc-menu-pop { position: absolute; right: 0; top: calc(100% + 0.25rem); z-index: 30; min-width: 13rem; padding: 0.25rem; border-radius: 0.75rem; background: var(--surface, #fff); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.14); display: flex; flex-direction: column; }
+.cc-menu-item { text-align: left; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; background: none; border: 0; color: inherit; cursor: pointer; white-space: nowrap; }
+.cc-menu-item:hover, .cc-menu-item:focus-visible { background: var(--surface-2, rgba(0,0,0,.05)); outline: none; }
+.cc-menu-item.is-danger { color: var(--danger); }
+.cc-menu-item:disabled { opacity: .5; cursor: default; }
+/* Send dialog: groups and «Ahora | Programar» */
+.cc-groups { border: 1px solid var(--line); border-radius: 0.75rem; }
+.cc-group { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; padding: 0.625rem 0.875rem; border-top: 1px solid var(--line); }
+.cc-group:first-child { border-top: 0; }
+.cc-seg { display: inline-flex; padding: 0.1875rem; border-radius: 999px; background: var(--surface-2, rgba(0,0,0,.06)); align-self: flex-start; }
+.cc-seg button { border: 0; background: none; padding: 0.375rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; color: inherit; cursor: pointer; }
+.cc-seg button.is-on { background: var(--surface, #fff); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+/* Three numbers on top of NickMark's view */
+.cc-nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; }
+.cc-nums > div { padding: 0.875rem 1rem; border-radius: 0.75rem; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 0.125rem; }
+.cc-nums .cc-big { font-size: 1.375rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cc-switch { display: flex; gap: 0.75rem; align-items: flex-start; }
+.cc-switch input[type=checkbox] { appearance: none; width: 2.5rem; height: 1.5rem; border-radius: 999px; background: var(--line, #ccd); position: relative; flex: none; cursor: pointer; transition: background 160ms; margin: 0.125rem 0 0; }
+.cc-switch input[type=checkbox]::after { content: ""; position: absolute; top: 0.1875rem; left: 0.1875rem; width: 1.125rem; height: 1.125rem; border-radius: 999px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform 160ms; }
+.cc-switch input[type=checkbox]:checked { background: var(--blue, #2A7FFF); }
+.cc-switch input[type=checkbox]:checked::after { transform: translateX(1rem); }
+.cc-switch input[type=checkbox]:focus-visible { outline: 2px solid var(--blue, #2A7FFF); outline-offset: 2px; }
+.cc-fold { border: 1px solid var(--line); border-radius: 0.75rem; padding: 0.75rem 1rem; }
+.cc-fold > summary { cursor: pointer; font-weight: 700; font-size: 0.9375rem; }
+.cc-fold[open] > summary { margin-bottom: 0.75rem; }
+
+/* Client: the project on top, «Toca ahora», the ones coming next. */
+.cc-proj { display: flex; flex-direction: column; gap: 0.625rem; }
+.cc-proj-nums { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.cc-now { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding: 0.875rem 1rem; border-radius: 0.75rem; background: color-mix(in srgb, var(--blue, #2A7FFF) 7%, transparent); border: 1px solid color-mix(in srgb, var(--blue, #2A7FFF) 25%, transparent); }
+.cc-next { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: center; padding: 0.625rem 0; border-top: 1px solid var(--line); }
+.cc-next:first-child { border-top: 0; }
+.cc-link { background: none; border: 0; padding: 0; color: var(--blue, #2A7FFF); font-weight: 600; font-size: 0.875rem; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+@media (max-width: 640px) { .cc-next { grid-template-columns: minmax(0, 1fr) auto; } .cc-next > :last-child { grid-column: 1 / -1; justify-self: start; } }
 
 /* Project: paid vs work done (its stages), one bar under the other, and the stage editor. */
 .cc-pb { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; }

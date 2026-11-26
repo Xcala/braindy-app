@@ -24,7 +24,7 @@ export function SendDialog({ brandId, doc, profile, people, onClose }: { brandId
   const rows = [
     { key: 'email', ico: '✉', label: t('cc.s.email'), to: email, ok: went('email'), note: step === 'done' && email && !went('email') ? t('cc.s.failed') : '' },
     { key: 'wa', ico: '☏', label: 'WhatsApp', to: wa, ok: went('whatsapp'), note: step === 'done' && res?.waMe ? t('cc.s.waClosed') : step === 'done' && wa && !went('whatsapp') ? t('cc.s.failed') : '' },
-    { key: 'app', ico: '◉', label: t('cc.s.app'), to: people ? t('cc.s.people', { n: String(res?.people ?? people) }) : t('cc.s.noPeople'), ok: step === 'done', note: '' },
+    { key: 'app', ico: '◉', label: t('cc.s.app'), to: people ? ((res?.people ?? people) === 1 ? t('pg.s.people1') : t('cc.s.people', { n: String(res?.people ?? people) })) : t('cc.s.noPeople'), ok: step === 'done', note: '' },
   ];
   const close = () => onClose(step === 'done');
 

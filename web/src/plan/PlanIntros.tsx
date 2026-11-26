@@ -2,6 +2,7 @@ import type { Brand } from '../brands/BrandProvider';
 import { inkOn } from '../brands/identity/useCopy';
 import { Explainer, ExampleRow, fontOf, useBrandKit, type Kit } from './Explainer';
 import { useL } from './HostingParts';
+import { useHasCuentas } from '../cuentas/hasCuentas';
 
 /** The top of the Summary, Site and Payments tabs of Mi plan: what each part is, told with an animation and small examples in the brand's kit. */
 
@@ -96,7 +97,15 @@ export function SiteIntro({ brand }: { brand: Brand }) {
 export function PaymentsIntro({ brand }: { brand: Brand }) {
   const L = useL();
   const kit = useBrandKit(brand);
-  const steps: Array<[string, string]> = [
+  // Billed in cuentas de cobro: the story of a cuenta, not of the card plan (2026-11-26, audit P1).
+  const cc = useHasCuentas(brand.id);
+  const steps: Array<[string, string]> = cc ? [
+    [L(['Te llega la cuenta', 'The request arrives']), L(['Con su PDF, a tu correo y aquí.', 'With its PDF, by email and here.'])],
+    [L(['Pagas como prefieras', 'You pay as you like']), L(['Con tarjeta o por transferencia.', 'By card or bank transfer.'])],
+    [L(['Subes el comprobante', 'You upload the proof']), L(['Si pagaste por transferencia.', 'If you paid by transfer.'])],
+    [L(['Recibes el recibo', 'You get the receipt']), L(['Queda aquí, en Recibos.', 'It stays here, in Receipts.'])],
+    [L(['Ves lo que falta', 'You see what is left']), L(['Y cuándo vence la que sigue.', 'And when the next one is due.'])],
+  ] : [
     [L(['Te llega el cobro', 'The charge arrives']), L(['Con el valor y lo que incluye.', 'With the amount and what it covers.'])],
     [L(['Pagas como prefieras', 'You pay as you like']), L(['Con tarjeta o por transferencia.', 'By card or bank transfer.'])],
     [L(['Queda pagado', 'It is paid']), L(['La transferencia se confirma en menos de 24 h.', 'Transfers are confirmed within 24 h.'])],
@@ -106,24 +115,25 @@ export function PaymentsIntro({ brand }: { brand: Brand }) {
   return (
     <div className="col g32">
       <Explainer label={L(['Pagos', 'Payments'])} title={L(['Pagas fácil, ', 'Pay easily, '])} strong={L(['sin sorpresas.', 'no surprises.'])}
-        lead={L(['Tu plan, lo que se cobra y cuándo. Braindy no ve ni guarda datos de tu tarjeta: el pago se hace en la página segura del proveedor.', 'Your plan, what is charged and when. Braindy never sees or stores your card details: you pay on the provider’s secure page.'])}
+        lead={cc ? L(['Tu proyecto, lo que has pagado y lo que falta. Pagas con tarjeta o subes el comprobante; el recibo queda aquí.', 'Your project, what you have paid and what is left. Pay by card or upload the proof; the receipt stays here.'])
+          : L(['Tu plan, lo que se cobra y cuándo. Braindy no ve ni guarda datos de tu tarjeta: el pago se hace en la página segura del proveedor.', 'Your plan, what is charged and when. Braindy never sees or stores your card details: you pay on the provider’s secure page.'])}
         steps={steps} stage={<>
           <div className="ex-center"><div className="ex-card py-inv">
             <Logo kit={kit} />
-            <span className="t-xs t-mute">{L(['Cobro', 'Charge'])} · {brand.name}</span>
+            <span className="t-xs t-mute">{cc ? L(['Cuenta de cobro', 'Payment request']) : L(['Cobro', 'Charge'])} · {brand.name}</span>
             <span className="py-amount" style={{ color: kit.c1 }}>$ ••••</span>
             <Lines w={[85, 60]} />
             <div className="py-methods"><span className="ex-glow">💳 {L(['Tarjeta', 'Card'])}</span><span className="ex-glow">🏦 {L(['Transferencia', 'Transfer'])}</span></div>
             <span className="py-stamp-at"><span className="py-stamp ex-f3">{L(['PAGADO', 'PAID'])}</span></span>
           </div></div>
-          <div className="py-mail ex-b4"><span className="ex-pill">✉️ {L(['Comprobante en tu correo', 'Receipt in your email'])}</span></div>
-          <div className="ex-card py-cal ex-f5"><b style={{ background: kit.c1 }}>{L(['Próximo cobro', 'Next charge'])}</b><strong>1</strong><small>{L(['del próximo mes', 'of next month'])}</small></div>
+          <div className="py-mail ex-b4"><span className="ex-pill">✉️ {cc ? L(['Recibo aquí y en tu correo', 'Receipt here and in your email']) : L(['Comprobante en tu correo', 'Receipt in your email'])}</span></div>
+          {!cc && <div className="ex-card py-cal ex-f5"><b style={{ background: kit.c1 }}>{L(['Próximo cobro', 'Next charge'])}</b><strong>1</strong><small>{L(['del próximo mes', 'of next month'])}</small></div>}
         </>}>
         <ExampleRow title={L(['Así puedes pagar', 'How you can pay'])} items={[
         { key: 'c', label: L(['Tarjeta', 'Card']), note: L(['En la página segura del proveedor', 'On the provider’s secure page']), art: <div className="ex-art-cc" style={{ background: `linear-gradient(135deg, ${kit.c2}, ${kit.c1})` }}><i /><span>•••• 4242</span></div> },
-        { key: 't', label: L(['Transferencia', 'Bank transfer']), note: L(['Pegas la referencia y la confirmamos', 'Paste the reference and we confirm it']), art: <div className="ex-card ex-art-doc"><span className="t-xs w7">🏦 {L(['Referencia', 'Reference'])}</span><Lines w={[90]} /><span className="ex-pill ex-ok" style={{ justifySelf: 'start', padding: '0.25rem 0.4375rem' }}>✓ &lt; 24 h</span></div> },
-        { key: 'r', label: L(['Comprobante', 'Receipt']), note: L(['Llega a tu correo', 'Arrives in your email']), art: <div className="ex-card ex-art-doc"><Logo kit={kit} /><Lines w={[80, 60, 70]} /><span className="t-xs w7" style={{ color: '#1F9D5C' }}>✓ {L(['Pagado', 'Paid'])}</span></div> },
-        { key: 'n', label: L(['Próximo cobro', 'Next charge']), note: L(['Siempre a la vista', 'Always in view']), art: <div className="ex-card py-cal" style={{ position: 'static' }}><b style={{ background: kit.c1 }}>{L(['Próximo', 'Next'])}</b><strong>1</strong><small>{L(['del mes', 'of the month'])}</small></div> },
+        { key: 't', label: L(['Transferencia', 'Bank transfer']), note: cc ? L(['Subes el comprobante y NicoMarca lo confirma', 'Upload the proof and NickMark confirms it']) : L(['Pegas la referencia y la confirmamos', 'Paste the reference and we confirm it']), art: <div className="ex-card ex-art-doc"><span className="t-xs w7">🏦 {L(['Referencia', 'Reference'])}</span><Lines w={[90]} /><span className="ex-pill ex-ok" style={{ justifySelf: 'start', padding: '0.25rem 0.4375rem' }}>✓ &lt; 24 h</span></div> },
+        { key: 'r', label: cc ? L(['Recibo', 'Receipt']) : L(['Comprobante', 'Receipt']), note: cc ? L(['Queda aquí, en Recibos', 'Stays here, in Receipts']) : L(['Llega a tu correo', 'Arrives in your email']), art: <div className="ex-card ex-art-doc"><Logo kit={kit} /><Lines w={[80, 60, 70]} /><span className="t-xs w7" style={{ color: '#1F9D5C' }}>✓ {L(['Pagado', 'Paid'])}</span></div> },
+        { key: 'n', label: cc ? L(['La que sigue', 'The next one']) : L(['Próximo cobro', 'Next charge']), note: cc ? L(['Con el día en que vence', 'With the day it is due']) : L(['Siempre a la vista', 'Always in view']), art: <div className="ex-card py-cal" style={{ position: 'static' }}><b style={{ background: kit.c1 }}>{L(['Próximo', 'Next'])}</b><strong>1</strong><small>{L(['del mes', 'of the month'])}</small></div> },
       ]} />
       </Explainer>
     </div>

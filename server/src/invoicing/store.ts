@@ -52,6 +52,8 @@ export type BillingDoc = {
   status: DocStatus; held?: boolean; paidOn?: string; pdfStoragePath?: string | null; pdfHash?: string | null;
   sentAt?: unknown; sentVia?: string[]; payments?: Payment[]; paid?: number; voidReason?: string | null;
   covers?: Array<{ docId: string; number: string; amount: number }>; publicTokenHash?: string | null; currency?: 'COP' | 'USD';
+  /** Day NickMark chose for a held doc to go out by itself (the daily job sends it). */
+  sendAt?: string | null;
 };
 
 const clean = (v: unknown, max = 300) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
