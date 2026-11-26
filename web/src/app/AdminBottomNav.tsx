@@ -15,19 +15,22 @@ export const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
   { to: '/admin/billing', label: 'nav.billing' },
   { to: '/admin/costs', label: 'cost.nav' },
   { to: '/admin/ai', label: 'aih.nav' },
+  { to: '/admin/usage', label: 'pv.nav' },
   { to: '/admin/whatsapp', label: 'waa.nav' },
   { to: '/admin/criterio', label: 'cra.nav' },
 ];
-const FIXED = 4;
+// Decision 1 (2026-11-24): Today, Brands and WhatsApp in the bar; the rest under More.
+const FIXED_TO = ['/admin/today', '/admin/brands', '/admin/whatsapp'];
+const FIXED_TABS = ADMIN_TABS.filter((i) => FIXED_TO.includes(i.to));
 
-/** Admin on a phone: Today · Studio · Brands · Proposals · More, the same bar and the same «More» sheet the client has. */
+/** Admin on a phone: Today · Brands · WhatsApp · More, the same bar and the same «More» sheet the client has. */
 export function AdminBottomNav() {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const moreBtn = useRef<HTMLButtonElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
-  const rest = ADMIN_TABS.slice(FIXED);
+  const rest = ADMIN_TABS.filter((i) => !FIXED_TO.includes(i.to));
   const inRest = rest.some((r) => pathname === r.to || pathname.startsWith(`${r.to}/`));
 
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -45,7 +48,7 @@ export function AdminBottomNav() {
   return (
     <>
       <div className="fixed inset-x-0 bottom-0 z-30 md:hidden"><nav className="bnav" aria-label={t('nav.sections')}>
-        {ADMIN_TABS.slice(0, FIXED).map((i) => (
+        {FIXED_TABS.map((i) => (
           <NavLink key={i.to} to={i.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>{NAV_ICON[i.to]}{t(i.label)}</NavLink>
         ))}
         <button ref={moreBtn} type="button" className={inRest || open ? 'is-active' : ''} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}>

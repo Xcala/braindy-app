@@ -9,6 +9,9 @@ export type Picked = { url: string; selector: string; text: string; x: number; y
 export type Pin = { id: string; n: number; selector?: string; text?: string; x?: number; y?: number; done?: boolean };
 
 const sameHost = (a: string, b: string) => { try { return new URL(a).host.replace(/^www\./, '') === new URL(b).host.replace(/^www\./, ''); } catch { return false; } };
+const BUST = '_bv';
+/** The page's address without the cache-busting query that «See the change» adds. */
+const clean = (url: string) => { try { const u = new URL(url); if (!u.searchParams.has(BUST)) return url; u.searchParams.delete(BUST); return u.href; } catch { return url; } };
 export const samePage = (a: string, b: string) => { try { const x = new URL(a), y = new URL(b); return sameHost(a, b) && x.pathname.replace(/\/$/, '') === y.pathname.replace(/\/$/, ''); } catch { return false; } };
 
 /**
@@ -23,6 +26,8 @@ export function useSpot(siteUrl: string) {
   const wantPick = useRef(false); // comment mode asked for before the bridge answered: turned on when it does
   const [hasBridge, setHasBridge] = useState(false);
   const [editor, setEditor] = useState<string | null>(null); // the site's own editor, when it has one (it says so on ready)
+  const [ready, setReady] = useState(0); // how many times the bridge said ready (each page or editor load)
+  const [signedIn, setSignedIn] = useState<boolean | null>(null); // the sign-in handoff: null = not tried
   const pending = useRef<Spot | null>(null);
   const pinsRef = useRef<Pin[]>([]);
   const [page, setPage] = useState(siteUrl);
@@ -31,6 +36,7 @@ export function useSpot(siteUrl: string) {
   const [picking, setPickingState] = useState(false);
   const [picked, setPicked] = useState<Picked | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
+  const [fresh, setFresh] = useState(false); // the site has a newer version than the one shown (bridge v4, or a request just finished)
   const wait = useRef(0);
 
   const send = useCallback((msg: Record<string, unknown>) => {
@@ -53,10 +59,10 @@ export function useSpot(siteUrl: string) {
       if (e.source !== frame.current?.contentWindow || !e.data || typeof e.data.type !== 'string') return;
       const d = e.data;
       if (d.type === 'braindy:ready') {
-        bridge.current = true; setHasBridge(true);
+        bridge.current = true; setHasBridge(true); setReady((n) => n + 1);
         if (typeof d.editor === 'string' && sameHost(d.editor, siteUrl)) setEditor(d.editor);
         if (d.inEditor) return; // the editor itself: not a page of the site
-        current.current = String(d.url ?? current.current); setPage(current.current);
+        current.current = clean(String(d.url ?? current.current)); setPage(current.current);
         send({ type: 'braindy:pins', pins: pinsRef.current });
         const p = pending.current; pending.current = null;
         if (p) ask(p);
@@ -69,6 +75,8 @@ export function useSpot(siteUrl: string) {
         setPicked({ url: String(d.url ?? ''), selector: String(d.selector ?? ''), text: String(d.text ?? ''), x: Number(d.x ?? 0.5), y: Number(d.y ?? 0.5) });
       } else if (d.type === 'braindy:comment-mode' && !d.on) { wantPick.current = false; setPickingState(false); }
       else if (d.type === 'braindy:pin') setPinned(String(d.id));
+      else if (d.type === 'braindy:auth-result') setSignedIn(!!d.ok);
+      else if (d.type === 'braindy:version') setFresh(true);
     };
     window.addEventListener('message', onMsg);
     return () => { window.removeEventListener('message', onMsg); clearTimeout(wait.current); };
@@ -101,10 +109,18 @@ export function useSpot(siteUrl: string) {
   /** Loads a URL in the frame as it is (the site's editor, or back to a page): no spot, no note. */
   const load = useCallback((url: string) => { setNote(null); pending.current = null; if (frame.current) frame.current.src = url; }, []);
 
+  /** Shows the newest version of the page shown: same page, past the browser cache (a throwaway query the bridge leaves out). */
+  const reload = useCallback(() => {
+    setFresh(false);
+    let url = current.current;
+    try { const u = new URL(url); u.searchParams.set(BUST, String(Date.now())); url = u.href; } catch { /* keep it as is */ }
+    load(url);
+  }, [load]);
+
   const setPins = useCallback((pins: Pin[]) => { pinsRef.current = pins; send({ type: 'braindy:pins', pins }); }, [send]);
 
   return {
-    frame, go, load, note, active, page, hasBridge, editor, dismiss: () => setNote(null),
+    frame, go, load, reload, fresh, markFresh: () => setFresh(true), note, active, page, hasBridge, editor, ready, signedIn, post: send, dismiss: () => setNote(null),
     picking, setPicking, picked, clearPicked: () => setPicked(null), setPins, pinned, clearPinned: () => setPinned(null),
   };
 }

@@ -45,7 +45,7 @@ export function BriefChat({ brandId, brandName }: { brandId: string; brandName: 
   );
   const Mine = ({ children }: { children: React.ReactNode }) => (
     <div className="row" style={{ justifyContent: 'flex-end' }}>
-      <div style={{ background: '#2F4DE0', color: '#fff', borderRadius: '1rem 0.25rem 1rem 1rem', padding: '0.875rem 1rem', maxWidth: '28.75rem', whiteSpace: 'pre-wrap' }}>{children}</div>
+      <div style={{ background: '#2F4DE0', color: '#fff', borderRadius: '1rem 0.25rem 1rem 1rem', padding: '0.875rem 1rem', maxWidth: '28.75rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{children}</div>
     </div>
   );
 

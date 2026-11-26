@@ -6,14 +6,14 @@ import { Checklist } from '../contracts/Checklist';
 import type { ChecklistItem, RowStatus, Schedule } from '../contracts/types';
 import { Packs } from './Packs';
 import { CareBlock } from './CareBlock';
-import { Stack } from './Stack';
 import { OnceIntro } from './OnceIntro';
-import type { BrandPlan, PackStatus, StackItem } from './types';
+import { Fold } from '../components/Fold';
+import type { BrandPlan, PackStatus } from './types';
 
 const fmt = (iso: string | undefined, lang: string) =>
   iso ? new Date(`${iso}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
-export type PlanTab = 'summary' | 'schedule' | 'brand' | 'site' | 'payments';
+export type PlanTab = 'summary' | 'schedule' | 'brand' | 'site' | 'apps' | 'payments';
 
 export interface PlanViewProps {
   /** Which tab is open; the summary header stays on top of every tab. */
@@ -27,10 +27,14 @@ export interface PlanViewProps {
   /** The explainer at the top of the summary, site and payments tabs. */
   intros?: Partial<Record<PlanTab, ReactNode>>;
   payments?: ReactNode;
+  /** Third-party apps and their access: the Apps tab. */
+  apps?: ReactNode;
+  /** Admin: the «Edit plan» button, top right of the summary header. */
+  action?: ReactNode;
+  /** A fold to open on arrival (?open=schedule|apps). */
+  openFold?: string;
   brandName: string;
   plan: BrandPlan | null;
-  /** Third-party apps the brand runs on. */
-  stack?: StackItem[];
   /** The contract block (status, signing, PDF), rendered right under the summary. */
   contract?: ReactNode;
   schedule: Schedule | null;
@@ -42,24 +46,30 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, plan, stack, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, action, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
   const ticked = kickoff?.items.filter((x) => x.done).length ?? 0;
   // Without a plan loaded the dark header would be empty: a plain title instead, the signature lives in the full one.
-  const head = !plan && !schedule ? (
+  // Every tab other than the summary gets a plain title with its own name (not «Mi plan» above the apps).
+  // One summary header with or without a plan (2026-11-24); without one it says the plan is being prepared.
+  const head = tab !== 'summary' ? (
     <header className="col g4">
       <p className="label" style={{ margin: 0 }}>{brandName}</p>
-      <h1 className="h1">{t('plan.title')}</h1>
+      {/* Apps: the list's own heading («Las apps con las que opera tu marca») is the title. */}
+      {tab !== 'apps' && <h1 className="h1">{t(`plan.tab.${tab}`)}</h1>}
     </header>
   ) : null;
   return (
     <div className="col g32">
       {head ?? <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
-        <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
+        <div className="row between g12" style={{ alignItems: 'center' }}>
+          <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
+          {action}
+        </div>
         <h1 className="h1" style={{ color: '#fff' }}><span className="w3">{t('plan.title')}{plan ? ' · ' : ''}</span>{plan && <span className="w9">{plan.title}</span>}</h1>
-        {plan?.summary && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan.summary}</p>}
+        {(plan ? plan.summary : t('plan.preparing')) && <p style={{ margin: 0, color: '#C9D0DE', maxWidth: '45rem' }}>{plan ? plan.summary : t('plan.preparing')}</p>}
         <div className="row g24" style={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
           {(plan?.start || plan?.end) && (
             <div className="col"><span className="label" style={{ color: '#8FA0FF' }}>{t('plan.dates')}</span><span className="w7">{fmt(plan.start, lang)}{plan.end ? ` → ${fmt(plan.end, lang)}` : ''}</span></div>
@@ -83,7 +93,9 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
       {intros?.[tab] && <OnceIntro key={tab} id={tab}>{intros[tab]}</OnceIntro>}
       {tab === 'summary' && contract}
       {tab === 'summary' && plan && <Packs c={plan} onStatus={onPackStatus} />}
-      {tab === 'schedule' && schedule && (
+      {tab === 'summary' && (schedule || (kickoff && kickoff.items.length > 0)) && (
+        <Fold id="schedule" title={t('plan.foldSchedule')} sub={t('plan.foldScheduleSub')} open={openFold === 'schedule'}>
+      {schedule && (
         <section className="col g16" aria-labelledby="plan-gantt">
           <div className="col g4">
             <p className="label">{t('plan.b2')}</p>
@@ -94,7 +106,7 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           <Gantt schedule={schedule} onStatus={onRowStatus} />
         </section>
       )}
-      {tab === 'schedule' && kickoff && kickoff.items.length > 0 && (
+      {kickoff && kickoff.items.length > 0 && (
         <section className="card card-tight col g12" aria-labelledby="plan-kickoff">
           <div className="row g8" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
             <div className="col g4"><p className="label">{t('plan.bKickoff')}</p><h2 id="plan-kickoff" className="h2">{t('ctr.checklist')}</h2></div>
@@ -104,10 +116,12 @@ export function PlanView({ tab, tabs, site, brand, payments, intros, brandName, 
           <Checklist items={kickoff.items} start={kickoff.start} onToggle={onTick} />
         </section>
       )}
+        </Fold>
+      )}
       {tab === 'brand' && brand}
       {tab === 'site' && site}
       {tab === 'site' && plan && <CareBlock c={plan} />}
-      {tab === 'site' && stack && <Stack items={stack} />}
+      {tab === 'apps' && apps}
       {tab === 'payments' && payments}
     </div>
   );

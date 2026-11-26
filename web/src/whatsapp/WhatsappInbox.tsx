@@ -62,7 +62,7 @@ export function WhatsappInbox() {
       {items.map((i) => (
         <div key={i.id} className="col g8" style={{ borderTop: '1px solid var(--line)', paddingTop: '0.625rem' }}>
           <span className="t-sm"><b>{i.name || `+${i.phone}`}</b> <span className="t-mute">· +{i.phone}{i.at ? ` · ${i.at.toDate().toLocaleString()}` : ''}</span></span>
-          {i.text && <p className="t-sm" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{i.text}</p>}
+          {i.text && <p className="t-sm" style={{ margin: 0, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{i.text}</p>}
           {i.media?.length ? <span className="t-xs t-mute">{t('wa.files', { n: i.media.length })}</span> : null}
           <div className="row g8 wrap">
             <select className="input" style={{ height: '2.25rem', width: 'auto', minWidth: '11.25rem' }} value={brand[i.id] ?? ''} onChange={(e) => pickBrand(i.id, e.target.value)} aria-label={t('wa.brand')}>

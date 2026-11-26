@@ -90,4 +90,28 @@ describe('group membership', () => {
       category: 'SOCIAL', status: 'in_production', createdBy: GROUP_MEMBER, createdAt: serverTimestamp(),
     }));
   });
+
+  it('a group member never opens requests on the group itself (only inside each company)', async () => {
+    const db = as(env, GROUP_OWNER);
+    await assertFails(setDoc(doc(db, `brands/${GROUP}/requests/new`), {
+      category: 'SOCIAL', status: 'in_production', createdBy: GROUP_OWNER, createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('a company added to the group later is covered at once, with the same access', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const db = ctx.firestore() as unknown as Firestore;
+      await setDoc(doc(db, 'brands/late-x'), { name: 'Late X', kind: 'brand', groupId: GROUP, ancestors: [GROUP] });
+      await setDoc(doc(db, 'brands/late-x/requests/r1'), { status: 'to_approve' });
+      await setDoc(doc(db, 'brands/late-x/requests/r1/versions/v1'), { n: 1, approval: { state: 'pending' } });
+    });
+    const owner = as(env, GROUP_OWNER);
+    await assertSucceeds(getDoc(doc(owner, 'brands/late-x')));
+    await assertSucceeds(getDocs(collection(owner, 'brands/late-x/requests')));
+    await assertSucceeds(setDoc(doc(owner, 'brands/late-x/requests/new'), {
+      category: 'SOCIAL', status: 'in_production', createdBy: GROUP_OWNER, createdAt: serverTimestamp(),
+    }));
+    await assertSucceeds(updateDoc(doc(owner, 'brands/late-x/requests/r1/versions/v1'), approve(GROUP_OWNER)));
+    await assertFails(getDoc(doc(as(env, CHILD_ONLY), 'brands/late-x')));
+  });
 });

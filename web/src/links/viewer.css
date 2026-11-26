@@ -100,19 +100,67 @@ html[data-theme="dark"] .lview-bar { background: var(--white); }
 button.spanel-pct { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; }
 .spanel-textbtn { appearance: none; border: 0; background: none; padding: 0; cursor: pointer; font: 700 0.75rem/1.3 var(--f-text); color: var(--azul); text-decoration: underline; text-underline-offset: 2px; }
 .spanel-legend { color: var(--graphite); }
-.sc-tabs button { padding: 0 0.375rem; font-size: 0.75rem; min-width: 0; white-space: nowrap; }
+/* Each tab: the name on top, its count under it (2026-11-23: «Comentar (150)» did not fit side by side). */
+.sc-tabs { padding: 0.25rem; border-radius: 0.875rem; }
+.sc-tabs button { flex-direction: column; gap: 0.125rem; height: auto; border-radius: 0.625rem; padding: 0.4375rem 0.375rem; min-width: 0; white-space: nowrap; line-height: 1.1; }
+.sc-tab-n { font-size: 0.6875rem; font-weight: 500; color: var(--graphite); font-variant-numeric: tabular-nums; }
+.sc-tabs button.is-on .sc-tab-n { color: var(--azul); }
 .spanel-recv { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.625rem 0.75rem; color: inherit; text-decoration: none; }
 .spanel-recv:hover, .spanel-recv:focus-visible { border-color: var(--azul); }
 .sdone-kind { color: var(--graphite); }
 
-/* «Dímelo» / «Hazlo tú»: the switch in the bar and, the first time, two cards over the site. */
+/* «Dímelo» / «Hazlo tú»: the switch in the bar. */
 .lview-modes button { height: 1.875rem; }
-.smode { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 1rem; background: color-mix(in srgb, var(--ink) 28%, transparent); }
-.smode-card { width: min(40rem, 100%); padding: 1.5rem; border-radius: 1.25rem; background: var(--white); box-shadow: 0 24px 60px rgba(11, 18, 32, .22); }
-.smode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.75rem; }
-.smode-opt { align-items: flex-start; text-align: left; padding: 1.125rem; border: 1px solid var(--line); border-radius: 1rem; background: var(--white); color: var(--ink); font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
-.smode-opt:hover { border-color: var(--azul); box-shadow: 0 6px 18px rgba(11, 18, 32, .08); transform: translateY(-2px); }
-.smode-opt:focus-visible { outline: 2px solid var(--azul); outline-offset: 2px; }
-.smode-opt b { font: 700 1rem/1.25 var(--f-text); }
-.smode-ico { font-size: 1.5rem; line-height: 1; }
-@media (prefers-reduced-motion: reduce) { .smode-opt { transition: none; } .smode-opt:hover { transform: none; } }
+
+/* Adjustment cards with where they stand: received (grey dot), Builder on it (avatar breathing, bar running), ready (green). */
+.spanel-recv { gap: 0.375rem; }
+.spanel-job { display: flex; align-items: center; gap: 0.5rem; }
+.spanel-job-dot { flex: none; width: 1.125rem; height: 1.125rem; border-radius: 50%; background: var(--line, #e5e7eb); color: #fff; font: 700 0.6875rem/1.125rem var(--f-text, system-ui); text-align: center; }
+.spanel-job-dot.is-done { background: #16A34A; }
+.spanel-job-ico { animation: spanel-breathe 1.6s ease-in-out infinite; }
+.spanel-recv.is-working { border-color: color-mix(in srgb, var(--builder, #2A7FFF) 45%, var(--line)); background: var(--builder-bg, #EEF4FF); }
+.spanel-recv.is-working .spanel-job .w7 { color: var(--builder, #2A7FFF); }
+.spanel-recv.is-done { border-color: color-mix(in srgb, #16A34A 45%, var(--line)); }
+.spanel-recv.is-done .spanel-job .w7 { color: #15803D; }
+.spanel-job-bar { position: relative; height: 0.25rem; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--builder, #2A7FFF) 18%, transparent); }
+.spanel-job-bar::after { content: ''; position: absolute; inset: 0 auto 0 0; width: 40%; border-radius: inherit; background: var(--builder, #2A7FFF); animation: spanel-run 1.4s ease-in-out infinite; }
+@keyframes spanel-breathe { 50% { transform: scale(1.12); } }
+@keyframes spanel-run { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+
+/* In the viewer's bar: Builder at work, and «there is a new version» with a button that reloads only the site. */
+.lview-live { display: inline-flex; align-items: center; gap: 0.5rem; height: 2rem; padding: 0 0.75rem; border-radius: 999px; font: 700 0.75rem/1 var(--f-text); white-space: nowrap; }
+.lview-live.is-working { background: var(--builder-bg, #EEF4FF); color: var(--builder, #2A7FFF); }
+.lview-live.is-working::before { content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; animation: spanel-ping 1.2s ease-out infinite; }
+.lview-live.is-fresh { background: #DCFCE7; color: #166534; padding-right: 0.25rem; }
+.lview-live.is-fresh .btn { height: 1.5rem; }
+@keyframes spanel-ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 0.5rem transparent; } }
+@media (max-width: 767px) { .lview-live { order: 8; } }
+@media (prefers-reduced-motion: reduce) { .spanel-job-ico, .spanel-job-bar::after, .lview-live.is-working::before { animation: none; } .spanel-job-bar::after { width: 100%; opacity: .5; } }
+/* The assistant stays docked on the left while a site is open (computers): the viewer starts after it. */
+.lview-ai { display: none; }
+@media (min-width: 768px) {
+  html.help-docked .lview { left: var(--help-w); }
+  .lview-ai { display: inline-flex; align-items: center; gap: 0.375rem; color: #6D3FD8; }
+  html.help-docked .lview-ai { background: #F1EBFF; border-color: #DCC6F2; }
+}
+/* Assistant closed (computers): a rail on the left edge, mirror of «Ajustes», that brings it back. */
+.lview-ai-rail { display: none; }
+@media (min-width: 768px) {
+  .lview-ai-rail { flex: none; width: 3rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 1.125rem 0; border: 0; border-right: 1px solid var(--line); background: #F1EBFF; color: #6D3FD8; cursor: pointer; font-size: 1rem; transition: background .2s; }
+  .lview-ai-rail:hover { background: #E6DBFF; }
+  .lview-ai-rail:focus-visible { outline: 2px solid #6D3FD8; outline-offset: -2px; }
+  html.help-docked .lview-ai-rail { display: none; }
+  html[data-theme="dark"] .lview-ai-rail { background: #231A3D; color: #C9B5FF; }
+}
+
+/* Phones (2026-11-24, UX #1): one top row — back arrow, site name, ↗ — and the modes under it. «Volver» already closes, so no ✕; the assistant lives in its own button. */
+@media (max-width: 767px) {
+  .lview-bar { gap: 0.5rem; padding-left: 0.75rem; padding-right: 0.75rem; }
+  .lview-back { width: 2.25rem; padding: 0; justify-content: center; }
+  .lview-back span { display: none; }
+  .lview-bar > .col { flex: 1 1 0; }
+  .lview-nt { width: 2.25rem; padding: 0; justify-content: center; }
+  .lview-nt-label { display: none; }
+  .lview-bar .lview-x, .lview-bar .lview-ai { display: none; }
+  .lview-bar .lview-modes { order: 10; }
+}

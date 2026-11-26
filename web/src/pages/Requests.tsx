@@ -14,9 +14,9 @@ import { RequestsBoard, COLUMNS } from '../requests/RequestsBoard';
 import { RequestsList } from '../requests/RequestsList';
 import { DueCalendar } from '../requests/DueCalendar';
 import { DeliveryPace } from '../requests/DeliveryPace';
-import { ActionStrip } from '../requests/ActionStrip';
 import { AskPanel } from '../requests/ask/AskPanel';
 import { downloadCsv, printPdf, rowOf } from '../requests/exportRequests';
+import { rememberOrder } from '../requests/RequestNav';
 import { NO_FILTERS, filtersFromParams, filtersToParams, inTab, isLate, narrow, sortRequests, type ReqFilters } from '../requests/requestFilters';
 
 const VIEWS: View[] = ['list', 'board', 'calendar'];
@@ -41,8 +41,10 @@ export function Requests() {
   useEffect(() => { if (hash === '#ask') { const p = new URLSearchParams(params); p.set('new', '1'); setParams(p, { replace: true }); } }, [hash]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
+  // UX #30: on a phone the list ("Your turn" first) beats a board you have to scroll sideways.
+  const phone = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
   const f = filtersFromParams(params);
-  const view: View = VIEWS.includes(params.get('view') as View) ? (params.get('view') as View) : viewLocal ?? (isAdmin ? 'board' : 'list');
+  const view: View = VIEWS.includes(params.get('view') as View) ? (params.get('view') as View) : viewLocal ?? (isAdmin && !phone ? 'board' : 'list');
   const asking = params.get('new') === '1';
   const setParam = (k: string, v: string | null) => { const p = new URLSearchParams(params); if (v == null) p.delete(k); else p.set(k, v); setParams(p, { replace: k !== 'new' }); };
   const setFilters = (next: ReqFilters) => setParams(filtersToParams(next, params), { replace: true });
@@ -55,6 +57,8 @@ export function Requests() {
   const shown = sortRequests(narrowed.filter((r) => inTab(f.tab, r)), f.sort);
   const columns = COLUMNS.filter(({ status }) => f.tab === 'all' || (f.tab === 'late' ? status === 'in_production'
     : f.tab === 'active' ? status === 'in_production' || status === 'to_approve' : f.tab === 'done' ? status === 'approved' || status === 'published' : status === f.tab));
+  // The detail page walks the same order the person sees here (on the board, column by column) with its previous / next arrows.
+  if (!loading) rememberOrder(current.id, (view === 'board' ? columns.flatMap((c) => shown.filter((r) => r.status === c.status)) : shown).map((r) => r.id), params.toString());
 
   const head = [t('req.col.request'), t('req.col.requested'), t('req.col.type'), t('req.col.due'), t('req.col.status'), t('rf.tag'), t('rf.versions')];
   const rows = () => shown.map((r) => rowOf(r, { requested: dateLabel(r.createdAt?.toDate(), lang), type: typeLabel(r), due: r.dueDate ? String(r.dueDate) : '', status: isLate(r) ? t('rf.tab.late') : t(`req.status.${r.status}`) }));
@@ -73,8 +77,6 @@ export function Requests() {
           <button type="button" className="btn btn-primary" data-tour="ask-open" onClick={() => setParam('new', '1')}><Icon name="plus" size={18} />{t('as.new')}</button>
         </div>
       </div>
-
-      {!loading && <ActionStrip brandId={current.id} list={list} isAdmin={isAdmin} />}
 
       {!loading && list.length > 0 && (
         <RequestsToolbar brandId={current.id} all={list} narrowed={narrowed} shown={shown.length} f={f} set={setFilters} tags={tags} isAdmin={isAdmin} view={view} setView={setView}

@@ -5,7 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { folderFilter } from '../access.js';
 
-export type BrainKind = 'request' | 'approved' | 'changed' | 'identity' | 'file' | 'session' | 'meeting' | 'signed';
+export type BrainKind = 'request' | 'approved' | 'changed' | 'identity' | 'file' | 'session' | 'meeting' | 'signed' | 'taught' | 'forgot';
 export type BrainArea = 'identity' | 'voice' | 'strategy' | 'rules' | 'work' | 'talks';
 
 export type BrainEventInput = {

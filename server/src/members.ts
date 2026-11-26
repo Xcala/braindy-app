@@ -5,6 +5,8 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { adminAuth, db } from './firebase.js';
 import { brandAccess, SECTIONS } from './access.js';
 import type { AuthEnv } from './auth.js';
+import { normalizePhone } from './whatsapp.js';
+import { contactRef, linkPhone } from './wa/contacts.js';
 
 const now = () => FieldValue.serverTimestamp();
 const ROLES = ['client_owner', 'client_member'] as const;
@@ -36,19 +38,34 @@ members.post('/brands/:brandId/members', async (c) => {
   const { brandId } = c.req.param();
   const by = c.get('user').uid;
   if (!(await canManage(by, brandId))) return c.json({ error: 'forbidden' }, 403);
-  const b = await c.req.json<{ email?: string; role?: string; canApprove?: boolean; sections?: string[] }>();
+  const b = await c.req.json<{ email?: string; phone?: string; name?: string; role?: string; canApprove?: boolean; sections?: string[] }>();
   // Only NickMark decides which sections a person sees.
   const sections = (await brandAccess(by, brandId)).admin ? cleanSections(b.sections) : null;
   const email = String(b.email ?? '').trim().toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ error: 'invalid_email' }, 400);
   const role: Role = b.role === 'client_owner' ? 'client_owner' : 'client_member';
+  // By WhatsApp number (with or without an email): the person exists from now on, so a sign-in link can reach them.
+  if (b.phone?.trim()) {
+    const phone = normalizePhone(b.phone);
+    if (!phone) return c.json({ error: 'invalid_phone' }, 400);
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ error: 'invalid_email' }, 400);
+    const linked = (await contactRef(phone).get()).get('uid') as string | null | undefined;
+    const byEmail = email ? await adminAuth.getUserByEmail(email).catch(() => null) : null;
+    if (linked && byEmail && linked !== byEmail.uid) return c.json({ error: 'phone_taken' }, 409);
+    const name = String(b.name ?? '').trim().slice(0, 80);
+    const user = linked ? await adminAuth.getUser(linked) : byEmail
+      ?? await adminAuth.createUser({ ...(email ? { email } : {}), ...(name ? { displayName: name } : {}) });
+    await addMember(brandId, user.uid, user.email ?? email, name || user.displayName || user.email || `+${phone}`, role, b.canApprove !== false, by, sections);
+    if (!linked) await linkPhone(phone, user.uid, 'admin');
+    return c.json({ status: 'added', uid: user.uid });
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return c.json({ error: 'invalid_email' }, 400);
 
   const existing = await adminAuth.getUserByEmail(email).catch(() => null);
   if (existing) {
-    await addMember(brandId, existing.uid, email, existing.displayName ?? email, role, b.canApprove === true, by, sections);
+    await addMember(brandId, existing.uid, email, existing.displayName ?? email, role, b.canApprove !== false, by, sections);
     return c.json({ status: 'added', uid: existing.uid });
   }
-  await db.collection('invites').doc(`${brandId}__${email}`).set({ email, brandId, role, canApprove: b.canApprove === true, invitedBy: by, at: now(), ...(sections ? { sections } : {}) });
+  await db.collection('invites').doc(`${brandId}__${email}`).set({ email, brandId, role, canApprove: b.canApprove !== false, invitedBy: by, at: now(), ...(sections ? { sections } : {}) });
   return c.json({ status: 'invited' });
 });
 

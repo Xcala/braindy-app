@@ -1,0 +1,30 @@
+/*
+ * UX #20 · Semantic tokens: names by role, not by colour.
+ * New code uses these; the colour names in bd-app.css (--azul, --niebla, --graphite…) stay as the palette underneath.
+ * They point at the palette, so dark mode follows on its own.
+ * Brain colours (--researcher, --marketer, --creator, --builder) are only for the Brains; states use --state-*.
+ */
+:root{
+  /* surfaces */
+  --surface:var(--white); --surface-sunken:var(--niebla); --surface-selected:var(--hielo); --overlay:rgba(6,13,30,.48);
+  /* text */
+  --text:var(--ink); --text-muted:var(--graphite); --text-subtle:var(--graphite-2); --text-on-accent:#fff; --text-link:var(--azul);
+  /* borders */
+  --border:var(--line); --border-strong:var(--line-strong); --focus-ring:var(--azul);
+  /* actions */
+  --accent:var(--azul); --accent-hover:var(--azul-hover); --accent-press:var(--azul-press);
+  /* feedback */
+  --ok:var(--success); --ok-bg:var(--success-bg); --warn:var(--warning); --warn-bg:var(--warning-bg); --error:var(--danger); --error-bg:var(--danger-bg);
+  /* request states (decision 2: their own palette, never a Brain colour) */
+  --state-delivered:var(--success); --state-working:var(--azul); --state-decision:#B07A00; --state-client:#F5B301; --state-discarded:var(--graphite);
+  /* motion */
+  --dur-fast:.15s; --dur:.2s; --ease-out:cubic-bezier(.2,.8,.2,1);
+}
+
+/* UX #21: text button (link look) instead of inline styles */
+.btn-text{appearance:none;border:0;background:none;padding:0;cursor:pointer;color:var(--text-link);font:inherit;font-weight:700}
+.btn-text:hover{text-decoration:underline;text-underline-offset:2px}
+.btn-text:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px;border-radius:.25rem}
+
+/* Safety net: a long pasted link in any card never widens the page on a phone (2026-11-24, Admin › WhatsApp). */
+.shell-card > main{overflow-x:clip}

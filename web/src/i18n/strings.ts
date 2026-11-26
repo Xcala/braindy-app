@@ -20,9 +20,17 @@ import { linksEn, linksEs } from './linksStrings';
 import { brandEditEn, brandEditEs } from './brandEditStrings';
 import { whatsappEn, whatsappEs } from './whatsappStrings';
 import { pwaEn, pwaEs } from './pwaStrings';
+import { canDoEn, canDoEs } from './canDoStrings';
+import { pautaEn, pautaEs } from './pautaStrings';
+import { cuentasEn, cuentasEs } from './cuentasStrings';
+import { releaseEn, releaseEs } from './releaseStrings';
+import { menuEn, menuEs } from './menuStrings';
+import { alertEn, alertEs } from './alertStrings';
 import { adminNavEn, adminNavEs } from './adminNavStrings';
+import { waAccessEn, waAccessEs } from './waAccessStrings';
 import { versionEn, versionEs } from './versionStrings';
 import { viewerEn, viewerEs } from './viewerStrings';
+import { karolEn, karolEs } from './karolStrings';
 import { reuseEn, reuseEs } from './reuseStrings';
 import { appsViewEn, appsViewEs } from './appsViewStrings';
 import { sitePanelEn, sitePanelEs } from './sitePanelStrings';
@@ -36,14 +44,19 @@ import { resEn, resEs } from './resourceStrings';
 import { searchStatsEn, searchStatsEs } from './searchStatsStrings';
 import { commentEditEn, commentEditEs } from './commentEditStrings';
 import { aiHealthEn, aiHealthEs } from './aiHealthStrings';
+import { usageEn, usageEs } from './usageStrings';
 import { qualityEn, qualityEs } from './qualityStrings';
 import { outcomeEn, outcomeEs } from './outcomeStrings';
 import { requestFilterEn, requestFilterEs } from './requestFilterStrings';
 import { askPanelEn, askPanelEs } from './askPanelStrings';
 import { brainMapEn, brainMapEs } from './brainMapStrings';
 import { brainLoopEn, brainLoopEs } from './brainLoopStrings';
+import { brainToolsEn, brainToolsEs } from './brainToolsStrings';
 import { wishEn, wishEs } from './wishStrings';
+import { groupHomeEn, groupHomeEs } from './groupHomeStrings';
 import { pageHeadEn, pageHeadEs } from './pageHeadStrings';
+import { planProposalEn, planProposalEs } from './planProposalStrings';
+import { uxCompEn, uxCompEs } from './uxCompStrings';
 
 const baseEn = {
   'nav.brand': 'My brand',
@@ -146,6 +159,7 @@ const baseEn = {
   'files.noMatch': 'No file matches.',
   'files.showMore': 'Show {n} more', 'req.moreN': 'See {n} more', 'req.filter.all': 'All', 'req.filter.to_approve': 'To approve', 'req.filter.in_production': 'In progress', 'req.filter.done': 'Delivered',
   'files.uploadsHint': 'Your team drops files here',
+  'files.newFolder': 'New folder', 'files.newFolderPh': 'Folder name', 'files.newFolderCreate': 'Create', 'files.newFolderError': 'The folder could not be created. Try again.',
   'files.uploaded': 'Uploaded.',
   'files.kind.all': 'All',
   'files.kind.image': 'Images',
@@ -213,6 +227,7 @@ const baseEn = {
   'login.google': 'Continue with Google',
   'login.orEmail': 'or with email',
   'login.email': 'Email',
+  'login.emailPlaceholder': 'you@yourcompany.com',
   'login.password': 'Password',
   'login.passwordPlaceholder': 'Your password',
   'login.forgot': 'Forgot password?',
@@ -225,7 +240,7 @@ const baseEn = {
   'login.writeNicolas': 'Write to Nicolas',
 } as const;
 
-export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn, ...logoDlEn, ...helpEn, ...resEn, ...wishEn, ...pageHeadEn } as const;
+export const en = { ...baseEn, ...proposalsEn, ...requestsEn, ...teamHomeEn, ...accessEn, ...reviewEn, ...onboardingEn, ...contractEn, ...billingEn, ...uxEn, ...brainEn, ...polishEn, ...criterioEn, ...studioEn, ...linksEn, ...brandEditEn, ...costEn, ...planEn, ...planFormEn, ...homeGridEn, ...whatsappEn, ...pwaEn, ...alertEn, ...appsViewEn, ...sitePanelEn, ...calendarEn, ...socialStatsEn, ...webStatsEn, ...adStatsEn, ...searchStatsEn, ...commentEditEn, ...aiHealthEn, ...qualityEn, ...outcomeEn, ...requestFilterEn, ...askPanelEn, ...brainMapEn, ...brainLoopEn, ...brainToolsEn, ...viewerEn, ...reuseEn, ...versionEn, ...adminNavEn, ...waAccessEn, ...logoDlEn, ...helpEn, ...resEn, ...wishEn, ...groupHomeEn, ...pageHeadEn, ...planProposalEn, ...karolEn, ...canDoEn, ...usageEn, ...menuEn, ...uxCompEn, ...pautaEn, ...cuentasEn, ...releaseEn } as const;
 
 export type StringKey = keyof typeof en;
 
@@ -330,6 +345,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'files.noMatch': 'Ningún archivo coincide.',
   'files.showMore': 'Ver {n} más', 'req.moreN': 'Ver {n} más', 'req.filter.all': 'Todas', 'req.filter.to_approve': 'Por aprobar', 'req.filter.in_production': 'En curso', 'req.filter.done': 'Entregadas',
   'files.uploadsHint': 'Aquí sube archivos tu equipo',
+  'files.newFolder': 'Nueva carpeta', 'files.newFolderPh': 'Nombre de la carpeta', 'files.newFolderCreate': 'Crear', 'files.newFolderError': 'No se pudo crear la carpeta. Intenta de nuevo.',
   'files.uploaded': 'Subido.',
   'files.kind.all': 'Todo',
   'files.kind.image': 'Imágenes',
@@ -397,6 +413,7 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.google': 'Continuar con Google',
   'login.orEmail': 'o con correo',
   'login.email': 'Correo',
+  'login.emailPlaceholder': 'tu@tuempresa.com',
   'login.password': 'Contraseña',
   'login.passwordPlaceholder': 'Tu contraseña',
   'login.forgot': '¿Olvidaste tu contraseña?',
@@ -409,4 +426,4 @@ const baseEs: Record<keyof typeof baseEn, string> = {
   'login.writeNicolas': 'Escríbele a Nicolas',
 };
 
-export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs, ...logoDlEs, ...helpEs, ...resEs, ...wishEs, ...pageHeadEs };
+export const es: Record<StringKey, string> = { ...baseEs, ...proposalsEs, ...requestsEs, ...teamHomeEs, ...accessEs, ...reviewEs, ...onboardingEs, ...contractEs, ...billingEs, ...uxEs, ...brainEs, ...polishEs, ...criterioEs, ...studioEs, ...linksEs, ...brandEditEs, ...costEs, ...planEs, ...planFormEs, ...homeGridEs, ...whatsappEs, ...pwaEs, ...alertEs, ...appsViewEs, ...sitePanelEs, ...calendarEs, ...socialStatsEs, ...webStatsEs, ...adStatsEs, ...searchStatsEs, ...commentEditEs, ...aiHealthEs, ...qualityEs, ...outcomeEs, ...requestFilterEs, ...askPanelEs, ...brainMapEs, ...brainLoopEs, ...brainToolsEs, ...viewerEs, ...reuseEs, ...versionEs, ...adminNavEs, ...waAccessEs, ...logoDlEs, ...helpEs, ...resEs, ...wishEs, ...groupHomeEs, ...pageHeadEs, ...planProposalEs, ...karolEs, ...canDoEs, ...usageEs, ...menuEs, ...uxCompEs, ...pautaEs, ...cuentasEs, ...releaseEs };

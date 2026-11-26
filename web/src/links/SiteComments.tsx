@@ -9,6 +9,7 @@ import { VoiceNote } from '../requests/ask/VoiceNote';
 import { WishAudio } from '../wishes/WishAudio';
 
 type Audio = { assetId: string; name: string; size: number; contentType: string };
+import { useToast } from '../components/Toaster';
 
 /** A comment on the site (brands/{b}/siteComments), pinned on a part of it or general to a page. n: its number on the pins, oldest first. asPoint: key of the adjustment NickMark made from it. */
 export interface SiteComment { id: string; n: number; author: string; authorName: string; text: string; url: string; spot?: { selector?: string; text?: string; x?: number; y?: number }; where?: string; audio?: Audio; resolved: boolean; resolvedAt?: Timestamp; asPoint?: string; createdAt?: Timestamp; editedAt?: Timestamp }
@@ -33,6 +34,7 @@ export function useSiteComments(brandId: string, siteUrl: string) {
 export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { brandId: string; siteUrl: string; list: SiteComment[]; frame?: SiteFrame; onToPoint?: (c: SiteComment) => void }) {
   const { t } = useI18n();
   const { user, profile } = useAuth();
+  const toast = useToast();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
@@ -68,10 +70,16 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
         resolved: false, createdAt: serverTimestamp(),
       });
       setText(''); setWhere(''); setAudio(undefined); frame?.clearPicked();
+      toast({ text: t('sc.sentToast'), ms: 7000 });
     } catch { setError(true); } finally { setBusy(false); }
   }
 
   const p = frame?.picked;
+  // Point at a part of the site and talk it over with the assistant (it reads the page); nothing is sent to NickMark.
+  const askAi = (x: { url: string; text?: string }) => {
+    const q = t('sc.askQ', { where: x.text ? `«${x.text.slice(0, 160)}»` : '—', page: pathOf(x.url) || '/', q: text.trim() || t('sc.askDefault') });
+    window.dispatchEvent(new CustomEvent('bd-help-ask', { detail: q }));
+  };
   return (
     <div className="col g8">
       <p className="t-sm" style={{ margin: 0 }}>{t(bridge ? 'sc.hint' : 'sc.hintNoBridge')}</p>
@@ -87,7 +95,7 @@ export function SiteComments({ brandId, siteUrl, list, frame, onToPoint }: { bra
       <form className="spanel-ask col g8" onSubmit={send}>
         {!bridge && <input className="input" value={where} maxLength={200} placeholder={t('sc.where')} aria-label={t('sc.where')} onChange={(e) => setWhere(e.target.value)} />}
         {bridge && <p className="t-xs t-mute" style={{ margin: 0 }}>
-          {p ? <>{t('sc.about')} {p.text ? `«${p.text}»` : pathOf(p.url)} · <button type="button" className="spanel-textbtn" onClick={() => frame?.clearPicked()}>{t('sc.dropSpot')}</button></>
+          {p ? <>{t('sc.about')} {p.text ? `«${p.text}»` : pathOf(p.url)} · <button type="button" className="spanel-textbtn" onClick={() => frame?.clearPicked()}>{t('sc.dropSpot')}</button> · <button type="button" className="spanel-textbtn" onClick={() => askAi(p)}>✦ {t('sc.askAi')}</button></>
             : <>{t('sc.general')} · {pathOf(page ?? siteUrl) || '/'}</>}
         </p>}
         <textarea className="input" rows={3} value={text} maxLength={2000} placeholder={t('sc.ph')} aria-label={t('sc.ph')} onChange={(e) => setText(e.target.value)}

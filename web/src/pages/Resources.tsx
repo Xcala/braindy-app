@@ -56,7 +56,7 @@ export function Resources() {
           {present.length > 1 && (
             <div className="row g8 wrap" role="group" aria-label={t('res.f.kind')}>
               {(['', ...present] as const).map((k) => (
-                <button key={k || 'all'} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={`btn btn-sm ${kind === k ? 'btn-primary' : 'btn-secondary'}`}>
+                <button key={k || 'all'} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={`btn btn-sm btn-secondary${kind === k ? ' is-picked' : ''}`}>
                   {k ? t(`res.kind.${k}`) : t('res.all')} <span className="apps-n">{k ? list.filter((r) => r.kind === k).length : list.length}</span>
                 </button>
               ))}

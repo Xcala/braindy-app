@@ -5,6 +5,7 @@ import { useBrands } from '../../brands/BrandProvider';
 import { useI18n } from '../../i18n/I18nProvider';
 import { billingApi, HOSTING, money, type Plan } from '../../billing/useBilling';
 import { SiteHostingAdmin } from './SiteHostingAdmin';
+import { IssuerSettings } from '../../cuentas/admin/IssuerSettings';
 
 type Row = Plan & { brandId: string };
 type Transfer = { id: string; brandId: string; reference: string; amount: number | null };
@@ -35,6 +36,7 @@ export function AdminBilling() {
   return (
     <div className="col g24">
       <div className="col g8"><p className="label">{t('bill.a.only')}</p><h1 className="h1">{t('set.tab.billing')}</h1></div>
+      <IssuerSettings />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.mrr')}</span><span className="h1">{money(mrr, cur, lang)}</span></div>
         <div className="card col g4"><span className="t-sm t-mute w7">{t('bill.a.active')}</span><span className="h1">{rows.filter((r) => r.status === 'active').length}</span></div>

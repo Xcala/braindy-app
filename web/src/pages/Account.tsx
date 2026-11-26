@@ -10,10 +10,13 @@ import { useAccesses } from '../accesses/useAccesses';
 import { requestTour } from '../tour/useTour';
 import { useEffect, useState } from 'react';
 import { noticesApi } from '../review/api';
+import { NAV_ICON } from '../app/navIcons';
 import { sectionOfPath, useMySections } from '../team/sections';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { promptInstall, usePwa } from '../pwa/pwa';
 import { IosSteps } from '../pwa/PwaBar';
+import { QuotaCard } from '../links/QuotaCard';
+import { useAdjustQuota } from '../links/useAdjustQuota';
 
 const svg = (d: React.ReactNode) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const I = {
@@ -49,6 +52,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
   const { can } = useMySections();
   const { plan } = useBilling(can('billing') ? current?.id : undefined);
   const acc = useAccesses(can('accesses') ? current?.id : undefined);
+  const { quota } = useAdjustQuota(current?.id);
   const isAdmin = profile?.role === 'admin';
   const pwa = usePwa();
   const [iosHelp, setIosHelp] = useState(false);
@@ -68,13 +72,17 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
   ] as Row[]).filter((r) => ok(r) && (!r.to?.includes('billing') || can('billing')));
   const more = ([
     { to: '/learn', icon: I.learn, label: 'cr.nav' },
+    // On phones this sheet is also «More» (UX #40): the non-daily pages live here, the daily ones in the bottom bar.
+    { to: '/resources', icon: NAV_ICON['/resources'], label: 'res.nav' },
+    { to: '/wishlist', icon: NAV_ICON['/wishlist'], label: 'nav.wishlist' },
   ] as Row[]).filter(ok);
   const account: Row[] = [
     { icon: I.language, label: 'set.tab.language', value: <LangToggle /> },
     { icon: I.theme, label: 'theme.title', value: <ThemeToggle /> },
+    { to: '/alerts', icon: I.notices, label: 'al.title' },
     ...(pwa.canInstall || pwa.ios ? [{ onClick: () => { if (pwa.canInstall) void promptInstall(); else setIosHelp(true); }, icon: I.install, label: 'pwa.install' as StringKey }] : []),
     { onClick: () => { if (!requestTour()) navigate('/home?tour=1'); }, icon: I.tour, label: 'tour.see' },
-    ...(isAdmin ? [{ to: '/admin/today', icon: I.admin, label: 'nav.backToAdmin' as StringKey }] : []),
+    ...(isAdmin && !onPick ? [{ to: '/admin/today', icon: I.admin, label: 'nav.backToAdmin' as StringKey }] : []), // in the sheet its top bar already has it
     { onClick: logout, icon: I.out, label: 'common.signOut', danger: true },
   ];
 
@@ -85,6 +93,7 @@ export function AccountBody({ onPick }: { onPick?: () => void }) {
         <h1 className="h2">{profile?.name ?? name}</h1>
         <span className="t-sm t-mute">{user?.email} · {isAdmin ? t('role.admin') : t('role.client')}</span>
       </div>
+      {current && quota && <QuotaCard brandId={current.id} quota={quota} />}
       {current && brand.length > 0 && <Group title={current.name} rows={brand} onPick={onPick} />}
       {more.length > 0 && <Group title={t('acct.more')} rows={more} onPick={onPick} />}
       <Group title={t('acct.account')} rows={account} onPick={onPick} />

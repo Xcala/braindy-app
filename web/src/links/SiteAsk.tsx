@@ -2,30 +2,27 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { createRequest } from '../requests/api';
-import { useRequests } from '../requests/useRequests';
-import type { BrandRequest } from '../requests/types';
-
-const hostOf = (url?: string) => { try { return url ? new URL(url).host.replace(/^www\./, '') : ''; } catch { return ''; } };
-
-/** Adjustment requests the client sent from this site that Builder has not turned into a point yet. */
-function useReceived(brandId: string, url: string): BrandRequest[] {
-  const { list } = useRequests(brandId);
-  const host = hostOf(url);
-  return list.filter((r) => r.category === 'web' && !r.archived && r.status !== 'approved' && r.status !== 'published'
-    && /^(Ajuste del sitio|Site adjustment)/.test(r.title) && (r.cards?.product?.links ?? []).some((l) => hostOf(l) === host));
-}
+import { useToast } from '../components/Toaster';
+import type { SiteJob } from './useSiteWork';
+import type { SiteFrame } from './useSpot';
+import { QuotaCard } from './QuotaCard';
+import { useAdjustQuota } from './useAdjustQuota';
 
 /**
  * "Adjust" tab, top: one line that opens a box to ask for an adjustment (a web request routed to Builder, with the site's
- * address attached), and what was already sent and is waiting for Builder. Talking about a part of the page is the Comment tab.
+ * address attached), and what was already sent, each card with where it stands: received, Builder on it (animated) or
+ * ready, with «See the change» that reloads the site in the viewer. Talking about a part of the page is the Comment tab.
  */
-export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
+export function SiteAsk({ brandId, url, jobs, frame }: { brandId: string; url: string; jobs: SiteJob[]; frame?: SiteFrame }) {
   const { t } = useI18n();
-  const received = useReceived(brandId, url);
+  const toast = useToast();
   const [openBox, setOpenBox] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<false | 'quota' | 'other'>(false);
+  // The month's adjustments: asked again whenever one of them moves.
+  const { quota, reload } = useAdjustQuota(brandId, jobs.map((j) => j.r.id + j.state).join('|'));
+  const out = !!quota && quota.left < quota.per;
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -34,16 +31,19 @@ export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
     setBusy(true); setError(false);
     try {
       await createRequest(brandId, {
-        category: 'web', title: `${t('sp.reqTitle')}: ${v.split('\n')[0].slice(0, 70)}`,
+        category: 'web', siteAdjust: true, title: `${t('sp.reqTitle')}: ${v.split('\n')[0].slice(0, 70)}`,
         cards: { product: { text: v, links: [url], files: [] } },
       });
       setText(''); setOpenBox(false);
-    } catch { setError(true); } finally { setBusy(false); }
+      toast({ text: t('sp.sentToast'), ms: 7000 });
+      reload();
+    } catch (e) { setError((e as { status?: number }).status === 409 ? 'quota' : 'other'); reload(); } finally { setBusy(false); }
   }
 
   return (
     <div className="col g8">
-      {!openBox ? (
+      {quota && <QuotaCard brandId={brandId} quota={quota} compact />}
+      {out ? null : !openBox ? (
         <button type="button" className="btn btn-secondary btn-sm self-start" onClick={() => setOpenBox(true)}>＋ {t('sp.askOpen')}</button>
       ) : (
         <form className="spanel-ask col g8" onSubmit={send}>
@@ -56,18 +56,29 @@ export function SiteAsk({ brandId, url }: { brandId: string; url: string }) {
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setOpenBox(false); setText(''); }}>{t('sc.cancel')}</button>
             <button type="submit" className="btn btn-primary btn-sm" disabled={busy || !text.trim()}>{busy ? `${t('sp.sending')}…` : t('sp.send')}</button>
           </div>
-          {error && <p className="help err" role="alert" style={{ margin: 0 }}>{t('sp.error')}</p>}
+          {error && <p className="help err" role="alert" style={{ margin: 0 }}>{error === 'quota' && quota ? t('q.full', { date: quota.resets }) : t('sp.error')}</p>}
         </form>
       )}
 
-      {received.length > 0 && (
+      {jobs.length > 0 && (
         <div className="col g8">
           <p className="label" style={{ margin: 0 }}>{t('sp.received')}</p>
-          {received.map((r) => (
-            <Link key={r.id} to={`/requests/${r.id}`} className="spanel-pt spanel-recv">
+          {jobs.map(({ r, state, note }) => (
+            <div key={r.id} className={`spanel-pt spanel-recv is-${state}`}>
+              <span className="spanel-job" role="status">
+                {state === 'working'
+                  ? <span className="brain xs b-builder spanel-job-ico"><img src="/brand/brains/builder.png" alt="" /></span>
+                  : <span className={`spanel-job-dot is-${state}`} aria-hidden="true">{state === 'done' ? '✓' : ''}</span>}
+                <span className="t-xs w7">{t(`sp.job.${state}`)}</span>
+              </span>
               <span className="spanel-ptitle">{(r.cards?.product?.text ?? r.title).split('\n')[0].slice(0, 90)}</span>
-              <span className="t-xs t-mute">{t('sp.seeRequest')} →</span>
-            </Link>
+              {state === 'working' && <span className="spanel-job-bar" aria-hidden="true" />}
+              {state === 'done' && note && <span className="t-sm">{note}</span>}
+              <span className="row g8 wrap" style={{ alignItems: 'center' }}>
+                {state === 'done' && frame && <button type="button" className="btn btn-primary btn-sm" onClick={frame.reload}>{t('sp.seeChange')}</button>}
+                <Link to={`/requests/${r.id}`} className="t-xs t-mute">{t('sp.seeRequest')} →</Link>
+              </span>
+            </div>
           ))}
         </div>
       )}

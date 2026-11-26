@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, Timestamp, where } from 'firebase/firestore';
+import { collection, limit, onSnapshot, orderBy, query, Timestamp, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrandsRequests, type ScopedRequest } from '../requests/useBrandsRequests';
 
-export type NoticeKind = 'toApprove' | 'approved' | 'production' | 'comment' | 'app';
+export type NoticeKind = 'toApprove' | 'approved' | 'production' | 'comment' | 'app' | 'billing';
 export type Notice = { key: string; kind: NoticeKind; title: string; text?: string; at: number; brandId: string; to: string; requestBrand?: boolean };
 
 const DAYS = 14;
@@ -20,6 +20,7 @@ export function useNotifications(brandIds: string[]): Notice[] {
   const since = Date.now() - DAYS * 864e5;
   const [comments, setComments] = useState<Record<string, Notice[]>>({});
   const [apps, setApps] = useState<Record<string, Notice[]>>({});
+  const [bills, setBills] = useState<Record<string, Notice[]>>({});
 
   // Comments: only on the requests that moved lately (one listener each, capped).
   const watched = reqs.filter((r) => r.status !== 'published' && ms(r.updatedAt ?? r.createdAt) > since).slice(0, MAX_WATCHED);
@@ -52,13 +53,24 @@ export function useNotifications(brandIds: string[]): Notice[] {
     return () => offs.forEach((o) => o());
   }, [brandKey]);
 
+  // Cuentas de cobro and recibos sent to the client (only people who see Billing can read them; others get nothing).
+  useEffect(() => {
+    setBills({});
+    if (!brandKey) return;
+    const offs = brandKey.split(',').map((b) => onSnapshot(query(collection(db, 'brands', b, 'billingNotices'), orderBy('at', 'desc'), limit(6)), (s) =>
+      setBills((m) => ({ ...m, [b]: s.docs.map((d) => ({
+        key: `b-${d.id}`, kind: 'billing', title: String(d.get('number') ?? ''), at: ms(d.get('at')), brandId: b, to: '/plan?tab=payments',
+      }) as Notice) })), () => setBills((m) => ({ ...m, [b]: [] }))));
+    return () => offs.forEach((o) => o());
+  }, [brandKey]);
+
   const fromReqs: Notice[] = reqs.flatMap((r): Notice[] => {
     const base = { title: r.title, brandId: r.brandId, to: `/requests/${r.id}`, requestBrand: true };
     if (r.status === 'to_approve') return [{ ...base, key: `t-${r.id}`, kind: 'toApprove', at: ms(r.updatedAt) }];
     if (r.status === 'approved' || r.status === 'published') return [{ ...base, key: `ok-${r.id}`, kind: 'approved', at: approvedAt(r) }];
     return [{ ...base, key: `p-${r.id}`, kind: 'production', at: ms(r.createdAt) }];
   });
-  return [...fromReqs, ...Object.values(comments).flat(), ...Object.values(apps).flat()]
+  return [...fromReqs, ...Object.values(comments).flat(), ...Object.values(apps).flat(), ...Object.values(bills).flat()]
     .filter((n) => n.kind === 'toApprove' || n.at > since)
     .sort((a, b) => b.at - a.at);
 }

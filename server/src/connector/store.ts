@@ -9,6 +9,8 @@ import { getStorage } from 'firebase-admin/storage';
 import { db } from '../firebase.js';
 import { contentTypeOf as lookup } from '../lib/mime.js';
 import { bumpIndex } from '../fileOps.js';
+import { editingReport, readLinkMeta } from '../og.js';
+import { editorAuthOf } from '../siteEditor.js';
 
 const bucket = () => getStorage().bucket(process.env.FILES_BUCKET ?? 'braindy-app-files');
 const MAX_FILE = 500 * 1024 ** 2;
@@ -74,7 +76,11 @@ export async function listSiteChanges(brandId: string) {
 }
 
 export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';
-export interface LinkInput { title: string; url: string; kind?: LinkKind; description?: string; status?: 'live' | 'building'; section?: 'apps' | 'research' }
+export interface LinkInput {
+  title: string; url: string; kind?: LinkKind; description?: string; status?: 'live' | 'building'; section?: 'apps' | 'research';
+  /** The site's own Firebase project, so Braindy can sign the person into its editor (see siteEditor.ts). */
+  editorAuth?: { projectId: string; serviceAccount: string };
+}
 
 /** Adds or updates a link in My apps (or My research). Same URL = same card, so repeating it never duplicates. */
 export async function setLink(brandId: string, l: LinkInput) {
@@ -87,17 +93,74 @@ export async function setLink(brandId: string, l: LinkInput) {
     section, kind: l.kind ?? 'web', title: l.title.trim().slice(0, 120), url: url.slice(0, 1000),
     description: (l.description ?? '').trim().slice(0, 300), status: l.status ?? 'live', updatedAt: FieldValue.serverTimestamp(),
   };
-  if (same) { await same.ref.update(data); return { id: same.id, created: false }; }
-  const ref = await col.add({ ...data, createdAt: FieldValue.serverTimestamp() });
-  return { id: ref.id, created: true };
+  if (l.editorAuth) {
+    const cfg = editorAuthOf(l.editorAuth);
+    if (!cfg) throw new Error('editorAuth: projectId de Firebase y serviceAccount (…@….iam.gserviceaccount.com) válidos');
+    Object.assign(data, { editorAuth: cfg });
+  }
+  const ref = same ? same.ref : await col.add({ ...data, createdAt: FieldValue.serverTimestamp() });
+  if (same) await same.ref.update(data);
+  // Editable by default: check the site has what «Hazlo tú» needs, keep it on the card, and say what is missing.
+  const editing = section === 'apps' ? await checkEditing(ref) : '';
+  return { id: ref.id, created: !same, editing };
 }
 
-export async function logSession(brandId: string, text: string, opts: { project?: string; requestId?: string }) {
+/** Reads the site: bridge, editor meta, framing. Kept on the card; the report says what is missing. */
+export async function checkEditing(ref: FirebaseFirestore.DocumentReference) {
+  const doc = await ref.get();
+  const m = await readLinkMeta(String(doc.get('url') ?? ''));
+  await ref.update({
+    siteEditing: { bridge: m.bridge, bridgeV3: m.bridgeV3, editor: m.editor, checkedAt: FieldValue.serverTimestamp() },
+    ...(m.embeddable !== null ? { embeddable: m.embeddable } : {}),
+    ...(m.ogImage ? { ogImage: m.ogImage } : {}),
+  });
+  return editingReport(m, !!editorAuthOf(doc.get('editorAuth')));
+}
+
+/** Work-log entries whose project starts with this prefix count as brand knowledge even without the flag (entries saved before it existed). */
+const BRAIN_PREFIX = /^cerebro\b/i;
+const isBrain = (d: { brain?: unknown; project?: unknown }) => d.brain === true || (typeof d.project === 'string' && BRAIN_PREFIX.test(d.project));
+
+export async function logSession(brandId: string, text: string, opts: { project?: string; requestId?: string; brain?: boolean }) {
   const ref = await db.collection(`brands/${brandId}/activity`).add({
     text: text.slice(0, 20000), project: opts.project ?? null, requestId: opts.requestId ?? null,
+    brain: isBrain({ brain: opts.brain, project: opts.project }),
     source: 'connector', by: 'NicoMarca', createdAt: FieldValue.serverTimestamp(),
   });
   return ref.id;
+}
+
+const BRAIN_MAX_CHARS = 150_000;
+const RECENT_SESSIONS = 5;
+
+/** What the Brains must read before working on a brand: every knowledge chapter (latest version per project name) plus the most recent sessions. */
+export async function brandBrain(brandId: string) {
+  const snap = await db.collection(`brands/${brandId}/activity`).orderBy('createdAt', 'desc').limit(300).get();
+  const chapters = new Map<string, { project: string; text: string; at: Date | null }>();
+  const recent: Array<{ project: string; text: string; at: Date | null }> = [];
+  for (const doc of snap.docs) {
+    const d = doc.data();
+    const entry = { project: (d.project as string) || 'Sesión', text: String(d.text ?? ''), at: d.createdAt?.toDate?.() ?? null };
+    if (isBrain(d)) {
+      if (!chapters.has(entry.project)) chapters.set(entry.project, entry); // newest wins
+    } else if (recent.length < RECENT_SESSIONS) {
+      recent.push(entry);
+    }
+  }
+  const day = (at: Date | null) => (at ? at.toISOString().slice(0, 10) : 's. f.');
+  const ordered = [...chapters.values()].sort((a, b) => a.project.localeCompare(b.project, 'es', { numeric: true }));
+  const parts: string[] = [];
+  if (ordered.length) {
+    parts.push('# Conocimiento de la marca (leer completo y aplicar en todo lo que hagas)');
+    for (const c of ordered) parts.push(`## ${c.project} (${day(c.at)})\n\n${c.text}`);
+  }
+  if (recent.length) {
+    parts.push('# Últimas sesiones de trabajo (contexto, de la más reciente a la más antigua)');
+    for (const s of recent) parts.push(`## ${s.project} (${day(s.at)})\n\n${s.text}`);
+  }
+  let out = parts.join('\n\n');
+  if (out.length > BRAIN_MAX_CHARS) out = `${out.slice(0, BRAIN_MAX_CHARS)}\n\n[Recortado: el conocimiento supera ${BRAIN_MAX_CHARS} caracteres; condensa capítulos.]`;
+  return { text: out, chapters: ordered.length, sessions: recent.length };
 }
 
 async function filesUnder(path: string): Promise<string[]> {

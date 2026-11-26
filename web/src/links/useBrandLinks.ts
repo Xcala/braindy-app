@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { addDoc, collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where, type Timestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, setDoc, query, serverTimestamp, updateDoc, where, type Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { api } from '../lib/api';
 
@@ -7,7 +7,12 @@ export type LinkSection = 'apps' | 'research';
 export type LinkKind = 'web' | 'app' | 'dashboard' | 'research' | 'marketmap';
 export interface BrandLink {
   id: string; section: LinkSection; kind: LinkKind; title: string; url: string;
-  description?: string; status?: 'live' | 'building'; ogImage?: string | null; /** Whether the site lets the app show it inside (null or missing: not checked yet). */ embeddable?: boolean | null; createdAt?: Timestamp; updatedAt?: Timestamp;
+  description?: string; status?: 'live' | 'building'; ogImage?: string | null; /** Whether the site lets the app show it inside (null or missing: not checked yet). */ embeddable?: boolean | null;
+  /** The site's own Firebase project: clients open its editor already signed in (set by NickMark through the connector). */
+  editorAuth?: { projectId: string; serviceAccount: string };
+  /** Last check of the site: bridge loaded and the editor it names. */
+  siteEditing?: { bridge: boolean | null; bridgeV3?: boolean | null; editor: string | null };
+  createdAt?: Timestamp; updatedAt?: Timestamp;
 }
 export type LinkInput = Pick<BrandLink, 'kind' | 'title' | 'url' | 'description' | 'status'>;
 
@@ -45,3 +50,5 @@ export async function saveLink(brandId: string, id: string, section: LinkSection
   refreshPreview(brandId, id);
 }
 export const removeLink = (brandId: string, id: string) => deleteDoc(doc(db, 'brands', brandId, 'links', id));
+/** Undo for a delete: the link comes back with the same id, so its adjustments and comments hang from it again. */
+export const restoreLink = (brandId: string, { id, ...data }: BrandLink) => setDoc(doc(db, 'brands', brandId, 'links', id), data);

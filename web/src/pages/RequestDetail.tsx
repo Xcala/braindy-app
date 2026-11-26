@@ -9,6 +9,7 @@ import { Icon } from '../components/Icon';
 import { useComments, useRequest, useVersions } from '../requests/useRequests';
 import { useCanApprove } from '../requests/useCanApprove';
 import { findCategory, findSub } from '../requests/taxonomy';
+import { CancelButton, CancelledBanner } from '../requests/CancelRequest';
 import { Progress } from '../requests/Progress';
 import { TeamAtWork } from '../requests/TeamAtWork';
 import { QualityCard } from '../requests/QualityCard';
@@ -17,11 +18,16 @@ import { VersionViewer } from '../requests/VersionViewer';
 import { ReviewPanel } from '../requests/ReviewPanel';
 import { CompareView } from '../requests/CompareView';
 import { AdminVersionPanel } from '../requests/AdminVersionPanel';
+import { EyeBanner } from '../requests/EyeBanner';
 import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
 import { BriefSummary } from '../requests/BriefSummary';
+import { AddendaList, AddendumForm } from '../requests/Addenda';
+import { RequestNav } from '../requests/RequestNav';
+import { EditableTitle } from '../requests/EditableTitle';
+import { HowLink } from '../learn/tutorials';
 
 export function RequestDetail() {
   const { id = '' } = useParams();
@@ -29,11 +35,14 @@ export function RequestDetail() {
   // A shared link can carry its brand (?brand=quimiolab), so it opens whatever brand is selected now.
   const linked = useSearchParams()[0].get('brand');
   useEffect(() => { if (linked && linked !== current?.id && brands.some((b) => b.id === linked)) select(linked); }, [linked, brands.length]);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const { t, lang } = useI18n();
   const r = useRequest(current?.id, id);
   const all = useVersions(current?.id, id);
-  const comments = useComments(current?.id, id);
+  const allComments = useComments(current?.id, id);
+  // Details added after sending live under the brief, not in the review thread.
+  const addenda = allComments.filter((c) => c.kind === 'addendum');
+  const comments = allComments.filter((c) => c.kind !== 'addendum');
   const canApprove = useCanApprove(current?.id);
   const isAdmin = profile?.role === 'admin';
   const versions = isAdmin ? all : all.filter((v) => v.published);
@@ -43,27 +52,38 @@ export function RequestDetail() {
   const [fileIndex, setFileIndex] = useState(0);
   const [seek, setSeek] = useState<{ t: number; n: number } | null>(null);
 
-  useEffect(() => { setVersionId(r?.latestVersion ?? versions[versions.length - 1]?.id); setFileIndex(0); },[r?.latestVersion, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setVersionId((isAdmin && r?.held?.versionId) || (r?.latestVersion ?? versions[versions.length - 1]?.id)); setFileIndex(0); },[r?.latestVersion, r?.held?.versionId, versions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTour('review', () => reviewSteps(lang), versions.length > 0, false);
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
   if (r === undefined) return <div className="skel" style={{ height: '25rem' }} />;
   if (r === null) return <p className="t-mute">{t('req.notFound')}</p>;
   const v = versions.find((x) => x.id === versionId) ?? versions[versions.length - 1];
+  const mine = isAdmin || canApprove || (!!user && r.createdBy === user.uid);
   const type = [findCategory(r.category)?.label[lang], findSub(r.category, r.subcategory)?.label[lang], r.formatType].filter(Boolean).join(' · ');
 
   return (
     <div className="col g20">
-      <div className="flex flex-wrap items-end justify-between gap-6">
+      <div className="req-top"><nav className="crumbs min-w-0" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav><RequestNav brandId={current.id} id={r.id} /></div>
+      {/* Phones (2026-11-21): title, one line of facts, a thin progress line; cancel and the video sit under «⋯». */}
+      <div className="req-head flex flex-wrap items-end justify-between gap-6">
         <div className="col g8 min-w-0" style={{ maxWidth: '100%' }}>
-          <nav className="crumbs" aria-label="Breadcrumb"><Link to="/requests">{t('nav.requests')}</Link><Icon name="chevronRight" size={14} /><span className="cur">{r.title}</span></nav>
-          <div className="row g12 wrap"><h1 className="h2" style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{r.title}</h1><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}</div>
-          <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span>
+          <div className="row g8 req-title-row" style={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <EditableTitle brandId={current.id} requestId={r.id} title={r.title} canEdit={mine} />
+            <details className="req-more sm:hidden">
+              <summary className="btn btn-ghost btn-sm btn-icon" aria-label={t('req.more')}><Icon name="more" size={18} /></summary>
+              <div className="card col g8 req-more-menu"><HowLink />{mine && <CancelButton brandId={current.id} r={r} />}</div>
+            </details>
+          </div>
+          <div className="row g8 wrap req-meta"><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.cancelled && <span className="chip c-type">{t('rc.chip')}</span>}{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}
+            <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span></div>
         </div>
-        <Progress r={r} />
+        <div className="col g8 req-prog" style={{ alignItems: 'flex-end' }}><Progress r={r} />{mine && <span className="hidden sm:block"><CancelButton brandId={current.id} r={r} /></span>}</div>
       </div>
+      <CancelledBanner brandId={current.id} r={r} canUndo={mine} />
 
-      {r.status === 'in_production' && <TeamAtWork r={r} />}
+      {r.status === 'in_production' && <TeamAtWork r={r} brandId={current.id} addenda={addenda} />}
+      {isAdmin && <EyeBanner brandId={current.id} r={r} onShow={setVersionId} />}
       {isAdmin && r.quality?.checks?.length ? <QualityCard q={r.quality} /> : null}
 
       {versions.length > 0 && (
@@ -72,7 +92,7 @@ export function RequestDetail() {
           <VersionViewer brandId={current.id} requestId={r.id} versions={versions} current={v} onPick={setVersionId}
             fileIndex={fileIndex} onFile={(i) => { setFileIndex(i); setMark(null); }}
             comments={comments} onMark={setMark} onCompare={() => setComparing(true)} seek={seek} />
-          <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)}
+          <ReviewPanel brandId={current.id} r={r} v={v} comments={comments.filter((c) => !c.versionId || c.versionId === v?.id)} addenda={addenda}
             canApprove={canApprove} pendingMark={mark} clearMark={() => setMark(null)} onShowFile={setFileIndex}
             onSeek={(i, t) => { setFileIndex(i); setSeek((s) => ({ t, n: (s?.n ?? 0) + 1 })); }} />
         </div>
@@ -83,6 +103,9 @@ export function RequestDetail() {
         <div className="col g12">
           <p className="label">{t('req.brief')}</p>
           <BriefSummary brandId={current.id} r={r} />
+          {(addenda.length > 0 || r.status === 'in_production' || r.status === 'to_approve') && (
+            <div className="card card-tight col g16"><AddendaList items={addenda} />{r.status !== 'approved' && r.status !== 'published' && !r.cancelled && <AddendumForm brandId={current.id} requestId={r.id} />}</div>
+          )}
         </div>
         <div className="col g12">
           <p className="label">{t('req.plan')}</p>

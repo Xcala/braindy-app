@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useBrands } from '../brands/BrandProvider';
@@ -10,6 +10,9 @@ import { sectionOfPath, useMySections } from '../team/sections';
 import { FOOT_NAV, groupOfPath, NAV, type NavGroup } from './navGroups';
 import { NAV_ICON } from './navIcons';
 import { useFilled } from './SubNav';
+import { ADMIN_GROUPS } from './adminGroups';
+import { useOpenWork } from '../team/useWork';
+import { isOverdue } from '../lib/dates';
 import './sidebar.css';
 
 type Item = { to: string; label: StringKey };
@@ -24,18 +27,26 @@ const savedSlim = () => { try { return localStorage.getItem(KEY) === 'slim'; } c
  */
 export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   const { t } = useI18n();
-  const [slim, setSlimState] = useState(savedSlim);
+  const [saved, setSlimState] = useState(savedSlim);
+  // Phones open it as a push drawer (PushDrawer): always wide there.
+  const phone = usePhone();
+  const slim = saved && !phone;
   const setSlim = (v: boolean) => { setSlimState(v); try { localStorage.setItem(KEY, v ? 'slim' : 'wide'); } catch { /* private mode */ } };
   return (
     <aside className={`sbar${slim ? ' is-slim' : ''}`} aria-label={t('nav.sections')}>
       <div className="sbar-logo">
-        <img src={slim ? '/brand/braindy-mark.svg' : '/brand/braindy-logo.svg'} alt="Braindy" />
+        <NavLink to={admin ? '/admin/today' : '/home'} className="sbar-home" aria-label={t('nav.home')} title={t('nav.home')}><img src={slim ? '/brand/braindy-mark.svg' : '/brand/braindy-logo.svg'} alt="Braindy" /></NavLink>
         {admin && !slim && <span className="sbar-tag">admin</span>}
       </div>
-      <nav className="sbar-main">{admin ? items.map((i) => <Link key={i.to} item={i} slim={slim} />) : <ClientSections slim={slim} />}</nav>
+      <nav className={`sbar-main${admin ? ' is-grouped' : ''}`}>{admin ? <AdminGroups items={items} slim={slim} /> : <ClientSections slim={slim} />}</nav>
       <div className="sbar-foot">
         {!admin && <ClientFoot slim={slim} />}
-        <button type="button" className="sbar-link" onClick={() => setSlim(!slim)} title={slim ? t('nav.expand') : undefined} aria-label={t(slim ? 'nav.expand' : 'nav.collapse')}>
+        {!admin && (
+          <button type="button" className="sbar-link sbar-ai" onClick={() => window.dispatchEvent(new Event('bd-help-toggle'))} title={slim ? t('help.dock') : undefined} aria-label={t('help.dock')}>
+            <span className="sbar-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4zM15 8.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" /></svg></span>{!slim && <span>{t('help.dock')}</span>}
+          </button>
+        )}
+        <button type="button" className="sbar-link sbar-collapse" onClick={() => setSlim(!slim)} title={slim ? t('nav.expand') : undefined} aria-label={t(slim ? 'nav.expand' : 'nav.collapse')}>
           <span className="sbar-ico">{NAV_ICON[slim ? 'expand' : 'collapse']}</span>{!slim && <span>{t('nav.collapse')}</span>}
         </button>
       </div>
@@ -43,11 +54,12 @@ export function Sidebar({ admin, items }: { admin: boolean; items: Item[] }) {
   );
 }
 
-function Link({ item, slim, on, badge, sub, pulse, icon }: { item: Item; slim: boolean; on?: boolean; badge?: number; sub?: boolean; pulse?: boolean; icon?: string }) {
+function Link({ item, slim, on, badge, badgeLabel, sub, pulse, icon }: { item: Item; slim: boolean; on?: boolean; badge?: number; badgeLabel?: string; sub?: boolean; pulse?: boolean; icon?: string }) {
   const { t } = useI18n();
   const label = t(item.label);
+  const full = badge && badgeLabel ? `${label} · ${badgeLabel}` : label;
   return (
-    <NavLink to={item.to} end={sub} data-tour={item.to === '/requests' ? 'ask-nav' : undefined} title={slim ? label : undefined} aria-label={slim ? label : undefined}
+    <NavLink to={item.to} end={sub} data-tour={item.to === '/requests' ? 'ask-nav' : undefined} title={slim ? full : badge && badgeLabel ? badgeLabel : undefined} aria-label={slim || (badge && badgeLabel) ? full : undefined}
       className={({ isActive }) => `${sub ? 'sbar-sub' : 'sbar-link'}${on ?? isActive ? ' is-on' : ''}`}>
       {!sub && <span className="sbar-ico">{NAV_ICON[icon ?? item.to] ?? NAV_ICON['/home']}{slim && badge ? <i className="sbar-dot" /> : null}{pulse ? <i className="sbar-pulse" aria-hidden="true" /> : null}</span>}
       {!slim && <span className="grow truncate">{label}</span>}
@@ -86,6 +98,32 @@ function Groups({ groups, slim, waiting, learned }: { groups: NavGroup[]; slim: 
   })}</>;
 }
 
+/** Admin: Work · Sales · Team, each with a grey label (hidden when folded). Today carries how many requests are overdue. */
+function AdminGroups({ items, slim }: { items: Item[]; slim: boolean }) {
+  const { t } = useI18n();
+  // The same live query Today and Brands already open (Firestore shares one listener per query), so the badge adds no new query.
+  const { items: open } = useOpenWork();
+  const late = open.filter((i) => i.status === 'in_production' && isOverdue(i.dueDate)).length;
+  const grouped = new Set(ADMIN_GROUPS.flatMap((g) => g.paths));
+  const groups = [
+    ...ADMIN_GROUPS.map((g) => ({ label: g.label as StringKey | null, items: g.paths.map((p) => items.find((i) => i.to === p)).filter((i): i is Item => !!i) })),
+    { label: null, items: items.filter((i) => !grouped.has(i.to)) },
+  ].filter((g) => g.items.length);
+  return <>{groups.map((g) => (
+    <div key={g.label ?? 'rest'} className="sbar-group" role="group" aria-label={g.label ? t(g.label) : undefined}>
+      {g.label && !slim && <p className="label sbar-glabel">{t(g.label)}</p>}
+      {g.items.map((i) => <Link key={i.to} item={i} slim={slim} badge={i.to === '/admin/today' && late ? late : undefined} badgeLabel={late === 1 ? t('anav.lateOne') : t('anav.lateN', { n: String(late) })} />)}
+    </div>
+  ))}</>;
+}
+
 function ClientFoot({ slim }: { slim: boolean }) {
   return <Groups groups={FOOT_NAV} slim={slim} />;
+}
+
+function usePhone() {
+  const q = '(max-width: 767px)';
+  const [phone, setPhone] = useState(() => window.matchMedia(q).matches);
+  useEffect(() => { const m = window.matchMedia(q); const on = () => setPhone(m.matches); m.addEventListener('change', on); return () => m.removeEventListener('change', on); }, []);
+  return phone;
 }

@@ -17,15 +17,19 @@ import { CommentEdit } from '../components/CommentEdit';
 import type { Annotation, BrandRequest, RequestComment, Version } from './types';
 import { useToast } from '../components/Toaster';
 import { LearnedMoment } from '../brain/BrainLearned';
+import { AskedBox } from './AskedBox';
+import { RateDelivery } from './RateDelivery';
+import { useDraft } from '../lib/useDraft';
 
 /** Right panel of the review screen: who made it and why, the decision, and the comments. */
-export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
-  brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; canApprove: boolean;
+export function ReviewPanel({ brandId, r, v, comments, addenda = [], canApprove, pendingMark, clearMark, onShowFile, onSeek }: {
+  brandId: string; r: BrandRequest; v?: Version; comments: RequestComment[]; addenda?: RequestComment[]; canApprove: boolean;
   pendingMark: Annotation | null; clearMark: () => void; onShowFile: (i: number) => void; onSeek: (fileIndex: number, t: number) => void;
 }) {
   const { t, lang } = useI18n();
   const { user, profile } = useAuth();
-  const [text, setText] = useState('');
+  // Saved as it is typed: a reload or an app update never loses it (Ana lost 20 minutes of comments).
+  const [text, setText] = useDraft(`review:${brandId}:${r.id}`);
   const objection = useObjectionMatch(text);
   const sentAnyway = () => { if (objection) logObjection(brandId, objection.id, 'sent'); };
   const [filter, setFilter] = useState<'open' | 'resolved'>('open');
@@ -97,8 +101,10 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => setAdapting(true)}><Icon name="plus" size={16} />{t('ad.btn')}</button>
             </div>
           )}
+          {v.approval?.state === 'approved' && profile?.role !== 'admin' && <RateDelivery brandId={brandId} requestId={r.id} versionId={v.id} comments={comments} />}
           {adapting && <AdaptDialog brandId={brandId} r={r} v={v} onClose={() => setAdapting(false)} />}
           {v.approval?.state === 'changes_requested' && <span className="chip c-approve self-start">{t('req.changesChip')}</span>}
+          {canApprove && pending && isLatest && <AskedBox r={r} addenda={addenda} />}
           {canApprove && pending && isLatest && (
             <div className="col g8" data-tour="review-decide">
               <button className="btn btn-primary w-full" disabled={busy} onClick={() => decision('approved')}><Icon name="check" />{t('req.approveV', { n: v.n })}</button>
@@ -134,7 +140,7 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
               <div className="col g4 grow">
                 <span className="t-sm"><strong>{authorName(c)}</strong> <span className="t-mute">· {c.createdAt?.toDate().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short' })}{c.editedAt ? ` · ${t('ce.edited')}` : ''}</span></span>
                 {typeof c.annotation?.t === 'number' && <button type="button" className="vm-at self-start" onClick={() => onSeek(markFile(c.annotation), c.annotation!.t!)} aria-label={t('vm.goTo', { t: clock(c.annotation.t) })}>▶ {clock(c.annotation.t)}</button>}
-                {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.text}</p>}
+                {editing !== c.id && <p className="t-sm" style={{ whiteSpace: 'pre-line' }}>{c.kind === 'cancelled' ? t('rc.noteCancelled') : c.kind === 'reopened' ? t('rc.noteReopened') : c.text}</p>}
                 {(c.author === user?.uid || profile?.role === 'admin') && (
                   <CommentEdit text={c.text} max={5000} editing={editing === c.id} setEditing={(on) => setEditing(on ? c.id : null)}
                     onSave={c.author === user?.uid ? (text) => updateDoc(cRef(c), { text, editedAt: serverTimestamp() }) : undefined} onDelete={() => deleteDoc(cRef(c))} />
@@ -147,8 +153,9 @@ export function ReviewPanel({ brandId, r, v, comments, canApprove, pendingMark, 
         </div>
         <div className="col g8" style={{ marginTop: 'auto' }}>
           <label htmlFor="cmt" className="t-sm w7">{typeof pendingMark?.t === 'number' ? t('vm.onMoment', { t: clock(pendingMark.t) }) : pendingMark ? t('req.commentOnMark') : t('req.addComment')}</label>
-          <div className="row g8">
-            <input className="input" id="cmt" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && send()} placeholder={t('req.commentPh')} />
+          <div className="row g8" style={{ alignItems: 'flex-end' }}>
+            <textarea className="input rv-cmt" id="cmt" rows={1} value={text} style={{ fieldSizing: 'content', minHeight: '2.75rem', maxHeight: '12rem', padding: '0.625rem 0.875rem', resize: 'none', lineHeight: 1.45 } as React.CSSProperties} onChange={(e) => setText(e.target.value)} placeholder={t('req.commentPh')}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void send(); } }} />
             <button className="btn btn-primary btn-icon" aria-label={t('req.sendComment')} onClick={send} disabled={!text.trim()}><Icon name="arrowLeft" className="rotate-180" /></button>
           </div>
           <ObjectionHint brandId={brandId} o={objection} />

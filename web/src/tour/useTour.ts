@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { iniciarTour, tourVisto, type Paso } from './engine.js';
@@ -19,6 +20,9 @@ export function requestTour(): boolean {
 export function useTour(name: string, steps: () => Paso[], ready: boolean, auto = true) {
   const { user } = useAuth();
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
+  const navRef = useRef(navigate);
+  navRef.current = navigate;
   const stepsRef = useRef(steps);
   stepsRef.current = steps;
   const id = `${name}-${user?.uid ?? 'anon'}`;
@@ -26,6 +30,7 @@ export function useTour(name: string, steps: () => Paso[], ready: boolean, auto 
   useEffect(() => {
     if (!ready || !user) return;
     const open = () => iniciarTour(id, stepsRef.current(), {
+      navegar: (href) => navRef.current(href),
       logoHtml: '<img src="/brand/braindy-logo.svg" alt="Braindy" width="112" height="28">',
       colores: ['#2F4DE0', '#F5B301', '#8B5CF6', '#06B6D4', '#2A7FFF'],
       textos: {

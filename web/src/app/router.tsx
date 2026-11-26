@@ -4,11 +4,13 @@ import { AppShell } from './AppShell';
 import { Landing } from './Landing';
 import { RouteError } from '../components/RouteError';
 import { Login } from '../pages/Login';
+import { EnterLink } from '../pages/EnterLink';
 import { MyBrand } from '../pages/MyBrand';
 import { BrandBrain } from '../pages/BrandBrain';
 import { MyAssets } from '../pages/MyAssets';
 import { MyApps } from '../pages/MyApps';
 import { Calendar } from '../pages/Calendar';
+import { Pauta } from '../pages/Pauta';
 import { MyPlan } from '../pages/MyPlan';
 import { MyResearch } from '../pages/MyResearch';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -21,7 +23,6 @@ import { BatchApprove } from '../pages/BatchApprove';
 import { Home } from '../pages/Home';
 import { AdminTeam } from '../pages/admin/Team';
 import { AdminWhatsapp } from '../pages/admin/Whatsapp';
-import { Accesses } from '../pages/Accesses';
 import { PublicReview } from '../pages/PublicReview';
 import { PublicUpload } from '../pages/PublicUpload';
 import { PublicShowcase } from '../pages/PublicShowcase';
@@ -32,6 +33,7 @@ import { AdminOnboarding } from '../pages/admin/Onboarding';
 import { AdminBilling } from '../pages/admin/Billing';
 import { AdminCosts } from '../pages/admin/Costs';
 import { AdminAiHealth } from '../pages/admin/AiHealth';
+import { AdminUsage } from '../pages/admin/Usage';
 import { Pay, PaySuccess } from '../pages/Pay';
 import { AdminToday } from '../pages/admin/Today';
 import { Learn, LearnLesson } from '../pages/Learn';
@@ -41,6 +43,7 @@ import { AdminCriterio } from '../pages/admin/Criterio';
 import { AdminStudio } from '../pages/admin/Studio';
 import { Connect } from '../pages/Connect';
 import { Account } from '../pages/Account';
+import { Alerts } from '../pwa/Alerts';
 import { OpenFile } from '../pages/OpenFile';
 
 export const router = createBrowserRouter([
@@ -48,6 +51,7 @@ export const router = createBrowserRouter([
   { path: '/p/:token', element: <PublicProposal />, errorElement: <RouteError /> },
   { path: '/r/:token', element: <PublicReview />, errorElement: <RouteError /> },
   { path: '/u/:token', element: <PublicUpload />, errorElement: <RouteError /> },
+  { path: '/entrar/:token', element: <EnterLink />, errorElement: <RouteError /> },
   { path: '/s/:token', element: <PublicShowcase />, errorElement: <RouteError /> },
   {
     element: <RequireAuth />,
@@ -69,12 +73,13 @@ export const router = createBrowserRouter([
           { path: 'deliveries', element: <MyAssets deliveries /> },
           { path: 'apps', element: <MyApps /> },
           { path: 'calendar', element: <Calendar /> },
+          { path: 'pauta', element: <Pauta /> },
           { path: 'research', element: <MyResearch /> },
           { path: 'ask', element: <Navigate to="/requests?new=1" replace /> },
           { path: 'requests', element: <Requests /> },
           { path: 'requests/approve', element: <BatchApprove /> },
           { path: 'requests/:id', element: <RequestDetail /> },
-          { path: 'accesses', element: <Accesses /> },
+          { path: 'accesses', element: <Navigate to="/plan?tab=apps" replace /> },
           { path: 'settings', element: <Settings /> },
           { path: 'onboarding', element: <Onboarding /> },
           { path: 'report', element: <Report /> },
@@ -84,6 +89,7 @@ export const router = createBrowserRouter([
           { path: 'wishlist', element: <Wishlist /> },
           { path: 'plan', element: <MyPlan /> },
           { path: 'account', element: <Account /> },
+          { path: 'alerts', element: <Alerts /> },
           { path: 'pay', element: <Pay /> },
           { path: 'pay/success', element: <PaySuccess /> },
           {
@@ -101,6 +107,7 @@ export const router = createBrowserRouter([
               { path: 'admin/billing', element: <AdminBilling /> },
               { path: 'admin/costs', element: <AdminCosts /> },
               { path: 'admin/ai', element: <AdminAiHealth /> },
+              { path: 'admin/usage', element: <AdminUsage /> },
             ],
           },
         ],

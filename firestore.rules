@@ -104,6 +104,10 @@ service cloud.firestore {
         || a.folder.split('/')[0] in fa.get('folders', []);
     }
 
+    function isGroup(brandId) {
+      return get(/databases/$(database)/documents/brands/$(brandId)).data.get('kind', 'brand') == 'group';
+    }
+
     function canReadBrand(brandId) {
       return isAdmin() || isMember(brandId);
     }
@@ -171,8 +175,10 @@ service cloud.firestore {
       match /requests/{requestId} {
         allow read: if canReadBrand(brandId);
         // Clients open requests; routing, plan, status and approval level are set server-side.
+        // Never on a group: its work lives inside each company (one brand = one request; siblings never mixed).
         allow create: if isAdmin()
           || (isMember(brandId)
+              && !isGroup(brandId)
               && request.resource.data.createdBy == uid()
               && request.resource.data.status == 'in_production'
               && request.resource.data.keys().hasOnly([
@@ -236,6 +242,14 @@ service cloud.firestore {
         allow read: if canReadBrand(brandId);
         allow write: if false;
       }
+      // «Update» on the calendar (2026-11-24): anyone who sees the brand asks for the latest from Metricool; the worker on
+      // NickMark's PC (admin SDK) does it and writes the outcome.
+      match /syncRequests/{kind} {
+        allow read: if canReadBrand(brandId);
+        allow create, update: if kind == 'social' && canReadBrand(brandId)
+          && request.resource.data.keys().hasOnly(['at', 'by', 'state'])
+          && request.resource.data.at == request.time && request.resource.data.by == uid() && request.resource.data.state == 'queued';
+      }
       // Social results from Metricool (one doc per network): Results section, only where NickMark switched it on. Backend writes.
       match /socialStats/{network} {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
@@ -245,6 +259,16 @@ service cloud.firestore {
       match /webStats/{source} {
         allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
         allow write: if false;
+      }
+      // Pauta: paid campaigns on any platform with their ads, pieces and texts (connector writes). Whoever sees the brand's
+      // files sees them; their numbers sit apart (stats) behind the same Results switch as the other numbers. Nobody edits from the app.
+      match /adCampaigns/{campaignId} {
+        allow read: if isAdmin() || can(brandId, 'files');
+        allow write: if false;
+        match /stats/{statId} {
+          allow read: if isAdmin() || (can(brandId, 'results') && get(/databases/$(database)/documents/brands/$(brandId)).data.get('resultsOn', false) == true);
+          allow write: if false;
+        }
       }
       // Ads (Metricool) and sales (DoorDash…) results: same switch as the social numbers. Backend writes.
       match /adStats/{platform} {
@@ -360,6 +384,26 @@ service cloud.firestore {
               && (can(brandId, 'billing') || request.auth.token.get('email', '') == resource.data.signer.email));
         allow write: if false;
       }
+      // Cuentas de cobro y recibos (billingDocs): billing people and admin read; the backend issues them and an
+      // issued one never changes. Agreements (how a project is charged) are admin only. Nobody writes from the browser.
+      match /billingDocs/{docId} {
+        allow read: if isAdmin() || (can(brandId, 'billing') && resource.data.status != 'scheduled' && resource.data.get('held', false) == false);
+        allow write: if false;
+      }
+      // One line per cuenta or recibo sent to the client, for the bell. Written only by the backend.
+      match /billingNotices/{docId} {
+        allow read: if isAdmin() || can(brandId, 'billing');
+        allow write: if false;
+      }
+      // NickMark's documents for the client's accounting (RUT, bank certificate…). Files go through the backend.
+      match /billingFiles/{fileId} {
+        allow read: if isAdmin() || can(brandId, 'billing');
+        allow write: if false;
+      }
+      match /billingAgreements/{agreementId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
       match /invoices/{invoiceId} {
         allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
@@ -456,6 +500,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ---------- first-party usage analytics: daily aggregate counters (no uid, no events). Admin reads, backend writes ----------
+    match /pageViews/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // ---------- cross-brand queries (admin only: Team queue, Brain load, search) ----------
     match /{path=**}/requests/{requestId} {
       allow read: if isAdmin();
@@ -473,6 +523,19 @@ service cloud.firestore {
     // ---------- pending invitations (backend only; claimed on first sign-in) ----------
     match /invites/{inviteId} {
       allow read, write: if false;
+    }
+
+    // ---------- who charges (document, bank, signature) and the numbers used: admin reads, backend writes ----------
+    match /issuers/{issuerId} {
+      allow read: if isAdmin();
+      allow write: if false;
+      match /numbers/{number} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+    }
+    match /{path=**}/billingDocs/{docId} {
+      allow read: if isAdmin();
     }
 
     // ---------- contractor profile for contracts (NickMark's legal data): admin only ----------

@@ -11,6 +11,8 @@ import { parseTriageHtml } from './triageHtml.js';
 import { syncSocialPosts } from './social.js';
 import { syncSocialStats } from './socialStats.js';
 import { registerAdTools } from './adStats.js';
+import { registerPautaTools } from './adCreatives.js';
+import { registerBillingTools } from './billing.js';
 import { syncAllWebStats, syncWebStats } from '../webStats.js';
 import { syncAllSearchStats, syncSearchStats } from '../searchStats.js';
 import { db } from '../firebase.js';
@@ -19,6 +21,7 @@ import { registerSiteCommentTools } from './siteComments.js';
 import { PlanSchema, StackSchema, WeekSchedule, setPlan, setSchedule, setStack } from '../brandPlan.js';
 import { registerStepTools } from '../brains/steps.js';
 import { registerQualityTools } from '../brains/quality.js';
+import { registerKnowledgeTools } from '../brains/knowledge.js';
 import { recordBrainEvent, recordFileEvent } from '../brains/brainEvents.js';
 
 export const APP = process.env.WEB_URL ?? 'https://braindy-app-staging.web.app';
@@ -39,8 +42,11 @@ const REMOTE_FILE = z.object({
 export function registerTools(server: McpServer, ctx: ToolContext) {
   registerSiteCommentTools(server, ctx.uid);
   registerAdTools(server, APP);
+  registerPautaTools(server, APP);
+  registerBillingTools(server, ctx, APP);
   registerStepTools(server);
   registerQualityTools(server);
+  registerKnowledgeTools(server);
   server.registerTool('braindy_find_brand', {
     title: 'Buscar marca en Braindy App',
     description: 'Finds a brand in Braindy App by name or id. Use it first to get the brandId the other tools need (e.g. "sanuteam").',
@@ -53,6 +59,7 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
   server.registerTool('braindy_app_link', {
     title: 'Publicar un sitio o app en Mis apps',
     description: 'Adds (or updates, same URL) a card in the brand\'s "Mis apps" in Braindy App: the website or web app built for it. '
+      + 'Every site is editable by default («Hazlo tú»): the answer says whether the site has the bridge, the editor meta and editorAuth, and what is missing. '
       + 'Use when Nicolas says "publícala en Braindy App", "ponla en Mis apps".',
     inputSchema: {
       brandId: z.string(),
@@ -61,11 +68,13 @@ export function registerTools(server: McpServer, ctx: ToolContext) {
       kind: z.enum(['web', 'app', 'dashboard', 'research', 'marketmap']).optional().describe('web = sitio web (default), app = web app, dashboard'),
       description: z.string().optional().describe('One sentence in Spanish'),
       status: z.enum(['live', 'building']).optional().describe('live = Publicado (default), building = En construcción'),
+      editorAuth: z.object({ projectId: z.string(), serviceAccount: z.string() }).optional()
+        .describe('The site\'s own Firebase project id and its admin service account (firebase-adminsdk-…@<project>.iam.gserviceaccount.com): clients then open its editor already signed in. Once per site.'),
     },
   }, run(async ({ brandId, ...l }) => {
     const name = await requireBrand(brandId);
     const r = await setLink(brandId, l);
-    return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\nVer: ${APP}/apps`;
+    return `${name}: enlace ${r.created ? 'agregado' : 'actualizado'} en Mis apps.\n${r.editing ? `${r.editing}\n` : ''}Ver: ${APP}/apps`;
   }));
 
   server.registerTool('braindy_plan', {
@@ -247,14 +256,21 @@ Ver: ${APP}/plan`;
   server.registerTool('braindy_log_session', {
     title: 'Registrar lo que se hizo en Braindy App',
     description: 'Saves a summary of this working session in the brand\'s internal work log (only Nicolas sees it). '
-      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session.',
-    inputSchema: { brandId: z.string(), text: z.string().min(1).max(20000), project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"'), requestId: z.string().optional() },
-  }, run(async ({ brandId, text, project, requestId }) => {
+      + 'Write it in Spanish, plain and short: what was done, what is pending, links. Use when Nicolas says "registra lo que hicimos" or at the end of a session. '
+      + 'With brain: true the entry becomes brand knowledge that braindy_brand_brain hands to every Brain before it works (rules, client corrections, lessons): '
+      + 'saving again with the same project name replaces that chapter. Entries whose project starts with "Cerebro" count as knowledge too.',
+    inputSchema: {
+      brandId: z.string(), text: z.string().min(1).max(20000),
+      project: z.string().optional().describe('Session, project or repo name, e.g. "Sanuteam Website"; for knowledge, the chapter name, e.g. "Cerebro Sanuteam · 1/3 · Manual"'),
+      requestId: z.string().optional(),
+      brain: z.boolean().optional().describe('true = permanent brand knowledge the Brains read before every task'),
+    },
+  }, run(async ({ brandId, text, project, requestId, brain }) => {
     const name = await requireBrand(brandId);
-    await logSession(brandId, text, { project, requestId });
+    await logSession(brandId, text, { project, requestId, brain });
     // The log itself is internal; the Brain feed only shows that a work session happened (and its project name).
     await recordBrainEvent(brandId, { kind: 'session', area: 'talks', ...(project ? { text: project } : {}) });
-    return `Registrado en ${name}.`;
+    return brain ? `Guardado en el cerebro de ${name}.` : `Registrado en ${name}.`;
   }));
 
   if (ctx.mode === 'local') {
@@ -352,7 +368,7 @@ Ver: ${APP}/brand`;
   }, run(async ({ brandId, all }) => {
     await requireBrand(brandId);
     const list = await listRequests(brandId, all);
-    return list.length ? list.map((r) => `${r.id} · ${r.title} · ${r.status}${r.versionCount ? ` · v${r.versionCount}` : ''}${r.dueDate ? ` · para ${r.dueDate}` : ''}`).join('\n') : 'No hay solicitudes abiertas.';
+    return list.length ? list.map((r) => `${r.id} · ${r.title} · ${r.status}${r.versionCount ? ` · v${r.versionCount}` : ''}${r.dueDate ? ` · para ${r.dueDate}` : ''}${r.held ? ` · EN ESPERA de Nico (${r.held.versionId})${r.held.note ? `: pide ajustar «${r.held.note}»` : ''}` : ''}`).join('\n') : 'No hay solicitudes abiertas.';
   }));
 
   server.registerTool('braindy_create_request', {
@@ -373,21 +389,29 @@ Ver: ${APP}/brand`;
 
   server.registerTool('braindy_deliver_version', {
     title: 'Entregar una versión al cliente',
-    description: 'Delivers a new version of a request: uploads its files with a short note and sends it to the client for approval, signed by NickMark '
-      + '(the request moves to "Por aprobar" and the review link goes out). Only when Nicolas explicitly says to deliver it. '
+    description: 'Delivers a new version of a request: uploads its files with a short note and routes it by lane, signed by NickMark. '
+      + 'DIRECT (to the client now, "Por aprobar"): adaptations and sizes, corrections the client asked for (v2+), small site adjustments, results reports. '
+      + 'AFTER (to the client now; Nicolas gets a daily summary): new pieces inside a line already approved. '
+      + 'HELD for Nicolas (he approves and sends from his phone): branding, naming, strategy, campaigns and ads, prices or legal, the first piece of its kind, '
+      + 'a brand in its first month, and anything under 90 or without a brand check (run braindy_quality_report first). '
+      + 'The app decides the lane; the answer says which and why. If it comes back held, tell Nicolas and do not deliver again. '
       + (ctx.mode === 'local' ? 'Files are absolute paths.' : `Files go as base64 or https links (up to ${REMOTE_MAX_FILE / 1024 ** 2} MB each).`),
     inputSchema: {
       brandId: z.string(), requestId: z.string(),
       notes: z.string().max(4000).describe('What it is and what changed, in Spanish, for the client, written to scan: short sections on their own line ending in ":" '
         + '(e.g. "Qué es:", "Recorrido:", "Incluye:", "Para revisar:"), then one point per line starting with "- " and its keyword in **bold** '
         + '("- **PDF** para LinkedIn."). One idea per line; no long paragraphs, no arrows chaining ideas.'),
+      nico_lo_vio: z.boolean().optional().describe('true ONLY when Nicolas reviewed this exact piece in this conversation and said to send it: it goes straight to the client'),
+      para_nico: z.boolean().optional().describe('true to hold it for Nicolas whatever the lane (when in doubt)'),
       ...(ctx.mode === 'local' ? { paths: z.array(z.string()).min(1).max(20) } : { files: z.array(REMOTE_FILE).min(1).max(20) }),
     },
-  }, run(async (a: { brandId: string; requestId: string; notes: string; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {
+  }, run(async (a: { brandId: string; requestId: string; notes: string; nico_lo_vio?: boolean; para_nico?: boolean; paths?: string[]; files?: Array<z.infer<typeof REMOTE_FILE>> }) => {
     const name = await requireBrand(a.brandId);
     const writers: FileWriter[] = a.paths ? await Promise.all(a.paths.map(localWriter)) : await Promise.all((a.files ?? []).map(remoteWriter));
-    const { n, notice } = await deliverVersion(a.brandId, a.requestId, ctx.uid, writers, a.notes);
-    return `${name}: versión ${n} entregada; la solicitud pasó a Por aprobar.${notice && 'status' in notice ? ` Aviso: ${notice.status}.` : ''}\nVer: ${APP}/requests/${a.requestId}`;
+    const { n, lane, why, notice } = await deliverVersion(a.brandId, a.requestId, ctx.uid, writers, a.notes, { seen: a.nico_lo_vio, hold: a.para_nico });
+    const see = `\nVer: ${APP}/requests/${a.requestId}`;
+    if (lane === 'nico') return `${name}: versión ${n} subida y EN ESPERA de Nico (${why}). El cliente aún no la ve; a Nico le llegó «Para tu ojo» al celular para aprobar y enviar, o ajustar.${see}`;
+    return `${name}: versión ${n} entregada al cliente (${why}); la solicitud pasó a Por aprobar.${lane === 'after' ? ' Nico la ve en su resumen del día.' : ''}${notice && 'status' in notice ? ` Aviso: ${notice.status}.` : ''}${see}`;
   }));
 }
 

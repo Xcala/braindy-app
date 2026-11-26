@@ -6,21 +6,26 @@ const visible = (...sels: string[]) => sels.find((s) => document.querySelector(s
 const ask = () => visible('[data-tour="ask-nav-m"]', '[data-tour="ask-nav"]');
 const fin = { es: '<p>¿Quieres verlo otra vez? Abre el menú de tu cuenta (tu inicial, arriba a la derecha) y elige <b>Ver el recorrido</b>.</p>', en: '<p>Want to see it again? Open your account menu (your initial, top right) and choose <b>See the tour</b>.</p>' };
 
-export function homeSteps(lang: Lang): Paso[] {
+/** "Prefer video?": a link to the how-to videos, in the person's language (only when they exist). */
+const videoLink = (es: boolean, href?: string) => (href
+  ? `<p class="tg-video">${es ? '¿Prefieres verlo en video?' : 'Prefer to watch it?'} <a href="${href}" data-tg-nav>${es ? 'Mira los videos de cómo usar Braindy →' : 'Watch the how-to videos →'}</a></p>`
+  : '');
+
+export function homeSteps(lang: Lang, videos?: string): Paso[] {
   const es = lang === 'es';
   return [
     { logo: true, titulo: es ? 'Bienvenido a Braindy' : 'Welcome to Braindy',
-      texto: es ? '<p>En un minuto te mostramos cómo funciona tu app: <b>qué te necesita</b>, quién está trabajando y cómo pedir algo nuevo.</p><p>No hay nada que configurar. Todo lo que hagas se guarda solo.</p>'
-        : '<p>In one minute we show you how your app works: <b>what needs you</b>, who is working, and how to ask for something new.</p><p>There is nothing to set up. Everything you do saves itself.</p>' },
+      texto: (es ? '<p>En un minuto te mostramos cómo funciona tu app: <b>qué te necesita</b>, quién está trabajando y cómo pedir algo nuevo.</p><p>No hay nada que configurar. Todo lo que hagas se guarda solo.</p>'
+        : '<p>In one minute we show you how your app works: <b>what needs you</b>, who is working, and how to ask for something new.</p><p>There is nothing to set up. Everything you do saves itself.</p>') + videoLink(es, videos) },
     { el: '[data-tour="home-needs"]', titulo: es ? '1 · Lo que te necesita y WhatsApp' : '1 · What needs you and WhatsApp',
       texto: es ? '<p>Arriba ves si algo espera tu respuesta. A la derecha, el <b>grupo de WhatsApp</b> de tu marca y el WhatsApp directo de Nicolas.</p><p>Responde el mismo día si puedes: cada día de espera corre la entrega un día.</p>'
         : '<p>At the top you see whether something is waiting for your answer. On the right, your brand’s <b>WhatsApp group</b> and Nick’s direct WhatsApp.</p><p>Answer the same day if you can: every day of waiting moves the delivery one day.</p>' },
-    { el: '[data-tour="home-brains"]', titulo: es ? '2 · NicoMarca y su equipo' : '2 · NickMark and his team',
-      texto: es ? '<p><b>Nicolas</b> hace tu marca: define la estrategia, dirige, corrige y firma cada pieza. Aquí ves en qué está trabajando esta semana y cuándo llega la próxima entrega.</p><p>Sus cuatro <b>Brains</b> lo aceleran: investigan, comunican, crean y construyen con él. El punto azul indica quién está trabajando.</p>'
-        : '<p><b>Nicolas</b> makes your brand: he sets the strategy, directs, corrects and signs every piece. Here you see what he is working on this week and when the next delivery arrives.</p><p>His four <b>Brains</b> speed him up: they research, communicate, create and build with him. The blue dot shows who is working.</p>' },
+    { el: '[data-tour="home-ask"]', titulo: es ? '2 · Pregunta o pide lo que sea' : '2 · Ask or request anything',
+      texto: es ? '<p>Escribe como por WhatsApp: «¿cómo va mi sitio?», «aprueba el video», «un post para el viernes». Te responde al momento.</p><p><b>Nicolas</b> hace tu marca y firma cada pieza; sus cuatro <b>Brains</b> lo aceleran.</p>'
+        : '<p>Write like you would on WhatsApp: "how is my site going?", "approve the video", "a post for Friday". It answers right away.</p><p><b>Nicolas</b> makes your brand and signs every piece; his four <b>Brains</b> speed him up.</p>' },
     { el: '[data-tour="home-delivered"]', titulo: es ? '3 · Entregado, por aprobar' : '3 · Delivered, to approve',
-      texto: es ? '<p>Las piezas que ya te entregamos y esperan tu aprobación. Toca <b>Revisar</b> para aprobar o pedir cambios.</p><p>Lo aprobado pasa a <b>Recién lanzado</b>, al lado del estudio.</p>'
-        : '<p>Pieces we delivered that are waiting for your approval. Tap <b>Review</b> to approve or ask for changes.</p><p>What you approve moves to <b>Just launched</b>, beside the studio.</p>' },
+      texto: es ? '<p>Las piezas que ya te entregamos y esperan tu aprobación. Toca <b>Revisar</b> para aprobar o pedir cambios.</p><p>Lo aprobado pasa a <b>Recién lanzado</b>.</p>'
+        : '<p>Pieces we delivered that are waiting for your approval. Tap <b>Review</b> to approve or ask for changes.</p><p>What you approve moves to <b>Just launched</b>.</p>' },
     { el: '[data-tour="home-prod"]', titulo: es ? '4 · En producción' : '4 · In production',
       texto: es ? '<p>Lo que se está haciendo ahora. Cada entrega llega en <b>48 horas hábiles</b> desde la hora en que la pediste; la barra muestra cuánto falta.</p>'
         : '<p>What is being made right now. Every delivery arrives within <b>48 business hours</b> of when you asked; the bar shows how much time is left.</p>' },
@@ -33,7 +38,7 @@ export function homeSteps(lang: Lang): Paso[] {
     { el: '[data-tour="home-meetings"]', titulo: es ? '7 · Reuniones' : '7 · Meetings',
       texto: es ? '<p>Tu <b>siguiente reunión</b> con Nicolas, con un botón para agregarla a tu calendario, y el historial con lo que hablamos en cada una.</p>'
         : '<p>Your <b>next meeting</b> with Nick, with a button to add it to your calendar, and the history with what we talked about in each one.</p>' },
-    { logo: true, titulo: es ? 'Listo para empezar' : 'Ready to start', texto: (es ? '<p>Ya sabes lo esencial. Cuando quieras algo nuevo, ve a <b>Pedir algo</b>.</p>' : '<p>You know the essentials. Whenever you want something new, go to <b>Ask for something</b>.</p>') + fin[lang] },
+    { logo: true, titulo: es ? 'Listo para empezar' : 'Ready to start', texto: (es ? '<p>Ya sabes lo esencial. Cuando quieras algo nuevo, ve a <b>Pedir algo</b>.</p>' : '<p>You know the essentials. Whenever you want something new, go to <b>Ask for something</b>.</p>') + videoLink(es, videos) + fin[lang] },
   ];
 }
 

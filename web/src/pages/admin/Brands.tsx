@@ -102,7 +102,7 @@ export function AdminBrands() {
         <button type="button" className="btn btn-primary" onClick={() => setAdding(true)}><Icon name="plus" size={16} /> {t('anav.new')}</button>
       </div>
 
-      <BrandCards rows={rows} health={health} onManage={manage} />
+      <BrandCards rows={rows} health={health} searching={!!q.trim()} onManage={manage} onToggle={toggle} />
       <div className="hidden md:block"><div className="table overflow-x-auto">
         <div className="trow head label min-w-[61.875rem]" style={{ gridTemplateColumns: COLS }}>
           <span>{t('admin.brands.colBrand')}</span><span>{t('admin.brands.colKind')}</span><span>{t('brands.health')}</span><span>{t('admin.brands.colCity')}</span><span>{t('admin.brands.colStatus')}</span>
@@ -140,7 +140,7 @@ function Row({ brand, depth, health, collapsed, onCollapse, onToggle, onManage }
       <span><span className={`chip ${brand.kind === 'group' ? 'c-group' : 'c-type'}`}>{brand.kind === 'group' ? t('brand.group') : t('admin.brands.brand')}</span></span>
       <span className="row g8 wrap t-sm">
         {brand.kind === 'group' || !on ? <span className="t-mute">—</span>
-          : health?.late ? <span className="chip" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>{t('brands.lateN', { n: health.late })}</span>
+          : health?.late ? <span className="chip" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>{health.late === 1 ? t('brands.lateOne') : t('brands.lateN', { n: health.late })}</span>
           : health?.open ? <span className="chip c-active">{t('brands.ok')}</span>
           : <span className="chip chip-plain">{t('brands.quiet')}</span>}
         {health?.open ? <span className="t-mute">{health.open} {t('brands.open').toLowerCase()}</span> : null}

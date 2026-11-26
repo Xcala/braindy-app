@@ -36,3 +36,15 @@ The onboarding templates (`onboarding_welcome`, `brand_brain_ready`, `session_co
 
 ## Due tomorrow (daily)
 Every day at 08:00 (Bogotá) Cloud Scheduler calls `/cron/daily`: each request in production whose due date is tomorrow sends `request_due_tomorrow` to the brand's notice number, once per due date. Without the template, the notice waits with a wa.me link. The list of the day is in Firestore `admin/dueReminders/days/{day}`.
+
+## Sign-in by WhatsApp (`access_link`)
+
+Sent from Brands › Manage › People when NickMark taps **WhatsApp** on a person (or invites someone with a mobile number). One variable `{{1}}` = brand; the button carries the one-time token. Category **Utility** (if Meta asks for **Authentication**, keep Utility: this is an invitation link, not a code).
+
+| Name | Body (ES) | Buttons |
+|---|---|---|
+| `access_link` | `Hola. NicoMarca te invitó a {{1}} en Braindy, donde ves y apruebas todo el trabajo de tu marca. Entra con el botón, sin contraseña. El enlace sirve una vez y vence en 7 días. Para volver a entrar, escribe «Quiero entrar».` | 1 · URL «Entrar a Braindy» `https://app.braindy.co/entrar/{{1}}` |
+
+English body: `Hi. NickMark invited you to {{1}} on Braindy, where you see and approve all the work on your brand. Sign in with the button, no password. The link works once and expires in 7 days. To come back, write "Sign in".` · Button «Sign in to Braindy».
+
+Until it is approved: inside the 24 h window the link goes as a free message; otherwise the app opens NickMark's own WhatsApp with the message ready. A client who writes «Quiero entrar» / «Sign in» to the Braindy number gets a 15-minute link back (no template needed: they wrote first). Only numbers linked to a client get it; admins never sign in by link.

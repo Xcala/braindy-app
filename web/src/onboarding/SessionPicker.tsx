@@ -40,7 +40,7 @@ export function SessionPicker({ brandId, brandName, bookedAt, kind = 'strategy' 
         <>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {slots.map((s) => (
-              <button key={s} className={`btn btn-sm ${pick === s ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'center' }} aria-pressed={pick === s} onClick={() => setPick(s)}>{fmt(s)}</button>
+              <button key={s} className={`btn btn-sm btn-secondary${pick === s ? ' is-picked' : ''}`} style={{ justifyContent: 'center' }} aria-pressed={pick === s} onClick={() => setPick(s)}>{fmt(s)}</button>
             ))}
           </div>
           <div className="row g12 wrap">

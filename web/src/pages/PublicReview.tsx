@@ -6,6 +6,7 @@ import { BrandMark } from '../brands/BrandMark';
 import { publicReviewApi, type PublicReview as Data } from '../review/api';
 import { VersionNotes } from '../requests/VersionNotes';
 import { Scan } from '../components/Scan';
+import { EditableTitle } from '../requests/EditableTitle';
 
 const BRAIN: Record<string, string> = { researcher: 'Researcher', marketer: 'Marketer', creator: 'Creator', builder: 'Builder' };
 const isImage = (t?: string) => !!t && t.startsWith('image/');
@@ -54,7 +55,8 @@ export function PublicReview() {
       <p className="t-xs t-mute" role="note">{t('rev.scope', { date: until })}</p>
       <div className="row g12"><span className="sel" style={{ border: 0, padding: 0, height: 'auto', background: 'none' }}><BrandMark brand={data.brand} /></span><span className="w7">{data.brand.name}</span></div>
       <div className="col g4">
-        <h1 className="h1">{data.request.title}</h1>
+        <EditableTitle brandId="" requestId={token} title={data.request.title} canEdit headingClass="h1"
+          onSave={async (title) => { await publicReviewApi.rename(token, title); setData((d) => d && { ...d, request: { ...d.request, title } }); }} />
         <p className="t-mute">{t('home.version', { n: data.version.n })} · {data.request.approvalLevel === 'nicolas' ? t('req.madeByReviewed') : t('req.madeBy', { brain })}</p>
       </div>
       <div className="col g12">

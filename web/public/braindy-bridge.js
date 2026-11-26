@@ -2,9 +2,15 @@
  * Braindy bridge: lets Braindy App point at a part of this site, and pin comments on it, while it shows the site in its viewer.
  * Add once to every page: <script src="/braindy-bridge.js" defer></script> (copy this file into the site).
  * Inert outside an iframe and for any parent that is not Braindy App. It only reads the page; it never changes content.
- * Parent → frame: { type: 'braindy:spot', id, spot, label } · { type: 'braindy:comment-mode', on } · { type: 'braindy:pins', pins: [{ id, n, selector, text, x, y, done }] }
- * Frame → parent: { type: 'braindy:ready', url, editor?, inEditor? } · { type: 'braindy:spot-result', id, found } ·
- *   { type: 'braindy:picked', url, selector, text, x, y } · { type: 'braindy:comment-mode', on: false } · { type: 'braindy:pin', id }
+ * Parent → frame: { type: 'braindy:spot', id, spot, label } · { type: 'braindy:comment-mode', on } · { type: 'braindy:pins', pins: [{ id, n, selector, text, x, y, done }] } ·
+ *   { type: 'braindy:auth', token } (a sign-in token for this site's own Firebase project: whoever is signed in to Braindy App never signs in twice)
+ * Frame → parent: { type: 'braindy:ready', url, editor?, inEditor?, v } · { type: 'braindy:spot-result', id, found } ·
+ *   { type: 'braindy:picked', url, selector, text, x, y } · { type: 'braindy:comment-mode', on: false } · { type: 'braindy:pin', id } ·
+ *   { type: 'braindy:auth-result', ok } · { type: 'braindy:version' } (the page changed on the server: a new deploy)
+ * Editor: <meta name="braindy-editor" content="/admin/editor?p="> (the page path is appended) or content="{path}?edit" ({path} = the page).
+ * Sign-in handoff: the site defines window.braindySignIn = (token) => signInWithCustomToken(auth, token) (see the publicar-en-braindy-app skill).
+ * v3 (2026-11-18): {path} editors and the sign-in handoff. Sites with v2 keep working.
+ * v4 (2026-11-19): watches the page on the server (ETag) and says «version» when a deploy changes it. Sites with v3 keep working.
  */
 (function () {
   if (window.parent === window) return;
@@ -12,10 +18,29 @@
   var VIOLET = '#8B5CF6', Z = 2147483640;
   var parentOrigin = null;
   // A message aimed at an origin the parent does not have is dropped by the browser, so "ready" goes to each allowed one.
-  // A site with its own editor names it in <meta name="braindy-editor" content="/admin/editor?p=">: Braindy App then offers to edit the site in place.
-  var em = document.querySelector('meta[name="braindy-editor"]'), EDITOR = em ? new URL(em.content, location.origin).href : '';
-  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href, editor: EDITOR || undefined, inEditor: !!EDITOR && location.pathname === new URL(EDITOR).pathname }, o); }); }
+  // A site with its own editor names it in <meta name="braindy-editor">: Braindy App then opens the site in its editor.
+  // "/admin/editor?p=" → the page path is appended; "{path}?edit" → {path} becomes the page (editors that live on the page itself).
+  var em = document.querySelector('meta[name="braindy-editor"]'), RAW = em ? String(em.content || '').trim() : '';
+  var TEMPLATE = RAW.indexOf('{path}') >= 0;
+  var EDITOR = !RAW ? '' : TEMPLATE ? location.origin + '/' + RAW.replace(/^\//, '') : new URL(RAW, location.origin).href;
+  function inEditor() {
+    if (!EDITOR) return false;
+    if (!TEMPLATE) return location.pathname === new URL(EDITOR).pathname;
+    // "{path}?edit": in the editor when every query key of the template is in the address.
+    var q = RAW.split('?')[1] || '', here = new URLSearchParams(location.search);
+    return !!q && q.split('&').every(function (kv) { var k = kv.split('=')[0]; return !k || here.has(k); });
+  }
+  function ready() { ALLOWED.forEach(function (o) { window.parent.postMessage({ type: 'braindy:ready', url: location.href, editor: EDITOR || undefined, inEditor: inEditor(), v: 4 }, o); }); }
   function tell(msg) { if (parentOrigin) window.parent.postMessage(msg, parentOrigin); }
+
+  // Sign-in handoff. The site's own code may load after this script: wait a little for window.braindySignIn.
+  function signIn(token, tries) {
+    if (typeof window.braindySignIn === 'function') {
+      Promise.resolve().then(function () { return window.braindySignIn(token); })
+        .then(function () { tell({ type: 'braindy:auth-result', ok: true }); }, function () { tell({ type: 'braindy:auth-result', ok: false }); });
+    } else if (tries < 40) setTimeout(function () { signIn(token, tries + 1); }, 150);
+    else tell({ type: 'braindy:auth-result', ok: false });
+  }
   function el(css) { var d = document.createElement('div'); d.setAttribute('aria-hidden', 'true'); d.style.cssText = css; document.body.appendChild(d); return d; }
 
   var fold = function (s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); };
@@ -146,7 +171,26 @@
       tell({ type: 'braindy:spot-result', id: d.id, found: !!node });
     } else if (d.type === 'braindy:comment-mode') { clear(); setPicking(!!d.on); }
     else if (d.type === 'braindy:pins') setPins(d.pins);
+    else if (d.type === 'braindy:auth' && typeof d.token === 'string') signIn(d.token, 0);
   });
+
+  // New version: while Braindy App shows the site, ask the server for this page's ETag about once a minute (HEAD, no cache).
+  // When it changes, a deploy landed: the viewer offers to show it. Paused while the tab is hidden; silent on any error.
+  var etag = null, etagOf = '';
+  function watch() {
+    if (document.hidden || !parentOrigin || !window.fetch) return;
+    var here = location.pathname + location.search;
+    if (here !== etagOf) { etag = null; etagOf = here; } // another page (single-page sites): start over
+    fetch(here, { method: 'HEAD', cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+      var tag = r.ok && (r.headers.get('etag') || r.headers.get('last-modified'));
+      if (!tag || etagOf !== here) return;
+      if (etag && tag !== etag) tell({ type: 'braindy:version' });
+      etag = tag;
+    }, function () { /* offline: try next time */ });
+  }
+  setTimeout(watch, 3000);
+  setInterval(watch, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) watch(); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready); else ready();
   // Single-page sites change page without reloading: say "ready" again with the new address so the viewer's bar follows.
   var lastHref = location.href;

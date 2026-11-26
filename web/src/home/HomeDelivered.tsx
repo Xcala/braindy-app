@@ -19,7 +19,8 @@ export function HomeDelivered({ items }: { items: ScopedRequest[] }) {
         </div>
         <Link to="/requests" className="t-sm w7">{t('home.seeAll')}</Link>
       </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Phone: a row that slides, one card and the edge of the next; from 640 px a grid. */}
+      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible lg:grid-cols-3" style={{ scrollbarWidth: 'none' }}>
         {items.slice(0, 3).map((r) => <Piece key={`${r.brandId}/${r.id}`} r={r} />)}
       </div>
     </section>
@@ -34,7 +35,7 @@ function Piece({ r }: { r: ScopedRequest }) {
   const url = useFileUrl(r.brandId, r.id, v);
   const type = v?.files?.[0]?.contentType ?? '';
   return (
-    <Link to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)} className="card col g12 min-w-0" style={{ textDecoration: 'none', color: 'var(--ink)', padding: '0.75rem' }}>
+    <Link to={`/requests/${r.id}`} onClick={() => current?.id !== r.brandId && select(r.brandId)} className="card col g12 min-w-0 w-[85%] flex-none snap-start sm:w-auto" style={{ textDecoration: 'none', color: 'var(--ink)', padding: '0.75rem' }}>
       <div className="overflow-hidden rounded-xl" style={{ aspectRatio: '4 / 3', background: 'var(--niebla)' }}>
         {url && isImage(type) ? <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
           : url && type.startsWith('video/') ? <video src={url} muted playsInline preload="metadata" className="h-full w-full object-cover" />

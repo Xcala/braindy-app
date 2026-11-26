@@ -58,7 +58,7 @@ export function ResultsView({ social, web, search, ads = [], sales = [] }: { soc
             const n = social.find((x) => x.network === id);
             return (
               <button key={id} role="tab" aria-selected={id === cur} onClick={() => setTab(id)}
-                className={`btn btn-sm ${id === cur ? 'btn-primary' : 'btn-secondary'}`}>
+                className={`btn btn-sm btn-secondary${id === cur ? ' is-picked' : ''}`}>
                 {id === 'sum' ? t('res.sum') : id === 'web' ? t('web.title') : id === 'ads' ? t('ads.tab') : id.startsWith('sales:') ? `${t('sales.tab')} · ${sourceName(id.slice(6))}` : <><NetBadge network={id} /> {netInfo(id).label}</>}
                 {n && realHandle(n.handle) ? ` · @${n.handle}` : ''}
               </button>

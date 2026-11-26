@@ -27,6 +27,8 @@ export class Doc {
   page!: PDFPage;
   y = 0;
   footer = '';
+  /** «Página 1 de 2» by default; English documents set it to (i, n) => `Page ${i} of ${n}`. */
+  pageLabel = (i: number, n: number) => `Página ${i} de ${n}`;
 
   static async create(title: string) {
     const d = new Doc();
@@ -139,7 +141,7 @@ export class Doc {
     pages.forEach((p, i) => {
       p.drawLine({ start: { x: M, y: M - 6 }, end: { x: p.getWidth() - M, y: M - 6 }, thickness: 0.5, color: LINE });
       p.drawText(safe(this.footer), { x: M, y: M - 20, size: 7.5, font: this.regular, color: MUTE });
-      const label = `Página ${i + 1} de ${pages.length}`;
+      const label = this.pageLabel(i + 1, pages.length);
       p.drawText(label, { x: p.getWidth() - M - this.regular.widthOfTextAtSize(label, 7.5), y: M - 20, size: 7.5, font: this.regular, color: MUTE });
     });
     return this.pdf.save();

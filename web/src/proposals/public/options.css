@@ -1,0 +1,9 @@
+/* Public proposal · options (UX #33): the same list in the same order in every option; ✓ included, struck-through grey when not. */
+.opt-feats{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0.5rem}
+.opt-feats li{display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.25rem}
+.opt-feats .ok{color:var(--success);font-weight:900;flex:none;width:1rem}
+.opt-feats li.is-off{color:var(--graphite-2);text-decoration:line-through}
+.opt-feats li.is-off .ok{visibility:hidden}
+/* Client logos near «Accept» (L21): grey, quiet, no links. */
+.client-logos{display:flex;flex-wrap:wrap;align-items:center;gap:1.25rem 2rem}
+.client-logos img{height:1.75rem;width:auto;max-width:7.5rem;object-fit:contain;filter:grayscale(1);opacity:.55}

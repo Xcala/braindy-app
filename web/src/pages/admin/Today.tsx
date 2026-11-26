@@ -9,6 +9,7 @@ import type { StringKey } from '../../i18n/strings';
 import { useOpenWork, type WorkItem } from '../../team/useWork';
 import { GranolaInbox } from '../../team/GranolaInbox';
 import { AiAlert } from '../../costs/AiAlert';
+import { ReleaseCard } from './ReleaseCard';
 import { dayLabel, daysFrom } from '../../lib/dates';
 
 type Pay = { brandId: string; kind: 'transfer' | 'past_due' };
@@ -46,9 +47,10 @@ export function AdminToday() {
     </Link>
   );
 
-  const blocks: Array<{ key: StringKey; n: number; body: React.ReactNode; tone?: string }> = [
-    { key: 'today.late', n: late.length, tone: '#FDECEA', body: late.sort(byDue).map((i) => row(i, t('home.late', { day: dayLabel(i.dueDate, lang) }), 'danger')) },
-    { key: 'today.toReview', n: review.length, tone: 'var(--warning-bg)', body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
+  // Light cards (UX #11): colour only on the late count and the short late note, never on whole blocks.
+  const blocks: Array<{ key: StringKey; n: number; body: React.ReactNode; danger?: boolean }> = [
+    { key: 'today.late', n: late.length, danger: true, body: late.sort(byDue).map((i) => row(i, t('home.late', { day: dayLabel(i.dueDate, lang) }), 'danger')) },
+    { key: 'today.toReview', n: review.length, body: review.map((i) => row(i, i.stage === 'plan' ? t('req.plan') : t('req.review'))) },
     { key: 'today.dueSoon', n: soon.length, body: soon.sort(byDue).map((i) => row(i, t('home.dueDay', { day: dayLabel(i.dueDate, lang) }))) },
     { key: 'today.waitingClient', n: waiting.length, body: waiting.map((i) => row(i, t('today.daysWaiting', { n: daysSince(i.updatedAt?.toMillis()) }))) },
     { key: 'today.billing', n: pays.length, body: pays.map((p) => (
@@ -65,11 +67,13 @@ export function AdminToday() {
       <div className="col g8"><p className="label">{new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         <h1 className="h1"><span className="w9">{t('today.title')}.</span> {t('today.sub')}</h1></div>
       <AiAlert />
+      <ReleaseCard />
       {loading ? <div className="skel" style={{ height: '15rem' }} /> : (
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
           {blocks.map((b) => (
-            <section key={b.key} className="card col g8" style={b.n && b.tone ? { background: b.tone, border: 0 } : undefined} aria-label={t(b.key)}>
-              <div className="row between"><h2 className="h3">{t(b.key)}</h2><span className="h3">{b.n}</span></div>
+            <section key={b.key} className="card col g8" aria-label={t(b.key)}>
+              <div className="row between"><h2 className="h3">{t(b.key)}</h2>
+                <span className="chip chip-plain" style={b.n && b.danger ? { background: 'var(--danger-bg)', color: 'var(--danger)' } : { background: 'var(--col)', color: b.n ? 'var(--ink)' : 'var(--graphite)' }}>{b.n}</span></div>
               {b.n === 0 ? <p className="t-sm t-mute">{t('today.clear')}</p> : <div className="col">{b.body}</div>}
             </section>
           ))}

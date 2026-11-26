@@ -4,6 +4,10 @@ import type { Notice } from '../review/api';
 export const createRequest = (brandId: string, body: Record<string, unknown>) =>
   api<{ requestId: string }>(`/v1/brands/${brandId}/requests`, { method: 'POST', body: JSON.stringify(body) });
 
+/** Gives the request the title the person chooses (instead of the automatic one). */
+export const renameRequest = (brandId: string, requestId: string, title: string) =>
+  api<{ ok: boolean; title: string }>(`/v1/brands/${brandId}/requests/${requestId}`, { method: 'PATCH', body: JSON.stringify({ title }) });
+
 export const decide = (brandId: string, requestId: string, versionId: string, state: 'approved' | 'changes_requested', note = '') =>
   api(`/v1/brands/${brandId}/requests/${requestId}/versions/${versionId}/decision`, { method: 'POST', body: JSON.stringify({ state, note }) });
 

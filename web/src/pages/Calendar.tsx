@@ -7,7 +7,11 @@ import { useSocialStats } from '../report/useSocialStats';
 import { statFor } from '../report/askMore';
 import { useSocialPosts, type SocialPost } from '../calendar/useSocialPosts';
 import { MiniMonth, dayKey } from '../calendar/MiniMonth';
+import { SyncButton } from '../calendar/SyncButton';
+import { usePauta } from '../pauta/usePauta';
+import { DayBands, PautaLegend, runsOn } from '../pauta/CalendarBands';
 import '../calendar/calendar.css';
+import '../pauta/pauta.css';
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const DOT: Record<string, string> = { published: 'var(--success)', scheduled: 'var(--azul)', error: '#D93025', draft: 'var(--graphite)' };
@@ -27,6 +31,8 @@ export function Calendar() {
   const { posts, loading } = useSocialPosts(current?.id, start, end);
   // Numbers next to each published post where Results is on (the rules keep them closed otherwise).
   const stats = useSocialStats(current?.id, !!current?.resultsOn);
+  // Paid campaigns run beside the organic posts: a colored band per campaign on its days.
+  const pauta = usePauta(current?.id).list;
   if (!current) return <p className="t-mute">{t('brand.none')}</p>;
 
   const nets = [...new Set(posts.flatMap((p) => p.networks.map((n) => n.network)))];
@@ -60,14 +66,16 @@ export function Calendar() {
           <span className="cal-dot is-published" /> {t('cal.nPublished', { n: count('published') })} · <span className="cal-dot is-scheduled" /> {t('cal.nScheduled', { n: count('scheduled') })}
           {count('error') > 0 && <> · <span className="cal-dot is-error" /> {t('cal.nError', { n: count('error') })}</>}
         </p>
+        <SyncButton brandId={current.id} />
       </div>
       {nets.length > 1 && (
         <div className="row g8 wrap" role="group" aria-label={t('cal.networks')}>
-          <button type="button" className={`btn btn-sm ${!net ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={!net} onClick={() => setNet('')}>{t('cal.all')}</button>
-          {nets.map((n) => <button key={n} type="button" className={`btn btn-sm ${net === n ? 'btn-primary' : 'btn-secondary'}`} aria-pressed={net === n} onClick={() => setNet(net === n ? '' : n)}><NetBadge network={n} /> {netInfo(n).label}</button>)}
+          <button type="button" className={`btn btn-sm btn-secondary${!net ? ' is-picked' : ''}`} aria-pressed={!net} onClick={() => setNet('')}>{t('cal.all')}</button>
+          {nets.map((n) => <button key={n} type="button" className={`btn btn-sm btn-secondary${net === n ? ' is-picked' : ''}`} aria-pressed={net === n} onClick={() => setNet(net === n ? '' : n)}><NetBadge network={n} /> {netInfo(n).label}</button>)}
         </div>
       )}
 
+      <PautaLegend campaigns={pauta.filter((c) => days.some((d) => d.getMonth() === month.getMonth() && runsOn(c, d)))} />
       <div className="cal-grid" role="grid" aria-busy={loading}>
         {weekdays.map((w) => <div key={w} className="cal-wd" role="columnheader">{w}</div>)}
         {days.map((d) => {
@@ -75,6 +83,7 @@ export function Calendar() {
           return (
             <div key={+d} role="gridcell" className={`cal-day${d.getMonth() !== month.getMonth() ? ' is-out' : ''}${dayKey(d) === today ? ' is-today' : ''}`}>
               <span className="cal-num">{d.getDate()}</span>
+              <DayBands campaigns={pauta} day={d} />
               {list.slice(0, 4).map((p) => (
                 <button key={p.id} type="button" className={`cal-post is-${p.status}`} onClick={() => setOpen(p)}
                   aria-label={`${time(p.date)} · ${p.networks.map((n) => netInfo(n.network).label).join(', ')} · ${t(`cal.st.${p.status}`)}`}>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import { brainName } from '../components/BrainStack';
 import { dateLabel } from '../lib/dates';
@@ -7,6 +6,9 @@ import { STATUS_CHIP, type BrandRequest } from './types';
 import { MissingChip, TagChips } from './RequestsBoard';
 import { BulkBar } from './BulkBar';
 import { pieceLabel, smartDate } from './requestBits';
+import { RowTitle } from './RowTitle';
+import { useCanApprove } from './useCanApprove';
+import { useAuth } from '../auth/AuthProvider';
 
 const LIST_FIRST = 20;
 
@@ -19,6 +21,8 @@ type Props = { brandId: string; shown: BrandRequest[]; isAdmin: boolean; archive
 export function RequestsList({ brandId, shown, isAdmin, archived, tags }: Props) {
   const { t, lang } = useI18n();
   const [max, setMax] = useState(LIST_FIRST);
+  const { user } = useAuth();
+  const canApprove = useCanApprove(brandId);
   const [picked, setPicked] = useState<string[]>([]);
   const [anchor, setAnchor] = useState<number | null>(null);
   const rows = shown.slice(0, max);
@@ -50,13 +54,13 @@ export function RequestsList({ brandId, shown, isAdmin, archived, tags }: Props)
               <span className="row g12 min-w-0">
                 {r.leadBrain && <img src={`/brand/brains/${r.leadBrain}.png`} alt={brainName(r.leadBrain)} title={t('req.onIt', { brain: brainName(r.leadBrain) })} className="h-7 w-7 flex-none rounded-full" style={{ background: 'var(--niebla)' }} />}
                 <span className="col min-w-0" style={{ gap: '0.1875rem' }}>
-                  <Link to={`/requests/${r.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{r.title}</Link>
+                  <RowTitle brandId={brandId} id={r.id} title={r.title} canEdit={isAdmin || canApprove || (!!user && r.createdBy === user.uid)} />
                   <span className="row g8 wrap t-xs t-mute">{r.createdAt && <span>{t('rr.askedOn', { day: dateLabel(r.createdAt.toDate(), lang) })}</span>}<TagChips tags={r.tags} />{isAdmin && <MissingChip r={r} />}</span>
                 </span>
               </span>
               <span className="t-sm truncate">{pieceLabel(r, lang)}</span>
               <span className="t-sm" style={{ color: d.late ? 'var(--danger)' : undefined }}>{d.text}</span>
-              <span><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span></span>
+              <span>{r.cancelled ? <span className="chip c-type">{t('rc.chip')}</span> : <span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>}</span>
             </div>
           );
         })}

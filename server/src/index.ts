@@ -12,13 +12,18 @@ import { folderOps } from './folderOps.js';
 import { search } from './search.js';
 import { adminProposals, publicProposals } from './proposals.js';
 import { adminRequests, requests } from './requests.js';
+import { requestCancel } from './requestCancel.js';
+import { pautaMedia } from './pautaMedia.js';
+import { adjustQuota } from './adjustQuota.js';
 import { adminLaunches, launches } from './launches.js';
 import { adminCalendar, calendarCallback, meetings } from './meetings.js';
+import { adminMail } from './mail/routes.js';
 import { booking, publicBooking } from './booking.js';
 import { members } from './members.js';
 import { accesses } from './accesses.js';
 import { adminReview, publicReview, review } from './review.js';
 import { adminLinks } from './og.js';
+import { siteEditor } from './siteEditor.js';
 import { adminGeo } from './geo.js';
 import { adminOnboarding, onboarding } from './onboarding.js';
 import { contracts } from './contracts/routes.js';
@@ -29,6 +34,7 @@ import { adminSite, brandHosting } from './hostingBrand.js';
 import { adminPlan } from './brandPlan.js';
 import { hostingCheckout } from './hosting.js';
 import { adminBrains, brains, cron } from './brains/routes.js';
+import { brainTeach } from './brains/teach.js';
 import { adminGranola, granolaWebhook } from './granola.js';
 import { whatsappWebhook } from './wa/webhook.js';
 import { meWhatsapp } from './wa/contacts.js';
@@ -36,13 +42,20 @@ import { adminWhatsapp } from './wa/admin.js';
 import { relay } from './wa/relay.js';
 import { criterio } from './criterio.js';
 import { help } from './help/route.js';
+import { reminders } from './help/reminders.js';
 import { resources } from './resources.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
 import { adminAiHealth } from './aiLog.js';
+import { adminRelease } from './release.js';
 import { adminIdentity } from './connector/identity.js';
 import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
+import { accessLinks, publicAccess } from './accessLinks.js';
+import { push } from './push/routes.js';
+import { events } from './push/events.js';
+import { pageViews } from './pageViews.js';
+import { adminInvoicing, invoicing, publicInvoicing } from './invoicing/routes.js';
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:5173')
   .split(',')
@@ -59,7 +72,8 @@ app.onError((err, c) => {
 });
 app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type', 'X-Firebase-AppCheck'], allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] }));
 
-app.get('/health', (c) => c.json({ ok: true }));
+// release: the commit this server was built from (set by the GitHub deploy; empty when deployed from a computer).
+app.get('/health', (c) => c.json({ ok: true, release: process.env.RELEASE ?? null }));
 
 // Public proposal pages: no login, tracked per send.
 // braindy.co books meetings here too (the site's /book page), so the public routes also answer the site.
@@ -73,6 +87,7 @@ app.use('/public/hosting/checkout', rateLimit('hosting-checkout', 20, 10 * 60_00
 app.use('/public/booking/book', rateLimit('web-booking', 5, 60 * 60_000));
 // Upload links take files from strangers: a few hundred per sender per hour at most.
 app.use('/public/u/:token/files', rateLimit('upload-link', 300, 60 * 60_000));
+app.use('/public/access/:token', rateLimit('access', 10, 10 * 60_000));
 app.use('/public/*', rateLimit('public', 120, 60_000));
 app.route('/public', clientErrors);
 app.route('/public', publicProposals);
@@ -80,6 +95,8 @@ app.route('/public', publicReview);
 app.route('/public', publicBooking);
 app.route('/public', hostingCheckout);
 app.route('/public', publicShare);
+app.route('/public', publicAccess);
+app.route('/public', publicInvoicing);
 
 // Stripe webhook: public, verified by signature (no CORS: server to server).
 app.use('/webhooks/*', rateLimit('webhooks', 300, 60_000));
@@ -95,6 +112,9 @@ app.route('/', calendarCallback);
 // Scheduled Brain work (Cloud Scheduler, OIDC-verified inside).
 app.use('/cron/*', rateLimit('cron', 30, 60_000));
 app.route('/cron', cron);
+// Firestore writes → alerts on phones and computers (Eventarc, OIDC-verified inside).
+app.use('/events/*', rateLimit('events', 600, 60_000));
+app.route('/events', events);
 
 // Remote Braindy connector for Claude: OAuth (discovery, registration, authorize, token) and MCP at /mcp (Bearer token, admins only).
 app.use('/oauth/*', rateLimit('oauth', 60, 60_000));
@@ -125,16 +145,22 @@ app.route('/v1', folderOps);
 app.route('/v1', search);
 app.route('/v1/admin', adminProposals);
 app.route('/v1', requests);
+app.route('/v1', requestCancel);
+app.route('/v1', pautaMedia);
+app.route('/v1', adjustQuota);
 app.route('/v1', launches);
 app.route('/v1', meetings);
 app.route('/v1', booking);
 app.route('/v1/admin', adminCalendar);
+app.route('/v1/admin', adminMail);
 app.route('/v1/admin', adminLaunches);
 app.route('/v1', members);
+app.route('/v1', accessLinks);
 app.route('/v1', accesses);
 app.route('/v1', review);
 app.route('/v1/admin', adminReview);
 app.route('/v1/admin', adminLinks);
+app.route('/v1', siteEditor);
 app.route('/v1', connectorAuth);
 app.route('/v1/admin', adminIdentity);
 app.route('/v1/admin', adminBrandVersions);
@@ -150,15 +176,23 @@ app.route('/v1/admin', adminBilling);
 app.route('/v1/admin', adminSite);
 app.route('/v1/admin', adminPlan);
 app.route('/v1', brains);
+app.route('/v1', brainTeach);
 app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
 app.route('/v1/admin', adminAiHealth);
+app.route('/v1/admin', adminRelease);
 app.route('/v1', criterio);
 app.route('/v1', shareLinks);
 app.use('/v1/help/chat', rateLimit('help', 20, 60_000));
 app.route('/v1', help);
+app.route('/v1', reminders);
 app.route('/v1', resources);
+app.route('/v1', push);
+app.use('/v1/usage', rateLimit('usage', 30, 60_000));
+app.route('/v1', pageViews);
+app.route('/v1', invoicing);
+app.route('/v1/admin', adminInvoicing);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, () => console.log(`braindy-api listening on :${port}`));

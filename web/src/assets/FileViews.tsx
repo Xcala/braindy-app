@@ -101,7 +101,7 @@ export function ShareSwitch({ on, label, onToggle }: { on: boolean; label: strin
   return (
     <button type="button" role="switch" aria-checked={on} aria-label={t('fa.toggleLabel', { name: label })} title={t(on ? 'fa.onHint' : 'fa.offHint')}
       onClick={(e) => { e.stopPropagation(); onToggle(); }} className="row g6 t-xs w7"
-      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--mute, #6B7280)', borderRadius: '62.4375rem', padding: '0.25rem 0.5rem 0.25rem 0.25rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      style={{ border: `1px solid ${on ? '#B9E5CC' : 'var(--line)'}`, background: on ? '#EAF7EF' : '#fff', color: on ? '#0E5A3A' : 'var(--mute, #6B7280)', borderRadius: '62.4375rem', padding: '0.25rem 0.625rem 0.25rem 0.3125rem', gap: '0.4375rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
       <span aria-hidden="true" style={{ width: '1.625rem', height: '1rem', borderRadius: '62.4375rem', background: on ? '#1F9D5C' : '#CBD2DC', position: 'relative', transition: 'background .2s', flex: 'none' }}>
         <span style={{ position: 'absolute', top: 2, left: on ? 12 : 2, width: '0.75rem', height: '0.75rem', borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
       </span>

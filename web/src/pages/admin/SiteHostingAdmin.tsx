@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/useConfirm';
 import { useState } from 'react';
 import { useBrands } from '../../brands/BrandProvider';
 import { useL } from '../../plan/HostingParts';
@@ -11,6 +12,7 @@ const DAY = 864e5;
 /** Admin · Billing · Website hosting: which Firebase Hosting site is each brand's, its payment state, and the
  *  approved rule (notice day 0 and 7, pause day 15, back on payment). Pause and resume by hand too. */
 export function SiteHostingAdmin({ rows, reload }: { rows: Row[]; reload: () => void }) {
+  const [dialog, ask] = useConfirm();
   const { brands } = useBrands();
   const L = useL();
   const [busy, setBusy] = useState<string | null>(null);
@@ -27,6 +29,7 @@ export function SiteHostingAdmin({ rows, reload }: { rows: Row[]; reload: () => 
 
   return (
     <section className="col g12" aria-labelledby="sh-h">
+      {dialog}
       <div className="col g4"><h2 className="h2" id="sh-h">{L(['Hosting de sitios web', 'Website hosting'])}</h2>
         <p className="t-sm t-mute">{L(['Si un cobro falla: aviso el día 0 y el 7, el sitio se pausa el día 15 y vuelve solo al pagar. Nada se borra.', 'If a charge fails: notice on day 0 and 7, the site pauses on day 15 and comes back on payment. Nothing is deleted.'])}</p></div>
       {err && <p role="alert" className="t-sm" style={{ color: 'var(--danger, #DC2626)' }}>{err}</p>}
@@ -50,7 +53,7 @@ export function SiteHostingAdmin({ rows, reload }: { rows: Row[]; reload: () => 
               {r?.hostingSite
                 ? r.hostingPaused
                   ? <button type="button" className="btn btn-primary btn-sm" disabled={busy === b.id} onClick={() => void act(b.id, 'resume', { method: 'POST', body: '{}' })}>{L(['Reactivar', 'Resume'])}</button>
-                  : <button type="button" className="btn btn-secondary btn-sm" disabled={busy === b.id} onClick={() => window.confirm(L([`¿Pausar el sitio de ${b.name}? Se ve la página «Sitio en pausa» hasta reactivarlo.`, `Pause ${b.name}'s site? It shows the "Site paused" page until resumed.`])) && void act(b.id, 'pause', { method: 'POST', body: '{}' })}>{L(['Pausar', 'Pause'])}</button>
+                  : <button type="button" className="btn btn-secondary btn-sm" disabled={busy === b.id} onClick={async () => { if (await ask({ title: L([`¿Pausar el sitio de ${b.name}?`, `Pause ${b.name}'s site?`]), body: L(['Se ve la página «Sitio en pausa» hasta reactivarlo.', 'It shows the "Site paused" page until resumed.']), confirmLabel: L(['Pausar', 'Pause']), danger: true })) void act(b.id, 'pause', { method: 'POST', body: '{}' }); }}>{L(['Pausar', 'Pause'])}</button>
                 : <span />}
             </div>
           );

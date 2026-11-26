@@ -14,6 +14,7 @@ import { bucket } from '../requests.js';
 import { autopilotOf, workspaceFor, type Autopilot } from '../autopilot.js';
 import { buildPrompt, type Job } from './prompt.js';
 import { ensureSteps } from '../brains/steps.js';
+import { watchSocialSync } from './socialSync.js';
 
 const HOME = process.env.BRAINDY_WORKER_DIR ?? join(homedir(), 'braindy-worker');
 const LOCK = join(HOME, 'worker.lock');
@@ -194,6 +195,8 @@ function watch() {
         .onSnapshot((q) => { if (!q.empty) void drain(); }, fail));
     }
   }, fail);
+  // The calendar's «Update» (Metricool) runs on its own queue, next to the requests.
+  watchSocialSync(fail);
   console.log(`worker: listening (${new Date().toISOString()})`);
 }
 

@@ -10,6 +10,8 @@ export interface Card { text?: string; links?: string[]; files?: AttachedFile[] 
 export interface BrandRequest {
   id: string;
   title: string;
+  /** A website adjustment (found by this, not by its title, so it can be renamed). */
+  siteAdjust?: boolean;
   category: string;
   subcategory: string;
   formatType: string;
@@ -24,13 +26,15 @@ export interface BrandRequest {
   helperBrains: BrainId[];
   approvalLevel: 'self' | 'nicolas';
   /** The team at work for real (server/brains/steps.ts): one step per Brain, moved by the session doing the request. */
-  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[] } | null;
+  work?: { state?: string; current?: BrainId | null; steps?: WorkStep[]; ask?: { brain: BrainId; text: string; at: number } | null } | null;
   /** Brand check the team ran before delivering (admin). */
   quality?: { score: number; passed: boolean; round: number; checks: Array<{ id: string; text: string; critical: boolean; ok: boolean; note?: string }> } | null;
   teamNotes?: { researcher?: string; marketer?: string; creator?: string; builder?: string; ai?: boolean } | null;
   plan?: { scope: string[]; firstDelivery?: string | null; note?: string; approved: boolean; proposedBy?: string; proposedWithAi?: boolean } | null;
   versionCount?: number;
   latestVersion?: string;
+  /** A version uploaded by the team that waits for NickMark before the client sees it. */
+  held?: { versionId: string; why?: string; note?: string } | null;
   createdBy: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
@@ -39,6 +43,8 @@ export interface BrandRequest {
   tags?: string[];
   /** Hidden from the board and list unless "Archived" is on (admin sets it). */
   archived?: boolean;
+  /** Cancelled by the client or NickMark (sent by mistake): archived, the Brains skip it; can be undone. */
+  cancelled?: { by: string; at?: Timestamp } | null;
   approvedAt?: Timestamp;
   /** NickMark asked the client for what the request lacked (date, where, material). */
   askedMissingAt?: Timestamp;
@@ -73,6 +79,8 @@ export interface RequestComment {
   annotation?: Annotation;
   versionId?: string;
   kind?: string;
+  /** Stars 1–5 on a delivery (kind "rating"). */
+  rating?: number;
   resolved?: boolean;
   createdAt?: Timestamp;
   editedAt?: Timestamp;

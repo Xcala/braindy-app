@@ -5,10 +5,10 @@ import { accessesApi, signInOf, type Access } from './useAccesses';
 import { AppLogo } from './AppLogo';
 
 /** "US$ 15 / mes": a subscription price as people read it. */
-export function priceLabel(price: number, currency: string, period: 'month' | 'year' | undefined, t: (k: StringKey) => string, lang: string) {
+export function priceLabel(price: number, currency: string, period: 'month' | 'year' | 'usage' | 'once' | undefined, t: (k: StringKey) => string, lang: string) {
   const n = price.toLocaleString(lang === 'es' ? 'es-CO' : 'en-US', { maximumFractionDigits: currency === 'COP' ? 0 : 2 });
   const sym = currency === 'COP' ? '$' : currency === 'EUR' ? '€' : 'US$';
-  return `${sym} ${n}${currency === 'COP' ? ' COP' : ''} / ${t(period === 'year' ? 'acc.perYear' : 'acc.perMonth')}`;
+  return `${sym} ${n}${currency === 'COP' ? ' COP' : ''}${period === 'once' ? ` · ${t('acc.once')}` : period === 'usage' ? ` · ${t('acc.usage')}` : ` / ${t(period === 'year' ? 'acc.perYear' : 'acc.perMonth')}`}`;
 }
 
 const fmt = (s: number) => `0:${String(s).padStart(2, '0')}`;
@@ -93,8 +93,15 @@ export function PlanCell({ a }: { a: Access }) {
   const s = a.subscription;
   return s
     ? <span className="col min-w-0"><span className="t-sm w7 truncate">{s.plan || t('acc.subscription')}</span>
-      {s.price != null && <span className="t-xs t-mute truncate">{priceLabel(s.price, s.currency ?? 'USD', s.period, t, lang)}</span>}</span>
-    : <span className="t-sm t-mute">—</span>;
+      {s.price != null ? <span className="t-xs t-mute truncate">{priceLabel(s.price, s.currency ?? 'USD', s.period, t, lang)}</span> : s.period === 'usage' && <span className="t-xs t-mute truncate">{t('acc.usage')}</span>}
+      {a.payer && <PayerChip payer={a.payer} />}</span>
+    : a.payer ? <PayerChip payer={a.payer} /> : <span className="t-sm t-mute">—</span>;
+}
+
+/** Who pays the app: straight to the provider, or through Braindy. */
+export function PayerChip({ payer }: { payer: 'braindy' | 'client' }) {
+  const { t } = useI18n();
+  return <span className={`acc-payer is-${payer}`}>{t(payer === 'client' ? 'acc.payClient' : 'acc.payBraindy')}</span>;
 }
 
 /** Six dots to drag the app to another place; ↑ ↓ on the keyboard do the same. */
