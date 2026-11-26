@@ -13,6 +13,7 @@ import { adminUids, pushTo } from '../push/send.js';
 import { mask, nitValid, planOf } from './money.js';
 import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
 import { billingPeople as peopleWithBilling } from './notifyBilling.js';
+import { billingFileRoutes, dataFile } from './files.js';
 import { claimPaid, confirmClaim, recordPayment, voidDoc } from './payments.js';
 import { extractSample } from './importSample.js';
 import {
@@ -36,13 +37,6 @@ const issuerView = (i: Partial<Issuer>) => ({
   ...i, bank: { ...(i.bank ?? { bankName: '', accountType: '', holder: '' }), accountNumber: mask(i.bank?.accountNumber) },
   hasSignature: !!i.signatureStoragePath, hasLogo: !!i.logoStoragePath, signatureStoragePath: undefined, logoStoragePath: undefined,
 });
-
-/** A data URL (PNG, JPG or PDF) as bytes, up to ~8 MB. */
-function dataFile(v: unknown): { bytes: Buffer; type: string; ext: string } | null {
-  const m = /^data:(image\/png|image\/jpeg|application\/pdf);base64,([A-Za-z0-9+/=]+)$/.exec(String(v ?? ''));
-  if (!m || m[2].length > 11_000_000) return null;
-  return { bytes: Buffer.from(m[2], 'base64'), type: m[1], ext: m[1] === 'application/pdf' ? 'pdf' : m[1] === 'image/png' ? 'png' : 'jpg' };
-}
 
 // ---------------- admin ----------------
 export const adminInvoicing = new Hono<AuthEnv>();
@@ -248,6 +242,8 @@ invoicing.post('/brands/:brandId/cuentas/:docId/paid', async (c) => {
     return c.json({ ok: true, paymentId: pay.id });
   } catch (e) { return c.json({ error: err(e) }, 409); }
 });
+
+billingFileRoutes(adminInvoicing, invoicing);
 
 // ---------------- public ----------------
 export const publicInvoicing = new Hono();

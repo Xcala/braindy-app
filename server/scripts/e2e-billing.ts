@@ -104,6 +104,29 @@ check('another brand cannot download', r.status === 403, r);
 r = await call(owner.token, 'GET', B);
 check('the client cannot use admin routes', r.status === 403, r);
 
+// The emulator cannot sign Storage links (no service account): «allowed» = got past the access check (not 403/404).
+const allowed = (x: { status: number }) => x.status !== 403 && x.status !== 404;
+// Documents for accounting (RUT, bank certificate…): the admin uploads several, billing people download, others not.
+const pdfData = `data:application/pdf;base64,${Buffer.from('%PDF-1.4\n%%EOF').toString('base64')}`;
+const f1 = await call(A, 'POST', `${B}/files`, { file: pdfData, name: 'RUT Nicolás.pdf' });
+const f2 = await call(A, 'POST', `${B}/files`, { file: pdfData, name: 'Certificación bancaria' });
+r = await call(owner.token, 'GET', '/v1/brands/blacky/cuentas/files');
+check('admin uploads documents; the client lists them', f1.status === 200 && f2.status === 200 && r.json.files.length === 2 && r.json.files.some((f: { name: string }) => f.name === 'Certificación bancaria.pdf') && !('storagePath' in r.json.files[0]), r.json);
+r = await call(owner.token, 'GET', `/v1/brands/blacky/cuentas/files/${f1.json.id}`);
+const otherFile = await call(other.token, 'GET', `/v1/brands/blacky/cuentas/files/${f1.json.id}`);
+const clientUpload = await call(owner.token, 'POST', `${B}/files`, { file: pdfData, name: 'x' });
+check('the client downloads; another brand and client uploads are refused', allowed(r) && otherFile.status === 403 && clientUpload.status === 403, { r, otherFile, clientUpload });
+await call(A, 'DELETE', `${B}/files/${f2.json.id}`);
+r = await call(owner.token, 'GET', '/v1/brands/blacky/cuentas/files');
+check('a removed document stops showing', r.json.files.length === 1, r.json);
+
+// The client's payment proof: «Ya pagué» on a sent cuenta; the admin opens the proof, the client cannot.
+r = await call(owner.token, 'POST', '/v1/brands/blacky/cuentas/BM-06-01/paid', { proof: pdfData, date: '2026-09-05', amount: 1000, method: 'Transferencia' });
+const claim = r.json.paymentId as string;
+const seen = await call(A, 'GET', `${B}/docs/BM-06-01/proofs/${claim}`);
+const notClient = await call(owner.token, 'GET', `${B}/docs/BM-06-01/proofs/${claim}`);
+check('the client uploads a proof; only the admin opens it', r.status === 200 && allowed(seen) && notClient.status === 403, { r, seen, notClient });
+
 // The 3.250.000 advance â†’ c1â€“c3 paid, 1 peso on c4, recibo RC-0001.
 r = await call(A, 'POST', `${B}/payments`, { agreementId: agId, amount: 3250000, date: '2026-09-04', method: 'Transferencia Davivienda', receipt: true });
 check('advance gives recibo RC-0001', r.status === 200 && r.json.receipt?.number === 'RC-0001', r.json);

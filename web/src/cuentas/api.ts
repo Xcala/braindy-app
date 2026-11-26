@@ -7,6 +7,8 @@ export type Cuenta = {
   amount: number; amountWords: string; status: DocStatus; held: boolean; paid: number; hasPdf: boolean; sentVia: string[]; voidReason: string | null;
   covers: Array<{ number: string; amount: number }>; paidOn?: string | null; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency;
 };
+/** A document NickMark leaves for the client's accounting (RUT, bank certificate…). */
+export type BillingFile = { id: string; name: string; type: string; size: number };
 /** What «Enviar» did: channels that went out, a wa.me fallback, and how many people got the notice in the app. */
 export type SendResult = { via?: string[]; waMe?: string | null; people?: number; email?: string | null; whatsapp?: string | null };
 export type Profile ={ legalName: string; taxId: string; address?: string; city?: string; accountingEmail?: string; accountingWhatsApp?: string };
@@ -39,8 +41,15 @@ export const cuentasApi = {
   list: (b: string) => api<{ docs: Cuenta[] }>(`/v1/brands/${b}/cuentas`),
   pdf: (b: string, id: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/${id}/pdf`),
   paid: (b: string, id: string, x: { proof: string; date: string; amount: number; method: string }) => api<{ ok: true }>(`/v1/brands/${b}/cuentas/${id}/paid`, json(x)),
+  files: (b: string) => api<{ files: BillingFile[] }>(`/v1/brands/${b}/cuentas/files`),
+  file: (b: string, id: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/files/${id}`),
   // admin
-  all: (b: string) => api<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] }>(A(b)),
+  adminFiles: (b: string) => api<{ files: BillingFile[] }>(`${A(b)}/files`),
+  adminFile: (b: string, id: string) => api<{ url: string }>(`${A(b)}/files/${id}`),
+  addFile: (b: string, file: string, name: string) => api<{ id: string; name: string }>(`${A(b)}/files`, json({ file, name })),
+  removeFile: (b: string, id: string) => api<{ ok: true }>(`${A(b)}/files/${id}`, { method: 'DELETE' }),
+  proof: (b: string, docId: string, paymentId: string) => api<{ url: string }>(`${A(b)}/docs/${docId}/proofs/${paymentId}`),
+  all:(b: string) => api<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] }>(A(b)),
   saveProfile: (b: string, p: Profile) => api<{ profile: Profile; nitOk: boolean | null }>(`${A(b)}/profile`, json(p, 'PUT')),
   importPdf: (b: string, pdf: string) => api<{ extracted: Extracted; sourceSamplePath: string }>(`${A(b)}/import`, json({ pdf })),
   preview: (b: string, a: AgreementInput) => api<{ rows: PlanRow[]; problems: string[]; sum: number; matches: boolean }>(`${A(b)}/preview`, json(a)),

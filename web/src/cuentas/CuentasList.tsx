@@ -52,6 +52,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo }: { brandId:
           {!admin && open && !recibo && !pending && <button className="btn btn-secondary btn-sm" onClick={() => setPaying(d)}>{t('cc.iPaid')}</button>}
           {admin && d.status === 'scheduled' && <button className="btn btn-secondary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.act(brandId, d.id, 'issue'))}>{t('cc.a.issue')}</button>}
           {canSend && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => setSending(d)}>{t('cc.a.send')}</button>}
+          {admin && pending?.hasProof && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(cuentasApi.proof(brandId, d.id, pending.id))}>{t('cc.a.seeProof')}</button>}
           {admin && pending && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.confirm(brandId, d.id, pending.id))}>{t('cc.a.confirm')}</button>}
           {admin && !recibo && d.status !== 'void' && d.status !== 'paid' && d.paid === 0 && <button className="btn btn-ghost btn-sm" onClick={() => { setVoiding(d); setReason(''); }}>{t('cc.a.void')}</button>}
         </span>

@@ -4,6 +4,7 @@ import { CuentasList } from '../CuentasList';
 import { cuentasApi, errKey, money, toMinor, type Agreement, type Cuenta, type Profile } from '../api';
 import { AgreementForm } from './AgreementForm';
 import { IssuerSettings } from './IssuerSettings';
+import { BillingFiles } from '../BillingFiles';
 import { PayProgress } from './PayProgress';
 
 const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: '', accountingEmail: '', accountingWhatsApp: '' };
@@ -52,6 +53,8 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
         {nitBad && <p className="t-sm" role="alert">{t('cc.a.nitBad')}</p>}
         <div className="row" style={{ justifyContent: 'flex-end' }}><button className="btn btn-secondary btn-sm" onClick={saveProfile}>{t('set.save')}</button></div>
       </details>
+
+      <BillingFiles brandId={brandId} admin />
 
       <div className="col g8">
         <div className="row between g12 wrap">

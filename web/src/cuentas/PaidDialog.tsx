@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { cuentasApi, errKey, fromMinor, money, readAsDataUrl, toMinor, type Cuenta } from './api';
+import { cuentasApi, errKey, fromMinor, money, monthName, readAsDataUrl, toMinor, type Cuenta } from './api';
 
-/** The client's «Ya pagué»: proof + date + amount. NickMark confirms it, then the recibo goes out. */
-export function PaidDialog({ brandId, doc, onClose }: { brandId: string; doc: Cuenta; onClose: () => void }) {
-  const { t } = useI18n();
+/** The client's «Ya pagué»: proof + date + amount. NickMark confirms it, then the recibo goes out. With choices, the
+ *  client picks which cuenta the payment is for (the «Subir comprobante» button at the top of Pagos). */
+export function PaidDialog({ brandId, doc: first, choices, onClose }: { brandId: string; doc: Cuenta; choices?: Cuenta[]; onClose: () => void }) {
+  const { t, lang } = useI18n();
+  const [doc, setDoc] = useState(first);
   const [file, setFile] = useState<File | null>(null);
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
   const [amount, setAmount] = useState(fromMinor(doc.amount - doc.paid, doc.currency));
@@ -26,7 +28,12 @@ export function PaidDialog({ brandId, doc, onClose }: { brandId: string; doc: Cu
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <form className="modal w-full max-w-[28rem] col g12" role="dialog" aria-modal="true" aria-labelledby="paid-h" onSubmit={submit}>
         <h2 className="h2" id="paid-h">{t('cc.paid.title', { n: doc.number })}</h2>
-        <p className="t-sm t-mute">{money(doc.amount, doc.currency)}</p>
+        {choices && choices.length > 1 && state !== 'done' ? (
+          <div className="field"><label htmlFor="pd-c">{t('cc.paid.which')}</label>
+            <select id="pd-c" className="input" value={doc.id} onChange={(e) => { const d = choices.find((x) => x.id === e.target.value)!; setDoc(d); setAmount(fromMinor(d.amount - d.paid, d.currency)); }}>
+              {choices.map((d) => <option key={d.id} value={d.id}>{d.number} · {monthName(d.billingMonth, lang)} · {money(d.amount - d.paid, d.currency)}</option>)}
+            </select></div>
+        ) : <p className="t-sm t-mute">{money(doc.amount, doc.currency)}</p>}
         {state === 'done' ? (
           <>
             <p className="t-sm" role="status">{t('cc.paid.done')}</p>

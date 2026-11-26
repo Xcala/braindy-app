@@ -395,6 +395,11 @@ service cloud.firestore {
         allow read: if isAdmin() || can(brandId, 'billing');
         allow write: if false;
       }
+      // NickMark's documents for the client's accounting (RUT, bank certificate…). Files go through the backend.
+      match /billingFiles/{fileId} {
+        allow read: if isAdmin() || can(brandId, 'billing');
+        allow write: if false;
+      }
       match /billingAgreements/{agreementId} {
         allow read: if isAdmin();
         allow write: if false;

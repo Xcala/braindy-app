@@ -27,6 +27,7 @@ beforeEach(async () => {
     await setDoc(doc(db, A), { title: 'Blacky', totalAmount: 6500000, status: 'active' });
     await setDoc(doc(db, 'issuers/nicolas'), { name: 'N', bank: { accountNumber: '008700403465' } });
     await setDoc(doc(db, 'issuers/nicolas/numbers/BM-06-01'), { docPath: D });
+    await setDoc(doc(db, 'brands/brand-a/billingFiles/rut'), { name: 'RUT.pdf', type: 'application/pdf', size: 10, storagePath: 'brands/brand-a/billing/files/rut.pdf' });
     await setDoc(doc(db, 'brands/brand-a/billingNotices/BM-06-01'), { number: 'BM-06-01', type: 'cuenta_cobro', amount: 1083333 });
     await setDoc(doc(db, 'brands/brand-a/billing/profile'), { legalName: 'Blacky Meals SAS', taxId: '902038455-4' });
   });
@@ -50,6 +51,16 @@ describe('Cuentas de cobro', () => {
     await assertFails(getDoc(doc(as(env, OUTSIDER), N)));
     await assertFails(setDoc(doc(as(env, OWNER), N), { number: 'X' }));
     await assertFails(setDoc(doc(as(env, ADMIN), N), { number: 'X' }));
+  });
+
+  it('documents for accounting: billing people and admin read them, nobody writes from the browser', async () => {
+    const F = 'brands/brand-a/billingFiles/rut';
+    await assertSucceeds(getDoc(doc(as(env, OWNER), F)));
+    await assertSucceeds(getDoc(doc(as(env, ADMIN), F)));
+    await assertFails(getDoc(doc(as(env, MEMBER), F)));
+    await assertFails(getDoc(doc(as(env, OUTSIDER), F)));
+    await assertFails(setDoc(doc(as(env, ADMIN), 'brands/brand-a/billingFiles/x'), { name: 'x' }));
+    await assertFails(deleteDoc(doc(as(env, OWNER), F)));
   });
 
   it('scheduled and held cuentas stay with the admin until they go out', async () => {
