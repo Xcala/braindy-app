@@ -3,7 +3,6 @@
 // cuentas (issue now, send, void, PDF), payments and recibos.
 // Client (/v1): billing people of the brand list their cuentas, download the PDF and say «Ya pagué» with a proof.
 // Public (/public): the tokenized link sent to accounting redirects to a short signed URL of the frozen PDF.
-import { projectProgress } from './progress.js';
 import { randomUUID } from 'node:crypto';
 import { Hono, type MiddlewareHandler } from 'hono';
 import { db } from '../firebase.js';
@@ -103,9 +102,9 @@ adminInvoicing.put('/issuers/:id/:kind{signature|logo}', async (c) => {
 /** Everything about a brand's billing, for the admin screen. */
 adminInvoicing.get('/brands/:brandId/invoicing', async (c) => {
   const b = c.req.param('brandId');
-  const [p, ags, docs, people, progress] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get(), peopleWithBilling(b).catch(() => [] as string[]), projectProgress(b).catch(() => null)]);
+  const [p, ags, docs, people] = await Promise.all([profileRef(b).get(), agreementsCol(b).get(), docsCol(b).get(), peopleWithBilling(b).catch(() => [] as string[])]);
   return c.json({
-    profile: p.exists ? p.data() : null, billingPeople: people.length, progress,
+    profile: p.exists ? p.data() : null, billingPeople: people.length,
     agreements: ags.docs.map((s) => ({ id: s.id, ...s.data(), sourceSamplePath: undefined })),
     docs: docs.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>)).sort((x, y) => x.scheduledDate.localeCompare(y.scheduledDate) || x.number.localeCompare(y.number)),
   });
@@ -152,6 +151,14 @@ adminInvoicing.put('/brands/:brandId/invoicing/agreements/:id', async (c) => {
   const s = await ref.get();
   if (!s.exists) return c.json({ error: 'not_found' }, 404);
   const body = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
+  // How far each stage (pack) of the project is, 0–100 in steps of 25: what «Avance» is measured with (any status).
+  if (Array.isArray(body.stageProgress)) {
+    const n = ((s.get('packs') as unknown[]) ?? []).length;
+    const stageProgress = body.stageProgress.slice(0, n).map((v) => Math.min(100, Math.max(0, Math.round(Number(v) / 25) * 25)) || 0);
+    await ref.update({ stageProgress, updatedAt: now() });
+    await audit('billing_stage_progress', c.req.param('brandId'), c.get('user').uid, { agreementId: ref.id, stageProgress });
+    return c.json({ ok: true, stageProgress });
+  }
   // Active agreements only change whether cuentas go out by themselves; amounts and numbers are fixed.
   if (s.get('status') !== 'draft') {
     if (typeof body.autoSend !== 'boolean') return c.json({ error: 'not_draft' }, 409);

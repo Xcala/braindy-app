@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CuentasList } from '../CuentasList';
-import { cuentasApi, errKey, money, type Agreement, type Cuenta, type Profile, type Progress } from '../api';
+import { cuentasApi, errKey, money, type Agreement, type Cuenta, type Profile } from '../api';
 import { AgreementForm } from './AgreementForm';
 import { IssuerSettings } from './IssuerSettings';
 import { BillingFiles } from '../BillingFiles';
@@ -16,7 +16,7 @@ const EMPTY_PROFILE: Profile = { legalName: '', taxId: '', address: '', city: ''
  *  client's billing data, the projects with what is paid and «Registrar pago» on each, every cuenta and recibo. */
 export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has: boolean) => void }) {
   const { t } = useI18n();
-  const [data, setData] = useState<{ profile: Profile | null; billingPeople?: number; progress?: Progress | null; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
+  const [data, setData] = useState<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] } | null>(null);
   const [profile, setProfile] = useState<Profile>(EMPTY_PROFILE);
   const [form, setForm] = useState<Agreement | 'new' | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
@@ -90,7 +90,7 @@ export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has
                   )}
                 </span>
               </div>
-              {a.status !== 'draft' && <ProjectBars agreement={a} paid={paid} progress={data.progress} />}
+              {a.status !== 'draft' && <ProjectBars key={`${a.id}-${(a.stageProgress ?? []).join()}`} brandId={brandId} agreement={a} paid={paid} onSaved={load} />}
               {paying === a.id && <PaymentForm brandId={brandId} agreement={a} docs={data.docs} onDone={(m) => { setPaying(null); setMsg(m); load(); }} />}
             </div>
           );

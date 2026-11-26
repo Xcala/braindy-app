@@ -11,15 +11,13 @@ export type Cuenta = {
 export type BillingFile = { id: string; name: string; type: string; size: number };
 /** What «Enviar» did: channels that went out, a wa.me fallback, and how many people got the notice in the app. */
 export type SendResult = { via?: string[]; waMe?: string | null; people?: number; email?: string | null; whatsapp?: string | null };
-/** How far the work is: the schedule's deliveries and the requests by month («2026-11» → [asked, approved]). */
-export type Progress = { schedule: { done: number; total: number; start: string; weeks: number; elapsed: number } | null; requests: Record<string, [number, number]> };
 export type Profile ={ legalName: string; taxId: string; address?: string; city?: string; accountingEmail?: string; accountingWhatsApp?: string };
 export type AgreementInput = {
   title: string; concept: string; packs: Array<{ name: string; description: string }>; servicePeriod: { from: string; to: string };
   executionPlace: string; projectClose: string; totalAmount: number; installments: number; startMonth: string; issueDay: number;
   numberingPrefix: string; distributionNote: string; autoSend: boolean; sourceSamplePath?: string | null; issuerId?: IssuerId;
 };
-export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed'; currency?: Currency };
+export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed'; currency?: Currency; stageProgress?: number[] };
 export type PlanRow = { index: number; of: number; number: string; billingMonth: string; scheduledDate: string; amount: number; issueNow: boolean };
 export type Extracted = {
   issuer: { name: string; docType: string; docNumber: string; docCity: string; bank: { bankName: string; accountType: string; accountNumber: string; holder: string } };
@@ -52,12 +50,13 @@ export const cuentasApi = {
   addFile: (b: string, file: string, name: string) => api<{ id: string; name: string }>(`${A(b)}/files`, json({ file, name })),
   removeFile: (b: string, id: string) => api<{ ok: true }>(`${A(b)}/files/${id}`, { method: 'DELETE' }),
   proof: (b: string, docId: string, paymentId: string) => api<{ url: string }>(`${A(b)}/docs/${docId}/proofs/${paymentId}`),
-  all:(b: string) => api<{ profile: Profile | null; billingPeople?: number; progress?: Progress | null; agreements: Agreement[]; docs: Cuenta[] }>(A(b)),
+  all:(b: string) => api<{ profile: Profile | null; billingPeople?: number; agreements: Agreement[]; docs: Cuenta[] }>(A(b)),
   saveProfile: (b: string, p: Profile) => api<{ profile: Profile; nitOk: boolean | null }>(`${A(b)}/profile`, json(p, 'PUT')),
   importPdf: (b: string, pdf: string) => api<{ extracted: Extracted; sourceSamplePath: string }>(`${A(b)}/import`, json({ pdf })),
   preview: (b: string, a: AgreementInput) => api<{ rows: PlanRow[]; problems: string[]; sum: number; matches: boolean }>(`${A(b)}/preview`, json(a)),
   create: (b: string, a: AgreementInput) => api<{ id: string }>(`${A(b)}/agreements`, json(a)),
   update: (b: string, id: string, a: Partial<AgreementInput>) => api<{ ok: true }>(`${A(b)}/agreements/${id}`, json(a, 'PUT')),
+  stages: (b: string, id: string, stageProgress: number[]) => api<{ ok: true; stageProgress: number[] }>(`${A(b)}/agreements/${id}`, json({ stageProgress }, 'PUT')),
   activate: (b: string, id: string) => api<{ issued: string[]; scheduled: string[] }>(`${A(b)}/agreements/${id}/activate`, json({})),
   act: (b: string, id: string, action: 'issue' | 'send' | 'void', reason?: string) =>
     api<SendResult>(`${A(b)}/docs/${id}/${action}`, json({ reason })),
