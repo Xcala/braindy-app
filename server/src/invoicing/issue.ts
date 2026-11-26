@@ -93,7 +93,7 @@ export async function issueDoc(brandId: string, docId: string, by: string) {
   const path = await saveFile(`brands/${brandId}/billing/${d.number}.pdf`, pdf, 'application/pdf');
   const { issuer, signature: _s, ...snap } = input;
   await ref.update({
-    status: 'issued', issueDate, pdfStoragePath: path, pdfHash: sha256(pdf), issuedAt: now(), issuedBy: by,
+    status: (d.paid ?? 0) >= d.amount ? 'paid' : 'issued', issueDate, pdfStoragePath: path, pdfHash: sha256(pdf), issuedAt: now(), issuedBy: by,
     snapshot: { ...snap, issuer: { name: issuer.name, docType: issuer.docType, docNumber: issuer.docNumber } },
   });
   await audit('billing_doc_issued', brandId, by, { docId, number: d.number, amount: d.amount });

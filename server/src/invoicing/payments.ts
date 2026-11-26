@@ -9,6 +9,8 @@ import { loadIssuer, loadProfile } from './issue.js';
 import { agreementsCol, audit, docsCol, issuerRef, now, readFile, saveFile, sha256, type Agreement, type BillingDoc, type Payment } from './store.js';
 
 const OPEN = ['issued', 'sent', 'overdue'];
+// An advance may reach cuentas that are not issued yet: they keep their schedule and come out already paid.
+const PAYABLE = [...OPEN, 'scheduled'];
 const owed = (d: BillingDoc) => d.amount - (d.paid ?? 0);
 
 /** Spreads a confirmed payment over the agreement's open cuentas in order (or the ones named). */
@@ -17,7 +19,7 @@ export async function recordPayment(brandId: string, by: string, p: { agreementI
   let q = docsCol(brandId).where('type', '==', 'cuenta_cobro');
   if (p.agreementId) q = q.where('agreementId', '==', p.agreementId);
   const all = (await q.get()).docs.map((s) => ({ id: s.id, ref: s.ref, d: s.data() as BillingDoc }));
-  const open = all.filter((x) => OPEN.includes(x.d.status) && owed(x.d) > 0 && (!p.docIds?.length || p.docIds.includes(x.id))).sort((a, b) => a.d.index - b.d.index);
+  const open = all.filter((x) => PAYABLE.includes(x.d.status) && owed(x.d) > 0 && (!p.docIds?.length || p.docIds.includes(x.id))).sort((a, b) => a.d.index - b.d.index);
   const parts = allocate(open.map((x) => ({ id: x.id, owed: owed(x.d) })), p.amount);
   const applied = parts.reduce((n, x) => n + x.applied, 0);
   if (!parts.length || applied < Math.round(p.amount)) throw new Error(parts.length ? 'more_than_owed' : 'nothing_open');
@@ -26,7 +28,7 @@ export async function recordPayment(brandId: string, by: string, p: { agreementI
   for (const part of parts) {
     const x = open.find((o) => o.id === part.id)!;
     const pay: Payment = { id: paymentId, date: p.date, amount: part.applied, method: p.method, proofStoragePath: p.proofStoragePath ?? null, status: 'confirmed', by };
-    batch.update(x.ref, { payments: [...(x.d.payments ?? []), pay], paid: (x.d.paid ?? 0) + part.applied, ...(part.settles ? { status: 'paid', paidAt: now() } : {}) });
+    batch.update(x.ref, { payments: [...(x.d.payments ?? []), pay], paid: (x.d.paid ?? 0) + part.applied, ...(part.settles && x.d.status !== 'scheduled' ? { status: 'paid', paidAt: now() } : {}) });
   }
   await batch.commit();
   await audit('billing_payment', brandId, by, { paymentId, amount: applied, cuentas: parts.map((x) => x.id) });
