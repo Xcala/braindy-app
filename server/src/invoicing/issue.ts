@@ -7,7 +7,7 @@ import { mailReady, sendWithAttachment } from '../mail/gmail.js';
 import { normalizePhone, sendText, waMeLink } from '../whatsapp.js';
 import { getContact, windowOpen } from '../wa/contacts.js';
 import { pdfUrl } from '../contracts/store.js';
-import { amountInWords, money, monthLabelL, planOf, todayBogota } from './money.js';
+import { amountInWords, isLate, money, monthLabelL, planOf, todayBogota } from './money.js';
 import { renderBillingPdf, type PdfInput } from './pdf.js';
 import { notifyBilling } from './notifyBilling.js';
 import {
@@ -151,7 +151,7 @@ export async function pdfLink(brandId: string, docId: string) {
   return pdfUrl(d.pdfStoragePath, fileNameOf(d, brand));
 }
 
-/** Daily: issue what is due today, then mark unpaid cuentas overdue after OVERDUE_DAYS. */
+/** Daily: issue what is due today, then mark unpaid cuentas overdue OVERDUE_DAYS after issue (or after their planned day if issued early). */
 export async function billingDaily() {
   const today = todayBogota();
   let issued = 0, overdue = 0, failed = 0;
@@ -163,7 +163,11 @@ export async function billingDaily() {
   const cutoff = new Date(Date.now() - OVERDUE_DAYS * 864e5).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   for (const st of ['issued', 'sent'] as const) {
     const late = await db.collectionGroup('billingDocs').where('status', '==', st).where('issueDate', '<=', cutoff).get();
-    for (const s of late.docs) { if (s.get('type') === 'cuenta_cobro' && !s.get('overdueOff')) { await s.ref.update({ status: 'overdue' }); overdue++; } }
+    for (const s of late.docs) {
+      const d = s.data() as BillingDoc;
+      // A cuenta issued before its month counts from its planned day, not from the day it went out.
+      if (d.type === 'cuenta_cobro' && !s.get('overdueOff') && isLate(d, today, OVERDUE_DAYS)) { await s.ref.update({ status: 'overdue' }); overdue++; }
+    }
   }
   // Held cuentas wait for Nico («Para tu ojo»): one alert with how many.
   if (issued) await pushTo(await adminUids(), {

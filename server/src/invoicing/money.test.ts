@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addMonths, allocate, cop, dollarsInWords, money, monthLabel, nitCheckDigit, nitValid, pesosInWords, planOf, splitAmount } from './money.js';
+import { addMonths, allocate, dueFrom, isLate, cop, dollarsInWords, money, monthLabel, nitCheckDigit, nitValid, pesosInWords, planOf, splitAmount } from './money.js';
 
 test('amount in words (Colombia, M/CTE.)', () => {
   assert.equal(pesosInWords(1_083_333), 'UN MILLÓN OCHENTA Y TRES MIL TRESCIENTOS TREINTA Y TRES PESOS M/CTE.');
@@ -53,4 +53,20 @@ test('USD: words, format and split in cents', () => {
   assert.equal(money(650000, 'USD'), 'US$6,500.00');
   assert.equal(money(1083333, 'COP'), '$1.083.333 COP');
   assert.deepEqual(splitAmount(650000, 6), [108333, 108333, 108333, 108333, 108333, 108335]);
+});
+
+test('mora: counts from the planned day when a cuenta went out early (Blacky, sent 2026-11-26)', () => {
+  const dec = { issueDate: '2026-11-26', scheduledDate: '2026-12-05' };
+  const feb = { issueDate: '2026-11-26', scheduledDate: '2027-02-05' };
+  const sep = { issueDate: '2026-11-26', scheduledDate: '2026-11-25' };
+  assert.equal(dueFrom(dec), '2026-12-05');
+  assert.equal(dueFrom(sep), '2026-11-26');
+  assert.equal(isLate(dec, '2026-12-27'), false);
+  assert.equal(isLate(feb, '2026-12-27'), false);
+  assert.equal(isLate(dec, '2027-01-04'), false);
+  assert.equal(isLate(dec, '2027-01-05'), true);
+  assert.equal(isLate(feb, '2027-03-07'), false);
+  assert.equal(isLate(feb, '2027-03-08'), true);
+  assert.equal(isLate(sep, '2026-12-27'), true);
+  assert.equal(isLate({ issueDate: null, scheduledDate: null }, '2030-01-01'), false);
 });
