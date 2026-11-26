@@ -47,6 +47,7 @@ import { resources } from './resources.js';
 import { connectorAuth, oauth } from './connector/oauth.js';
 import { mcp } from './connector/http.js';
 import { adminAiHealth } from './aiLog.js';
+import { adminRelease } from './release.js';
 import { adminIdentity } from './connector/identity.js';
 import { adminBrandVersions } from './brandVersions.js';
 import { publicShare, shareLinks } from './shareLinks.js';
@@ -71,7 +72,8 @@ app.onError((err, c) => {
 });
 app.use('/v1/*', cors({ origin: allowedOrigins, allowHeaders: ['Authorization', 'Content-Type', 'X-Firebase-AppCheck'], allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] }));
 
-app.get('/health', (c) => c.json({ ok: true }));
+// release: the commit this server was built from (set by the GitHub deploy; empty when deployed from a computer).
+app.get('/health', (c) => c.json({ ok: true, release: process.env.RELEASE ?? null }));
 
 // Public proposal pages: no login, tracked per send.
 // braindy.co books meetings here too (the site's /book page), so the public routes also answer the site.
@@ -179,6 +181,7 @@ app.route('/v1/admin', adminBrains);
 app.route('/v1/admin', adminGranola);
 app.route('/v1/admin', adminRequests);
 app.route('/v1/admin', adminAiHealth);
+app.route('/v1/admin', adminRelease);
 app.route('/v1', criterio);
 app.route('/v1', shareLinks);
 app.use('/v1/help/chat', rateLimit('help', 20, 60_000));

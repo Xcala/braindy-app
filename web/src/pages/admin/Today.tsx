@@ -9,6 +9,7 @@ import type { StringKey } from '../../i18n/strings';
 import { useOpenWork, type WorkItem } from '../../team/useWork';
 import { GranolaInbox } from '../../team/GranolaInbox';
 import { AiAlert } from '../../costs/AiAlert';
+import { ReleaseCard } from './ReleaseCard';
 import { dayLabel, daysFrom } from '../../lib/dates';
 
 type Pay = { brandId: string; kind: 'transfer' | 'past_due' };
@@ -66,6 +67,7 @@ export function AdminToday() {
       <div className="col g8"><p className="label">{new Date().toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         <h1 className="h1"><span className="w9">{t('today.title')}.</span> {t('today.sub')}</h1></div>
       <AiAlert />
+      <ReleaseCard />
       {loading ? <div className="skel" style={{ height: '15rem' }} /> : (
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
           {blocks.map((b) => (

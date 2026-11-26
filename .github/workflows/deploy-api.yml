@@ -1,0 +1,45 @@
+# Publishes the shared server (braindy-api on Cloud Run) from GitHub, so no computer has to (2026-11-25, ruta a la nube).
+# Production only, and only when run: by hand (Actions › Deploy API › Run workflow) or by the «Sube» button in Braindy ›
+# Admin › Hoy, which runs it when main has server changes the live server lacks. Nothing deploys on push.
+# Signs in as github-deploy through Workload Identity Federation (no stored keys). Secrets and settings already on the
+# service stay as they are: this only builds the new code and records which commit it is (RELEASE).
+name: Deploy API
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Typecheck the server
+        run: npm ci && npm run typecheck -w server
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/283103160183/locations/global/workloadIdentityPools/github/providers/github-xcala
+          service_account: github-deploy@braindy-brand-guideline.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build and publish
+        run: |
+          gcloud run deploy braindy-api --source . --region us-central1 --project braindy-brand-guideline \
+            --clear-base-image --update-env-vars "RELEASE=${GITHUB_SHA}" --quiet
+      - name: Live check
+        run: |
+          sleep 10
+          R=$(curl -s https://braindy-api-283103160183.us-central1.run.app/health)
+          echo "$R"
+          echo "$R" | grep -q "$GITHUB_SHA"
