@@ -90,7 +90,7 @@ export function CuentasAdmin({ brandId, onHas }: { brandId: string; onHas?: (has
                   )}
                 </span>
               </div>
-              {a.status !== 'draft' && <ProjectBars key={`${a.id}-${(a.stageProgress ?? []).join()}`} brandId={brandId} agreement={a} paid={paid} onSaved={load} />}
+              {a.status !== 'draft' && <ProjectBars key={`${a.id}-${(a.stageProgress ?? []).join()}-${(a.stageValue ?? []).join()}`} brandId={brandId} agreement={a} paid={paid} onSaved={load} />}
               {paying === a.id && <PaymentForm brandId={brandId} agreement={a} docs={data.docs} onDone={(m) => { setPaying(null); setMsg(m); load(); }} />}
             </div>
           );

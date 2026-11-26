@@ -17,7 +17,7 @@ export type AgreementInput = {
   executionPlace: string; projectClose: string; totalAmount: number; installments: number; startMonth: string; issueDay: number;
   numberingPrefix: string; distributionNote: string; autoSend: boolean; sourceSamplePath?: string | null; issuerId?: IssuerId;
 };
-export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed'; currency?: Currency; stageProgress?: number[] };
+export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed'; currency?: Currency; stageProgress?: number[]; stageValue?: number[] };
 export type PlanRow = { index: number; of: number; number: string; billingMonth: string; scheduledDate: string; amount: number; issueNow: boolean };
 export type Extracted = {
   issuer: { name: string; docType: string; docNumber: string; docCity: string; bank: { bankName: string; accountType: string; accountNumber: string; holder: string } };
@@ -56,7 +56,7 @@ export const cuentasApi = {
   preview: (b: string, a: AgreementInput) => api<{ rows: PlanRow[]; problems: string[]; sum: number; matches: boolean }>(`${A(b)}/preview`, json(a)),
   create: (b: string, a: AgreementInput) => api<{ id: string }>(`${A(b)}/agreements`, json(a)),
   update: (b: string, id: string, a: Partial<AgreementInput>) => api<{ ok: true }>(`${A(b)}/agreements/${id}`, json(a, 'PUT')),
-  stages: (b: string, id: string, stageProgress: number[]) => api<{ ok: true; stageProgress: number[] }>(`${A(b)}/agreements/${id}`, json({ stageProgress }, 'PUT')),
+  stages: (b: string, id: string, stageProgress: number[], stageValue: number[]) => api<{ ok: true; stageProgress: number[] }>(`${A(b)}/agreements/${id}`, json({ stageProgress, stageValue }, 'PUT')),
   activate: (b: string, id: string) => api<{ issued: string[]; scheduled: string[] }>(`${A(b)}/agreements/${id}/activate`, json({})),
   act: (b: string, id: string, action: 'issue' | 'send' | 'void', reason?: string) =>
     api<SendResult>(`${A(b)}/docs/${id}/${action}`, json({ reason })),

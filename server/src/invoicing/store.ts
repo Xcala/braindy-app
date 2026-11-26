@@ -41,6 +41,8 @@ export type Agreement = {
   status: 'draft' | 'active' | 'closed'; sourceSamplePath?: string | null; templateId: 'braindy';
   /** Per pack (stage), how far it is: 0, 25, 50, 75 or 100. */
   stageProgress?: number[];
+  /** Per pack (stage), what it is worth in the project's minor units; stages weigh by it. */
+  stageValue?: number[];
 };
 export type Payment = { id: string; date: string; amount: number; method: string; proofStoragePath?: string | null; status: 'confirmed' | 'pending'; by: string; receiptId?: string | null };
 export type DocStatus = 'scheduled' | 'issued' | 'sent' | 'paid' | 'overdue' | 'void';
