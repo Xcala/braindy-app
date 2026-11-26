@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { cop, cuentasApi, errKey, monthName, openUrl, type Cuenta } from './api';
+import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta } from './api';
 import { PaidDialog } from './PaidDialog';
 
 const CHIP: Record<string, string> = { scheduled: 'c-draft', issued: 'c-sent', sent: 'c-sent', paid: 'c-approved', overdue: 'c-lost', void: 'c-archived', held: 'c-approve' };
@@ -44,7 +44,7 @@ export function CuentasList({ brandId, docs, admin, reload }: { brandId: string;
                 <span className="t-xs t-mute">{d.type === 'recibo' ? t('cc.recibo') : t('cc.cuenta', { i: d.index, n: d.of })}{admin && d.status === 'scheduled' ? ` · ${t('cc.a.on', { day: d.scheduledDate })}` : ''}</span>
                 {d.voidReason && <span className="t-xs t-mute">{d.voidReason}</span>}
               </span>
-              <span className="col g2"><span className="t-sm w7">{cop(d.amount)}</span>{d.paid > 0 && d.status !== 'paid' && d.type === 'cuenta_cobro' && <span className="t-xs t-mute">{t('cc.paidPart', { v: cop(d.paid) })}</span>}</span>
+              <span className="col g2"><span className="t-sm w7">{money(d.amount, d.currency)}</span>{d.paid > 0 && d.status !== 'paid' && d.type === 'cuenta_cobro' && <span className="t-xs t-mute">{t('cc.paidPart', { v: money(d.paid, d.currency) })}</span>}</span>
               <span className="col g2"><span><span className={`chip ${CHIP[st]}`}>{t(`cc.st.${st}` as never)}</span></span>{pending && <span className="t-xs t-mute">{t('cc.pending')}</span>}</span>
               <span className="row g8 wrap" style={{ justifyContent: 'flex-end' }}>
                 {d.hasPdf && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminPdf(brandId, d.id) : cuentasApi.pdf(brandId, d.id))}>{t('cc.pdf')}</button>}

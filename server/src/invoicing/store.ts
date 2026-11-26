@@ -17,17 +17,26 @@ export const agreementsCol = (b: string) => db.collection(`brands/${b}/billingAg
 export const docsCol = (b: string) => db.collection(`brands/${b}/billingDocs`);
 export const sha256 = (data: string | Uint8Array) => createHash('sha256').update(data).digest('hex');
 
+/** The issuers Braindy knows: Nicolás in Colombia (COP, Spanish cuentas de cobro) and Nicolás in the USA (USD, English invoices). */
+export const ISSUERS = { nicolas: 'CO', 'nicolas-us': 'US' } as const;
+export type IssuerId = keyof typeof ISSUERS;
+export const isIssuerId = (v: unknown): v is IssuerId => typeof v === 'string' && v in ISSUERS;
+export type Country = 'CO' | 'US';
+export type DocType = 'CC' | 'NIT' | 'EIN' | 'ITIN' | 'SSN';
 export type Issuer = {
-  name: string; docType: 'CC' | 'NIT'; docNumber: string; docCity: string; city: string;
-  bank: { bankName: string; accountType: string; accountNumber: string; holder: string };
+  name: string; country?: Country; docType: DocType; docNumber: string; docCity: string; city: string; address?: string;
+  bank: { bankName: string; accountType: string; accountNumber: string; holder: string; routingNumber?: string; swift?: string; bankAddress?: string };
   signatureStoragePath?: string | null; logoStoragePath?: string | null; legalDeclarations: string[];
   email?: string; phone?: string; web?: string; nextReceipt?: number;
 };
+/** Currency, language and receipt numbering follow the issuer's country. */
+export const issuerStyle = (i: Pick<Issuer, 'country'> | { country?: Country }) =>
+  i.country === 'US' ? { currency: 'USD' as const, lang: 'en' as const, receiptPrefix: 'RC-US' } : { currency: 'COP' as const, lang: 'es' as const, receiptPrefix: 'RC' };
 export type Profile = { legalName: string; taxId: string; address?: string; city?: string; accountingEmail?: string; accountingWhatsApp?: string };
 export type Agreement = {
   issuerId: string; title: string; concept: string; packs: Array<{ name: string; description: string }>;
   servicePeriod: { from: string; to: string }; executionPlace: string; projectClose?: string;
-  totalAmount: number; currency: 'COP'; installments: number; startMonth: string; issueDay: number;
+  totalAmount: number; currency: 'COP' | 'USD'; installments: number; startMonth: string; issueDay: number;
   numberingPrefix: string; roundingRule: 'remainder_last'; distributionNote: string; autoSend: boolean;
   status: 'draft' | 'active' | 'closed'; sourceSamplePath?: string | null; templateId: 'braindy';
 };
@@ -38,17 +47,22 @@ export type BillingDoc = {
   billingMonth: string; scheduledDate: string; issueDate: string | null; amount: number; amountWords: string;
   status: DocStatus; held?: boolean; pdfStoragePath?: string | null; pdfHash?: string | null;
   sentAt?: unknown; sentVia?: string[]; payments?: Payment[]; paid?: number; voidReason?: string | null;
-  covers?: Array<{ docId: string; number: string; amount: number }>; publicTokenHash?: string | null;
+  covers?: Array<{ docId: string; number: string; amount: number }>; publicTokenHash?: string | null; currency?: 'COP' | 'USD';
 };
 
 const clean = (v: unknown, max = 300) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
 const int = (v: unknown) => { const n = Math.round(Number(String(v ?? '').replace(/[^\d-]/g, ''))); return Number.isFinite(n) ? n : 0; };
 
-export function pickIssuer(b: Record<string, unknown>, prev?: Partial<Issuer>): Issuer {
+const DOC_TYPES: Record<Country, DocType[]> = { CO: ['CC', 'NIT'], US: ['EIN', 'ITIN', 'SSN'] };
+export function pickIssuer(b: Record<string, unknown>, prev?: Partial<Issuer>, country: Country = 'CO'): Issuer {
   const bank = (b.bank ?? {}) as Record<string, unknown>;
+  const docType = (DOC_TYPES[country] as string[]).includes(String(b.docType)) ? (b.docType as DocType) : DOC_TYPES[country][0];
   return {
-    name: clean(b.name, 120), docType: b.docType === 'NIT' ? 'NIT' : 'CC', docNumber: clean(b.docNumber, 40), docCity: clean(b.docCity, 60), city: clean(b.city, 60),
-    bank: { bankName: clean(bank.bankName, 60), accountType: clean(bank.accountType, 40), accountNumber: clean(bank.accountNumber, 40).replace(/[^\d-]/g, ''), holder: clean(bank.holder, 120) },
+    name: clean(b.name, 120), country, docType, docNumber: clean(b.docNumber, 40), docCity: clean(b.docCity, 60), city: clean(b.city, 60), address: clean(b.address, 200),
+    bank: {
+      bankName: clean(bank.bankName, 60), accountType: clean(bank.accountType, 40), accountNumber: clean(bank.accountNumber, 40).replace(/[^\d-]/g, ''), holder: clean(bank.holder, 120),
+      routingNumber: clean(bank.routingNumber, 20).replace(/[^\d]/g, ''), swift: clean(bank.swift, 15).toUpperCase().replace(/[^A-Z0-9]/g, ''), bankAddress: clean(bank.bankAddress, 200),
+    },
     legalDeclarations: (Array.isArray(b.legalDeclarations) ? b.legalDeclarations : []).map((x) => clean(x, 600)).filter(Boolean).slice(0, 6),
     email: clean(b.email, 120), phone: clean(b.phone, 40), web: clean(b.web, 80),
     signatureStoragePath: prev?.signatureStoragePath ?? null, logoStoragePath: prev?.logoStoragePath ?? null,

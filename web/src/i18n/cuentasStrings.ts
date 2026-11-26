@@ -37,6 +37,11 @@ export const cuentasEn = {
   'cc.i.legal': 'Legal lines (one per line)', 'cc.i.email': 'Email', 'cc.i.phone': 'Phone', 'cc.i.web': 'Web',
   'cc.i.signature': 'Signature', 'cc.i.hasSig': 'Signature on file', 'cc.i.noSig': 'No signature yet', 'cc.i.drawSig': 'Draw your signature', 'cc.i.saveSig': 'Save signature',
   'cc.i.uploadSig': 'Or upload a PNG with transparent background',
+  'cc.i.co': 'Colombia · COP, in Spanish', 'cc.i.us': 'USA · USD, in English', 'cc.i.noSigShort': 'no signature',
+  'cc.i.hintUs': 'For projects billed from the USA: the invoice comes out in English and in dollars. The account number is shown masked.',
+  'cc.i.address': 'Address', 'cc.i.routing': 'Routing number (ABA / ACH)', 'cc.i.swift': 'SWIFT (international transfers)', 'cc.i.bankAddress': 'Bank address',
+  'cc.i.copyFromCo': 'Use the same signature as Colombia', 'cc.i.copyFromUs': 'Use the same signature as the USA',
+  'cc.a.f.issuer': 'Who charges', 'cc.a.f.totalIn': 'Total value ({c})',
 } as const;
 
 export const cuentasEs: Record<keyof typeof cuentasEn, string> = {
@@ -75,4 +80,9 @@ export const cuentasEs: Record<keyof typeof cuentasEn, string> = {
   'cc.i.legal': 'Declaraciones legales (una por línea)', 'cc.i.email': 'Correo', 'cc.i.phone': 'Teléfono', 'cc.i.web': 'Web',
   'cc.i.signature': 'Firma', 'cc.i.hasSig': 'Firma guardada', 'cc.i.noSig': 'Aún sin firma', 'cc.i.drawSig': 'Dibuja tu firma', 'cc.i.saveSig': 'Guardar firma',
   'cc.i.uploadSig': 'O sube un PNG con fondo transparente',
+  'cc.i.co': 'Colombia · COP, en español', 'cc.i.us': 'USA · USD, en inglés', 'cc.i.noSigShort': 'sin firma',
+  'cc.i.hintUs': 'Para proyectos que cobras desde USA: la cuenta sale como «Invoice», en inglés y en dólares. El número de cuenta se muestra oculto.',
+  'cc.i.address': 'Dirección', 'cc.i.routing': 'Routing number (ABA / ACH)', 'cc.i.swift': 'SWIFT (transferencias internacionales)', 'cc.i.bankAddress': 'Dirección del banco',
+  'cc.i.copyFromCo': 'Usar la misma firma de Colombia', 'cc.i.copyFromUs': 'Usar la misma firma de USA',
+  'cc.a.f.issuer': 'Quién cobra', 'cc.a.f.totalIn': 'Valor total ({c})',
 };

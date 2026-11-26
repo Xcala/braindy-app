@@ -5,15 +5,15 @@ export type CuentaPayment = { id: string; date: string; amount: number; method: 
 export type Cuenta = {
   id: string; type: 'cuenta_cobro' | 'recibo'; number: string; index: number; of: number; billingMonth: string; scheduledDate: string; issueDate: string | null;
   amount: number; amountWords: string; status: DocStatus; held: boolean; paid: number; hasPdf: boolean; sentVia: string[]; voidReason: string | null;
-  covers: Array<{ number: string; amount: number }>; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[];
+  covers: Array<{ number: string; amount: number }>; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency;
 };
 export type Profile = { legalName: string; taxId: string; address?: string; city?: string; accountingEmail?: string; accountingWhatsApp?: string };
 export type AgreementInput = {
   title: string; concept: string; packs: Array<{ name: string; description: string }>; servicePeriod: { from: string; to: string };
   executionPlace: string; projectClose: string; totalAmount: number; installments: number; startMonth: string; issueDay: number;
-  numberingPrefix: string; distributionNote: string; autoSend: boolean; sourceSamplePath?: string | null;
+  numberingPrefix: string; distributionNote: string; autoSend: boolean; sourceSamplePath?: string | null; issuerId?: IssuerId;
 };
-export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed' };
+export type Agreement = AgreementInput & { id: string; status: 'draft' | 'active' | 'closed'; currency?: Currency };
 export type PlanRow = { index: number; of: number; number: string; billingMonth: string; scheduledDate: string; amount: number; issueNow: boolean };
 export type Extracted = {
   issuer: { name: string; docType: string; docNumber: string; docCity: string; bank: { bankName: string; accountType: string; accountNumber: string; holder: string } };
@@ -22,9 +22,11 @@ export type Extracted = {
   totalAmount: number; installments: number; amountsPerPage: number[]; numberingPattern: string; numbers: string[]; issueDates: string[];
   paymentModality: string; hasSignature: boolean; warnings: string[];
 };
+export type IssuerId = 'nicolas' | 'nicolas-us';
+export type Currency = 'COP' | 'USD';
 export type Issuer = {
-  name: string; docType: 'CC' | 'NIT'; docNumber: string; docCity: string; city: string;
-  bank: { bankName: string; accountType: string; accountNumber: string; holder: string };
+  name: string; docType: 'CC' | 'NIT' | 'EIN' | 'ITIN' | 'SSN'; docNumber: string; docCity: string; city: string; address?: string;
+  bank: { bankName: string; accountType: string; accountNumber: string; holder: string; routingNumber?: string; swift?: string; bankAddress?: string };
   legalDeclarations: string[]; email?: string; phone?: string; web?: string; hasSignature?: boolean;
 };
 
@@ -49,9 +51,11 @@ export const cuentasApi = {
   pay: (b: string, x: { agreementId?: string; date: string; amount: number; method: string; receipt: boolean }) =>
     api<{ receipt: { number: string } | null }>(`${A(b)}/payments`, json(x)),
   confirm: (b: string, id: string, paymentId: string) => api<unknown>(`${A(b)}/docs/${id}/payments/${paymentId}/confirm`, json({ receipt: true })),
-  issuer: () => api<{ issuer: Issuer | null }>('/v1/admin/issuers/nicolas'),
-  saveIssuer: (i: Issuer) => api<{ issuer: Issuer }>('/v1/admin/issuers/nicolas', json(i, 'PUT')),
-  signature: (png: string) => api<{ ok: true }>('/v1/admin/issuers/nicolas/signature', json({ png }, 'PUT')),
+  issuers: () => api<{ issuers: Array<{ id: IssuerId; country: 'CO' | 'US'; currency: Currency; issuer: Issuer | null }> }>('/v1/admin/issuers'),
+  issuer: (id: IssuerId = 'nicolas') => api<{ issuer: Issuer | null }>(`/v1/admin/issuers/${id}`),
+  saveIssuer: (i: Issuer, id: IssuerId = 'nicolas') => api<{ issuer: Issuer }>(`/v1/admin/issuers/${id}`, json(i, 'PUT')),
+  signature: (png: string, id: IssuerId = 'nicolas') => api<{ ok: true }>(`/v1/admin/issuers/${id}/signature`, json({ png }, 'PUT')),
+  copySignature: (id: IssuerId, from: IssuerId) => api<{ ok: true }>(`/v1/admin/issuers/${id}/signature`, json({ copyFrom: from }, 'PUT')),
 };
 
 /** The server's short error code («no_profile»…) as a translation key. */
@@ -60,6 +64,17 @@ export const errKey = (e: unknown) => {
   return ['no_issuer', 'no_profile', 'no_signature', 'number_taken', 'sum_mismatch', 'more_than_owed', 'nothing_open', 'has_payments'].includes(code) ? `cc.e.${code}` : 'cc.e.failed';
 };
 export const cop = (n: number) => `$${Math.round(n).toLocaleString('es-CO')}`;
+/** Amounts travel as integers: pesos for COP, cents for USD. */
+export const money = (n: number, cur: Currency = 'COP') =>
+  cur === 'USD' ? `US$${(Math.round(n) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : cop(n);
+/** What a person types («6,500.50» or «6.500.000») as the integer the server keeps. */
+export const toMinor = (s: string, cur: Currency = 'COP') => {
+  if (cur === 'COP') return Number(s.replace(/\D/g, '')) || 0;
+  const v = Number(s.replace(/[^\d.]/g, ''));
+  return Number.isFinite(v) ? Math.round(v * 100) : 0;
+};
+export const fromMinor = (n: number, cur: Currency = 'COP') => (!n ? '' : cur === 'USD' ? String(n / 100) : String(n));
+export const currencyOf = (issuerId?: IssuerId): Currency => (issuerId === 'nicolas-us' ? 'USD' : 'COP');
 export const monthName = (ym: string, lang: 'en' | 'es') => { const s = new Date(`${ym}-15T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { month: 'long', year: 'numeric' }); return s.charAt(0).toUpperCase() + s.slice(1); };
 export const readAsDataUrl = (f: File) => new Promise<string>((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = ko; r.readAsDataURL(f); });
 export const openUrl = async (p: Promise<{ url: string }>) => { const w = window.open('', '_blank'); const { url } = await p; if (w) w.location.href = url; else window.location.href = url; };

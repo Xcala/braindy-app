@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import { CuentasList } from '../CuentasList';
-import { cop, cuentasApi, errKey, type Agreement, type Cuenta, type Profile } from '../api';
+import { cuentasApi, errKey, money, toMinor, type Agreement, type Cuenta, type Profile } from '../api';
 import { AgreementForm } from './AgreementForm';
 import { IssuerSettings } from './IssuerSettings';
 
@@ -23,10 +23,11 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
 
   const saveProfile = () => cuentasApi.saveProfile(brandId, profile).then((r) => { setNitBad(r.nitOk === false); setMsg(t('cc.a.saved')); }).catch((e) => setMsg(t(errKey(e) as never)));
   const active = data.agreements.filter((a) => a.status === 'active');
+  const payCur = (active.find((a) => a.id === pay.agreementId) ?? active[0])?.currency ?? 'COP';
   async function record() {
     setMsg(null);
     try {
-      const r = await cuentasApi.pay(brandId, { agreementId: pay.agreementId || active[0]?.id, amount: Number(pay.amount.replace(/\D/g, '')), date: pay.date, method: pay.method, receipt: pay.receipt });
+      const r = await cuentasApi.pay(brandId, { agreementId: pay.agreementId || active[0]?.id, amount: toMinor(pay.amount, payCur), date: pay.date, method: pay.method, receipt: pay.receipt });
       setMsg(t('cc.a.pay.done', { r: r.receipt ? ` · ${r.receipt.number}` : '' })); setPay({ ...pay, amount: '' }); load();
     } catch (e) { setMsg(t(errKey(e) as never)); }
   }
@@ -57,7 +58,7 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
         </div>
         {data.agreements.map((a) => (
           <div key={a.id} className="card card-tight row between g12 wrap">
-            <span className="t-sm"><b>{a.title}</b> · {cop(a.totalAmount)} · {a.installments} · {a.numberingPrefix}</span>
+            <span className="t-sm"><b>{a.title}</b> · {money(a.totalAmount, a.currency)} · {a.installments} · {a.numberingPrefix}{a.currency === 'USD' ? ' · USA' : ''}</span>
             <span className="row g8"><span className="chip">{t(`cc.a.${a.status}` as never)}</span>{a.status === 'draft' && <button className="btn btn-ghost btn-sm" onClick={() => setForm(a)}>{t('bill.edit')}</button>}</span>
           </div>
         ))}
@@ -72,13 +73,13 @@ export function CuentasAdmin({ brandId }: { brandId: string }) {
           <div className="grid gap-3 sm:grid-cols-4">
             {active.length > 1 && <div className="field"><label htmlFor="py-a">{t('cc.a.agreements')}</label>
               <select id="py-a" className="input" value={pay.agreementId} onChange={(e) => setPay({ ...pay, agreementId: e.target.value })}>{active.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}</select></div>}
-            <div className="field"><label htmlFor="py-v">{t('cc.a.pay.amount')}</label><input id="py-v" className="input" inputMode="numeric" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} /></div>
+            <div className="field"><label htmlFor="py-v">{t('cc.a.pay.amount')} ({payCur})</label><input id="py-v" className="input" inputMode="decimal" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} /></div>
             <div className="field"><label htmlFor="py-d">{t('cc.a.pay.date')}</label><input id="py-d" className="input" type="date" value={pay.date} onChange={(e) => setPay({ ...pay, date: e.target.value })} /></div>
             <div className="field"><label htmlFor="py-m">{t('cc.a.pay.method')}</label><input id="py-m" className="input" value={pay.method} onChange={(e) => setPay({ ...pay, method: e.target.value })} /></div>
           </div>
           <div className="row between g12 wrap">
             <label className="row g8 t-sm"><input type="checkbox" checked={pay.receipt} onChange={(e) => setPay({ ...pay, receipt: e.target.checked })} />{t('cc.a.pay.receipt')}</label>
-            <button className="btn btn-primary btn-sm" disabled={!Number(pay.amount.replace(/\D/g, ''))} onClick={record}>{t('cc.a.pay.save')}</button>
+            <button className="btn btn-primary btn-sm" disabled={!toMinor(pay.amount, payCur)} onClick={record}>{t('cc.a.pay.save')}</button>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
-import { cop, cuentasApi, errKey, monthName, readAsDataUrl, type Agreement, type AgreementInput, type Extracted, type PlanRow } from '../api';
+import { cop, cuentasApi, currencyOf, errKey, fromMinor, money, monthName, readAsDataUrl, toMinor, type Agreement, type AgreementInput, type Extracted, type IssuerId, type PlanRow } from '../api';
 
 const thisMonth = () => new Date().toLocaleDateString('en-CA').slice(0, 7);
 export const EMPTY: AgreementInput = {
@@ -32,7 +32,10 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
   const [prev, setPrev] = useState<{ rows: PlanRow[]; sum: number; matches: boolean } | null>(null);
   const [ask, setAsk] = useState(false);
   const full = { ...a, packs: packsOf(packs) };
-  const set = <K extends keyof AgreementInput>(k: K, v: AgreementInput[K]) => setA((x) => ({ ...x, [k]: v }));
+  const cur = currencyOf(a.issuerId);
+  const [totalText, setTotalText] = useState(fromMinor(a.totalAmount, cur));
+  useEffect(() => { setTotalText(fromMinor(a.totalAmount, cur)); }, [a.issuerId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const set =<K extends keyof AgreementInput>(k: K, v: AgreementInput[K]) => setA((x) => ({ ...x, [k]: v }));
 
   useEffect(() => {
     const h = setTimeout(() => cuentasApi.preview(brandId, full).then((p) => setPrev(p.problems.length ? null : p)).catch(() => setPrev(null)), 350);
@@ -41,7 +44,7 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
 
   async function importPdf(f: File) {
     setBusy('import'); setErr(null);
-    try { const r = await cuentasApi.importPdf(brandId, await readAsDataUrl(f)); setRead(r.extracted); const x = fromExtracted(r.extracted, r.sourceSamplePath); setA(x); setPacks(packsText(x.packs)); }
+    try { const r = await cuentasApi.importPdf(brandId, await readAsDataUrl(f)); setRead(r.extracted); const x = { ...fromExtracted(r.extracted, r.sourceSamplePath), issuerId: a.issuerId }; setA(x); setPacks(packsText(x.packs)); setTotalText(fromMinor(x.totalAmount, cur)); }
     catch (e) { setErr(t(errKey(e) as never)); } finally { setBusy(null); }
   }
   async function save(andActivate: boolean) {
@@ -83,6 +86,11 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
           </div>
         )}
         <div className="col g12" style={{ minWidth: 0 }}>
+          {field('ag-i', t('cc.a.f.issuer'), (
+            <select id="ag-i" className="input" value={a.issuerId ?? 'nicolas'} onChange={(e) => set('issuerId', e.target.value as IssuerId)}>
+              <option value="nicolas">{t('cc.i.co')}</option><option value="nicolas-us">{t('cc.i.us')}</option>
+            </select>
+          ))}
           {field('ag-t', t('cc.a.f.title'), <input id="ag-t" className="input" value={a.title} onChange={(e) => set('title', e.target.value)} />)}
           {field('ag-c', t('cc.a.f.concept'), <textarea id="ag-c" className="input" rows={3} value={a.concept} onChange={(e) => set('concept', e.target.value)} />)}
           {field('ag-p', t('cc.a.f.packs'), <textarea id="ag-p" className="input" rows={3} value={packs} onChange={(e) => setPacks(e.target.value)} />)}
@@ -90,7 +98,7 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
             {field('ag-f', t('cc.a.f.from'), <input id="ag-f" className="input" type="month" value={a.servicePeriod.from} onChange={(e) => set('servicePeriod', { ...a.servicePeriod, from: e.target.value })} />)}
             {field('ag-to', t('cc.a.f.to'), <input id="ag-to" className="input" type="month" value={a.servicePeriod.to} onChange={(e) => set('servicePeriod', { ...a.servicePeriod, to: e.target.value })} />)}
             {field('ag-pl', t('cc.a.f.place'), <input id="ag-pl" className="input" value={a.executionPlace} onChange={(e) => set('executionPlace', e.target.value)} />)}
-            {field('ag-tot', t('cc.a.f.total'), <input id="ag-tot" className="input" inputMode="numeric" value={a.totalAmount || ''} onChange={(e) => set('totalAmount', Number(e.target.value.replace(/\D/g, '')) || 0)} />)}
+            {field('ag-tot', t('cc.a.f.totalIn', { c: cur }), <input id="ag-tot" className="input" inputMode="decimal" value={totalText} onChange={(e) => { setTotalText(e.target.value); set('totalAmount', toMinor(e.target.value, cur)); }} />)}
             {field('ag-n', t('cc.a.f.n'), <input id="ag-n" className="input" type="number" min={1} max={60} value={a.installments} onChange={(e) => set('installments', Number(e.target.value) || 1)} />)}
             {field('ag-s', t('cc.a.f.start'), <input id="ag-s" className="input" type="month" value={a.startMonth} onChange={(e) => set('startMonth', e.target.value)} />)}
             {field('ag-d', t('cc.a.f.day'), <input id="ag-d" className="input" type="number" min={1} max={28} value={a.issueDay} onChange={(e) => set('issueDay', Number(e.target.value) || 1)} />)}
@@ -105,9 +113,9 @@ export function AgreementForm({ brandId, initial, onDone }: { brandId: string; i
         <div className="col g8">
           <p className="label">{t('cc.a.preview')}</p>
           <ul className="col g4 t-sm">
-            {prev.rows.map((r) => <li key={r.number} className="row g12 wrap"><b style={{ minWidth: '6.5rem' }}>{r.number}</b><span style={{ minWidth: '10rem' }}>{monthName(r.billingMonth, lang)}</span><span style={{ minWidth: '7rem' }}>{cop(r.amount)}</span><span className="t-mute">{r.issueNow ? t('cc.a.now') : t('cc.a.on', { day: r.scheduledDate })}</span></li>)}
+            {prev.rows.map((r) => <li key={r.number} className="row g12 wrap"><b style={{ minWidth: '6.5rem' }}>{r.number}</b><span style={{ minWidth: '10rem' }}>{monthName(r.billingMonth, lang)}</span><span style={{ minWidth: '7rem' }}>{money(r.amount, cur)}</span><span className="t-mute">{r.issueNow ? t('cc.a.now') : t('cc.a.on', { day: r.scheduledDate })}</span></li>)}
           </ul>
-          <p className="t-sm w7" style={{ color: prev.matches ? undefined : 'var(--danger, #B42318)' }}>{t(prev.matches ? 'cc.a.sum' : 'cc.a.sumBad', { v: cop(prev.sum) })}</p>
+          <p className="t-sm w7" style={{ color: prev.matches ? undefined : 'var(--danger, #B42318)' }}>{t(prev.matches ? 'cc.a.sum' : 'cc.a.sumBad', { v: money(prev.sum, cur) })}</p>
         </div>
       )}
       {err && <p className="t-sm" role="alert">{err}</p>}

@@ -7,7 +7,7 @@ import { mailReady, sendWithAttachment } from '../mail/gmail.js';
 import { normalizePhone, sendText, waMeLink } from '../whatsapp.js';
 import { getContact, windowOpen } from '../wa/contacts.js';
 import { pdfUrl } from '../contracts/store.js';
-import { cop, monthLabel, pesosInWords, planOf, todayBogota } from './money.js';
+import { amountInWords, money, monthLabelL, planOf, todayBogota } from './money.js';
 import { renderBillingPdf, type PdfInput } from './pdf.js';
 import {
   agreementsCol, audit, docsCol, issuerRef, newToken, now, profileRef, readFile, saveFile, sha256,
@@ -54,7 +54,7 @@ export async function activate(brandId: string, agreementId: string, by: string)
     refs.push(d);
     const doc: BillingDoc = {
       agreementId, type: 'cuenta_cobro', number: r.number, index: r.index, of: r.of, billingMonth: r.billingMonth, scheduledDate: r.scheduledDate,
-      issueDate: null, amount: r.amount, amountWords: pesosInWords(r.amount), status: 'scheduled', payments: [], paid: 0, held: !a.autoSend,
+      issueDate: null, amount: r.amount, amountWords: amountInWords(r.amount, a.currency ?? 'COP'), currency: a.currency ?? 'COP', status: 'scheduled', payments: [], paid: 0, held: !a.autoSend,
     };
     batch.set(d, { ...doc, createdAt: now(), createdBy: by });
   }
@@ -102,8 +102,9 @@ export async function issueDoc(brandId: string, docId: string, by: string) {
   return { number: d.number, pdfHash: sha256(pdf) };
 }
 
-export const fileNameOf = (d: Pick<BillingDoc, 'type' | 'number'>, brand: string) =>
-  `${d.type === 'recibo' ? 'Recibo de pago' : 'Cuenta de cobro'} ${d.number} · ${brand}.pdf`;
+const kindOf = (d: Pick<BillingDoc, 'type' | 'currency'>) =>
+  d.currency === 'USD' ? (d.type === 'recibo' ? 'Payment receipt' : 'Invoice') : (d.type === 'recibo' ? 'Recibo de pago' : 'Cuenta de cobro');
+export const fileNameOf = (d: Pick<BillingDoc, 'type' | 'number' | 'currency'>, brand: string) => `${kindOf(d)} ${d.number} · ${brand}.pdf`;
 
 /** Email (PDF attached) to accounting + WhatsApp with a private link. Returns what went out and a wa.me fallback. */
 export async function sendDoc(brandId: string, docId: string, by: string) {
@@ -115,12 +116,17 @@ export async function sendDoc(brandId: string, docId: string, by: string) {
   const { token, hash } = newToken();
   await ref.update({ publicTokenHash: hash });
   const link = `${PUBLIC_API}/public/billing/${token}`;
-  const what = d.type === 'recibo' ? `el recibo de pago ${d.number}` : `la cuenta de cobro ${d.number} (${monthLabel(d.billingMonth)})`;
-  const body = `Hola. Te comparto ${what} de ${brand} por ${cop(d.amount)} COP.\n\nDescárgala aquí: ${link}\n\nNicolás Márquez · Braindy`;
+  const en = d.currency === 'USD';
+  const what = en
+    ? (d.type === 'recibo' ? `payment receipt ${d.number}` : `invoice ${d.number} (${monthLabelL(d.billingMonth, 'en')})`)
+    : (d.type === 'recibo' ? `el recibo de pago ${d.number}` : `la cuenta de cobro ${d.number} (${monthLabelL(d.billingMonth)})`);
+  const body = en
+    ? `Hello. Here is ${what} for ${brand}, ${money(d.amount, 'USD')}.\n\nDownload it here: ${link}\n\nNicolás Márquez · Braindy`
+    : `Hola. Te comparto ${what} de ${brand} por ${money(d.amount)}.\n\nDescárgala aquí: ${link}\n\nNicolás Márquez · Braindy`;
   const via: string[] = [];
   let waMe: string | null = null;
   if (p.accountingEmail && mailReady()) {
-    const ok = await sendWithAttachment(p.accountingEmail, `${d.type === 'recibo' ? 'Recibo de pago' : 'Cuenta de cobro'} ${d.number} · ${brand}`, body,
+    const ok = await sendWithAttachment(p.accountingEmail, `${kindOf(d)} ${d.number} · ${brand}`, body,
       { name: fileNameOf(d, brand), type: 'application/pdf', bytes: await readFile(d.pdfStoragePath) }).then(() => true, () => false);
     if (ok) via.push('email');
   }

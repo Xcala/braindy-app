@@ -1,8 +1,10 @@
-// End-to-end of cuentas de cobro through the real routes, on LOCAL EMULATORS ONLY (npm run test:billing).
-// The Blacky acceptance: 6 cuentas Sept 2026–Feb 2027 for 6.500.000 = 5 × 1.083.333 + 1.083.335; past and current
+﻿// End-to-end of cuentas de cobro through the real routes, on LOCAL EMULATORS ONLY (npm run test:billing).
+// The Blacky acceptance: 6 cuentas Sept 2026â€“Feb 2027 for 6.500.000 = 5 Ã— 1.083.333 + 1.083.335; past and current
 // months issue today, the rest wait; the 3.250.000 advance gives RC-0001; an issued cuenta only voids; the client
 // sees only their own brand. Throwaway users and data; never touches the real project.
 import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { Hono } from 'hono';
 import type { AuthEnv } from '../src/auth.js';
@@ -30,7 +32,7 @@ const call = async (token: string, method: string, path: string, body?: unknown)
   const res = await app.request(path, { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   return { status: res.status, json: await res.json().catch(() => null) };
 };
-const check = (label: string, ok: boolean, extra: unknown = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} · ${label}`, ok ? '' : JSON.stringify(extra)); if (!ok) process.exitCode = 1; };
+const check = (label: string, ok: boolean, extra: unknown = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} Â· ${label}`, ok ? '' : JSON.stringify(extra)); if (!ok) process.exitCode = 1; };
 
 const admin = await user('admin@e2e.local');
 const owner = await user('owner@e2e.local');
@@ -44,30 +46,30 @@ const A = admin.token, B = '/v1/admin/brands/blacky/invoicing';
 
 // Issuer + signature + client profile.
 let r = await call(A, 'PUT', '/v1/admin/issuers/nicolas', {
-  name: 'Nicolás Márquez Villegas', docType: 'CC', docNumber: '1.020.000.000', docCity: 'Bogotá', city: 'Bogotá',
-  bank: { bankName: 'Banco E2E', accountType: 'Ahorros', accountNumber: '000011112222', holder: 'Nicolás Márquez Villegas' },
+  name: 'NicolÃ¡s MÃ¡rquez Villegas', docType: 'CC', docNumber: '1.020.000.000', docCity: 'BogotÃ¡', city: 'BogotÃ¡',
+  bank: { bankName: 'Banco E2E', accountType: 'Ahorros', accountNumber: '000011112222', holder: 'NicolÃ¡s MÃ¡rquez Villegas' },
   legalDeclarations: ['No soy responsable de IVA.', 'Declaro que no he contratado trabajadores para esta labor.'], web: 'braindy.co',
 });
 check('issuer saved, account number masked', r.status === 200 && r.json.issuer.bank.accountNumber === '****2222', r);
 r = await call(A, 'PUT', '/v1/admin/issuers/nicolas/signature', { png: `data:image/png;base64,${wavePng().toString('base64')}` });
 check('signature saved', r.status === 200, r);
-r = await call(A, 'PUT', `${B}/profile`, { legalName: 'Blacky Meals SAS', taxId: '902038455-4', city: 'Bogotá', accountingEmail: '' });
+r = await call(A, 'PUT', `${B}/profile`, { legalName: 'Blacky Meals SAS', taxId: '902038455-4', city: 'BogotÃ¡', accountingEmail: '' });
 check('profile saved, NIT check digit valid', r.status === 200 && r.json.nitOk === true, r);
 
 // The Blacky agreement.
 const agreement = {
   title: 'Branding y Marketing Digital Blacky Meals', concept: 'Servicios de branding y marketing digital para Blacky Meals.',
-  packs: [{ name: 'Pack A · Marca', description: 'Estrategia e identidad.' }, { name: 'Pack C · Brand OS y pauta', description: 'Operación mensual y pauta.' }],
-  servicePeriod: { from: '2026-09', to: '2027-02' }, executionPlace: 'Bogotá', totalAmount: 6500000, installments: 6, startMonth: '2026-09', issueDay: 5,
+  packs: [{ name: 'Pack A Â· Marca', description: 'Estrategia e identidad.' }, { name: 'Pack C Â· Brand OS y pauta', description: 'OperaciÃ³n mensual y pauta.' }],
+  servicePeriod: { from: '2026-09', to: '2027-02' }, executionPlace: 'BogotÃ¡', totalAmount: 6500000, installments: 6, startMonth: '2026-09', issueDay: 5,
   numberingPrefix: 'BM-06', distributionNote: 'Distribuido en 6 cuentas mensuales', autoSend: false,
 };
 r = await call(A, 'POST', `${B}/preview`, agreement);
 const amounts = (r.json.rows as Array<{ amount: number }>).map((x) => x.amount);
-check('preview: 5 × 1.083.333 + 1.083.335 = 6.500.000', JSON.stringify(amounts) === JSON.stringify([1083333, 1083333, 1083333, 1083333, 1083333, 1083335]) && r.json.matches, r.json);
+check('preview: 5 Ã— 1.083.333 + 1.083.335 = 6.500.000', JSON.stringify(amounts) === JSON.stringify([1083333, 1083333, 1083333, 1083333, 1083333, 1083335]) && r.json.matches, r.json);
 r = await call(A, 'POST', `${B}/agreements`, agreement);
 const agId = r.json.id as string;
 r = await call(A, 'POST', `${B}/agreements/${agId}/activate`);
-check('activate: Sept–Nov issued, Dec–Feb scheduled', JSON.stringify(r.json.issued) === '["BM-06-01","BM-06-02","BM-06-03"]' && JSON.stringify(r.json.scheduled) === '["BM-06-04","BM-06-05","BM-06-06"]', r.json);
+check('activate: Septâ€“Nov issued, Decâ€“Feb scheduled', JSON.stringify(r.json.issued) === '["BM-06-01","BM-06-02","BM-06-03"]' && JSON.stringify(r.json.scheduled) === '["BM-06-04","BM-06-05","BM-06-06"]', r.json);
 r = await call(A, 'GET', B);
 const docs = r.json.docs as Array<{ id: string; number: string; status: string; issueDate: string | null; scheduledDate: string; amount: number; hasPdf: boolean }>;
 const today = todayBogota();
@@ -79,7 +81,7 @@ check('activating twice is refused', r.status === 409, r);
 // PDF of cuenta 3 (saved to look at).
 const snap = await db.doc('brands/blacky/billingDocs/BM-06-03').get();
 const pdf = await readFile(String(snap.get('pdfStoragePath')));
-writeFileSync(process.env.E2E_OUT ?? 'e2e-BM-06-03.pdf', pdf);
+writeFileSync(process.env.E2E_OUT ?? join(tmpdir(), 'e2e-BM-06-03.pdf'), pdf);
 check('PDF stored with its hash', pdf.length > 3000 && !!snap.get('pdfHash'));
 
 // Immutable: issuing again is refused; the client cannot see held cuentas yet.
@@ -97,12 +99,12 @@ check('another brand cannot download', r.status === 403, r);
 r = await call(owner.token, 'GET', B);
 check('the client cannot use admin routes', r.status === 403, r);
 
-// The 3.250.000 advance → c1–c3 paid, 1 peso on c4, recibo RC-0001.
+// The 3.250.000 advance â†’ c1â€“c3 paid, 1 peso on c4, recibo RC-0001.
 r = await call(A, 'POST', `${B}/payments`, { agreementId: agId, amount: 3250000, date: '2026-09-04', method: 'Transferencia Davivienda', receipt: true });
 check('advance gives recibo RC-0001', r.status === 200 && r.json.receipt?.number === 'RC-0001', r.json);
 r = await call(A, 'GET', B);
 const by = Object.fromEntries((r.json.docs as Array<{ number: string; status: string; paid: number }>).map((d) => [d.number, d]));
-check('c1–c3 paid, c4 has 1 peso and stays scheduled', ['BM-06-01', 'BM-06-02', 'BM-06-03'].every((n) => by[n].status === 'paid') && by['BM-06-04'].paid === 1 && by['BM-06-04'].status === 'scheduled', by);
+check('c1â€“c3 paid, c4 has 1 peso and stays scheduled', ['BM-06-01', 'BM-06-02', 'BM-06-03'].every((n) => by[n].status === 'paid') && by['BM-06-04'].paid === 1 && by['BM-06-04'].status === 'scheduled', by);
 
 // Void: refused with payments; allowed with a reason otherwise, number kept.
 r = await call(A, 'POST', `${B}/docs/BM-06-02/void`, { reason: 'prueba' });
@@ -116,6 +118,27 @@ check('voided, the number stays used', r.status === 200 && num.exists, r);
 // Public link (as sent to accounting): unknown token is refused.
 const pub = await app.request('/public/billing/abcdefghijklmnopqrstuvwxyz012345');
 check('a wrong public link is refused', pub.status === 404);
+
+// USA profile: USD in cents, English invoice, its own receipt numbering, same signature reused.
+r = await call(A, 'PUT', '/v1/admin/issuers/nicolas-us', {
+  name: 'NicolÃ¡s MÃ¡rquez Villegas', docType: 'EIN', docNumber: '00-0000000', city: 'Miami, FL', address: '100 E2E St, Miami, FL 33101',
+  bank: { bankName: 'E2E Bank', accountType: 'Checking', accountNumber: '000099998888', holder: 'NicolÃ¡s MÃ¡rquez Villegas', routingNumber: '000000000', swift: 'E2EBUS33' },
+});
+check('USA profile saved (EIN, account masked)', r.status === 200 && r.json.issuer.docType === 'EIN' && r.json.issuer.bank.accountNumber === '****8888', r);
+r = await call(A, 'PUT', '/v1/admin/issuers/nicolas-us/signature', { copyFrom: 'nicolas' });
+check('USA profile reuses the Colombian signature', r.status === 200, r);
+r = await call(A, 'GET', '/v1/admin/issuers');
+check('both profiles listed with their currency', r.json.issuers.map((x: { id: string; currency: string; issuer: { hasSignature: boolean } }) => `${x.id}:${x.currency}:${x.issuer?.hasSignature}`).join() === 'nicolas:COP:true,nicolas-us:USD:true', r.json);
+await call(A, 'PUT', '/v1/admin/brands/otra/invoicing/profile', { legalName: 'Otra Inc', taxId: '12-3456789' });
+r = await call(A, 'POST', '/v1/admin/brands/otra/invoicing/agreements', { ...agreement, issuerId: 'nicolas-us', title: 'Website', totalAmount: 650000, numberingPrefix: 'OT-01', executionPlace: 'United States' });
+const usId = r.json.id as string;
+r = await call(A, 'POST', `/v1/admin/brands/otra/invoicing/agreements/${usId}/activate`);
+check('USD agreement activates (3 issued, 3 scheduled)', r.json.issued?.length === 3 && r.json.scheduled?.length === 3, r.json);
+const us1 = (await db.doc('brands/otra/billingDocs/OT-01-01').get()).data()!;
+check('USD invoice: cents, currency and English words', us1.amount === 108333 && us1.currency === 'USD' && us1.amountWords === 'ONE THOUSAND EIGHTY-THREE AND 33/100 US DOLLARS', us1);
+writeFileSync(process.env.E2E_OUT_US ?? join(tmpdir(), 'e2e-OT-01-01.pdf'), await readFile(String(us1.pdfStoragePath)));
+r = await call(A, 'POST', '/v1/admin/brands/otra/invoicing/payments', { agreementId: usId, amount: 108333, date: today, method: 'ACH', receipt: true });
+check('USD payment gives its own receipt RC-US-0001', r.json.receipt?.number === 'RC-US-0001', r.json);
 
 function wavePng() {
   const crc = (b: Buffer) => { let c = ~0; for (const x of b) { c ^= x; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1; } return ~c >>> 0; };

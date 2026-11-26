@@ -3,10 +3,10 @@
 // Voiding keeps the cuenta and its number, with the reason.
 import { randomUUID } from 'node:crypto';
 import { db } from '../firebase.js';
-import { allocate, pesosInWords, todayBogota } from './money.js';
+import { allocate, amountInWords, todayBogota } from './money.js';
 import { renderBillingPdf } from './pdf.js';
 import { loadIssuer, loadProfile } from './issue.js';
-import { agreementsCol, audit, docsCol, issuerRef, now, readFile, saveFile, sha256, type Agreement, type BillingDoc, type Payment } from './store.js';
+import { agreementsCol, audit, docsCol, issuerRef, issuerStyle, now, readFile, saveFile, sha256, type Agreement, type BillingDoc, type Payment } from './store.js';
 
 const OPEN = ['issued', 'sent', 'overdue'];
 // An advance may reach cuentas that are not issued yet: they keep their schedule and come out already paid.
@@ -69,19 +69,20 @@ export async function issueReceipt(brandId: string, by: string, r: { paymentId: 
     tx.update(issuerRef(a.issuerId), { nextReceipt: next + 1 });
     return next;
   });
-  const number = `RC-${String(n).padStart(4, '0')}`;
+  const style = issuerStyle(issuer);
+  const number = `${style.receiptPrefix}-${String(n).padStart(4, '0')}`;
   await issuerRef(a.issuerId).collection('numbers').doc(number).create({ docPath: `brands/${brandId}/billingDocs/${number}`, at: now() });
   const amount = r.covers.reduce((x, c) => x + c.amount, 0);
   const issueDate = todayBogota();
   const signature = issuer.signatureStoragePath ? await readFile(issuer.signatureStoragePath).catch(() => null) : null;
   const pdf = await renderBillingPdf({
-    type: 'recibo', number, index: 1, of: 1, billingMonth: r.date.slice(0, 7), issueDate, amount, amountWords: pesosInWords(amount), issuer, client, signature,
+    type: 'recibo', number, index: 1, of: 1, billingMonth: r.date.slice(0, 7), issueDate, amount, amountWords: amountInWords(amount, style.currency), issuer, client, signature,
     title: a.title, concept: a.concept, packs: [], receipt: { method: r.method, paidOn: r.date, covers: r.covers },
   });
   const path = await saveFile(`brands/${brandId}/billing/${number}.pdf`, pdf, 'application/pdf');
   const doc: BillingDoc = {
     agreementId: first.agreementId, type: 'recibo', number, index: n, of: 0, billingMonth: r.date.slice(0, 7), scheduledDate: issueDate, issueDate,
-    amount, amountWords: pesosInWords(amount), status: 'issued', pdfStoragePath: path, pdfHash: sha256(pdf), covers: r.covers, payments: [], paid: amount, held: true,
+    amount, amountWords: amountInWords(amount, style.currency), currency: style.currency, status: 'issued', pdfStoragePath: path, pdfHash: sha256(pdf), covers: r.covers, payments: [], paid: amount, held: true,
   };
   await docsCol(brandId).doc(number).set({ ...doc, paymentId: r.paymentId, issuedAt: now(), issuedBy: by });
   await audit('billing_receipt_issued', brandId, by, { number, amount });

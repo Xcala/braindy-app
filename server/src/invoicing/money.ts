@@ -83,3 +83,38 @@ export function nitValid(taxId: string): boolean | null {
 
 /** ****3465 */
 export const mask = (s: string | null | undefined) => { const d = String(s ?? '').replace(/\s/g, ''); return d ? `****${d.slice(-4)}` : ''; };
+
+// ---- Several issuers: a Colombian one (COP, Spanish) and a US one (USD in cents, English). ----
+export type Currency = 'COP' | 'USD';
+export type Lang = 'es' | 'en';
+/** Amounts are integers in the smallest unit used here: pesos for COP, cents for USD. */
+export const money = (n: number, cur: Currency = 'COP') =>
+  cur === 'USD' ? `US$${(Math.round(n) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${cop(n)} COP`;
+
+const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+function under1000(n: number): string {
+  const h = Math.floor(n / 100), r = n % 100;
+  const rest = r < 20 ? ONES[r] : `${TENS[Math.floor(r / 10)]}${r % 10 ? `-${ONES[r % 10]}` : ''}`;
+  return [h ? `${ONES[h]} hundred` : '', rest].filter(Boolean).join(' ');
+}
+/** 1083 → «one thousand eighty-three». */
+export function englishNumber(n: number): string {
+  if (n === 0) return 'zero';
+  const parts: string[] = [];
+  for (const [v, w] of [[1e9, 'billion'], [1e6, 'million'], [1e3, 'thousand'], [1, '']] as const) {
+    const k = Math.floor(n / v) % 1000;
+    if (k) parts.push(`${under1000(k)}${w ? ` ${w}` : ''}`);
+  }
+  return parts.join(' ');
+}
+/** 108333 cents → «ONE THOUSAND EIGHTY-THREE AND 33/100 US DOLLARS». */
+export function dollarsInWords(cents: number): string {
+  const c = Math.round(cents), d = Math.floor(c / 100), r = c % 100;
+  return `${englishNumber(d).toUpperCase()} AND ${String(r).padStart(2, '0')}/100 US DOLLAR${d === 1 && r === 0 ? '' : 'S'}`;
+}
+export const amountInWords = (n: number, cur: Currency = 'COP') => (cur === 'USD' ? dollarsInWords(n) : pesosInWords(n));
+
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+export const monthLabelL = (month: string, lang: Lang = 'es') => { if (lang === 'es') return monthLabel(month); const [y, m] = ym(month); return `${MONTHS_EN[m - 1]} ${y}`; };
+export const dateLabelL = (ymd: string, lang: Lang = 'es') => { if (lang === 'es') return dateLabel(ymd); const [y, m, d] = ymd.split('-').map(Number); return `${MONTHS_EN[m - 1]} ${d}, ${y}`; };

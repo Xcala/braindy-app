@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addMonths, allocate, cop, monthLabel, nitCheckDigit, nitValid, pesosInWords, planOf, splitAmount } from './money.js';
+import { addMonths, allocate, cop, dollarsInWords, money, monthLabel, nitCheckDigit, nitValid, pesosInWords, planOf, splitAmount } from './money.js';
 
 test('amount in words (Colombia, M/CTE.)', () => {
   assert.equal(pesosInWords(1_083_333), 'UN MILLÓN OCHENTA Y TRES MIL TRESCIENTOS TREINTA Y TRES PESOS M/CTE.');
@@ -44,4 +44,13 @@ test('NIT check digit (DIAN)', () => {
   assert.equal(nitValid('902038455-4'), true);
   assert.equal(nitValid('902.038.455-5'), false);
   assert.equal(nitValid('902038455'), null);
+});
+
+test('USD: words, format and split in cents', () => {
+  assert.equal(dollarsInWords(108333), 'ONE THOUSAND EIGHTY-THREE AND 33/100 US DOLLARS');
+  assert.equal(dollarsInWords(100), 'ONE AND 00/100 US DOLLAR');
+  assert.equal(dollarsInWords(250000000), 'TWO MILLION FIVE HUNDRED THOUSAND AND 00/100 US DOLLARS');
+  assert.equal(money(650000, 'USD'), 'US$6,500.00');
+  assert.equal(money(1083333, 'COP'), '$1.083.333 COP');
+  assert.deepEqual(splitAmount(650000, 6), [108333, 108333, 108333, 108333, 108333, 108335]);
 });

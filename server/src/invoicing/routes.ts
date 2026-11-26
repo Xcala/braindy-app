@@ -15,7 +15,7 @@ import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
 import { claimPaid, confirmClaim, recordPayment, voidDoc } from './payments.js';
 import { extractSample } from './importSample.js';
 import {
-  DEFAULT_ISSUER, agreementProblems, agreementsCol, audit, docsCol, issuerRef, now, pickAgreement, pickIssuer, pickProfile, profileRef, saveFile, sha256,
+  DEFAULT_ISSUER, ISSUERS, agreementProblems, isIssuerId, issuerStyle, agreementsCol, audit, docsCol, issuerRef, now, pickAgreement, pickIssuer, pickProfile, profileRef, saveFile, sha256,
   type BillingDoc, type Issuer,
 } from './store.js';
 
@@ -25,7 +25,7 @@ const err = (e: unknown) => { const m = e instanceof Error ? e.message : String(
 export function publicDoc(id: string, d: BillingDoc & Record<string, unknown>) {
   return {
     id, type: d.type, number: d.number, index: d.index, of: d.of, billingMonth: d.billingMonth, scheduledDate: d.scheduledDate, issueDate: d.issueDate,
-    amount: d.amount, amountWords: d.amountWords, status: d.status, held: !!d.held, paid: d.paid ?? 0, hasPdf: !!d.pdfStoragePath, sentVia: d.sentVia ?? [],
+    amount: d.amount, amountWords: d.amountWords, currency: d.currency ?? 'COP', status: d.status, held: !!d.held, paid: d.paid ?? 0, hasPdf: !!d.pdfStoragePath, sentVia: d.sentVia ?? [],
     voidReason: d.voidReason ?? null, covers: (d.covers ?? []).map((c) => ({ number: c.number, amount: c.amount })), agreementId: d.agreementId,
     pendingProof: !!d.pendingProof,
     payments: (d.payments ?? []).map((p) => ({ id: p.id, date: p.date, amount: p.amount, method: p.method, status: p.status, hasProof: !!p.proofStoragePath })),
@@ -55,15 +55,26 @@ adminInvoicing.use('/brands/:brandId/invoicing/*', adminOnly);
 adminInvoicing.use('/brands/:brandId/invoicing', adminOnly);
 adminInvoicing.use('/invoicing/*', adminOnly);
 
+/** Both profiles (Colombia and USA) with what each charges in. */
+adminInvoicing.get('/issuers', async (c) => {
+  const list = await Promise.all((Object.keys(ISSUERS) as Array<keyof typeof ISSUERS>).map(async (id) => {
+    const s = await issuerRef(id).get();
+    return { id, country: ISSUERS[id], ...issuerStyle({ country: ISSUERS[id] }), issuer: s.exists ? issuerView(s.data() as Issuer) : null };
+  }));
+  return c.json({ issuers: list });
+});
 adminInvoicing.get('/issuers/:id', async (c) => {
+  if (!isIssuerId(c.req.param('id'))) return c.json({ error: 'not_found' }, 404);
   const s = await issuerRef(c.req.param('id')).get();
   return c.json({ issuer: s.exists ? issuerView(s.data() as Issuer) : null });
 });
 adminInvoicing.put('/issuers/:id', async (c) => {
-  const ref = issuerRef(c.req.param('id'));
+  const id = c.req.param('id');
+  if (!isIssuerId(id)) return c.json({ error: 'not_found' }, 404);
+  const ref = issuerRef(id);
   const prev = ((await ref.get()).data() ?? {}) as Partial<Issuer>;
   const b = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
-  const next = pickIssuer(b, prev);
+  const next = pickIssuer(b, prev, ISSUERS[id]);
   // The account number comes back masked: an empty or masked value keeps the stored one.
   if (!next.bank.accountNumber || String((b.bank as Record<string, unknown> | undefined)?.accountNumber ?? '').includes('*')) next.bank.accountNumber = prev.bank?.accountNumber ?? '';
   if (!next.name || !next.docNumber) return c.json({ error: 'name_and_document' }, 400);
@@ -74,7 +85,17 @@ adminInvoicing.put('/issuers/:id', async (c) => {
 /** Signature (PNG with transparent background, drawn or uploaded) or logo. */
 adminInvoicing.put('/issuers/:id/:kind{signature|logo}', async (c) => {
   const { id, kind } = c.req.param();
-  const png = signaturePng((await c.req.json<{ png?: string }>().catch(() => ({} as { png?: string }))).png);
+  if (!isIssuerId(id)) return c.json({ error: 'not_found' }, 404);
+  const body = await c.req.json<{ png?: string; copyFrom?: string }>().catch(() => ({} as { png?: string; copyFrom?: string }));
+  // Same person, two profiles: the signature (or logo) of the other profile can be reused as is.
+  if (body.copyFrom && isIssuerId(body.copyFrom) && body.copyFrom !== id) {
+    const from = (await issuerRef(body.copyFrom).get()).get(`${kind}StoragePath`) as string | undefined;
+    if (!from) return c.json({ error: 'nothing_to_copy' }, 404);
+    await issuerRef(id).set({ [`${kind}StoragePath`]: from, updatedAt: now() }, { merge: true });
+    await audit(`billing_issuer_${kind}`, '-', c.get('user').uid, { issuerId: id, copiedFrom: body.copyFrom });
+    return c.json({ ok: true });
+  }
+  const png = signaturePng(body.png);
   if (!png) return c.json({ error: 'bad_png' }, 400);
   const path = await saveFile(`issuers/${id}/${kind}-${Date.now()}.png`, png, 'image/png');
   await issuerRef(id).set({ [`${kind}StoragePath`]: path, updatedAt: now() }, { merge: true });
@@ -118,12 +139,15 @@ adminInvoicing.post('/brands/:brandId/invoicing/preview', async (c) => {
   const rows = problems.length ? [] : planOf(a);
   return c.json({ rows, problems, sum: rows.reduce((n, r) => n + r.amount, 0), matches: rows.reduce((n, r) => n + r.amount, 0) === a.totalAmount });
 });
+/** Who charges a project: Colombia (COP) by default, or the USA profile (USD, English). */
+const issuerOf = (b: Record<string, unknown>) => { const id = isIssuerId(b.issuerId) ? b.issuerId : DEFAULT_ISSUER; return { issuerId: id, currency: issuerStyle({ country: ISSUERS[id] }).currency }; };
 adminInvoicing.post('/brands/:brandId/invoicing/agreements', async (c) => {
-  const a = pickAgreement(await c.req.json<Record<string, unknown>>().catch(() => ({})));
+  const body = await c.req.json<Record<string, unknown>>().catch(() => ({} as Record<string, unknown>));
+  const a = pickAgreement(body);
   const problems = agreementProblems(a);
   if (problems.length) return c.json({ error: 'incomplete', problems }, 400);
   const ref = agreementsCol(c.req.param('brandId')).doc();
-  await ref.set({ ...a, issuerId: DEFAULT_ISSUER, currency: 'COP', roundingRule: 'remainder_last', templateId: 'braindy', status: 'draft', createdAt: now(), createdBy: c.get('user').uid });
+  await ref.set({ ...a, ...issuerOf(body), roundingRule: 'remainder_last', templateId: 'braindy', status: 'draft', createdAt: now(), createdBy: c.get('user').uid });
   return c.json({ id: ref.id });
 });
 adminInvoicing.put('/brands/:brandId/invoicing/agreements/:id', async (c) => {
@@ -140,7 +164,7 @@ adminInvoicing.put('/brands/:brandId/invoicing/agreements/:id', async (c) => {
   const a = pickAgreement(body);
   const problems = agreementProblems(a);
   if (problems.length) return c.json({ error: 'incomplete', problems }, 400);
-  await ref.update({ ...a, updatedAt: now() });
+  await ref.update({ ...a, ...issuerOf(body), updatedAt: now() });
   return c.json({ ok: true });
 });
 adminInvoicing.post('/brands/:brandId/invoicing/agreements/:id/activate', async (c) => {

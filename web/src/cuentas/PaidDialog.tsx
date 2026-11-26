@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { cop, cuentasApi, errKey, readAsDataUrl, type Cuenta } from './api';
+import { cuentasApi, errKey, fromMinor, money, readAsDataUrl, toMinor, type Cuenta } from './api';
 
 /** The client's «Ya pagué»: proof + date + amount. NickMark confirms it, then the recibo goes out. */
 export function PaidDialog({ brandId, doc, onClose }: { brandId: string; doc: Cuenta; onClose: () => void }) {
   const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA'));
-  const [amount, setAmount] = useState(String(doc.amount - doc.paid));
+  const [amount, setAmount] = useState(fromMinor(doc.amount - doc.paid, doc.currency));
   const [method, setMethod] = useState('Transferencia');
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
   const [err, setErr] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function PaidDialog({ brandId, doc, onClose }: { brandId: string; doc: Cu
     if (!file) return;
     setState('busy'); setErr(null);
     try {
-      await cuentasApi.paid(brandId, doc.id, { proof: await readAsDataUrl(file), date, amount: Number(amount.replace(/\D/g, '')) || 0, method });
+      await cuentasApi.paid(brandId, doc.id, { proof: await readAsDataUrl(file), date, amount: toMinor(amount, doc.currency), method });
       setState('done');
     } catch (x) { setErr(t(errKey(x) as never)); setState('idle'); }
   }
@@ -26,7 +26,7 @@ export function PaidDialog({ brandId, doc, onClose }: { brandId: string; doc: Cu
     <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <form className="modal w-full max-w-[28rem] col g12" role="dialog" aria-modal="true" aria-labelledby="paid-h" onSubmit={submit}>
         <h2 className="h2" id="paid-h">{t('cc.paid.title', { n: doc.number })}</h2>
-        <p className="t-sm t-mute">{cop(doc.amount)}</p>
+        <p className="t-sm t-mute">{money(doc.amount, doc.currency)}</p>
         {state === 'done' ? (
           <>
             <p className="t-sm" role="status">{t('cc.paid.done')}</p>
