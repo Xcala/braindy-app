@@ -47,8 +47,27 @@ export async function syncAdStats(brandId: string, platform: string, input: AdIn
   await ref.set({
     platform: p, account: str(input.account ?? prev.account, 60), currency: str(input.currency ?? prev.currency ?? 'USD', 3).toUpperCase(),
     daily, campaigns, source: 'metricool', updatedAt: FieldValue.serverTimestamp(),
+    ...(prev.outlook ? { outlook: prev.outlook } : {}),
   });
   return { days: daily.length, from: daily[0]?.d ?? '', to: daily.at(-1)?.d ?? '', periods: Object.keys(campaigns) };
+}
+
+export interface OutlookInput { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: Array<{ name: string; low: number; high: number; source?: string }> }
+
+/** Sets (or clears, with null) how a platform's campaign reads against its three scenarios and public industry references. The ads doc must exist. */
+export async function setAdOutlook(brandId: string, platform: string, o: OutlookInput | null) {
+  const ref = db.doc(`brands/${brandId}/adStats/${platform.toLowerCase()}`);
+  if (!(await ref.get()).exists) throw new Error('Primero sube los anuncios de esa plataforma (braindy_ad_stats_sync).');
+  if (!o) { await ref.update({ outlook: FieldValue.delete() }); return 'sin lectura'; }
+  const [acid, mid, best] = [num(o.acid), num(o.mid), num(o.best)];
+  if (acid == null || mid == null || best == null || acid === best || (mid - acid) * (best - mid) <= 0) throw new Error('Los tres escenarios deben ir en orden: ácido, medio, óptimo (el medio queda entre los otros dos).');
+  const since = /^\d{4}-\d{2}-\d{2}$/.test(o.since ?? '') ? o.since : '';
+  await ref.update({ outlook: {
+    metric: o.metric, label: str(o.label, 80), since, acid, mid, best, note: str(o.note, 500),
+    refs: (o.refs ?? []).filter((r) => r.name && num(r.low) != null && num(r.high) != null).slice(0, 5)
+      .map((r) => ({ name: str(r.name, 120), low: Math.min(num(r.low)!, num(r.high)!), high: Math.max(num(r.low)!, num(r.high)!), source: str(r.source, 160) })),
+  } });
+  return `ácido ${acid} · medio ${mid} · óptimo ${best}`;
 }
 
 /** Replaces one sales source's months (merged by month: a later report of the same month wins). */
@@ -102,6 +121,29 @@ export function registerAdTools(server: McpServer, app: string) {
     const name = await requireBrand(brandId);
     const r = await syncAdStats(brandId, platform, input as AdInput);
     return `${name} · anuncios ${platform}: ${r.days} días (${r.from} a ${r.to}) · campañas de ${r.periods.join(', ') || '—'}.\nVer: ${app}/report`;
+  }));
+  server.registerTool('braindy_ad_outlook', {
+    title: 'Lectura de la campaña frente a escenarios y referentes',
+    description: 'Sets the card «Cómo va la campaña» in Results › Ads for one platform: the campaign\'s number since it started (cost per result, cost per click or click rate) placed on the three scenarios it was projected with '
+      + '(acid = tough, mid, best) and against public industry references (each a low–high range with its source). The app shows how many days it has run, warns that the first week is still learning, and always says it is a general read that commits nothing. '
+      + 'Money in the ad account\'s currency; ctr as a fraction (0.012 = 1.2%). References must be real published figures with their source and year; never invent them. Send clear=true to remove it. '
+      + 'Use when Nicolas says "pon los escenarios de la pauta", "compara la campaña con el mercado".',
+    inputSchema: {
+      brandId: z.string(),
+      platform: z.enum(AD_PLATFORMS),
+      clear: z.boolean().optional(),
+      metric: z.enum(['cpr', 'cpc', 'ctr']).optional(),
+      label: z.string().max(80).optional().describe('What the number is, in the brand language: "Costo por conversación de WhatsApp"'),
+      since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('First day of the campaign'),
+      acid: z.number().optional(), mid: z.number().optional(), best: z.number().optional(),
+      note: z.string().max(500).optional().describe('Two or three plain sentences reading the number, in the brand language'),
+      refs: z.array(z.object({ name: z.string(), low: z.number(), high: z.number(), source: z.string().optional() })).max(5).optional(),
+    },
+  }, run(async ({ brandId, platform, clear, ...o }) => {
+    const name = await requireBrand(brandId);
+    if (!clear && (!o.metric || o.acid == null || o.mid == null || o.best == null)) throw new Error('Faltan metric, acid, mid y best.');
+    const r = await setAdOutlook(brandId, platform, clear ? null : (o as OutlookInput));
+    return `${name} · lectura de ${platform}: ${r}.\nVer: ${app}/report`;
   }));
   server.registerTool('braindy_sales_stats_sync', {
     title: 'Subir las ventas de un portal (DoorDash…) a Braindy App',
