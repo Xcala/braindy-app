@@ -5,6 +5,7 @@ import type { NetStats } from './useSocialStats';
 import type { AdDay, AdKey, AdStats, Campaign } from './useAdStats';
 import { change, inRange, rangeOf, type Period, type Range } from './socialMath';
 import { SocialChart } from './SocialChart';
+import { AdOutlook } from './AdOutlook';
 
 type Kpi = 'spend' | 'results' | 'cpr' | 'reach' | 'impressions' | 'clicks' | 'ctr' | 'cpc';
 const KPIS: Kpi[] = ['spend', 'results', 'cpr', 'clicks', 'ctr', 'cpc', 'impressions'];
@@ -36,7 +37,7 @@ function useFmt(currency: string) {
   const { lang } = useI18n();
   const locale = lang === 'es' ? 'es-CO' : 'en-US';
   return (k: Kpi, v: number | null) => v == null ? '—'
-    : MONEY.has(k) ? new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: v < 10 ? 2 : 0 }).format(v)
+    : MONEY.has(k) ? new Intl.NumberFormat(locale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol', maximumFractionDigits: v < 10 ? 2 : 0 }).format(v)
     : k === 'ctr' ? new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(v)
     : new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(v);
 }
@@ -54,13 +55,13 @@ export function AdKpis({ stats, period, short }: { stats: AdStats; period: Perio
   const partial = !!camps?.some((c) => (c.spend ?? 0) > 0 && c.results == null);
   const kpis = (short ? SHORT : KPIS).filter((k) => value(k, now) != null && (k !== 'results' || (now?.results ?? 0) > 0) && !(partial && (k === 'results' || k === 'cpr')));
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
       {kpis.map((k) => {
         const v = value(k, now), pct = change(v, value(k, before));
         return (
-          <div key={k} className="card col g4">
-            <span className="t-sm t-mute w7">{t(`ads.k.${k}` as StringKey)}</span>
-            <span className="h1">{fmt(k, v)}</span>
+          <div key={k} className="card kpi col">
+            <span className="t-sm t-mute w7">{t(`ads.k.${k}` as StringKey)}{k === 'spend' ? ` · ${stats.currency}` : ''}</span>
+            <span className="h1" title={fmt(k, v)}>{fmt(k, v)}</span>
             <span className="t-xs t-mute">{pct != null ? t('soc.vsPrev', { n: `${pct >= 0 ? '+' : ''}${pct}%` }) : t(`ads.h.${k}` as StringKey)}</span>
           </div>
         );
@@ -100,6 +101,7 @@ export function AdsBody({ stats, period }: { stats: AdStats; period: Period }) {
   return (
     <>
       <AdKpis stats={stats} period={period} />
+      <AdOutlook stats={stats} />
       <SocialChart key={`ads-${period}`} net={{ daily: asNet(stats) }} range={cur} keys={keys} metrics={CHART} prefix="ads.k" />
       <section className="card col g8">
         <div className="col g4"><h2 className="h3">{t('ads.campaigns')}</h2><p className="t-xs t-mute">{t('ads.campaignsSub', { p: label })}</p></div>

@@ -5,7 +5,9 @@ import { db } from '../lib/firebase';
 export type AdKey = 'spend' | 'impressions' | 'reach' | 'clicks' | 'results' | 'convValue';
 export type AdDay = { d: string } & Partial<Record<AdKey, number | null>>;
 export type Campaign = { id: string; name: string; objective: string; status: string; resultLabel: string } & Partial<Record<AdKey, number | null>>;
-export type AdStats = { platform: string; currency: string; daily: AdDay[]; campaigns: Partial<Record<string, Campaign[]>>; updatedAt: Date | null };
+/** How the campaign reads against its three projected scenarios and public industry references (set by Nicolas; a general read, never a promise). */
+export type Outlook = { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: { name: string; low: number; high: number; source?: string }[] };
+export type AdStats = { platform: string; currency: string; daily: AdDay[]; campaigns: Partial<Record<string, Campaign[]>>; outlook?: Outlook | null; updatedAt: Date | null };
 /** cost = net (after the portal credit); grossCost and credit when the portal shows them. */
 export type Promo = { name: string; kind?: string; dates?: string; orders?: number | null; sales?: number | null; cost?: number | null; grossCost?: number | null; credit?: number | null };
 export type SalesMonth = { month: string; period?: string; note?: string; readAt?: string; insights?: string[]; costNotes?: string[]; promos?: Promo[] }
@@ -23,7 +25,7 @@ export function useAdStats(brandId: string | undefined, enabled: boolean) {
     if (!brandId || !enabled) { setAds([]); setSales([]); return; }
     const a = onSnapshot(collection(db, 'brands', brandId, 'adStats'), (s) => setAds(s.docs.map((d) => {
       const x = d.data();
-      return { platform: d.id, currency: x.currency || 'USD', daily: (x.daily ?? []) as AdDay[], campaigns: x.campaigns ?? {}, updatedAt: at(x) };
+      return { platform: d.id, currency: x.currency || 'USD', daily: (x.daily ?? []) as AdDay[], campaigns: x.campaigns ?? {}, outlook: (x.outlook ?? null) as Outlook | null, updatedAt: at(x) };
     }).filter((x) => x.daily.some(ran))), () => setAds([]));
     const b = onSnapshot(collection(db, 'brands', brandId, 'salesStats'), (s) => setSales(s.docs.map((d) => {
       const x = d.data();
