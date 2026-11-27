@@ -65,6 +65,20 @@ contracts.get('/brands/:brandId/contracts/:id/pdf', async (c) => {
   return c.json({ url: await pdfUrl(snap.get('pdf.storagePath'), snap.get('pdf.fileName')) });
 });
 
+/** An otrosí's PDF (stored on the contract as amendments[]): same people as the contract itself. */
+contracts.get('/brands/:brandId/contracts/:id/amendments/:aid/pdf', async (c) => {
+  const { brandId, id, aid } = c.req.param();
+  const user = c.get('user');
+  const access = await brandAccess(user.uid, brandId);
+  const snap = await contractRef(brandId, id).get();
+  const a = ((snap.get('amendments') ?? []) as Array<{ id: string; storagePath: string; fileName: string }>).find((x) => x.id === aid);
+  if (!snap.exists || !a) return c.json({ error: 'not_found' }, 404);
+  const signer = String(user.email ?? '').toLowerCase() === String(snap.get('signer.email') ?? '').toLowerCase();
+  if (!access.admin && !(access.member && (signer || access.sections.includes('billing')))) return c.json({ error: 'forbidden' }, 403);
+  await db.collection('audit').add({ type: 'contract_amendment_download', brandId, contractId: id, amendmentId: aid, by: user.uid, at: now() });
+  return c.json({ url: await pdfUrl(a.storagePath, a.fileName) });
+});
+
 /** The brand ticks (or unticks) an item of its kickoff checklist. */
 contracts.post('/brands/:brandId/kickoff/:itemId', async (c) => {
   const { brandId, itemId } = c.req.param();

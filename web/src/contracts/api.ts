@@ -17,6 +17,7 @@ export const contractsApi = {
   saveSchedule: (brandId: string, schedule: Schedule) => api(`${a(brandId)}/schedule`, post({ schedule })),
   sign: (brandId: string, id: string, body: { client: Omit<ClientData, 'correo'>; signature: string; consent: boolean; textHash: string }) =>
     api<{ textHash: string }>(`${b(brandId)}/contracts/${id}/sign`, post(body)),
+  amendmentUrl: (brandId: string, id: string, aid: string) => api<{ url: string }>(`${b(brandId)}/contracts/${id}/amendments/${aid}/pdf`),
   pdfUrl: (brandId: string, id: string) => api<{ url: string }>(`${b(brandId)}/contracts/${id}/pdf`),
   tick: (brandId: string, itemId: string, done: boolean) => api(`${b(brandId)}/kickoff/${itemId}`, post({ done })),
   uploadSigned: (brandId: string, body: { pdf: string; fileName: string; title: string; signedOn: string; clientName: string; clientRole: string }) =>
