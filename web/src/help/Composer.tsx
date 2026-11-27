@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { upload } from '../assets/fileApi';
 import type { AttachedFile } from '../requests/types';
 import { markStep } from './firstSteps';
+import { filesFrom, hasFiles } from './clipboardFiles';
 
 type Rec = { start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean; continuous: boolean; onresult: ((e: { resultIndex: number; results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
 const SR = (): (new () => Rec) | null => {
@@ -26,10 +27,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
   const [uploading, setUploading] = useState(0);
   const [error, setError] = useState(false);
   const [listening, setListening] = useState(false);
+  const [over, setOver] = useState(false);
+  // Small local previews of the photos and videos attached (from the file itself, nothing uploaded twice).
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  const clearThumbs = () => setThumbs((m) => { Object.values(m).forEach((u) => URL.revokeObjectURL(u)); return {}; });
   const rec = useRef<Rec | null>(null);
   const pick = useRef<HTMLInputElement>(null);
   useEffect(() => () => rec.current?.abort(), []);
-  useEffect(() => { setFiles([]); setText(''); }, [brandId]);
+  useEffect(() => { setFiles([]); setText(''); clearThumbs(); }, [brandId]);
   // The «What I can do» cards start a tool here, so the person learns it by using it.
   const dictateRef = useRef<(auto?: boolean) => void>(() => undefined);
   useEffect(() => {
@@ -47,11 +52,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
     if (busy || uploading || (!text.trim() && !files.length)) return;
     rec.current?.stop();
     onSend(text.trim() || t('help.filesOnly'), files);
-    setText(''); setFiles([]);
+    setText(''); setFiles([]); clearThumbs();
     const box = (ref as React.RefObject<HTMLTextAreaElement> | null)?.current; if (box) box.style.height = '';
   };
 
-  async function add(list: FileList | null) {
+  async function add(list: FileList | File[] | null) {
     const chosen = [...(list ?? [])].slice(0, MAX_FILES - files.length);
     if (!chosen.length) return;
     setError(false); setUploading((n) => n + chosen.length);
@@ -59,13 +64,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
       try {
         const assetId = await upload(brandId, f, () => undefined);
         setFiles((x) => [...x, { assetId, name: f.name, size: f.size, contentType: f.type || 'application/octet-stream' }]);
+        if (/^(image|video)\//.test(f.type)) setThumbs((m) => ({ ...m, [assetId]: URL.createObjectURL(f) }));
         if (f.type.startsWith('image/')) markStep('photo');
       } catch { setError(true); } finally { setUploading((n) => n - 1); }
     }));
   }
 
   const sendRef = useRef<(said: string) => void>(() => undefined);
-  sendRef.current = (said) => { if (busy || uploading) return; onSend(said, files); setText(''); setFiles([]); };
+  sendRef.current = (said) => { if (busy || uploading) return; onSend(said, files); setText(''); setFiles([]); clearThumbs(); };
   function dictate(auto = false) {
     const Ctor = SR();
     if (!Ctor) return;
@@ -87,11 +93,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
   dictateRef.current = (auto?: boolean) => dictate(auto === true);
 
   return (
-    <form className="help-form" onSubmit={(e) => { e.preventDefault(); send(); }}>
+    <form className={`help-form${over ? ' is-drop' : ''}`} onSubmit={(e) => { e.preventDefault(); send(); }}
+      onDragOver={(e) => { if (hasFiles(e.dataTransfer)) { e.preventDefault(); setOver(true); } }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(false); }}
+      onDrop={(e) => { if (!hasFiles(e.dataTransfer)) return; e.preventDefault(); setOver(false); void add(filesFrom(e.dataTransfer, lang)); }}>
+      {over && <div className="help-drop" aria-hidden="true">{t('help.dropHere')}</div>}
       {(files.length > 0 || uploading > 0 || error) && (
         <div className="help-files">
           {files.map((f) => (
-            <span key={f.assetId} className="chip help-file">{f.name}
+            <span key={f.assetId} className="chip help-file">
+              {thumbs[f.assetId] && (f.contentType.startsWith('video/')
+                ? <video className="help-thumb" src={thumbs[f.assetId]} muted playsInline preload="metadata" aria-hidden="true" />
+                : <img className="help-thumb" src={thumbs[f.assetId]} alt="" />)}
+              <span className="help-fname">{f.name}</span>
               <button type="button" aria-label={t('help.fileRemove', { name: f.name })} onClick={() => setFiles((x) => x.filter((y) => y.assetId !== f.assetId))}>×</button>
             </span>
           ))}
@@ -101,7 +115,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, { brandId: string; busy:
       )}
       <textarea ref={ref} className="help-input" rows={1} value={text} maxLength={1500} placeholder={listening ? t('help.listening') : ph ?? t('help.ph')} aria-label={t('help.ph')}
         onChange={(e) => { setText(e.target.value); grow(e.currentTarget); }}
-        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }} />
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+        onPaste={(e) => { const got = filesFrom(e.clipboardData, lang); if (got.length) { e.preventDefault(); void add(got); } }} />
       <div className="help-bar">
         <button type="button" className="help-tool" data-tour="help-attach" onClick={() => pick.current?.click()} disabled={files.length >= MAX_FILES} aria-label={t('help.attach')} title={t('help.attach')}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>

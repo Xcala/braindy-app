@@ -293,3 +293,9 @@ html[data-theme="dark"] .help-dbtn.is-voice,html[data-theme="dark"] .help-x.is-v
 
 /* Phones: the full-screen chat fits the part of the screen the keyboard leaves (useKeyboardFit). */
 @media (max-width:767px){.help-panel:not(.is-dock){top:var(--vv-top,0);bottom:auto;height:var(--vv-h,100dvh)}}
+/* Paste or drop photos and videos into the message box. */
+.help-form{position:relative}
+.help-form.is-drop{outline:2px dashed var(--azul);outline-offset:-2px}
+.help-drop{position:absolute;inset:0;z-index:2;display:grid;place-items:center;border-radius:inherit;background:color-mix(in srgb,var(--azul) 10%,var(--white));color:var(--azul);font:700 0.9375rem/1.2 var(--f-text);pointer-events:none}
+.help-thumb{width:1.75rem;height:1.75rem;border-radius:0.375rem;object-fit:cover;flex:none;background:var(--line)}
+.help-fname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
