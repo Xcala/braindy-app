@@ -15,7 +15,7 @@ export type BrandCost = {
   tokens: number; pieces: number | null; perPiece: number | null; plan: Plan | null;
 };
 export type ModelCost = { key: string; model: string; source: Usage['source']; input: number; output: number; cacheW: number; cacheR: number; usd: number; share: number };
-export type Costs = { brands: BrandCost[]; models: ModelCost[]; real: number; eq: number; api: number; tokens: number; cachePct: number; months: number };
+export type Costs = { brands: BrandCost[]; models: ModelCost[]; real: number; eq: number; api: number; tokens: number; cachePct: number; months: number; failed?: boolean };
 
 const tokensOf = (u: Usage) => u.input + u.output + u.cacheWrite5m + u.cacheWrite1h + u.cacheRead;
 
@@ -28,8 +28,9 @@ async function piecesIn(brandId: string, months: string[]) {
   return s.size;
 }
 
-/** Admin only: every AI cost of a period (whole months, up to 30), per brand and per model. Rules let only the admin read usage. */
-export function useCosts(period: string[]): Costs | null {
+/** Admin only: every AI cost of a period (whole months, up to 30), per brand and per model. Rules let only the admin read usage.
+ *  A failed read comes back with failed: true (never zeros that look like "no spend"); bump `retry` to read again. */
+export function useCosts(period: string[], retry = 0): Costs | null {
   const key = [...period].sort().join(',');
   const [costs, setCosts] = useState<Costs | null>(null);
   useEffect(() => {
@@ -82,8 +83,8 @@ export function useCosts(period: string[]): Costs | null {
         brands: brands.sort((a, b) => b.real - a.real), models: models.sort((a, b) => b.usd - a.usd),
         real, eq: sessionsEq, api: brands.reduce((n, b) => n + b.api, 0), tokens, cachePct: tokens ? Math.round((cacheR / tokens) * 100) : 0, months: months.length,
       });
-    })().catch(() => live && setCosts({ brands: [], models: [], real: 0, eq: 0, api: 0, tokens: 0, cachePct: 0, months: months.length }));
+    })().catch(() => live && setCosts({ brands: [], models: [], real: 0, eq: 0, api: 0, tokens: 0, cachePct: 0, months: months.length, failed: true }));
     return () => { live = false; };
-  }, [key]);
+  }, [key, retry]);
   return costs;
 }

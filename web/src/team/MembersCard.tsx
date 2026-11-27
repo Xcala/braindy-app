@@ -5,15 +5,15 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { cancelInvite, inviteByPhone, inviteMember, listInvites, removeMember, updateMember } from './membersApi';
-import { MemberWhatsApp, SentNote, deliverLink } from './MemberWhatsApp';
-import { MemberAccess, profilePatch } from './MemberAccess';
+import { SentNote, deliverLink } from './MemberWhatsApp';
+import { profilePatch } from './MemberAccess';
+import { MemberRow, hasName, type Member } from './MemberRow';
 import { BrandSections } from './BrandSections';
 import { profileOf } from './sections';
 import { sendAccessLink } from '../auth/emailLink';
 import { useBrands } from '../brands/BrandProvider';
 import { Scan } from '../components/Scan';
 
-type Member = { uid: string; email?: string; name?: string; role: 'client_owner' | 'client_member'; canApprove?: boolean; sections?: string[] | null };
 
 /** Members of one brand: role, approval rights, remove, invite by email (design 11 + 20 · team and approvers). */
 export function MembersCard({ brandId, brandName }: { brandId: string; brandName: string }) {
@@ -33,7 +33,7 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
   const [removing, setRemoving] = useState<Member | null>(null);
 
   useEffect(() => onSnapshot(collection(db, 'brands', brandId, 'members'),
-    (s) => setMembers(s.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member).sort((a, b) => (a.role === b.role ? String(a.email).localeCompare(String(b.email)) : a.role === 'client_owner' ? -1 : 1))),
+    (s) => setMembers(s.docs.map((d) => ({ uid: d.id, ...d.data() }) as Member).sort((a, b) => (a.role === b.role ? (hasName(b) ? 1 : 0) - (hasName(a) ? 1 : 0) || String(a.name ?? a.email).localeCompare(String(b.name ?? b.email)) : a.role === 'client_owner' ? -1 : 1))),
     () => setMembers([])), [brandId]);
   const loadInvites = useCallback(() => { listInvites(brandId).then(setInvites).catch(() => setInvites([])); }, [brandId]);
   useEffect(loadInvites, [loadInvites]);
@@ -60,57 +60,11 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
     } catch { setMsg({ ok: false, text: t('team.inviteError') }); }
   }
 
+  // Invite on top, then the people (name first, one line each), then the invitations not used yet (audit C5).
   return (
     <div className="card col g16">
-      <div className="row between"><h3 className="h3">{t('team.membersOf', { name: brandName })}</h3><span className="t-sm t-mute">{members.length}</span></div>
-      {isAdmin && !isGroup && <BrandSections brandId={brandId} />}
-      {isAdmin && <p className="t-sm t-mute">{t(isGroup ? 'perm.groupHint' : 'perm.hint')}</p>}
-      {saveError && <p className="t-sm" role="status" style={{ color: 'var(--danger)' }}>{t('perm.error')}</p>}
-      {members.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}
-      {members.map((m) => {
-        const self = m.uid === user?.uid;
-        const initials = (m.name || m.email || '?').replace(/^\+/, '').slice(0, 2).toUpperCase();
-        return (
-          <div key={m.uid} className="col g8" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
-            <div className='row g12'>
-              <span className='avatar-txt'>{initials}</span>
-              <div className='col grow' style={{ minWidth: 0 }}><span className='w7 truncate'>{m.name && m.name !== m.email ? m.name : m.email ?? m.uid}</span>{m.name && m.name !== m.email && <span className='t-xs t-mute truncate'>{m.email}</span>}</div>
-              {!self && <button className='btn btn-ghost btn-sm' onClick={() => setRemoving(m)}>{t('team.remove')}</button>}
-            </div>
-            {!self && <MemberWhatsApp brandId={brandId} uid={m.uid} name={m.name || m.email || ''} />}
-            <div className='row g16 wrap' style={{ paddingLeft: '3.25rem' }}>
-              {isAdmin ? <MemberAccess member={m} disabled={self} onChange={(patch) => save(m.uid, patch)} /> : (
-              <select className='input' style={{ height: '2.25rem', width: 'auto' }} value={m.role} disabled={self} aria-label={t('team.role')}
-                onChange={(e) => save(m.uid, { role: e.target.value })}>
-                <option value='client_owner'>{t('team.owner')}</option>
-                <option value='client_member'>{t('team.member')}</option>
-              </select>)}
-              <span className='row g8 t-sm'>
-                <button className={`switch ${m.canApprove || m.role === 'client_owner' ? 'is-on' : ''}`} role='switch' aria-checked={!!(m.canApprove || m.role === 'client_owner')}
-                  aria-label={`${t('team.canApprove')} · ${m.email}`} disabled={self || m.role === 'client_owner'}
-                  onClick={() => save(m.uid, { canApprove: !m.canApprove })} />
-                {t('team.approves')}
-              </span>
-            </div>
-          </div>
-        );
-      })}
-      {invites.map((i) => (
-        // Laid out like a member: who on top (the email gets the whole width), the actions on their own line below.
-        <div key={i.id} className="col g8" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)' }}>
-          <div className="row g12">
-            <span className="avatar-txt">{i.email.slice(0, 2).toUpperCase()}</span>
-            <div className="col grow" style={{ minWidth: 0 }}>
-              <span className="w7" style={{ overflowWrap: 'anywhere' }}>{i.email}</span>
-              <span className="t-xs t-mute">{t('team.invitePending')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span>
-            </div>
-          </div>
-          <div className="row g8 wrap" style={{ paddingLeft: '3.25rem' }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
-          </div>
-        </div>
-      ))}
+      <div className="row between g8 wrap"><h3 className="h3">{t('team.membersOf', { name: brandName })}</h3>
+        <span className="t-sm t-mute">{members.length}{invites.length ? ` + ${t('ct.t.invited', { n: String(invites.length) })}` : ''}</span></div>
       <form className="row g8 wrap" onSubmit={(e) => { e.preventDefault(); if (valid) invite(); }}>
         <input className="input grow" style={{ minWidth: '12.5rem' }} type="text" inputMode="email" autoComplete="off" placeholder={t('wax.invitePh')} aria-label={t('wax.invitePh')} value={email} onChange={(e) => setEmail(e.target.value)} />
         {isAdmin ? (
@@ -128,7 +82,27 @@ export function MembersCard({ brandId, brandName }: { brandId: string; brandName
       </form>
       {waSent && <SentNote r={waSent} />}
       {msg && <p className="t-sm" role="status" style={{ color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</p>}
+      {saveError && <p className="t-sm" role="status" style={{ color: 'var(--danger)' }}>{t('perm.error')}</p>}
+      {members.length === 0 && <p className="t-sm t-mute">{t('team.noMembers')}</p>}
+      <div className="col g12">
+        {members.map((m) => <MemberRow key={m.uid} brandId={brandId} m={m} self={m.uid === user?.uid} isAdmin={isAdmin} onSave={(patch) => save(m.uid, patch)} onRemove={() => setRemoving(m)} />)}
+        {invites.map((i) => (
+          <div key={i.id} className="row g12 wrap" style={{ paddingBottom: '0.75rem', borderBottom: '1px solid var(--line)', alignItems: 'flex-start' }}>
+            <span className="avatar-txt" style={{ opacity: 0.6 }}>{i.email.slice(0, 2).toUpperCase()}</span>
+            <div className="col grow" style={{ minWidth: '10rem' }}>
+              <span className="w7" style={{ overflowWrap: 'anywhere' }}>{i.email}</span>
+              <span className="t-xs t-mute">{t('ct.t.notIn')} · {t(`perm.${profileOf(i)}` as 'perm.all')}</span>
+            </div>
+            <span className="row g4">
+              <button className="btn btn-secondary btn-sm" onClick={() => sendAccessLink(i.email, lang, false).then(() => setMsg({ ok: true, text: t('team.linkSent', { email: i.email }) }), () => setMsg({ ok: false, text: t('team.inviteError') }))}>{t('team.resend')}</button>
+              <button className="btn btn-ghost btn-sm" onClick={() => cancelInvite(brandId, i.id).then(loadInvites)}>{t('common.cancel')}</button>
+            </span>
+          </div>
+        ))}
+      </div>
       <Scan text={t('team.inviteHint')} className="t-xs" />
+      {isAdmin && <p className="t-sm t-mute">{t(isGroup ? 'perm.groupHint' : 'perm.hint')}</p>}
+      {isAdmin && !isGroup && <BrandSections brandId={brandId} />}
       {removing && (
         <ConfirmDialog title={t('team.removeTitle', { email: removing.email ?? '' })} confirmLabel={t('team.remove')} danger
           onConfirm={async () => { await removeMember(brandId, removing.uid); setRemoving(null); }} onCancel={() => setRemoving(null)}>

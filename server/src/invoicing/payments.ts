@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../firebase.js';
 import { allocate, amountInWords, todayBogota } from './money.js';
 import { renderBillingPdf } from './pdf.js';
-import { loadIssuer, loadProfile } from './issue.js';
+import { loadIssuer, loadProfile, sendDoc } from './issue.js';
 import { agreementsCol, audit, docsCol, issuerRef, issuerStyle, now, readFile, saveFile, sha256, type Agreement, type BillingDoc, type Payment } from './store.js';
 
 const OPEN = ['issued', 'sent', 'overdue'];
@@ -82,10 +82,12 @@ export async function issueReceipt(brandId: string, by: string, r: { paymentId: 
   const path = await saveFile(`brands/${brandId}/billing/${number}.pdf`, pdf, 'application/pdf');
   const doc: BillingDoc = {
     agreementId: first.agreementId, type: 'recibo', number, index: n, of: 0, billingMonth: r.date.slice(0, 7), scheduledDate: issueDate, issueDate, paidOn: r.date,
-    amount, amountWords: amountInWords(amount, style.currency), currency: style.currency, status: 'issued', pdfStoragePath: path, pdfHash: sha256(pdf), covers: r.covers, payments: [], paid: amount, held: true,
+    amount, amountWords: amountInWords(amount, style.currency), currency: style.currency, status: 'issued', pdfStoragePath: path, pdfHash: sha256(pdf), covers: r.covers, payments: [], paid: amount, held: !a.autoSend,
   };
   await docsCol(brandId).doc(number).set({ ...doc, paymentId: r.paymentId, issuedAt: now(), issuedBy: by });
   await audit('billing_receipt_issued', brandId, by, { number, amount });
+  // A project with «Envío automático» sends its recibos too; otherwise they wait «Para tu ojo».
+  if (a.autoSend) await sendDoc(brandId, number, by).catch(() => undefined);
   return { number, amount };
 }
 

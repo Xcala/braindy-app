@@ -7,6 +7,18 @@ const pct = (n: number, total: number) => (total > 0 ? Math.min(100, Math.round(
 /** Until NickMark sets them, the stages split the project total evenly (the last one takes the remainder). */
 const evenSplit = (total: number, n: number) => Array.from({ length: n }, (_, i) => (i < n - 1 ? Math.floor(total / n) : total - Math.floor(total / n) * (n - 1)));
 
+/** How far the work of a project is: the value of what is done over what its stages are worth. null without stages. */
+export function workOf(a: Agreement) {
+  const stages = a.packs ?? [];
+  if (!stages.length) return null;
+  const value = a.stageValue?.length === stages.length ? a.stageValue : evenSplit(a.totalAmount, stages.length);
+  const prog = stages.map((_, i) => a.stageProgress?.[i] ?? 0);
+  const worth = value.reduce((s, v) => s + v, 0);
+  if (worth <= 0) return null;
+  const done = Math.round(value.reduce((s, v, i) => s + (v * prog[i]) / 100, 0));
+  return { pct: pct(done, worth), done, worth, complete: prog.filter((v) => v === 100).length, stages: stages.length, others: prog.filter((v) => v < 100) };
+}
+
 /** Paid vs work done on one project, one bar under the other. Stages (the project's packs) are not equal: each has
  *  what it is worth, and work done is the value of what is done (each stage on a slider, 0–100 %). */
 export function ProjectBars({ brandId, agreement: a, paid, onSaved }: { brandId: string; agreement: Agreement; paid: number; onSaved: () => void }) {
@@ -46,7 +58,8 @@ export function ProjectBars({ brandId, agreement: a, paid, onSaved }: { brandId:
         )}
       </div>
       <div className="row between g8 wrap">
-        <p className="t-xs t-mute" style={{ margin: 0 }}>{verdict && <b>{t(verdict as never)}</b>} {stages.length > 0 && t('cc.pb.stages', { d: String(done), n: String(stages.length) })}</p>
+        {/* «98 % del valor hecho · 1 de 2 etapas completas, la otra en 95 %»: the % and the stages say the same thing. */}
+        <p className="t-xs t-mute" style={{ margin: 0 }}>{verdict && <b>{t(verdict as never)}</b>} {w !== null && t('pg.a.workText', { p: String(w), d: String(done), n: String(stages.length) })}{w !== null && stages.length - done === 1 && done > 0 ? t('pg.a.workOther', { p: String(prog.find((v) => v < 100) ?? 0) }) : ''}</p>
         {stages.length > 0 && !edit && <button className="btn btn-ghost btn-sm" onClick={() => setEdit(true)}>{t('cc.pb.mark')}</button>}
       </div>
       {edit && (

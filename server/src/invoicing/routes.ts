@@ -11,7 +11,7 @@ import type { AuthEnv } from '../auth.js';
 import { signaturePng } from '../contracts/store.js';
 import { adminUids, pushTo } from '../push/send.js';
 import { mask, nitValid, planOf } from './money.js';
-import { activate, issueDoc, pdfLink, sendDoc } from './issue.js';
+import { activate, issueDoc, pdfLink, scheduleSend, sendDoc } from './issue.js';
 import { sendBatch } from './sendBatch.js';
 import { billingPeople as peopleWithBilling } from './notifyBilling.js';
 import { billingFileRoutes, dataFile } from './files.js';
@@ -31,7 +31,7 @@ export function publicDoc(id: string, d: BillingDoc & Record<string, unknown>) {
     id, type: d.type, number: d.number, index: d.index, of: d.of, billingMonth: d.billingMonth, scheduledDate: d.scheduledDate, issueDate: d.issueDate,
     amount: d.amount, amountWords: d.amountWords, currency: d.currency ?? 'COP', status: d.status, held: !!d.held, paid: d.paid ?? 0, hasPdf: !!d.pdfStoragePath, sentVia: d.sentVia ?? [], paidOn: d.paidOn ?? null,
     voidReason: d.voidReason ?? null, covers: (d.covers ?? []).map((c) => ({ number: c.number, amount: c.amount })), agreementId: d.agreementId,
-    pendingProof: !!d.pendingProof,
+    pendingProof: !!d.pendingProof, sendAt: d.sendAt ?? null,
     payments: (d.payments ?? []).map((p) => ({ id: p.id, date: p.date, amount: p.amount, method: p.method, status: p.status, hasProof: !!p.proofStoragePath })),
   };
 }
@@ -163,10 +163,21 @@ adminInvoicing.put('/brands/:brandId/invoicing/agreements/:id', async (c) => {
     await audit('billing_stage_progress', c.req.param('brandId'), c.get('user').uid, { agreementId: ref.id, stageProgress, stageValue });
     return c.json({ ok: true, stageProgress, stageValue });
   }
-  // Active agreements only change whether cuentas go out by themselves; amounts and numbers are fixed.
+  // Active agreements only change whether cuentas go out by themselves and the day of the month the coming ones are
+  // issued; amounts and numbers are fixed. The cuentas still to issue follow at once.
   if (s.get('status') !== 'draft') {
-    if (typeof body.autoSend !== 'boolean') return c.json({ error: 'not_draft' }, 409);
-    await ref.update({ autoSend: body.autoSend, updatedAt: now() });
+    const auto = typeof body.autoSend === 'boolean' ? body.autoSend : null;
+    const day = body.issueDay === undefined ? null : Math.round(Number(body.issueDay));
+    if (auto === null && day === null) return c.json({ error: 'not_draft' }, 409);
+    if (day !== null && !(day >= 1 && day <= 28)) return c.json({ error: 'bad_day' }, 400);
+    await ref.update({ ...(auto !== null ? { autoSend: auto } : {}), ...(day !== null ? { issueDay: day } : {}), updatedAt: now() });
+    const waiting = await docsCol(c.req.param('brandId')).where('agreementId', '==', ref.id).where('status', '==', 'scheduled').get();
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    for (const w of waiting.docs) {
+      const due = day !== null ? `${w.get('billingMonth')}-${String(day).padStart(2, '0')}` : null;
+      await w.ref.update({ ...(auto !== null ? { held: !auto } : {}), ...(due ? { scheduledDate: due < today ? today : due } : {}) });
+    }
+    await audit('billing_agreement_sending', c.req.param('brandId'), c.get('user').uid, { agreementId: ref.id, autoSend: auto, issueDay: day });
     return c.json({ ok: true });
   }
   const a = pickAgreement(body);
@@ -199,6 +210,12 @@ adminInvoicing.post('/brands/:brandId/invoicing/docs/:docId/:action{issue|send|v
     await voidDoc(brandId, docId, by, String(reason ?? ''));
     return c.json({ ok: true });
   } catch (e) { return c.json({ error: err(e) }, 409); }
+});
+/** «Programar»: the day a held cuenta or recibo goes out by itself (null cancels). */
+adminInvoicing.post('/brands/:brandId/invoicing/docs/:docId/schedule', async (c) => {
+  const { date } = await c.req.json<{ date?: string | null }>().catch(() => ({} as { date?: string | null }));
+  try { return c.json(await scheduleSend(c.req.param('brandId'), c.req.param('docId'), c.get('user').uid, date ? String(date) : null)); }
+  catch (e) { return c.json({ error: err(e) }, 409); }
 });
 adminInvoicing.get('/brands/:brandId/invoicing/docs/:docId/pdf', async (c) => {
   try { return c.json({ url: await pdfLink(c.req.param('brandId'), c.req.param('docId')) }); }
@@ -233,11 +250,24 @@ const billingPeople: MiddlewareHandler<AuthEnv> = async (c, next) => {
 invoicing.use('/brands/:brandId/cuentas', billingPeople);
 invoicing.use('/brands/:brandId/cuentas/*', billingPeople);
 
-/** Issued cuentas and recibos (scheduled ones are not shown to the client until they are issued). */
+/** Issued cuentas and recibos (scheduled ones are not shown to the client until they are issued), oldest month first,
+ *  and each project as a whole: its total, what is paid and the next cuenta still to come (only its day and value). */
 invoicing.get('/brands/:brandId/cuentas', async (c) => {
-  const q = await docsCol(c.req.param('brandId')).get();
-  const docs = q.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>)).filter((d) => d.status !== 'scheduled' && !d.held);
-  return c.json({ cardFeePct: cardFeePct(), docs: docs.sort((x, y) => (y.issueDate ?? '').localeCompare(x.issueDate ?? '') || y.number.localeCompare(x.number)) });
+  const brandId = c.req.param('brandId');
+  const [q, ags] = await Promise.all([docsCol(brandId).get(), agreementsCol(brandId).where('status', 'in', ['active', 'closed']).get()]);
+  const all = q.docs.map((s) => publicDoc(s.id, s.data() as BillingDoc & Record<string, unknown>));
+  const docs = all.filter((d) => d.status !== 'scheduled' && !d.held)
+    .sort((x, y) => x.billingMonth.localeCompare(y.billingMonth) || x.number.localeCompare(y.number));
+  const projects = ags.docs.map((a) => {
+    const mine = all.filter((d) => d.agreementId === a.id && d.type === 'cuenta_cobro' && d.status !== 'void');
+    const next = mine.filter((d) => d.status === 'scheduled').sort((x, y) => x.scheduledDate.localeCompare(y.scheduledDate))[0];
+    return {
+      id: a.id, title: String(a.get('title') ?? ''), totalAmount: Number(a.get('totalAmount') ?? 0), currency: (a.get('currency') ?? 'COP') as 'COP' | 'USD',
+      installments: Number(a.get('installments') ?? mine.length), paid: mine.reduce((s, d) => s + d.paid, 0),
+      next: next ? { number: next.number, date: next.scheduledDate, amount: next.amount } : null,
+    };
+  }).filter((p) => p.totalAmount > 0);
+  return c.json({ cardFeePct: cardFeePct(), docs, projects });
 });
 invoicing.get('/brands/:brandId/cuentas/:docId/pdf', async (c) => {
   const d = (await docsCol(c.req.param('brandId')).doc(c.req.param('docId')).get()).data() as BillingDoc | undefined;

@@ -5,7 +5,6 @@ import { NoticesCard } from '../settings/NoticesCard';
 import { MyWhatsappCard } from '../settings/MyWhatsappCard';
 import { MembersCard } from '../team/MembersCard';
 import { Fold } from '../components/Fold';
-import { BackToAccount } from './Account';
 
 /**
  * Team and notices (2026-11-17), one page instead of three tabs: who can sign in to the brand's page stays open on top, the
@@ -24,7 +23,6 @@ export function Settings() {
   return (
     <div className="col g24">
       <div className="col g8">
-        <BackToAccount />
         <p className="label">{current.name}</p>
         <h1 className="h1">{t('set.tab.people')}</h1>
       </div>

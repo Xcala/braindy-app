@@ -1,87 +1,55 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
-import { cuentasApi, money, errKey, monthName, openUrl, type Cuenta, type Profile } from './api';
+import { cuentasApi, errKey, openUrl, type Cuenta, type Profile } from './api';
 import { SendDialog } from './admin/SendDialog';
-import { ConfirmIssue, MarkPaid, SendAll, pendingWhat } from './admin/ListDialogs';
-import { PayDialog } from './PayDialog';
+import { ConfirmIssue, MarkPaid, pendingWhat } from './admin/ListDialogs';
+import { AdminRow, sendable, type RowActions } from './admin/AdminRow';
+import { ScheduleOne, SendAll } from './admin/SendPending';
 import './cuentas.css';
 
-const CHIP: Record<string, string> = { scheduled: 'c-draft', issued: 'c-sent', sent: 'c-sent', paid: 'c-approved', overdue: 'c-lost', void: 'c-archived', held: 'c-approve' };
 const todayBogota = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
 
-/** The cuentas and recibos of a brand as two lists (cards on phones): number, month, value, status, PDF. The client
- *  pays; the admin sends everything pending at once, issues early (with a confirmation), voids and confirms proofs. */
-export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }: { brandId: string; docs: Cuenta[]; admin?: boolean; reload: () => void; feePct?: number; sendTo?: { profile: Profile | null; people: number } }) {
-  const { t, lang } = useI18n();
+/** NickMark's list of a brand's cuentas and recibos: a table while it fits, one card per row when it does not (the
+ *  Asistente open on a laptop, a phone). Sends everything pending at once (now or on a day), issues early, voids,
+ *  confirms proofs and programs a send from the ⋯ menu. The client sees its own view (CuentasClient). */
+export function CuentasList({ brandId, docs, reload, sendTo }: { brandId: string; docs: Cuenta[]; reload: () => void; sendTo?: { profile: Profile | null; people: number } }) {
+  const { t } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [paying, setPaying] = useState<Cuenta | null>(null);
   const [voiding, setVoiding] = useState<Cuenta | null>(null);
   const [reason, setReason] = useState('');
   const [sending, setSending] = useState<Cuenta | null>(null);
   const [issuing, setIssuing] = useState<Cuenta | null>(null);
   const [sendAll, setSendAll] = useState(false);
   const [marking, setMarking] = useState<Cuenta | null>(null);
+  const [later, setLater] = useState<Cuenta | null>(null);
 
-  async function run(id: string, f: () => Promise<unknown>) {
+  async function run(id: string, f: () => Promise<unknown>, ok?: string) {
     setBusy(id); setMsg(null);
-    try { await f(); reload(); } catch (e) { setMsg(t(errKey(e) as never)); } finally { setBusy(null); }
+    try { await f(); if (ok) setMsg(ok); reload(); } catch (e) { setMsg(t(errKey(e) as never)); } finally { setBusy(null); }
   }
   if (!docs.length) return <p className="t-sm t-mute">{t('cc.empty')}</p>;
   const cuentas = docs.filter((d) => d.type === 'cuenta_cobro');
   const recibos = docs.filter((d) => d.type === 'recibo');
-  const canSend = (d: Cuenta) => !!admin && d.held && d.status !== 'void' && d.status !== 'scheduled';
-  const pendingSend = [...cuentas, ...recibos].filter(canSend);
+  // What is waiting to go out and not already programmed for a day.
+  const pendingSend = [...cuentas, ...recibos].filter((d) => sendable(d) && !d.sendAt);
   const issue = (d: Cuenta) => run(d.id, () => cuentasApi.act(brandId, d.id, 'issue'));
-  const cols = { gridTemplateColumns: '6.5rem minmax(0,1fr) 8rem 9rem 15rem' };
-  // A recibo shows the day it was paid; older ones without it, the month of the payment.
-  const dateOf = (d: Cuenta) => !d.paidOn ? monthName(d.billingMonth, lang) : new Date(`${d.paidOn}T12:00:00`).toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  const row = (d: Cuenta) => {
-    const recibo = d.type === 'recibo';
-    // Paid shows as paid; «Para tu ojo» is only for what is waiting to go out. Not sent yet = the client does not see it.
-    const st = d.status === 'paid' ? 'paid' : d.held && d.status !== 'void' && d.status !== 'scheduled' ? 'held' : d.status;
-    const pending = d.payments.find((p) => p.status === 'pending');
-    const open = ['issued', 'sent', 'overdue'].includes(d.status);
-    return (
-      <div key={d.id} className="trow cc-row" style={{ ...cols, alignItems: 'center' }}>
-        <span className="w7 cc-num">{d.number}</span>
-        <span className="col g2 cc-when" style={{ minWidth: 0 }}>
-          <span className="t-sm">{recibo ? dateOf(d) : monthName(d.billingMonth, lang)}</span>
-          <span className="t-xs t-mute">{recibo ? t('cc.covers', { list: d.covers.map((c) => c.number).join(', ') || '—' }) : t('cc.cuenta', { i: d.index, n: d.of })}{admin && d.status === 'scheduled' ? ` · ${t('cc.a.on', { day: d.scheduledDate })}` : ''}</span>
-          {d.voidReason && <span className="t-xs t-mute">{d.voidReason}</span>}
-        </span>
-        <span className="col g2 cc-val"><span className="t-sm w7">{money(d.amount, d.currency)}</span>{d.paid > 0 && d.status !== 'paid' && !recibo && <span className="t-xs t-mute">{t('cc.paidPart', { v: money(d.paid, d.currency) })}</span>}</span>
-        <span className="col g2 cc-st"><span><span className={`chip ${CHIP[st]}`}>{t(recibo && st === 'sent' ? 'cc.st.delivered' : `cc.st.${st}` as never)}</span></span>
-          {pending && <span className="t-xs t-mute">{t('cc.pending')}</span>}
-          {admin && d.held && st === 'paid' && <span className="t-xs t-mute">{t('cc.notSent')}</span>}
-          {admin && open && !recibo && (
-            // NickMark says how it stands: paid (records what is owed), in mora, or back on time.
-            <select className="input cc-st-sel" aria-label={t('cc.mp.change', { n: d.number })} value="" disabled={busy === d.id}
-              onChange={(e) => { const v = e.target.value; if (v === 'paid') setMarking(d); else if (v) run(d.id, () => cuentasApi.overdue(brandId, d.id, v === 'overdue')); }}>
-              <option value="">{t('cc.mp.change', { n: '' }).trim()}</option>
-              <option value="paid">{t('cc.mp.paid')}</option>
-              {d.status === 'overdue' ? <option value="ontime">{t('cc.mp.ontime')}</option> : <option value="overdue">{t('cc.mp.overdue')}</option>}
-            </select>
-          )}</span>
-        <span className="row g8 wrap cc-act" style={{ justifyContent: 'flex-end' }}>
-          {d.hasPdf && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminPdf(brandId, d.id) : cuentasApi.pdf(brandId, d.id))}>{t('cc.pdf')}</button>}
-          {!admin && open && !recibo && !pending && <button className="btn btn-primary btn-sm" onClick={() => setPaying(d)}>{t('cc.pay.btn')}</button>}
-          {admin && d.status === 'scheduled' && <button className="btn btn-ghost btn-sm" disabled={busy === d.id} onClick={() => (d.scheduledDate > todayBogota() ? setIssuing(d) : issue(d))}>{t('cc.a.issue')}</button>}
-          {canSend(d) && <button className="btn btn-secondary btn-sm" disabled={busy === d.id} onClick={() => setSending(d)}>{t('cc.a.send')}</button>}
-          {admin && pending?.hasProof && <button className="btn btn-ghost btn-sm" onClick={() => openUrl(cuentasApi.proof(brandId, d.id, pending.id))}>{t('cc.a.seeProof')}</button>}
-          {admin && pending && <button className="btn btn-primary btn-sm" disabled={busy === d.id} onClick={() => run(d.id, () => cuentasApi.confirm(brandId, d.id, pending.id))}>{t('cc.a.confirm')}</button>}
-          {admin && !recibo && d.status !== 'void' && d.status !== 'paid' && d.paid === 0 && <button className="btn btn-ghost btn-sm" onClick={() => { setVoiding(d); setReason(''); }}>{t('cc.a.void')}</button>}
-        </span>
-      </div>
-    );
+  const act: RowActions = {
+    pdf: (d) => openUrl(cuentasApi.adminPdf(brandId, d.id)),
+    send: setSending,
+    issue: (d) => (d.scheduledDate > todayBogota() ? setIssuing(d) : issue(d)),
+    confirm: (d, p) => run(d.id, () => cuentasApi.confirm(brandId, d.id, p)),
+    proof: (d, p) => openUrl(cuentasApi.proof(brandId, d.id, p)),
+    markPaid: setMarking,
+    overdue: (d, on) => run(d.id, () => cuentasApi.overdue(brandId, d.id, on)),
+    schedule: setLater,
+    unschedule: (d) => run(d.id, () => cuentasApi.schedule(brandId, d.id, null), t('pg.r.unscheduled', { n: d.number })),
+    void: (d) => { setVoiding(d); setReason(''); },
   };
-  const table = (list: Cuenta[], second: string) => (
-    <div className="table overflow-x-auto cc-table">
-      <div className="trow head label" style={cols}>
-        <span>{t('cc.col.number')}</span><span>{second}</span><span>{t('cc.col.value')}</span><span>{t('cc.col.status')}</span><span />
-      </div>
-      {list.map(row)}
+  const list = (rows: Cuenta[], label: string) => (
+    <div className="col g8">
+      <p className="label">{label}</p>
+      <div className="cc-list" role="table">{rows.map((d) => <AdminRow key={d.id} d={d} busy={busy === d.id} act={act} />)}</div>
     </div>
   );
 
@@ -94,13 +62,13 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
           <button className="btn btn-primary btn-sm" onClick={() => setSendAll(true)}>{t('cc.all.btn', { n: String(pendingSend.length) })}</button>
         </div>
       )}
-      {cuentas.length > 0 && <div className="col g8"><p className="label">{t('cc.h.cuentas')}</p>{table(cuentas, t('cc.col.month'))}</div>}
-      {recibos.length > 0 && <div className="col g8"><p className="label">{t('cc.h.recibos')}</p>{table(recibos, t('cc.col.paidOn'))}</div>}
-      {sendAll && <SendAll brandId={brandId} docs={pendingSend} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSendAll(false); if (sent) reload(); }} />}
+      {cuentas.length > 0 && list(cuentas, t('pg.a.listC', { n: String(cuentas.length) }))}
+      {recibos.length > 0 && list(recibos, t('pg.c.recibos', { n: String(recibos.length) }))}
+      {sendAll && <SendAll brandId={brandId} docs={pendingSend} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent, m) => { setSendAll(false); if (m) setMsg(m); if (sent) reload(); }} />}
+      {later && <ScheduleOne brandId={brandId} doc={later} profile={sendTo?.profile ?? null} onClose={(m) => { setLater(null); if (m) { setMsg(m); reload(); } }} />}
       {marking && <MarkPaid brandId={brandId} doc={marking} onClose={(done) => { setMarking(null); if (done) reload(); }} />}
       {issuing && <ConfirmIssue doc={issuing} onClose={() => setIssuing(null)} onIssue={() => { const d = issuing; setIssuing(null); issue(d); }} />}
       {sending && <SendDialog brandId={brandId} doc={sending} profile={sendTo?.profile ?? null} people={sendTo?.people ?? 0} onClose={(sent) => { setSending(null); if (sent) reload(); }} />}
-      {paying && <PayDialog brandId={brandId} doc={paying} feePct={feePct} onClose={() => { setPaying(null); reload(); }} />}
       {voiding && (
         <div className="scrim fixed inset-0 z-50 flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && setVoiding(null)}>
           <div className="modal w-full max-w-[28rem] col g12" role="dialog" aria-modal="true" aria-labelledby="void-h">
@@ -108,7 +76,7 @@ export function CuentasList({ brandId, docs, admin, reload, sendTo, feePct = 0 }
             <div className="field"><label htmlFor="void-r">{t('cc.a.voidQ')}</label><input id="void-r" className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
             <div className="row g12" style={{ justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary" onClick={() => setVoiding(null)}>{t('common.cancel')}</button>
-              <button className="btn btn-primary" disabled={!reason.trim()} onClick={() => { const d = voiding; setVoiding(null); run(d.id, () => cuentasApi.act(brandId, d.id, 'void', reason)); }}>{t('cc.a.voidOk')}</button>
+              <button className="btn btn-danger" disabled={!reason.trim()} onClick={() => { const d = voiding; setVoiding(null); run(d.id, () => cuentasApi.act(brandId, d.id, 'void', reason)); }}>{t('cc.a.voidOk')}</button>
             </div>
           </div>
         </div>

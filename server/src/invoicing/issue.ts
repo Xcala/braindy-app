@@ -1,6 +1,6 @@
 // Activating an agreement, issuing cuentas (PDF frozen at issue: an issued cuenta never changes, it can only be
 // voided), sending them (email with the PDF from the connected mailbox + WhatsApp link), and the daily job.
-import type { DocumentReference } from 'firebase-admin/firestore';
+import { FieldValue, type DocumentReference } from 'firebase-admin/firestore';
 import { db } from '../firebase.js';
 import { adminUids, pushTo } from '../push/send.js';
 import { mailReady, sendWithAttachment } from '../mail/gmail.js';
@@ -93,12 +93,13 @@ export async function issueDoc(brandId: string, docId: string, by: string) {
   const pdf = await renderBillingPdf(input);
   const path = await saveFile(`brands/${brandId}/billing/${d.number}.pdf`, pdf, 'application/pdf');
   const { issuer, signature: _s, ...snap } = input;
+  const a = (await agreementsCol(brandId).doc(d.agreementId!).get()).data() as Agreement;
+  // Held follows the project as it is now: «Envío automático» may have been switched since activation.
   await ref.update({
-    status: (d.paid ?? 0) >= d.amount ? 'paid' : 'issued', issueDate, pdfStoragePath: path, pdfHash: sha256(pdf), issuedAt: now(), issuedBy: by,
+    held: !a.autoSend, status: (d.paid ?? 0) >= d.amount ? 'paid' : 'issued', issueDate, pdfStoragePath: path, pdfHash: sha256(pdf), issuedAt: now(), issuedBy: by,
     snapshot: { ...snap, issuer: { name: issuer.name, docType: issuer.docType, docNumber: issuer.docNumber } },
   });
   await audit('billing_doc_issued', brandId, by, { docId, number: d.number, amount: d.amount });
-  const a = (await agreementsCol(brandId).doc(d.agreementId!).get()).data() as Agreement;
   if (a.autoSend) await sendDoc(brandId, docId, by).catch(() => undefined);
   return { number: d.number, pdfHash: sha256(pdf) };
 }
@@ -137,10 +138,21 @@ export async function sendDoc(brandId: string, docId: string, by: string) {
     if (sent) via.push('whatsapp'); else waMe = waMeLink(phone, body);
   }
   // Sending always releases it to the client's app (Pagos), even when no email or WhatsApp went out.
-  await ref.update({ status: d.status === 'issued' ? 'sent' : d.status, held: false, sentAt: now(), sentVia: [...via, 'app'] });
+  await ref.update({ status: d.status === 'issued' ? 'sent' : d.status, held: false, sendAt: FieldValue.delete(), sentAt: now(), sentVia: [...via, 'app'] });
   const { people } = await notifyBilling(brandId, docId, d);
   await audit('billing_doc_sent', brandId, by, { docId, number: d.number, via, people });
   return { via, waMe, link, people, email: via.includes('email') ? p.accountingEmail ?? null : null, whatsapp: via.includes('whatsapp') || waMe ? p.accountingWhatsApp ?? null : null };
+}
+
+/** «Programar»: a held cuenta or recibo goes out by itself on that day (the daily job sends it). null cancels it. */
+export async function scheduleSend(brandId: string, docId: string, by: string, date: string | null) {
+  const ref = docsCol(brandId).doc(docId);
+  const d = (await ref.get()).data() as BillingDoc | undefined;
+  if (!d || !d.held || d.status === 'scheduled' || d.status === 'void') throw new Error('not_sendable');
+  if (date !== null && (!/^d{4}-d{2}-d{2}$/.test(date) || date < todayBogota())) throw new Error('bad_date');
+  await ref.update({ sendAt: date ?? FieldValue.delete(), updatedAt: now() });
+  await audit(date ? 'billing_send_scheduled' : 'billing_send_unscheduled', brandId, by, { docId, number: d.number, date });
+  return { sendAt: date };
 }
 
 /** Private download: a short signed URL to the frozen PDF. */
@@ -160,6 +172,14 @@ export async function billingDaily() {
     const brandId = s.ref.parent.parent!.id;
     try { await issueDoc(brandId, s.id, 'cron'); issued++; } catch (e) { failed++; console.warn('billing issue failed', s.ref.path, String(e).slice(0, 80)); }
   }
+  // What NickMark programmed to go out today (or earlier, if a day was missed).
+  let sent = 0;
+  const toSend = await db.collectionGroup('billingDocs').where('sendAt', '<=', today).get();
+  for (const s of toSend.docs) {
+    const d = s.data() as BillingDoc;
+    if (!d.held || d.status === 'scheduled' || d.status === 'void') { await s.ref.update({ sendAt: FieldValue.delete() }); continue; }
+    try { await sendDoc(s.ref.parent.parent!.id, s.id, 'cron'); sent++; } catch (e) { failed++; console.warn('billing send failed', s.ref.path, String(e).slice(0, 80)); }
+  }
   const cutoff = new Date(Date.now() - OVERDUE_DAYS * 864e5).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   for (const st of ['issued', 'sent'] as const) {
     const late = await db.collectionGroup('billingDocs').where('status', '==', st).where('issueDate', '<=', cutoff).get();
@@ -175,5 +195,5 @@ export async function billingDaily() {
     title: { es: 'Cuentas de cobro emitidas', en: 'Cuentas de cobro issued' },
     body: { es: `${issued} lista(s) para revisar y enviar.`, en: `${issued} ready to review and send.` },
   }).catch(() => undefined);
-  return { billingIssued: issued, billingOverdue: overdue, billingFailed: failed };
+  return { billingIssued: issued, billingSent: sent, billingOverdue: overdue, billingFailed: failed };
 }

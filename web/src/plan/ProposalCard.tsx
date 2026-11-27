@@ -37,7 +37,7 @@ export function ProposalCard({ brandId, brandName }: { brandId: string; brandNam
     <section className="card col g16" aria-labelledby="plan-proposal">
       <div className="row between g12 wrap" style={{ alignItems: 'flex-end' }}>
         <div className="col g4" style={{ minWidth: 0 }}>
-          <p className="label">{t('pp.label')} · {t(`pp.kind.${p.kind}`)}</p>
+          <p className="label">{t('pp.label')}{p.kind === 'slides' ? ` · ${t('pp.kind.slides')}` : ''}</p>
           <h2 id="plan-proposal" className="h2" style={{ overflowWrap: 'anywhere' }}>{title}</h2>
         </div>
         <button type="button" className="btn btn-primary" onClick={open}>{t('pp.open')} ↗</button>

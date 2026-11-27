@@ -8,14 +8,14 @@ const kb = (n: number) => (n > 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} MB
 
 /** NickMark's documents for the client's accounting (RUT, bank certificate, annexes…). The admin uploads several at
  *  once and removes them; billing people of the brand download them. Hidden for the client when there are none. */
-export function BillingFiles({ brandId, admin }: { brandId: string; admin?: boolean }) {
+export function BillingFiles({ brandId, admin, bare, onCount }: { brandId: string; admin?: boolean; bare?: boolean; onCount?: (n: number) => void }) {
   const { t } = useI18n();
   const [files, setFiles] = useState<BillingFile[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [removing, setRemoving] = useState<BillingFile | null>(null);
   const input = useRef<HTMLInputElement>(null);
-  const load = useCallback(() => (admin ? cuentasApi.adminFiles(brandId) : cuentasApi.files(brandId)).then((r) => setFiles(r.files)).catch(() => setFiles([])), [brandId, admin]);
+  const load = useCallback(() => (admin ? cuentasApi.adminFiles(brandId) : cuentasApi.files(brandId)).then((r) => { setFiles(r.files); onCount?.(r.files.length); }).catch(() => setFiles([])), [brandId, admin, onCount]);
   useEffect(() => { void load(); }, [load]);
 
   async function upload(list: FileList | null) {
@@ -37,9 +37,9 @@ export function BillingFiles({ brandId, admin }: { brandId: string; admin?: bool
 
   if (files === null || (!admin && !files.length)) return null;
   return (
-    <section className="card col g12" aria-labelledby="cc-files-h">
+    <section className={`${bare ? '' : 'card '}col g12`} aria-label={t('cc.f.title')}>
       <div className="row between g12 wrap">
-        <div className="col g2"><h3 className="w7" id="cc-files-h" style={{ margin: 0 }}>{t('cc.f.title')}</h3><p className="t-sm t-mute" style={{ margin: 0 }}>{t(admin ? 'cc.f.leadAdmin' : 'cc.f.lead')}</p></div>
+        <div className="col g2">{!bare && <h3 className="w7" style={{ margin: 0 }}>{t('cc.f.title')}</h3>}<p className="t-sm t-mute" style={{ margin: 0 }}>{t(admin ? 'cc.f.leadAdmin' : 'cc.f.lead')}</p></div>
         {admin && (
           <label className={`btn btn-secondary btn-sm ${busy ? 'is-disabled' : ''}`}>
             {busy ?? t('cc.f.add')}
@@ -53,7 +53,7 @@ export function BillingFiles({ brandId, admin }: { brandId: string; admin?: bool
           {files.map((f) => (
             <li key={f.id} className="cc-to" style={{ gridTemplateColumns: '1.75rem minmax(0,1fr) auto' }}>
               <span className="cc-to-ico" aria-hidden="true">{f.type === 'application/pdf' ? 'PDF' : 'IMG'}</span>
-              <span className="col" style={{ minWidth: 0 }}><span className="t-sm w7 truncate">{f.name}</span><span className="t-xs t-mute">{kb(f.size)}</span></span>
+              <span className="col" style={{ minWidth: 0 }}><span className="t-sm w7" style={{ overflowWrap: 'anywhere' }}>{f.name}</span><span className="t-xs t-mute">{kb(f.size)}</span></span>
               <span className="row g8">
                 <button className="btn btn-ghost btn-sm" onClick={() => openUrl(admin ? cuentasApi.adminFile(brandId, f.id) : cuentasApi.file(brandId, f.id))}>{t('cc.f.download')}</button>
                 {admin && <button className="btn btn-ghost btn-sm" aria-label={t('cc.f.removeOne', { name: f.name })} onClick={() => setRemoving(f)}>{t('cc.f.remove')}</button>}

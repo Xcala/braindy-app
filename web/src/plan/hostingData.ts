@@ -27,7 +27,7 @@ export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
     specs: [[['Editores', 'Editors'], ['1 persona', '1 person']], [['Visitas', 'Visits'], ['~5.000 / mes', '~5,000 / month']], [['Espacio', 'Storage'], ['1 GB', '1 GB']], [['Respuesta', 'Reply'], ['2 días hábiles', '2 business days']]],
   },
   {
-    id: 'pro', name: 'Pro', price: { usd: 15, cop: 59900 }, color: '#8B5CF6', badge: ['Recomendado para crecer', 'Best to grow'],
+    id: 'pro', name: 'Pro', price: { usd: 15, cop: 59900 }, color: '#8B5CF6', top: true, badge: ['Más popular', 'Most popular'],
     ideal: ['marcas que publican seguido: blog, catálogo, landings de campaña o una tienda pequeña.', 'brands that publish often: blog, catalog, campaign landings or a small store.'],
     lead: ['Todo lo de Esencial, más:', 'Everything in Esencial, plus:'],
     features: [
@@ -40,7 +40,7 @@ export const WEB_PLANS: Array<PlanCard & { id: WebPlan }> = [
     specs: [[['Editores', 'Editors'], ['Hasta 3', 'Up to 3']], [['Visitas', 'Visits'], ['~10.000 / mes', '~10,000 / month']], [['Espacio', 'Storage'], ['5 GB', '5 GB']], [['Respuesta', 'Reply'], ['1 día hábil', '1 business day']]],
   },
   {
-    id: 'ultra', name: 'Ultra', price: { usd: 35, cop: 139900 }, color: '#2A7FFF', top: true, badge: ['El que todos quieren', 'The one everyone wants'],
+    id: 'ultra', name: 'Ultra', price: { usd: 35, cop: 139900 }, color: '#2A7FFF',
     ideal: ['equipos que quieren cambiar el sitio pidiéndolo en sus palabras, desde su IA o su WhatsApp.', 'teams that change the site by asking in their own words, from their AI or WhatsApp.'],
     lead: ['Todo lo de Pro, más:', 'Everything in Pro, plus:'],
     features: [

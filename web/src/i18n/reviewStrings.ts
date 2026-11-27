@@ -85,7 +85,7 @@ export const reviewEs: Record<keyof typeof reviewEn, string> = {
   'set.tab.notices': 'WhatsApp y avisos',
   'set.tab.team': 'Equipo y aprobadores',
   'set.tab.language': 'Idioma',
-  'set.tab.billing': 'Facturación',
+  'set.tab.billing': 'Pagos',
   'set.noticesTagline': 'Aprueba tu marca desde WhatsApp.',
   'set.connected': 'Conectado',
   'set.notConnected': 'Sin conectar',

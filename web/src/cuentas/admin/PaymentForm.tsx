@@ -4,7 +4,7 @@ import { cuentasApi, errKey, toMinor, type Agreement, type Cuenta } from '../api
 import { PayProgress } from './PayProgress';
 
 /** «Registrar pago» under its own project: how much is paid and left, and what this payment would make it. */
-export function PaymentForm({ brandId, agreement, docs, onDone }: { brandId: string; agreement: Agreement; docs: Cuenta[]; onDone: (msg: string) => void }) {
+export function PaymentForm({ brandId, agreement, docs, onDone, onCancel }: { brandId: string; agreement: Agreement; docs: Cuenta[]; onDone: (msg: string) => void; onCancel?: () => void }) {
   const { t } = useI18n();
   const cur = agreement.currency ?? 'COP';
   const [pay, setPay] = useState({ amount: '', date: new Date().toLocaleDateString('en-CA'), method: cur === 'USD' ? 'Transfer' : 'Transferencia', receipt: true });
@@ -21,7 +21,8 @@ export function PaymentForm({ brandId, agreement, docs, onDone }: { brandId: str
   }
 
   return (
-    <div className="col g12" style={{ paddingTop: '0.75rem', borderTop: '1px solid var(--line)' }}>
+    <div className="col g12" style={{ paddingTop: '0.75rem', borderTop: '1px solid var(--line)' }} aria-label={t('cc.a.payment')} role="group">
+      <p className="label" style={{ margin: 0 }}>{t('cc.a.payment')}</p>
       <PayProgress agreement={agreement} docs={docs} next={toMinor(pay.amount, cur)} />
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="field"><label htmlFor={id('v')}>{t('cc.a.pay.amount')} ({cur})</label><input id={id('v')} className="input" inputMode="decimal" autoFocus value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} /></div>
@@ -31,7 +32,10 @@ export function PaymentForm({ brandId, agreement, docs, onDone }: { brandId: str
       {err && <p className="t-sm" role="alert">{err}</p>}
       <div className="row between g12 wrap">
         <label className="row g8 t-sm"><input type="checkbox" checked={pay.receipt} onChange={(e) => setPay({ ...pay, receipt: e.target.checked })} />{t('cc.a.pay.receipt')}</label>
-        <button className="btn btn-primary btn-sm" disabled={busy || !toMinor(pay.amount, cur)} onClick={record}>{busy ? <span className="cc-spin" aria-hidden="true" /> : null} {t('cc.a.pay.save')}</button>
+        <span className="row g8">
+          {onCancel && <button className="btn btn-secondary btn-sm" disabled={busy} onClick={onCancel}>{t('common.cancel')}</button>}
+          <button className="btn btn-primary btn-sm" disabled={busy || !toMinor(pay.amount, cur)} onClick={record}>{busy ? <span className="cc-spin" aria-hidden="true" /> : null} {t('cc.a.pay.save')}</button>
+        </span>
       </div>
     </div>
   );

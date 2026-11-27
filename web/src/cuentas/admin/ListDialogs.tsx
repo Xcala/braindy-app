@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
-import { cuentasApi, errKey, money, type Cuenta, type Profile } from '../api';
+import { cuentasApi, errKey, money, type Cuenta } from '../api';
 import '../cuentas.css';
 
 /** «6 cuentas de cobro y 1 recibo»: what is waiting to go out, said by kind so it matches the lists. */
@@ -35,70 +35,6 @@ export function ConfirmIssue({ doc, onClose, onIssue }: { doc: Cuenta; onClose: 
       <div className="row g12" style={{ justifyContent: 'flex-end' }}>
         <button className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
         <button className="btn btn-primary" autoFocus onClick={onIssue}>{t('cc.iss.ok')}</button>
-      </div>
-    </Modal>
-  );
-}
-
-/** Sends every cuenta and recibo still waiting to go out, one after the other, with who gets them and the progress. */
-export function SendAll({ brandId, docs, profile, people, onClose }: { brandId: string; docs: Cuenta[]; profile: Profile | null; people: number; onClose: (sent: boolean) => void }) {
-  const { t } = useI18n();
-  const [step, setStep] = useState<'ask' | 'sending' | 'done'>('ask');
-  const [done, setDone] = useState(0);
-  const [failed, setFailed] = useState<string[]>([]);
-  const [mode, setMode] = useState<'one' | 'each'>(docs.length > 1 ? 'one' : 'each');
-  const [one, setOne] = useState<{ via: string[]; waMe: string | null } | null>(null);
-  const to = [profile?.accountingEmail, profile?.accountingWhatsApp].filter(Boolean).join(' · ');
-
-  async function go() {
-    setStep('sending');
-    if (mode === 'one') {
-      try { const r = await cuentasApi.batch(brandId, docs.map((d) => d.id)); setOne(r); setDone(docs.length); }
-      catch { setFailed(docs.map((d) => d.number)); }
-      setStep('done'); return;
-    }
-    const bad: string[] = [];
-    for (const [i, d] of docs.entries()) {
-      try { await cuentasApi.act(brandId, d.id, 'send'); } catch { bad.push(d.number); }
-      setDone(i + 1);
-    }
-    setFailed(bad); setStep('done');
-  }
-
-  return (
-    <Modal id="cc-all-h" onClose={() => step !== 'sending' && onClose(step === 'done')}>
-      <div className="col g8">
-        <h2 className="h2" id="cc-all-h">{t('cc.all.title', { n: pendingWhat(t as never, docs) })}</h2>
-        <p className="t-sm">{docs.map((d) => d.number).join(', ')}</p>
-        <p className="t-sm t-mute">{to ? t('cc.all.to', { to }) : t('cc.all.noTo')} {t('cc.all.app', { n: String(people) })}</p>
-      </div>
-      {step === 'ask' && docs.length > 1 && (
-        <fieldset className="col g8" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="label" style={{ marginBottom: '0.5rem' }}>{t('cc.all.how')}</legend>
-          {(['one', 'each'] as const).map((m) => (
-            <label key={m} className="row g8 t-sm" style={{ alignItems: 'flex-start' }}>
-              <input type="radio" name="cc-all-mode" checked={mode === m} onChange={() => setMode(m)} style={{ marginTop: '0.2rem' }} />
-              <span className="col g2"><b>{t(m === 'one' ? 'cc.all.one' : 'cc.all.each')}</b><span className="t-xs t-mute">{t(m === 'one' ? 'cc.all.oneHint' : 'cc.all.eachHint', { n: String(docs.length) })}</span></span>
-            </label>
-          ))}
-        </fieldset>
-      )}
-      {step === 'sending' && (
-        <div className="col g8" role="status">
-          <p className="t-sm"><span className="cc-spin" aria-hidden="true" /> {t('cc.all.sending', { i: String(done), n: String(docs.length) })}</p>
-          <div className="cc-bar"><span className="is-paid" style={{ width: `${Math.round((done / docs.length) * 100)}%` }} /></div>
-        </div>
-      )}
-      {step === 'done' && (
-        <div className="row g12" role="status" style={{ alignItems: 'center' }}>
-          <span className="cc-done" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-          <span className="t-sm"><b>{t('cc.all.done', { n: String(docs.length - failed.length) })}</b>{failed.length > 0 ? ` ${t('cc.all.failed', { list: failed.join(', ') })}` : ''}{one ? ` ${one.via.includes('email') || !to ? t('cc.all.oneDone', { list: docs.map((d) => d.number).join(', ') }) : t('cc.all.oneNoMail')}` : ''}</span>
-          {one?.waMe && <a className="btn btn-secondary btn-sm" href={one.waMe} target="_blank" rel="noreferrer">{t('cc.all.wa')}</a>}
-        </div>
-      )}
-      <div className="row g12" style={{ justifyContent: 'flex-end' }}>
-        {step === 'ask' && <><button className="btn btn-secondary" onClick={() => onClose(false)}>{t('common.cancel')}</button><button className="btn btn-primary" autoFocus onClick={go}>{t('cc.all.ok', { n: String(docs.length) })}</button></>}
-        {step === 'done' && <button className="btn btn-primary" autoFocus onClick={() => onClose(true)}>{t('cc.all.close')}</button>}
       </div>
     </Modal>
   );

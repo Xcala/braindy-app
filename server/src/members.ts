@@ -74,18 +74,20 @@ members.patch('/brands/:brandId/members/:uid', async (c) => {
   const by = c.get('user').uid;
   if (!(await canManage(by, brandId))) return c.json({ error: 'forbidden' }, 403);
   if (uid === by) return c.json({ error: 'cannot_edit_self' }, 400);
-  const b = await c.req.json<{ role?: string; canApprove?: boolean; sections?: string[] | null }>();
+  const b = await c.req.json<{ role?: string; canApprove?: boolean; sections?: string[] | null; name?: string }>();
   const ref = db.doc(`brands/${brandId}/members/${uid}`);
   if (!(await ref.get()).exists) return c.json({ error: 'not_found' }, 404);
   const patch: Record<string, unknown> = { updatedBy: by, updatedAt: now() };
   if (ROLES.includes(b.role as Role)) patch.role = b.role;
   if (typeof b.canApprove === 'boolean') patch.canApprove = b.canApprove;
+  // The name the brand knows them by (audit C5): many were invited with only a phone number or an email.
+  if (typeof b.name === 'string' && b.name.trim()) patch.name = b.name.trim().slice(0, 80);
   if (patch.role === 'client_owner') patch.canApprove = true;
   if ('sections' in b) {
     if (!(await brandAccess(by, brandId)).admin) return c.json({ error: 'forbidden' }, 403);
     patch.sections = cleanSections(b.sections) ?? FieldValue.delete();
   }
-  await db.batch().update(ref, patch).set(db.collection('audit').doc(), { type: 'member_updated', brandId, uid, patch: { role: patch.role ?? null, canApprove: patch.canApprove ?? null, sections: Array.isArray(patch.sections) ? patch.sections : null }, by, at: now() }).commit();
+  await db.batch().update(ref, patch).set(db.collection('audit').doc(), { type: 'member_updated', brandId, uid, patch: { role: patch.role ?? null, canApprove: patch.canApprove ?? null, name: patch.name ?? null, sections: Array.isArray(patch.sections) ? patch.sections : null }, by, at: now() }).commit();
   return c.json({ ok: true });
 });
 

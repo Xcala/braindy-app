@@ -12,9 +12,9 @@ import { ContractCard } from '../plan/ContractCard';
 import { ProposalCard } from '../plan/ProposalCard';
 import { PlanEditor } from '../plan/PlanEditor';
 import { Button } from '../components/Button';
-import { Subscription } from '../plan/Subscription';
-import { BrandPieces } from '../plan/BrandPieces';
-import { PaymentsIntro, SiteIntro, SummaryIntro } from '../plan/PlanIntros';
+import { UpgradeTab } from '../plan/UpgradeTab';
+import { ProjectHead, useLiveProject } from '../plan/ProjectHead';
+import { PaymentsIntro, SummaryIntro } from '../plan/PlanIntros';
 import { planApi, usePlan } from '../plan/usePlan';
 import { Accesses } from './Accesses';
 import { useMySections } from '../team/sections';
@@ -27,6 +27,8 @@ export function MyPlan() {
   const { profile } = useAuth();
   const { t } = useI18n();
   const plan = usePlan(current?.id);
+  // No plan loaded: Mi plan's header comes from the project billed in cuentas, if there is one (audit C1).
+  const billed = useLiveProject(plan === null ? current?.id : undefined);
   const contractId = current?.onboarding?.contractId ?? null;
   const contractDoc = useBrandDoc(current?.id, `contracts/${contractId ?? '-'}`);
   const live = useBrandDoc(current?.id, 'context/schedule').data as Schedule | null;
@@ -52,16 +54,19 @@ export function MyPlan() {
 
   // Tabs instead of one long page (they sit in the section's top row, see app/planTabs); the schedule tab only when there is a schedule or a kickoff checklist.
   // The schedule folds inside the summary (2026-11-17); old ?tab=schedule links land there with it open.
-  const tabs: PlanTab[] = ['summary', 'brand', 'site', 'apps', 'payments'];
+  // «Mejorar mi plan» (site) holds hosting and the studio since 2026-11-26; old ?tab=brand links land there.
+  const tabs: PlanTab[] = ['summary', 'site', 'apps', 'payments'];
   // Third-party apps got their own tab (2026-11-18); old ?tab=site&open=apps links land there.
-  const asked = (params.get('open') === 'apps' ? 'apps' : params.get('tab')) as PlanTab | null;
+  const raw = params.get('open') === 'apps' ? 'apps' : params.get('tab');
+  const asked = (raw === 'brand' ? 'site' : raw) as PlanTab | null;
   const tab: PlanTab = asked && tabs.includes(asked) ? asked : 'summary';
   const openFold = asked === 'schedule' ? 'schedule' : params.get('open') ?? undefined;
 
   return (
     <div className="col g32">
-      <PlanView tab={tab} tabs={null} site={<Subscription current={current} part="hosting" />} brand={<BrandPieces brand={current} />}
-        intros={{ summary: <SummaryIntro brand={current} />, site: <SiteIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
+      <PlanView tab={tab} tabs={null} site={<UpgradeTab brand={current} />}
+        project={billed ? <ProjectHead live={billed} brandName={current.name} action={admin ? <Button size="sm" onClick={() => setEditing(true)}>✎ {t('pe.open')}</Button> : undefined} /> : undefined}
+        intros={{ summary: <SummaryIntro brand={current} />, payments: <PaymentsIntro brand={current} /> }}
         payments={<PaymentsTab brand={current} />} openFold={openFold}
         apps={can('accesses') ? <Accesses embedded /> : undefined}
         brandName={current.name} plan={plan} schedule={schedule} kickoff={kickoff}

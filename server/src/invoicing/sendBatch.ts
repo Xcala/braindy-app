@@ -1,3 +1,4 @@
+import { FieldValue } from 'firebase-admin/firestore';
 // «Enviar todo en un solo correo»: every cuenta and recibo still waiting, in ONE email from the connected mailbox
 // (all PDFs attached, a private link for each) and ONE WhatsApp message; one phone alert to billing people.
 // Never logs addresses, phones or bodies.
@@ -50,7 +51,7 @@ export async function sendBatch(brandId: string, docIds: string[], by: string) {
     if (sent) via.push('whatsapp'); else waMe = waMeLink(phone, body);
   }
   for (const x of docs) {
-    await x.ref.update({ status: x.d.status === 'issued' ? 'sent' : x.d.status, held: false, sentAt: now(), sentVia: [...via, 'app'] });
+    await x.ref.update({ status: x.d.status === 'issued' ? 'sent' : x.d.status, held: false, sendAt: FieldValue.delete(), sentAt: now(), sentVia: [...via, 'app'] });
     await notifyBilling(brandId, x.id, x.d, true);
   }
   const uids = await billingPeople(brandId).catch(() => [] as string[]);

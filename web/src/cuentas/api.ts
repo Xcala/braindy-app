@@ -5,8 +5,10 @@ export type CuentaPayment = { id: string; date: string; amount: number; method: 
 export type Cuenta = {
   id: string; type: 'cuenta_cobro' | 'recibo'; number: string; index: number; of: number; billingMonth: string; scheduledDate: string; issueDate: string | null;
   amount: number; amountWords: string; status: DocStatus; held: boolean; paid: number; hasPdf: boolean; sentVia: string[]; voidReason: string | null;
-  covers: Array<{ number: string; amount: number }>; paidOn?: string | null; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency;
+  covers: Array<{ number: string; amount: number }>; paidOn?: string | null; agreementId: string | null; pendingProof: boolean; payments: CuentaPayment[]; currency?: Currency; sendAt?: string | null;
 };
+/** A project as the client sees it: its total, what is paid and the next cuenta still to come. */
+export type ClientProject = { id: string; title: string; totalAmount: number; currency: Currency; installments: number; paid: number; next: { number: string; date: string; amount: number } | null };
 /** A document NickMark leaves for the client's accounting (RUT, bank certificate…). */
 export type BillingFile = { id: string; name: string; type: string; size: number };
 /** What «Enviar» did: channels that went out, a wa.me fallback, and how many people got the notice in the app. */
@@ -38,7 +40,7 @@ const json = (body: unknown, method = 'POST'): RequestInit => ({ method, body: J
 const A = (b: string) => `/v1/admin/brands/${b}/invoicing`;
 
 export const cuentasApi = {
-  list: (b: string) => api<{ docs: Cuenta[]; cardFeePct?: number }>(`/v1/brands/${b}/cuentas`),
+  list: (b: string) => api<{ docs: Cuenta[]; cardFeePct?: number; projects?: ClientProject[] }>(`/v1/brands/${b}/cuentas`),
   pdf: (b: string, id: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/${id}/pdf`),
   paid: (b: string, id: string, x: { proof: string; date: string; amount: number; method: string }) => api<{ ok: true }>(`/v1/brands/${b}/cuentas/${id}/paid`, json(x)),
   checkout: (b: string, id: string, lang: string) => api<{ url: string }>(`/v1/brands/${b}/cuentas/${id}/checkout`, json({ lang })),
@@ -60,6 +62,8 @@ export const cuentasApi = {
   activate: (b: string, id: string) => api<{ issued: string[]; scheduled: string[] }>(`${A(b)}/agreements/${id}/activate`, json({})),
   act: (b: string, id: string, action: 'issue' | 'send' | 'void', reason?: string) =>
     api<SendResult>(`${A(b)}/docs/${id}/${action}`, json({ reason })),
+  schedule: (b: string, id: string, date: string | null) => api<{ sendAt: string | null }>(`${A(b)}/docs/${id}/schedule`, json({ date })),
+  sending: (b: string, id: string, x: { autoSend?: boolean; issueDay?: number }) => api<{ ok: true }>(`${A(b)}/agreements/${id}`, json(x, 'PUT')),
   batch: (b: string, docIds: string[]) => api<{ sent: string[]; via: string[]; waMe: string | null; people: number }>(`${A(b)}/send-batch`, json({ docIds })),
   overdue: (b: string, id: string, on: boolean) => api<{ status: string }>(`${A(b)}/docs/${id}/overdue`, json({ on })),
   adminPdf: (b: string, id: string) => api<{ url: string }>(`${A(b)}/docs/${id}/pdf`),
@@ -71,6 +75,15 @@ export const cuentasApi = {
   saveIssuer: (i: Issuer, id: IssuerId = 'nicolas') => api<{ issuer: Issuer }>(`/v1/admin/issuers/${id}`, json(i, 'PUT')),
   signature: (png: string, id: IssuerId = 'nicolas') => api<{ ok: true }>(`/v1/admin/issuers/${id}/signature`, json({ png }, 'PUT')),
   copySignature: (id: IssuerId, from: IssuerId) => api<{ ok: true }>(`/v1/admin/issuers/${id}/signature`, json({ copyFrom: from }, 'PUT')),
+};
+
+/** Day the cuenta falls due: its planned day, or the day it went out if that came later. Mora counts from here. */
+export const dueOf = (d: Pick<Cuenta, 'issueDate' | 'scheduledDate'>) => [d.issueDate ?? '', d.scheduledDate ?? ''].reduce((x, y) => (y > x ? y : x), '');
+/** «5 ene» / «Jan 5» (with the year when it is not this year). */
+export const shortDate = (ymd: string, lang: 'en' | 'es') => {
+  const d = new Date(`${ymd}T12:00:00`);
+  const year = d.getFullYear() !== new Date().getFullYear();
+  return d.toLocaleDateString(lang === 'es' ? 'es-CO' : 'en-US', { day: 'numeric', month: 'short', ...(year ? { year: 'numeric' } : {}) }).replace('.', '');
 };
 
 /** The server's short error code («no_profile»…) as a translation key. */

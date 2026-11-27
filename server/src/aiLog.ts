@@ -38,6 +38,18 @@ async function maybeAlert() {
   logError(new Error(`AI failing: ${failed} failed calls in 15 minutes`), { where: 'ai-alert' });
 }
 
+const BOGOTA_MS = 5 * 3600_000;
+
+/** Brain tasks do not store their request; a 'plan' task is titled after it, so find it by brand + title (reads only, one per task). */
+async function requestsOf(tasks: Array<{ id: string; brandId?: unknown; kind?: unknown; title?: unknown }>) {
+  const out = new Map<string, string>();
+  await Promise.all(tasks.filter((t) => t.kind === 'plan' && typeof t.brandId === 'string' && t.title).slice(0, 40).map(async (t) => {
+    const q = await db.collection(`brands/${t.brandId}/requests`).where('title', '==', String(t.title)).limit(1).get().catch(() => null);
+    if (q?.docs[0]) out.set(t.id, q.docs[0].id);
+  }));
+  return out;
+}
+
 const pctl = (xs: number[], p: number) => { if (!xs.length) return 0; const s = [...xs].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * s.length))]; };
 
 export const adminAiHealth = new Hono<AuthEnv>();
@@ -70,6 +82,12 @@ adminAiHealth.get('/ai-health', async (c) => {
   const hourAgo = Date.now() - 3600_000;
   const stuckBefore = Date.now() - 15 * 60_000;
   const taskRows = tasks.docs.map((d) => ({ id: d.id, brain: d.get('brain'), brandId: d.get('brandId'), kind: d.get('kind'), title: d.get('title'), status: d.get('status'), ai: d.get('ai'), at: (d.get('createdAt') as Timestamp | undefined)?.toMillis() ?? 0 }));
+  const failed = rows.filter((r) => !r.ok).slice(0, 100);
+  const stuck = taskRows.filter((r) => r.status === 'running' && r.at < stuckBefore).slice(0, 20);
+  const fellBack = taskRows.filter((r) => r.status === 'done' && r.ai === false).slice(0, 20);
+  // Which request each failure or task belongs to (read only): the call's own requestId, else its task's.
+  const reqOf = await requestsOf(taskRows.filter((t) => stuck.includes(t) || fellBack.includes(t) || failed.some((f) => f.taskId === t.id)));
+  const taskBrand = new Map(taskRows.map((t) => [t.id, t.brandId as string]));
   return c.json({
     configured: !!process.env.ANTHROPIC_API_KEY?.trim(),
     days,
@@ -81,12 +99,15 @@ adminAiHealth.get('/ai-health', async (c) => {
     },
     byKind: group((r) => r.kind.replace(/^brain:/, '')),
     byBrand: group((r) => r.brandId ?? '—'),
-    byDay: group((r) => new Date(r.at).toISOString().slice(0, 10)).sort((a, b) => a.key.localeCompare(b.key)),
-    errors: rows.filter((r) => !r.ok).slice(0, 20).map((r) => ({ at: r.at, kind: r.kind, brandId: r.brandId, error: r.error, attempts: r.attempts })),
+    // Days in Colombia time (UTC−5 all year), so an evening call is not counted on the next day.
+    byDay: group((r) => new Date(r.at - BOGOTA_MS).toISOString().slice(0, 10)).sort((a, b) => a.key.localeCompare(b.key)),
+    errors: failed.map((r) => ({ at: r.at, kind: r.kind, brandId: r.brandId ?? (r.taskId ? taskBrand.get(r.taskId) ?? null : null), error: r.error, attempts: r.attempts,
+      taskId: r.taskId ?? null, requestId: r.requestId ?? (r.taskId ? reqOf.get(r.taskId) ?? null : null) })),
     tasks: {
       total: taskRows.length,
       fallback: taskRows.filter((r) => r.status === 'done' && r.ai === false).length,
-      stuck: taskRows.filter((r) => r.status === 'running' && r.at < stuckBefore).slice(0, 20),
+      stuck: stuck.map((t) => ({ ...t, requestId: reqOf.get(t.id) ?? null })),
+      fellBack: fellBack.map((t) => ({ ...t, requestId: reqOf.get(t.id) ?? null })),
     },
     lastAlert: (alert.get('at') as Timestamp | undefined)?.toMillis() ?? null,
   });

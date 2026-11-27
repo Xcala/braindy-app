@@ -48,3 +48,30 @@ html[data-theme="dark"] .apps-chip[aria-pressed='true'], html[data-theme="dark"]
 .apps-cols[open] .apps-cols-btn, .apps-cols-btn:hover { color: var(--ink); border-color: var(--graphite); }
 .apps-cols-menu { position: absolute; right: 0; top: calc(100% + 0.5rem); z-index: 20; display: flex; flex-direction: column; gap: 0.5rem; min-width: 11rem; padding: 0.875rem 1rem; background: var(--white); border: 1px solid var(--line); border-radius: 0.875rem; box-shadow: 0 12px 32px rgba(11,18,32,.12); }
 .apps-cols-menu label { cursor: pointer; }
+/* Phones: the search and a «Filtros» button; the rest opens under it (audit C4, 2026-11-26). */
+.apps-bar .apps-filters-btn { display: none; }
+@media (max-width: 767px) {
+  .apps-bar { flex-wrap: wrap; align-items: center; }
+  .apps-bar .apps-search { flex: 1 1 0; }
+  .apps-bar .apps-filters-btn { display: inline-flex; height: 2.75rem; }
+  .apps-bar:not(.is-open) .apps-more, .apps-chips:not(.is-open) { display: none; }
+}
+/* Phones, open bar and cards (2026-11-26): search + «Filtros» on one line, sort and group side by side, the view
+   switch under them, the quick filters in one sliding row; in a card each label sits over its value. */
+@media (max-width: 767px) {
+  .apps-bar.is-open { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: 0.625rem; }
+  .apps-bar.is-open .apps-search { grid-column: 1 / 3; grid-row: 1; }
+  .apps-bar.is-open .apps-filters-btn { grid-column: 3; grid-row: 1; }
+  .apps-bar.is-open .apps-select { min-width: 0; }
+  .apps-bar.is-open .apps-select .input { width: 100%; }
+  .apps-bar.is-open .apps-seg { grid-column: 3; justify-self: end; }
+  .apps-bar.is-open > span.apps-more { grid-column: 1 / -1; justify-self: end; }
+  .apps-chips.is-open { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -0.25rem; padding-inline: 0.25rem; }
+  .apps-chips::-webkit-scrollbar { display: none; }
+  .apps-chip { flex: none; white-space: nowrap; }
+  .apps-grid { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .acc-card.card { padding: 1rem 1.125rem; gap: 0.75rem; }
+  .acc-card-fields { grid-template-columns: minmax(0, 1fr); gap: 0.125rem; }
+  .acc-card-fields dt:not(:first-child) { margin-top: 0.5rem; }
+  .acc-card-fields dd > .row { flex-wrap: nowrap; }
+}

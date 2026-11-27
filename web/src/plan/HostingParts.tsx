@@ -74,7 +74,7 @@ export function Finder({ brandName }: { brandName: string }) {
 /** The three web plans side by side; the current one is shaded. */
 export function Compare({ current }: { current?: string | null }) {
   const L = useL();
-  const hi = current ?? 'ultra';
+  const hi = current ?? 'pro';
   return (
     <section>
       <h2>{L(['Compara ', 'Compare '])}<b>{L(['los tres planes', 'the three plans'])}</b></h2>
@@ -151,7 +151,7 @@ export function Featured({ cur, brandName }: { cur: Cur; brandName: string }) {
         <p>{L(['Pídele a los ', 'Ask the '])}Br<b>ai</b>ns{L([' carruseles, imágenes, videos, investigaciones y planes de marketing. Todo sale con tu logo, tus colores y tu tono ya cargados, y NicoMarca revisa cada pieza antes de entregarla. Ves el costo de cada pedido antes de confirmar.', ' for carousels, images, videos, research and marketing plans. Everything comes out with your logo, colors and tone already loaded, and NickMark reviews every piece before delivering it. You see the cost of each order before confirming.'])}</p>
       </div>
       <div className="hp-feature-side">
-        <div className="hp-f-price"><span className="hp-f-amount">+{fmt(CREDITS[cur], cur)} {cur.toUpperCase()}</span> <span>{L(T.perMonth)}</span></div>
+        <div className="hp-f-price"><span className="hp-f-amount">{fmt(CREDITS[cur], cur)} {cur.toUpperCase()}</span> <span>{L(T.perMonth)}</span></div>
         <ul className="hp-key">
           <li><b>{L(['Unos 7 carruseles', 'About 7 carousels'])}</b>{L([' al mes', ' a month'])}</li>
           <li>{L(['O ', 'Or '])}<b>{L(['2 videos de marca', '2 brand videos'])}</b>{L([' y 60 imágenes', ' and 60 images'])}</li>

@@ -6,7 +6,7 @@ import { accessesApi, signInOf, type Access, type SignIn } from './useAccesses';
 import { looksLikeSecret, splitSecretLines } from './secretNotes';
 import { AccessCost, type Cost } from './AccessCost';
 
-const SIGN_IN: [SignIn, StringKey][] = [['password', 'acc.signInPassword'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft']];
+const SIGN_IN: [SignIn, StringKey][] = [['password', 'acc.signInPassword'], ['google', 'acc.signInGoogle'], ['microsoft', 'acc.signInMicrosoft'], ['facebook', 'acc.signInFacebook'], ['none', 'acc.signInNone']];
 const PLATFORMS = ['Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'YouTube', 'X', 'Google', 'Gmail', 'Webflow', 'WordPress', 'Shopify', 'Metricool', 'Meta Business', 'Hosting', 'Domain'];
 
 /** Add or edit an access (design 17). The password is sent once to the backend, encrypted before saving. */
@@ -88,7 +88,7 @@ export function AccessForm({ brandId, editing, groups = [], onClose }: { brandId
                 onClick={() => setSignIn(v)}>{t(k)}</button>
             ))}
           </div>
-          {signIn !== 'password' && <span className="help">{t('acc.signInHelp')}</span>}
+          {signIn !== 'password' && signIn !== 'none' && <span className="help">{t('acc.signInHelp')}</span>}
         </div>
         {signIn === 'password' && (
           <div className="field">

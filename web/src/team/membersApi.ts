@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 export const inviteMember = (brandId: string, email: string, role: 'client_owner' | 'client_member', canApprove: boolean, sections?: string[] | null) =>
   api<{ status: 'added' | 'invited' }>(`/v1/brands/${brandId}/members`, { method: 'POST', body: JSON.stringify({ email, role, canApprove, ...(sections ? { sections } : {}) }) });
 
-export const updateMember = (brandId: string, uid: string, patch: { role?: string; canApprove?: boolean; sections?: string[] | null }) =>
+export const updateMember = (brandId: string, uid: string, patch: { role?: string; canApprove?: boolean; sections?: string[] | null; name?: string }) =>
   api(`/v1/brands/${brandId}/members/${uid}`, { method: 'PATCH', body: JSON.stringify(patch) });
 
 export const removeMember = (brandId: string, uid: string) =>

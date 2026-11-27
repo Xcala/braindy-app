@@ -1,89 +1,123 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { collection, getDocs, query, Timestamp, where } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
-import { useLessons, useObjections, type Lesson, type Objection } from '../../criterio/useCriterio';
+import { Icon } from '../../components/Icon';
+import { AREAS, useLessons, useObjections, type Lesson, type Objection } from '../../criterio/useCriterio';
 import { LessonEditor, ObjectionEditor } from '../../criterio/Editors';
+import { CriterioHits } from './CriterioHits';
+import '../../criterio/criterioAdmin.css';
 
-type Hits = Record<string, { shown: number; opened: number; sent: number; brands: Set<string> }>;
+type Filter = 'all' | 'drafts' | 'tutorials';
+type Group = { key: string; title: string; items: Lesson[] };
+const KINDS = ['general', 'section', 'feature'] as const;
+const isTut = (l: Lesson) => !!l.kind;
+const hasVideo = (l: Lesson) => !!(l.videoUrl || l.videos?.es?.wide || l.videos?.en?.wide);
 
-/** Admin · NickMark Taste: lessons, objection answers, and which objections clients raise most. */
+/** Admin · NickMark Taste: lessons (by area, app tutorials apart) and objection answers, each opening its editor page. */
 export function AdminCriterio() {
   const { t, lang } = useI18n();
-  const lessons = useLessons().list;
-  const objections = useObjections().list;
+  const L = useLessons();
+  const O = useObjections();
   const [tab, setTab] = useState<'lessons' | 'objections'>('lessons');
   const [editL, setEditL] = useState<Lesson | 'new' | null>(null);
   const [editO, setEditO] = useState<Objection | 'new' | null>(null);
-  const hits = useHits();
-  const ranked = objections.filter((o) => hits[o.id]).sort((a, b) => hits[b.id].shown - hits[a.id].shown);
+  const loading = tab === 'lessons' ? L.loading : O.loading;
+  const count = (n: number, busy: boolean) => (busy ? '…' : n);
 
   return (
-    <div className="col g24">
-      <div className="col g8"><p className="label">{t('cra.nav')}</p><h1 className="h1"><span className="w9">{t('cra.title')}.</span></h1><p className="t-mute">{t('cra.sub')}</p></div>
-
-      <section className="card col g12" aria-labelledby="h-hits">
-        <div className="col g4"><h2 className="h3" id="h-hits">{t('cra.hits')}</h2><span className="t-sm t-mute">{t('cra.hitsSub')}</span></div>
-        {ranked.length === 0 ? <p className="t-sm t-mute">{t('cra.noHits')}</p> : ranked.map((o) => (
-          <div key={o.id} className="row between g12 wrap t-sm">
-            <span className="w7">«{o.phrase[lang]}»</span>
-            <span className="t-mute">{hits[o.id].shown} {t('cra.shown')} · {hits[o.id].opened} {t('cra.opened')} · {hits[o.id].sent} {t('cra.sent')} · {t('cra.brandsN', { n: hits[o.id].brands.size })}</span>
-          </div>
-        ))}
-      </section>
-
+    <div className="col g16">
+      {/* UX CR2: short title, the tabs right below; the drafts note moved into the editor. */}
+      <h1 className="h1"><span className="w9">{t('cra.nav')}</span></h1>
       <div className="row between g12 wrap">
         <div className="seg" role="group">
-          <button className={tab === 'lessons' ? 'is-on' : ''} onClick={() => setTab('lessons')}>{t('cra.lessons')} · {lessons.length}</button>
-          <button className={tab === 'objections' ? 'is-on' : ''} onClick={() => setTab('objections')}>{t('cra.objections')} · {objections.length}</button>
+          <button className={tab === 'lessons' ? 'is-on' : ''} aria-pressed={tab === 'lessons'} onClick={() => setTab('lessons')}>{t('cra.lessons')} · {count(L.list.length, L.loading)}</button>
+          <button className={tab === 'objections' ? 'is-on' : ''} aria-pressed={tab === 'objections'} onClick={() => setTab('objections')}>{t('cra.objections')} · {count(O.list.length, O.loading)}</button>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => (tab === 'lessons' ? setEditL('new') : setEditO('new'))}>+ {t('cra.new')}</button>
+        <button className="btn btn-primary btn-sm" onClick={() => (tab === 'lessons' ? setEditL('new') : setEditO('new'))}>
+          + {tab === 'lessons' ? t('cra.newLesson') : t('cra.newObjection')}
+        </button>
       </div>
 
-      {tab === 'lessons' && (editL ? <LessonEditor l={editL === 'new' ? undefined : editL} onClose={() => setEditL(null)} /> : (
-        <div className="table">
-          {lessons.map((l) => (
-            <div key={l.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) 11.25rem 6.875rem 5.625rem' }}>
-              <Link to={`/learn/${l.id}`} className="w7 truncate" style={{ color: 'var(--ink)', textDecoration: 'none' }}>{l.title[lang]}</Link>
-              <span className="t-sm t-mute truncate">{t(`cr.area.${l.area}`)}</span>
-              <span><span className={`chip ${l.status === 'published' ? 'c-approved' : 'c-draft'}`}>{l.status === 'published' ? t('cra.published') : t('cr.draft')}</span>{l.videoUrl ? ' ▶' : ''}</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditL(l)}>{t('cra.edit')}</button>
+      {loading ? <Skeleton /> : tab === 'lessons' ? <Lessons lessons={L.list} onEdit={setEditL} /> : (
+        <>
+          <CriterioHits objections={O.list} />
+          {O.list.length ? (
+            <div className="cra-list">
+              {O.list.map((o) => (
+                <Row key={o.id} title={`«${o.phrase[lang] || o.phrase.es}»`} sub={o.answer[lang]} published={o.status === 'published'} onOpen={() => setEditO(o)} />
+              ))}
             </div>
-          ))}
-        </div>
-      ))}
-      {tab === 'objections' && (editO ? <ObjectionEditor o={editO === 'new' ? undefined : editO} lessons={lessons} onClose={() => setEditO(null)} /> : (
-        <div className="table">
-          {objections.map((o) => (
-            <div key={o.id} className="trow" style={{ gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr) 6.875rem 5.625rem' }}>
-              <span className="w7 truncate">«{o.phrase[lang]}»</span>
-              <span className="t-sm t-mute truncate">{o.answer[lang]}</span>
-              <span><span className={`chip ${o.status === 'published' ? 'c-approved' : 'c-draft'}`}>{o.status === 'published' ? t('cra.published') : t('cr.draft')}</span></span>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditO(o)}>{t('cra.edit')}</button>
-            </div>
-          ))}
-        </div>
+          ) : <p className="t-sm t-mute">{t('cra.noObjections')}</p>}
+        </>
+      )}
+
+      {editL && <LessonEditor l={editL === 'new' ? undefined : editL} onClose={() => setEditL(null)} />}
+      {editO && <ObjectionEditor o={editO === 'new' ? undefined : editO} lessons={L.list} onClose={() => setEditO(null)} />}
+    </div>
+  );
+}
+
+/** UX CR3: a title per area with its count; app tutorials apart (also a «Tutorials» filter); «Drafts» shows what is left to publish. */
+function Lessons({ lessons, onEdit }: { lessons: Lesson[]; onEdit: (l: Lesson) => void }) {
+  const { t, lang } = useI18n();
+  const [filter, setFilter] = useState<Filter>('all');
+  const drafts = lessons.filter((l) => l.status !== 'published');
+  const tuts = lessons.filter(isTut);
+  const list = filter === 'drafts' ? drafts : filter === 'tutorials' ? tuts : lessons;
+  const groups: Group[] = filter === 'tutorials'
+    ? KINDS.map((k) => ({ key: k, title: t(`tut.kind.${k}`), items: list.filter((l) => l.kind === k) }))
+    : [
+      ...AREAS.map((a) => ({ key: a, title: t(`cr.area.${a}`), items: list.filter((l) => !isTut(l) && l.area === a) })),
+      { key: 'tut', title: t('cra.tutorials'), items: list.filter(isTut) },
+    ];
+  const sub = (l: Lesson, withKind: boolean) => [
+    withKind && l.kind ? t(`tut.kind.${l.kind}`) : null,
+    t('cr.minutes', { n: l.minutes }),
+    hasVideo(l) ? `▶ ${t('cra.video')}` : null,
+  ].filter(Boolean).join(' · ');
+  const chips: Array<[Filter, string, number]> = [['all', t('cra.f.all'), lessons.length], ['drafts', t('cra.f.drafts'), drafts.length], ['tutorials', t('cra.f.tutorials'), tuts.length]];
+  return (
+    <div className="col g8">
+      <div className="seg seg-scroll" role="group" aria-label={t('cra.lessons')}>
+        {chips.map(([k, label, n]) => (
+          <button key={k} className={filter === k ? 'is-on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>{label} · {n}</button>
+        ))}
+      </div>
+      {!list.length && <p className="t-sm t-mute">{t('cra.noLessons')}</p>}
+      {groups.filter((g) => g.items.length).map((g) => (
+        <section key={g.key} aria-label={g.title}>
+          <h2 className="cra-group">{g.title} · {g.items.length}</h2>
+          <div className="cra-list">
+            {g.items.map((l) => (
+              <Row key={l.id} title={l.title[lang] || l.title.es} sub={sub(l, filter !== 'tutorials')} published={l.status === 'published'} onOpen={() => onEdit(l)} />
+            ))}
+          </div>
+        </section>
       ))}
     </div>
   );
 }
 
-function useHits() {
-  const [hits, setHits] = useState<Hits>({});
-  useEffect(() => {
-    const since = Timestamp.fromMillis(Date.now() - 90 * 864e5);
-    getDocs(query(collection(db, 'criterioHits'), where('at', '>=', since))).then((s) => {
-      const h: Hits = {};
-      for (const d of s.docs) {
-        const id = String(d.get('objectionId'));
-        h[id] ??= { shown: 0, opened: 0, sent: 0, brands: new Set() };
-        const out = d.get('outcome') as 'shown' | 'opened' | 'sent';
-        if (out in h[id]) h[id][out]++;
-        h[id].brands.add(String(d.get('brandId')));
-      }
-      setHits(h);
-    }).catch(() => setHits({}));
-  }, []);
-  return hits;
+/** UX CR1: two lines (bold title, grey details), a short state chip, and the whole row opens the editor. */
+function Row({ title, sub, published, onOpen }: { title: string; sub?: string; published: boolean; onOpen: () => void }) {
+  const { t } = useI18n();
+  return (
+    <button type="button" className="cra-row" onClick={onOpen}>
+      <span className="cra-row-text">
+        <span className="cra-row-title">{title}</span>
+        {sub ? <span className="cra-row-sub">{sub}</span> : null}
+      </span>
+      {published
+        ? <span className="chip c-approved" aria-label={t('cra.published')}><span className="hidden sm:inline">{t('cra.published')}</span></span>
+        : <span className="chip c-draft">{t('cr.draft')}</span>}
+      <Icon name="chevronRight" size={16} />
+    </button>
+  );
+}
+
+function Skeleton() {
+  return (
+    <div className="cra-list" aria-busy="true">
+      {[0, 1, 2, 3].map((i) => <div key={i} className="skel cra-skel" />)}
+    </div>
+  );
 }
