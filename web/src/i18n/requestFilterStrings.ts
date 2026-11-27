@@ -20,6 +20,7 @@ export const requestFilterEn = {
   'rc.chip': 'Cancelled', 'rc.error': "Couldn't do it. Try again.",
   'rc.dupTitle': 'Is it the same as «{title}»?', 'rc.dupBody': 'You sent it {when} and it is still open. If it is the same, add what is missing there so the team does not do it twice.',
   'rc.noteCancelled': 'Cancelled this request.', 'rc.noteReopened': 'Reopened this request.',
+  'rr.askedNear': 'Asked {day}', 'rv.withDate': '{n} with a date this month', 'rv.deliveredN': '{n} delivered', 'rv.noDateCard': '{n} requests without a date', 'rv.noDateSub': '{n} in production', 'rv.see': 'See', 'cal.moreN': '+{n} more', 'cal.less': 'Show less', 'rq.newShort': 'New',
   'rc.dupOpen': 'Add to that one', 'rc.dupNew': 'No, it is another one', 'rc.today': 'today', 'rc.yesterday': 'yesterday',
 };
 export const requestFilterEs: Record<keyof typeof requestFilterEn, string> = {
@@ -43,5 +44,6 @@ export const requestFilterEs: Record<keyof typeof requestFilterEn, string> = {
   'rc.chip': 'Cancelado', 'rc.error': 'No se pudo. Intenta de nuevo.',
   'rc.dupTitle': '¿Es el mismo que «{title}»?', 'rc.dupBody': 'Lo enviaste {when} y sigue abierto. Si es el mismo, agrega ahí lo que falta para que el equipo no lo haga dos veces.',
   'rc.noteCancelled': 'Canceló este pedido.', 'rc.noteReopened': 'Volvió a abrir este pedido.',
+  'rr.askedNear': 'Pedida {day}', 'rv.withDate': '{n} con fecha este mes', 'rv.deliveredN': '{n} entregadas', 'rv.noDateCard': '{n} pedidos sin fecha', 'rv.noDateSub': '{n} en producción', 'rv.see': 'Ver', 'cal.moreN': '+{n} más', 'cal.less': 'Ver menos', 'rq.newShort': 'Nuevo',
   'rc.dupOpen': 'Agregar a ese', 'rc.dupNew': 'No, es otro', 'rc.today': 'hoy', 'rc.yesterday': 'ayer',
 };

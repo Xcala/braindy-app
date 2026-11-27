@@ -1,0 +1,32 @@
+/* Requests list (audit P1/P3, 2026-11-26): columns when there is room; when the list is narrow (a phone, or the
+   Asistente open) each request turns into rows: the name with the whole width, then status · piece · asked · date. */
+.rq-table { container: rq / inline-size; }
+.rq-table .trow { grid-template-columns: var(--cols); }
+.rq-n { display: none; }
+@container rq (max-width: 52rem) {
+  .rq-table .trow { grid-template-columns: var(--cols-n); align-items: start; }
+  .rq-table .trow.head { display: none; }
+  .rq-table .rq-c { display: none; }
+  .rq-table .rq-n { display: inline-flex; align-items: center; }
+  .rq-table .rq-meta { row-gap: 0.25rem; }
+  .rq-table .trow a.truncate { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+}
+/* Phones: no ticks (changing many at once stays on the computer). */
+@media (max-width: 767px) {
+  .rq-table .trow { grid-template-columns: minmax(0, 1fr) !important; }
+  .rq-table .fx-check { display: none; }
+}
+/* Header and bar on phones (audit P2 + E): a small «+ Nuevo» by the title; search + Filtros on one line, the tabs
+   under it; the view and the export live inside Filtros. */
+.btn.rq-new-sm { display: none; }
+@media (max-width: 767px) {
+  .btn.rq-new-sm { display: inline-flex; }
+  .btn.rq-new-lg { display: none; }
+  .rq-bar.card { background: none; border: 0; box-shadow: none; }
+  .rq-bar .fx-bar { padding: 0; }
+  .rq-bar .fx-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.625rem; }
+  .rq-bar .fx-row > .search { grid-column: 1; grid-row: 1; max-width: none !important; }
+  .rq-bar .fx-row > div:not(.search):not(.seg) { grid-column: 2; grid-row: 1; }
+  .rq-bar .fx-row > .seg-scroll { grid-column: 1 / -1; grid-row: 2; }
+  .rq-bar .fx-actions { display: none; }
+}

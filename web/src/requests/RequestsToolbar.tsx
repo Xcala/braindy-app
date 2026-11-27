@@ -24,10 +24,12 @@ type Props = {
 
 /**
  * One row, like Files: search, status tabs, a "Filters" button that holds the rest (who, dates, campaign, order,
- * archived), the view switch and a ⋯ menu to export or share. Every control is 40 px.
+ * archived), the view switch and a ⋯ menu to export or share. Every control is 40 px. On phones (audit P2, 2026-11-26)
+ * the bar is two lines: search + Filtros, then the tabs; the view and the export live inside Filtros (requests.css).
  */
 export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, isAdmin, view, setView, onCsv, onPdf }: Props) {
   const { t } = useI18n();
+  const phone = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
   const names = useMemberNames(brandId);
   const [copied, setCopied] = useState(false);
   const who = [...new Set(all.map((r) => r.createdBy).filter(Boolean))].map((uid) => ({ uid, name: names[uid] || t('rf.team') })).sort((a, b) => a.name.localeCompare(b.name));
@@ -44,7 +46,7 @@ export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, i
   );
 
   return (
-    <div className="card fx" style={{ padding: 0 }}>
+    <div className="card fx rq-bar" style={{ padding: 0 }}>
       <div className="fx-bar" style={{ borderBottom: 0 }}>
         <div className="fx-row">
           <div className="search" style={{ flex: '1 1 180px', maxWidth: '16.25rem' }}>
@@ -58,16 +60,23 @@ export function RequestsToolbar({ brandId, all, narrowed, shown, f, set, tags, i
               </button>
             ))}
           </div>
-          <Popover label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: '1.25rem', padding: '0 0.4375rem', background: 'var(--azul-fill)', color: '#fff' }}>{n}</span>}</>}>
+          <Popover align={phone ? 'right' : 'left'} label={<><Icon name="filter" size={14} />{t('rf.filters')}{n > 0 && <span className="chip" style={{ height: '1.25rem', padding: '0 0.4375rem', background: 'var(--azul-fill)', color: '#fff' }}>{n}</span>}</>}>
             {(close) => (
               <>
                 {who.length > 1 && sel(t('rf.who'), f.who, (v) => put({ who: v }), [['', t('rf.whoAll', { n: who.length })], ...who.map((w): [string, string] => [w.uid, w.name])])}
                 {sel(t('rf.due'), f.due, (v) => put({ due: v as ReqFilters['due'] }), DUES.filter((d) => d !== 'late').map((d) => [d, t(`rf.due.${d}`)]))}
                 {sel(t('rf.asked'), f.asked, (v) => put({ asked: v as ReqFilters['asked'] }), ASKEDS.map((a) => [a, t(`rf.asked.${a}`)]))}
                 {tags.length > 0 && sel(t('rf.tag'), f.tag, (v) => put({ tag: v }), [['', t('rf.tagAll')], ...tags.map((g): [string, string] => [g, `#${g}`])])}
+                {phone && sel(t('files.view'), view, (v) => { setView(v as View); close(); }, (['list', 'board', 'calendar'] as View[]).map((v) => [v, t(v === 'calendar' ? 'rv.calendar' : v === 'list' ? 'req.list' : 'req.board')]))}
                 {sel(t('files.sort'), f.sort, (v) => put({ sort: v as ReqFilters['sort'] }), SORTS.map((s) => [s, t(`rf.sort.${s}`)]))}
                 {archivedN > 0 && (
                   <label className="row g8 t-sm"><input type="checkbox" checked={f.archived} onChange={() => put({ archived: !f.archived, tab: 'all' })} />{t('rf.archived', { n: archivedN })}</label>
+                )}
+                {phone && (
+                  <span className="row g4 wrap">
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={!shown} onClick={() => { onCsv(); close(); }}><Icon name="download" size={16} />{t('rf.excelLong')}</button>
+                    <button type="button" className="btn btn-ghost btn-sm" disabled={!shown} onClick={() => { onPdf(); close(); }}><Icon name="file" size={16} />{t('rf.pdfLong')}</button>
+                  </span>
                 )}
                 <div className="row between">
                   <button type="button" className="btn btn-ghost btn-sm" disabled={!isFiltered(f) && f.sort === 'action'} onClick={() => set(NO_FILTERS)}>{t('rf.clear')}</button>
