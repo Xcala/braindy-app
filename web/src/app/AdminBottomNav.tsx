@@ -4,6 +4,8 @@ import { NavLink, useLocation } from 'react-router';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
 import { NAV_ICON } from './navIcons';
+import { useWaWaitingCount } from '../whatsapp/useWaInbox';
+import '../whatsapp/whatsapp.css';
 
 /** The admin pages. The first four sit in the phone's bottom bar; the rest open from "More". Desktop lists them all in the sidebar. */
 export const ADMIN_TABS: Array<{ to: string; label: StringKey }> = [
@@ -32,6 +34,8 @@ export function AdminBottomNav() {
   const closeBtn = useRef<HTMLButtonElement>(null);
   const rest = ADMIN_TABS.filter((i) => !FIXED_TO.includes(i.to));
   const inRest = rest.some((r) => pathname === r.to || pathname.startsWith(`${r.to}/`));
+  // How many numbers wait on WhatsApp (the same live query the WhatsApp page uses).
+  const waWaiting = useWaWaitingCount();
 
   useEffect(() => { setOpen(false); }, [pathname]);
   useEffect(() => {
@@ -48,9 +52,16 @@ export function AdminBottomNav() {
   return (
     <>
       <div className="fixed inset-x-0 bottom-0 z-30 md:hidden"><nav className="bnav" aria-label={t('nav.sections')}>
-        {FIXED_TABS.map((i) => (
-          <NavLink key={i.to} to={i.to} className={({ isActive }) => (isActive ? 'is-active' : '')}>{NAV_ICON[i.to]}{t(i.label)}</NavLink>
-        ))}
+        {FIXED_TABS.map((i) => {
+          const badge = i.to === '/admin/whatsapp' && waWaiting > 0 ? waWaiting : 0;
+          return (
+            <NavLink key={i.to} to={i.to} className={({ isActive }) => `${isActive ? 'is-active' : ''}${badge ? ' wa-has-badge' : ''}`}
+              aria-label={badge ? `${t(i.label)} · ${t('wa.badge', { n: badge })}` : undefined}>
+              {NAV_ICON[i.to]}{t(i.label)}
+              {badge ? <span className="wa-badge" aria-hidden="true">{badge > 99 ? '99+' : badge}</span> : null}
+            </NavLink>
+          );
+        })}
         <button ref={moreBtn} type="button" className={inRest || open ? 'is-active' : ''} aria-expanded={open} aria-haspopup="dialog" onClick={() => setOpen(true)}>
           {NAV_ICON.more}{t('nav.more')}
         </button>

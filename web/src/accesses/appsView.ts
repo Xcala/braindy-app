@@ -6,7 +6,7 @@ export type AppsView = {
   layout: 'list' | 'grid';
   sort: 'manual' | 'az' | 'price' | 'recent';
   groupBy: 'none' | 'group' | 'signIn' | 'account';
-  filter: 'all' | 'subs' | 'direct' | 'braindy' | 'google' | 'microsoft' | 'missing';
+  filter: 'all' | 'subs' | 'direct' | 'braindy' | 'google' | 'microsoft' | 'facebook' | 'missing';
 };
 export const DEFAULT_VIEW: AppsView = { layout: 'list', sort: 'manual', groupBy: 'none', filter: 'all' };
 
@@ -27,7 +27,7 @@ export function passes(a: Access, f: AppsView['filter']) {
   if (f === 'subs') return !!a.subscription;
   if (f === 'direct') return a.payer === 'client';
   if (f === 'braindy') return a.payer === 'braindy';
-  if (f === 'google' || f === 'microsoft') return signInOf(a) === f;
+  if (f === 'google' || f === 'microsoft' || f === 'facebook') return signInOf(a) === f;
   if (f === 'missing') return signInOf(a) === 'password' && !a.hasSecret;
   return true;
 }
@@ -71,7 +71,7 @@ export function groupApps(list: Access[], by: AppsView['groupBy'], t: (k: String
   if (by === 'none') return [{ key: '', label: '', items: list }];
   const map = new Map<string, Access[]>();
   for (const a of list) { const k = groupKey(a, by); map.set(k, [...(map.get(k) ?? []), a]); }
-  const SIGN: Record<string, StringKey> = { password: 'acc.signInPassword', google: 'acc.signInGoogle', microsoft: 'acc.signInMicrosoft' };
+  const SIGN: Record<string, StringKey> = { password: 'acc.signInPassword', google: 'acc.signInGoogle', microsoft: 'acc.signInMicrosoft', facebook: 'acc.signInFacebook', none: 'acc.signInNone' };
   const label = (k: string) => by === 'signIn' ? t(SIGN[k]) : k || t(by === 'group' ? 'apps.noGroup' : 'apps.noUser');
   return [...map].map(([key, items]) => ({ key, label: label(key), items }))
     .sort((a, b) => (a.key === '' ? 1 : 0) - (b.key === '' ? 1 : 0) || a.label.localeCompare(b.label));

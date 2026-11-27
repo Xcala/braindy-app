@@ -51,7 +51,7 @@
 .hp .hp-ideal b { color: var(--ink); font-weight: 700; }
 .hp .hp-price { display: flex; flex-direction: column; gap: 0.25rem; padding-block: 1rem; border-block: 1px solid var(--line); }
 .hp .hp-price-main { display: flex; align-items: baseline; gap: 0.375rem; flex-wrap: wrap; }
-.hp .hp-amount { font-size: 2.5rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.hp .hp-amount { font-size: 1.75rem; font-weight: 300; letter-spacing: -.01em; line-height: 1; font-variant-numeric: tabular-nums; }
 .hp .hp-cur { font-family: var(--mono); font-size: 0.8125rem; color: var(--mute); }
 .hp .hp-per { color: var(--mute); }
 .hp .hp-note { font-size: 0.875rem; color: var(--mute); font-variant-numeric: tabular-nums; min-height: 1.55em; }
@@ -142,7 +142,7 @@
 .hp .hp-feature p { color: #C9D0DE; }
 .hp .hp-feature-side { display: flex; flex-direction: column; gap: 1rem; background: #151D31; border: 1px solid #26304A; border-radius: 0.875rem; padding: 1.25rem; min-width: 0; }
 .hp .hp-f-price { display: flex; align-items: baseline; gap: 0.375rem; flex-wrap: wrap; }
-.hp .hp-f-amount { font-size: 2.25rem; font-weight: 900; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.hp .hp-f-amount { font-size: 1.625rem; font-weight: 300; letter-spacing: -.01em; line-height: 1; font-variant-numeric: tabular-nums; }
 .hp .hp-f-price span:last-child { color: #A4ADC2; }
 .hp .hp-feature .hp-key li { color: #EEF1F8; }
 .hp .hp-feature .hp-fine { font-size: 0.8125rem; color: #A4ADC2; }

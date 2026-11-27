@@ -24,7 +24,7 @@ export const alertEn = {
   'al.k.decisions': 'Approvals and change requests',
   'al.k.deliveries': 'Deliveries to approve',
   'al.k.done': 'Published work',
-  'al.k.due': 'Due tomorrow',
+  'al.k.due': 'Due tomorrow', 'al.k.billing': 'New invoices and receipts',
   'al.prompt': 'Get alerts on this device when there is something to approve or a new comment.',
   'al.later': 'Not now',
 };
@@ -53,7 +53,7 @@ export const alertEs: Record<keyof typeof alertEn, string> = {
   'al.k.decisions': 'Aprobaciones y cambios pedidos',
   'al.k.deliveries': 'Entregas para aprobar',
   'al.k.done': 'Trabajo publicado',
-  'al.k.due': 'Entregas de mañana',
+  'al.k.due': 'Entregas de mañana', 'al.k.billing': 'Cuentas de cobro y recibos',
   'al.prompt': 'Recibe alertas en este dispositivo cuando haya algo para aprobar o un comentario nuevo.',
   'al.later': 'Ahora no',
 };

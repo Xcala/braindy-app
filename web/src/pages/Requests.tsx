@@ -14,6 +14,7 @@ import { RequestsBoard, COLUMNS } from '../requests/RequestsBoard';
 import { RequestsList } from '../requests/RequestsList';
 import { DueCalendar } from '../requests/DueCalendar';
 import { DeliveryPace } from '../requests/DeliveryPace';
+import '../requests/requests.css';
 import { AskPanel } from '../requests/ask/AskPanel';
 import { downloadCsv, printPdf, rowOf } from '../requests/exportRequests';
 import { rememberOrder } from '../requests/RequestNav';
@@ -69,12 +70,16 @@ export function Requests() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="col g8">
           <p className="label">{current.name}</p>
-          <h1 className="h1"><span className="w9">{t('nav.requests')}.</span></h1>
-          {!loading && <DeliveryPace list={list} />}
+          <div className="row between g8">
+            <h1 className="h1"><span className="w9">{t('nav.requests')}.</span></h1>
+            {/* Phones (audit E): a small «+ Nuevo» by the title instead of the big button; «Pedir» is also in the bottom bar. */}
+            <button type="button" className="btn btn-primary btn-sm rq-new-sm" onClick={() => setParam('new', '1')}><Icon name="plus" size={16} />{t('rq.newShort')}</button>
+          </div>
+          {!loading && <DeliveryPace list={list} withFirst={isAdmin} />}
         </div>
         <div className="row g8 wrap">
           {toApprove > 1 && <Link className="btn btn-secondary" to="/requests/approve">{t('req.batch', { n: toApprove })}</Link>}
-          <button type="button" className="btn btn-primary" data-tour="ask-open" onClick={() => setParam('new', '1')}><Icon name="plus" size={18} />{t('as.new')}</button>
+          <button type="button" className="btn btn-primary rq-new-lg" data-tour="ask-open" onClick={() => setParam('new', '1')}><Icon name="plus" size={18} />{t('as.new')}</button>
         </div>
       </div>
 

@@ -1,0 +1,72 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { addMonths, allocate, dueFrom, isLate, cop, dollarsInWords, money, monthLabel, nitCheckDigit, nitValid, pesosInWords, planOf, splitAmount } from './money.js';
+
+test('amount in words (Colombia, M/CTE.)', () => {
+  assert.equal(pesosInWords(1_083_333), 'UN MILLÓN OCHENTA Y TRES MIL TRESCIENTOS TREINTA Y TRES PESOS M/CTE.');
+  assert.equal(pesosInWords(1_083_335), 'UN MILLÓN OCHENTA Y TRES MIL TRESCIENTOS TREINTA Y CINCO PESOS M/CTE.');
+  assert.equal(pesosInWords(928_571), 'NOVECIENTOS VEINTIOCHO MIL QUINIENTOS SETENTA Y UN PESOS M/CTE.');
+  assert.equal(pesosInWords(1_000_000), 'UN MILLÓN DE PESOS M/CTE.');
+  assert.equal(pesosInWords(21_000_000), 'VEINTIÚN MILLONES DE PESOS M/CTE.');
+  assert.equal(pesosInWords(3_250_000), 'TRES MILLONES DOSCIENTOS CINCUENTA MIL PESOS M/CTE.');
+});
+
+test('split: remainder in the last cuenta', () => {
+  assert.deepEqual(splitAmount(6_500_000, 6), [1_083_333, 1_083_333, 1_083_333, 1_083_333, 1_083_333, 1_083_335]);
+  assert.deepEqual(splitAmount(6_500_000, 7), [928_571, 928_571, 928_571, 928_571, 928_571, 928_571, 928_574]);
+  assert.equal(splitAmount(6_500_000, 6).reduce((a, b) => a + b), 6_500_000);
+  assert.throws(() => splitAmount(100, 0));
+});
+
+test('months and labels', () => {
+  assert.equal(addMonths('2026-09', 5), '2027-02');
+  assert.equal(addMonths('2026-12', 1), '2027-01');
+  assert.equal(monthLabel('2026-11'), 'noviembre de 2026');
+  assert.equal(cop(1_083_333), '$1.083.333');
+});
+
+test('Blacky plan: Sept–Nov issued today, Dec–Feb scheduled on their day', () => {
+  const rows = planOf({ totalAmount: 6_500_000, installments: 6, startMonth: '2026-09', issueDay: 5, numberingPrefix: 'BM-06' }, '2026-11-25');
+  assert.deepEqual(rows.map((r) => r.number), ['BM-06-01', 'BM-06-02', 'BM-06-03', 'BM-06-04', 'BM-06-05', 'BM-06-06']);
+  assert.deepEqual(rows.map((r) => r.issueNow), [true, true, true, false, false, false]);
+  assert.deepEqual(rows.map((r) => r.scheduledDate), ['2026-11-25', '2026-11-25', '2026-11-25', '2026-12-05', '2027-01-05', '2027-02-05']);
+  assert.equal(rows[5].billingMonth, '2027-02');
+});
+
+test('allocation: the 3.250.000 advance pays three cuentas and part of the fourth', () => {
+  const open = [1, 2, 3, 4, 5, 6].map((i) => ({ id: `c${i}`, owed: i === 6 ? 1_083_335 : 1_083_333 }));
+  const a = allocate(open, 3_250_000);
+  assert.deepEqual(a.map((x) => [x.id, x.applied, x.settles]), [['c1', 1_083_333, true], ['c2', 1_083_333, true], ['c3', 1_083_333, true], ['c4', 1, false]]);
+});
+
+test('NIT check digit (DIAN)', () => {
+  assert.equal(nitCheckDigit('902038455'), 4);
+  assert.equal(nitValid('902038455-4'), true);
+  assert.equal(nitValid('902.038.455-5'), false);
+  assert.equal(nitValid('902038455'), null);
+});
+
+test('USD: words, format and split in cents', () => {
+  assert.equal(dollarsInWords(108333), 'ONE THOUSAND EIGHTY-THREE AND 33/100 US DOLLARS');
+  assert.equal(dollarsInWords(100), 'ONE AND 00/100 US DOLLAR');
+  assert.equal(dollarsInWords(250000000), 'TWO MILLION FIVE HUNDRED THOUSAND AND 00/100 US DOLLARS');
+  assert.equal(money(650000, 'USD'), 'US$6,500.00');
+  assert.equal(money(1083333, 'COP'), '$1.083.333 COP');
+  assert.deepEqual(splitAmount(650000, 6), [108333, 108333, 108333, 108333, 108333, 108335]);
+});
+
+test('mora: counts from the planned day when a cuenta went out early (Blacky, sent 2026-11-26)', () => {
+  const dec = { issueDate: '2026-11-26', scheduledDate: '2026-12-05' };
+  const feb = { issueDate: '2026-11-26', scheduledDate: '2027-02-05' };
+  const sep = { issueDate: '2026-11-26', scheduledDate: '2026-11-25' };
+  assert.equal(dueFrom(dec), '2026-12-05');
+  assert.equal(dueFrom(sep), '2026-11-26');
+  assert.equal(isLate(dec, '2026-12-27'), false);
+  assert.equal(isLate(feb, '2026-12-27'), false);
+  assert.equal(isLate(dec, '2027-01-04'), false);
+  assert.equal(isLate(dec, '2027-01-05'), true);
+  assert.equal(isLate(feb, '2027-03-07'), false);
+  assert.equal(isLate(feb, '2027-03-08'), true);
+  assert.equal(isLate(sep, '2026-12-27'), true);
+  assert.equal(isLate({ issueDate: null, scheduledDate: null }, '2030-01-01'), false);
+});

@@ -31,6 +31,8 @@ export interface PlanViewProps {
   apps?: ReactNode;
   /** Admin: the «Edit plan» button, top right of the summary header. */
   action?: ReactNode;
+  /** Without a plan loaded: the header built from the project billed in cuentas (ProjectHead), instead of «being prepared». */
+  project?: ReactNode;
   /** A fold to open on arrival (?open=schedule|apps). */
   openFold?: string;
   brandName: string;
@@ -46,7 +48,7 @@ export interface PlanViewProps {
 
 /** Mi plan: the summary header, then one tab at a time. Summary (contract + what was contracted), schedule (weeks + kickoff
  *  checklist), site and apps (maintenance, the apps it runs on, hosting) and payments. */
-export function PlanView({ tab, tabs, action, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
+export function PlanView({ tab, tabs, action, project, site, brand, payments, apps, openFold, intros, brandName, plan, contract, schedule, kickoff, onPackStatus, onRowStatus, onTick }: PlanViewProps) {
   const { t, lang } = useI18n();
   const p = schedule ? deliveries(schedule) : { done: 0, total: 0 };
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
@@ -63,7 +65,7 @@ export function PlanView({ tab, tabs, action, site, brand, payments, apps, openF
   ) : null;
   return (
     <div className="col g32">
-      {head ?? <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
+      {head ?? ((!plan && project) || <header className="card col g16" style={{ background: 'linear-gradient(135deg,#0B1220 0%,#16224A 60%,#2F4DE0 140%)', color: '#fff', borderColor: '#0B1220' }}>
         <div className="row between g12" style={{ alignItems: 'center' }}>
           <p className="label" style={{ color: '#8FA0FF', margin: 0 }}>{brandName}{plan ? ` · ${t(`plan.status.${plan.status}`)}` : ''}</p>
           {action}
@@ -88,7 +90,7 @@ export function PlanView({ tab, tabs, action, site, brand, payments, apps, openF
           {/* The "ai" inside Brains goes in 900 in signatures. */}
           {t('plan.signature').split('Brains').flatMap((part, i) => (i ? [<span key={i}>Br<b className="w9">ai</b>ns</span>, part] : [part]))}
         </p>
-      </header>}
+      </header>)}
       {tabs}
       {intros?.[tab] && <OnceIntro key={tab} id={tab}>{intros[tab]}</OnceIntro>}
       {tab === 'summary' && contract}

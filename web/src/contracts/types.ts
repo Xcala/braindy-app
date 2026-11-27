@@ -30,6 +30,13 @@ export interface Contract {
   pdf?: { fileName: string; sha256: string; size: number };
   /** 'external' = signed outside Braindy and uploaded as a PDF (no in-app text, schedule or certificate). */
   source?: 'external';
+  /** Otrosíes to this contract (extensions, changes): each its own PDF and where its signatures stand. */
+  amendments?: Amendment[];
+}
+
+export interface Amendment {
+  id: string; title: string; fileName: string; sha256: string;
+  status: 'sent' | 'signed'; sentOn: string; signedOn?: string | null; extendsTo?: string | null; note?: string;
 }
 
 /** Terms Nicolas edits, in the order of the form. Keys match server DEFAULT_TERMS. */

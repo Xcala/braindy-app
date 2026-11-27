@@ -92,7 +92,7 @@ export const deleteWish = (w: Wish) => deleteDoc(w.ref);
  *  Only the text travels (a voice note is a file of that brand): type in what the note says first. */
 export async function shareWish(w: Wish) {
   const id = `${w.brandId}-${w.id}`;
-  const name = (w.authorName ?? '').trim().split(/s+/)[0] ?? '';
+  const name = (w.authorName ?? '').trim().split(/\s+/)[0] ?? '';
   await setDoc(doc(db, 'wishes', id), {
     text: w.text, kind: w.kind, status: w.status, reply: w.reply ?? '', public: true, votes: w.votes, ...(name ? { askedBy: name } : {}),
     createdAt: w.createdAt ?? serverTimestamp(), ...(w.doneAt ? { doneAt: w.doneAt } : {}),

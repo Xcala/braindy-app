@@ -1,64 +1,102 @@
+import { useEffect, useRef, useState } from 'react';
 import { useConfirm } from '../../components/useConfirm';
-import { useState } from 'react';
-import { useBrands } from '../../brands/BrandProvider';
 import { useL } from '../../plan/HostingParts';
 import { api } from '../../lib/api';
 import type { Plan } from '../../billing/useBilling';
 
-type Row = Plan & { brandId: string; hostingSite?: string | null; hostingPaused?: boolean; hostingFailedAt?: { toDate(): Date } };
+export type HostRow = Plan & { brandId: string; hostingSite?: string | null; hostingPaused?: boolean; hostingFailedAt?: { toDate(): Date } };
+type L = ReturnType<typeof useL>;
 const a = (id: string) => `/v1/admin/brands/${encodeURIComponent(id)}/site`;
 const DAY = 864e5;
+const SITE_RE = /^[a-z0-9-]{3,63}$/;
 
-/** Admin · Billing · Website hosting: which Firebase Hosting site is each brand's, its payment state, and the
- *  approved rule (notice day 0 and 7, pause day 15, back on payment). Pause and resume by hand too. */
-export function SiteHostingAdmin({ rows, reload }: { rows: Row[]; reload: () => void }) {
+/** Days since a hosting charge failed (null when it has not failed). */
+export const failedDays = (r?: HostRow) => { const f = r?.hostingFailedAt?.toDate(); return f ? Math.floor((Date.now() - f.getTime()) / DAY) : null; };
+
+/** One line for the site of a brand: plan, linked site and payment state; `bad` when it needs a look. */
+export function siteState(r: HostRow | undefined, L: L): { text: string; bad: boolean } | null {
+  if (!r?.hosting && !r?.hostingSite) return null;
+  const days = failedDays(r);
+  if (r.hostingPaused) return { text: L(['Sitio en pausa', 'Site paused']), bad: true };
+  if (days != null) return { text: L([`Sitio: pago pendiente · día ${days} de 15`, `Site: unpaid · day ${days} of 15`]), bad: true };
+  if (!r.hostingSite) return { text: L(['Sitio sin conectar', 'Site not linked']), bad: false };
+  if (r.hostingStatus === 'active') return { text: L(['Sitio al día', 'Site paid']), bad: false };
+  return { text: L(['Sitio sin pago activo', 'Site with no active payment']), bad: false };
+}
+
+/** Admin · Billing · inside a brand's plan window: its Firebase Hosting site, payment state and the approved rule
+ *  (notice day 0 and 7, pause day 15, back on payment). Link the site in Braindy's own window; pause and resume by hand. */
+export function SiteHostingAdmin({ brandId, brandName, row, reload }: { brandId: string; brandName: string; row?: HostRow; reload: () => void }) {
   const [dialog, ask] = useConfirm();
-  const { brands } = useBrands();
   const L = useL();
-  const [busy, setBusy] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const act = async (id: string, path: string, init: RequestInit) => {
-    setBusy(id); setErr(null);
-    try { await api(`${a(id)}/${path}`, init); reload(); } catch (e) { setErr(String((e as Error).message)); }
-    setBusy(null);
+  const [linking, setLinking] = useState(false);
+  const act = async (path: string, init: RequestInit) => {
+    setBusy(true); setErr(null);
+    try { await api(`${a(brandId)}/${path}`, init); reload(); return true; } catch (e) { setErr(String((e as Error).message)); return false; } finally { setBusy(false); }
   };
-  const setSite = (id: string, current?: string | null) => {
-    const site = window.prompt(L(['ID del sitio en Firebase Hosting (p. ej. pequeloop-web). Vacío para quitarlo.', 'Firebase Hosting site ID (e.g. pequeloop-web). Empty to remove.']), current ?? '');
-    if (site !== null) void act(id, 'hosting', { method: 'PUT', body: JSON.stringify({ site }) });
-  };
+  const st = siteState(row, L);
+  const plan = row?.hosting ? `${row.hosting[0].toUpperCase()}${row.hosting.slice(1)}${row.hostingBill === 'y' ? L([' · anual', ' · yearly']) : ''}` : null;
 
   return (
-    <section className="col g12" aria-labelledby="sh-h">
+    <section className="col g8" aria-labelledby={`sh-${brandId}`}>
       {dialog}
-      <div className="col g4"><h2 className="h2" id="sh-h">{L(['Hosting de sitios web', 'Website hosting'])}</h2>
-        <p className="t-sm t-mute">{L(['Si un cobro falla: aviso el día 0 y el 7, el sitio se pausa el día 15 y vuelve solo al pagar. Nada se borra.', 'If a charge fails: notice on day 0 and 7, the site pauses on day 15 and comes back on payment. Nothing is deleted.'])}</p></div>
-      {err && <p role="alert" className="t-sm" style={{ color: 'var(--danger, #DC2626)' }}>{err}</p>}
-      <div className="table overflow-x-auto">
-        <div className="trow head label min-w-[46rem]" style={{ gridTemplateColumns: 'minmax(0,1.3fr) 1fr 1.2fr 1.3fr 9rem' }}>
-          <span>{L(['Marca', 'Brand'])}</span><span>Plan</span><span>{L(['Sitio', 'Site'])}</span><span>{L(['Estado', 'State'])}</span><span />
-        </div>
-        {brands.filter((b) => b.status === 'active' && b.kind === 'brand').map((b) => {
-          const r = rows.find((x) => x.brandId === b.id);
-          const failed = r?.hostingFailedAt?.toDate();
-          const days = failed ? Math.floor((Date.now() - failed.getTime()) / DAY) : null;
-          const state = r?.hostingPaused ? L(['En pausa', 'Paused'])
-            : days != null ? L([`Pago pendiente · día ${days} de 15`, `Unpaid · day ${days} of 15`])
-            : r?.hostingStatus === 'active' ? L(['Al día', 'Paid']) : r?.hosting ? L(['Sin pago activo', 'No active payment']) : '—';
-          return (
-            <div key={b.id} className="trow min-w-[46rem]" style={{ gridTemplateColumns: 'minmax(0,1.3fr) 1fr 1.2fr 1.3fr 9rem' }}>
-              <span className="w7 truncate">{b.name}</span>
-              <span className="t-sm">{r?.hosting ? `${r.hosting[0].toUpperCase()}${r.hosting.slice(1)}${r.hostingBill === 'y' ? L([' · anual', ' · yearly']) : ''}` : '—'}</span>
-              <button type="button" className="btn btn-ghost btn-sm" style={{ justifySelf: 'start' }} disabled={busy === b.id} onClick={() => setSite(b.id, r?.hostingSite)}>{r?.hostingSite || L(['Conectar sitio', 'Link site'])}</button>
-              <span className="t-sm">{state}</span>
-              {r?.hostingSite
-                ? r.hostingPaused
-                  ? <button type="button" className="btn btn-primary btn-sm" disabled={busy === b.id} onClick={() => void act(b.id, 'resume', { method: 'POST', body: '{}' })}>{L(['Reactivar', 'Resume'])}</button>
-                  : <button type="button" className="btn btn-secondary btn-sm" disabled={busy === b.id} onClick={async () => { if (await ask({ title: L([`¿Pausar el sitio de ${b.name}?`, `Pause ${b.name}'s site?`]), body: L(['Se ve la página «Sitio en pausa» hasta reactivarlo.', 'It shows the "Site paused" page until resumed.']), confirmLabel: L(['Pausar', 'Pause']), danger: true })) void act(b.id, 'pause', { method: 'POST', body: '{}' }); }}>{L(['Pausar', 'Pause'])}</button>
-                : <span />}
-            </div>
-          );
-        })}
+      <h3 className="h3" id={`sh-${brandId}`}>{L(['Hosting del sitio', 'Website hosting'])}</h3>
+      <p className="t-xs t-mute">{L(['Si un cobro falla: aviso el día 0 y el 7, el sitio se pausa el día 15 y vuelve solo al pagar. Nada se borra.', 'If a charge fails: notice on day 0 and 7, the site pauses on day 15 and comes back on payment. Nothing is deleted.'])}</p>
+      <p className="t-sm">{[plan, st?.text].filter(Boolean).join(' · ') || L(['Sin hosting', 'No hosting'])}</p>
+      {err && <p role="alert" className="t-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
+      <div className="row g8 wrap">
+        <button type="button" className="btn btn-secondary btn-sm" disabled={busy} onClick={() => setLinking(true)}>
+          {row?.hostingSite ? L([`Sitio: ${row.hostingSite}`, `Site: ${row.hostingSite}`]) : L(['Conectar sitio', 'Link site'])}
+        </button>
+        {row?.hostingSite && (row.hostingPaused
+          ? <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => void act('resume', { method: 'POST', body: '{}' })}>{L(['Reactivar', 'Resume'])}</button>
+          : <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={async () => { if (await ask({ title: L([`¿Pausar el sitio de ${brandName}?`, `Pause ${brandName}'s site?`]), body: L(['Se ve la página «Sitio en pausa» hasta reactivarlo.', 'It shows the "Site paused" page until resumed.']), confirmLabel: L(['Pausar', 'Pause']), danger: true })) void act('pause', { method: 'POST', body: '{}' }); }}>{L(['Pausar', 'Pause'])}</button>)}
       </div>
+      {linking && <SiteDialog brandId={brandId} brandName={brandName} current={row?.hostingSite ?? ''} busy={busy} onClose={() => setLinking(false)}
+        onSave={async (site) => { if (await act('hosting', { method: 'PUT', body: JSON.stringify({ site }) })) setLinking(false); }} />}
     </section>
+  );
+}
+
+/** «Conectar el sitio de {marca}» in a Braindy window (not window.prompt): the site ID, checked as you type, with
+ *  suggestions from the brand's id. Empty unlinks it. */
+function SiteDialog({ brandId, brandName, current, busy, onClose, onSave }: {
+  brandId: string; brandName: string; current: string; busy: boolean; onClose: () => void; onSave: (site: string) => void;
+}) {
+  const L = useL();
+  const [v, setV] = useState(current);
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    ref.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [onClose]);
+  const id = v.trim().toLowerCase();
+  const bad = id !== '' && !SITE_RE.test(id);
+  const sugs = [...new Set([`${brandId}-web`, brandId, `${brandId}-site`].map((s) => s.toLowerCase().replace(/[^a-z0-9-]/g, '-')))];
+
+  return (
+    <div className="scrim fixed inset-0 z-[60] flex items-center justify-center p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <form className="modal w-full max-w-[26rem]" role="dialog" aria-modal="true" aria-labelledby="site-h" onSubmit={(e) => { e.preventDefault(); if (!bad) onSave(id); }}>
+        <h2 className="h2" id="site-h">{L([`Conectar el sitio de ${brandName}`, `Link ${brandName}'s site`])}</h2>
+        <div className="field">
+          <label htmlFor="site-id">{L(['Sitio de Firebase Hosting', 'Firebase Hosting site'])}</label>
+          <input ref={ref} id="site-id" className={`input${bad ? ' is-error' : ''}`} list="site-sugs" value={v} onChange={(e) => setV(e.target.value)}
+            placeholder={`${brandId}-web`} autoCapitalize="off" autoCorrect="off" spellCheck={false} aria-invalid={bad} aria-describedby="site-help" />
+          <datalist id="site-sugs">{sugs.map((s) => <option key={s} value={s} />)}</datalist>
+          <p id="site-help" className={`help${bad ? ' err' : ''}`}>
+            {bad ? L(['Solo minúsculas, números y guiones (3 a 63).', 'Lowercase letters, numbers and dashes only (3 to 63).'])
+              : L(['El ID que sale en la consola de Firebase Hosting (p. ej. pequeloop-web). Vacío para quitarlo.', 'The ID shown in the Firebase Hosting console (e.g. pequeloop-web). Empty to remove it.'])}
+          </p>
+        </div>
+        <div className="row g12" style={{ justifyContent: 'flex-end' }}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>{L(['Cancelar', 'Cancel'])}</button>
+          <button type="submit" className="btn btn-primary" disabled={bad || busy || id === current}>{id ? L(['Conectar', 'Link']) : L(['Quitar', 'Remove'])}</button>
+        </div>
+      </form>
+    </div>
   );
 }

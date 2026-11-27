@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { useI18n } from '../i18n/I18nProvider';
 import { SignContract } from '../contracts/SignContract';
 import { ContractDownload } from '../contracts/ContractDownload';
+import { Amendments } from '../contracts/Amendments';
 import type { Contract } from '../contracts/types';
 
 const TONE = {
@@ -35,7 +36,7 @@ export function ContractCard({ brandId, contract, noPlan }: { brandId: string; c
     body = isSigner && !admin
       ? <div className="col g12">{head(t('plan.c.toSign'), t('plan.c.toSignBody'), TONE.wait)}<SignContract brandId={brandId} contract={contract} /></div>
       : head(t('plan.c.toSign'), t('plan.c.waitingSigner', { name: contract.signer.name || contract.signer.email }), TONE.wait);
-  } else body = <div className="col g12">{head(t('plan.c.signed'), t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /></div>;
+  } else body = <div className="col g12">{head(t('plan.c.signed'), t(contract.source === 'external' ? 'ctr.bothSignedOutside' : 'ctr.bothSigned'), TONE.ok)}<ContractDownload brandId={brandId} contract={contract} compact /><Amendments brandId={brandId} contract={contract} /></div>;
 
   return <section className="col g12" aria-label={t('plan.c.label')}>{body}</section>;
 }

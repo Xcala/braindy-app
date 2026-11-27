@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nProvider';
 import { logoDomain } from './AppLogo';
-import { AccessRow, COL_LABEL, gridFor, priceLabel, type AccessCol } from './AccessRow';
+import { AccessRow, COL_LABEL, filledCols, gridFor, priceLabel, type AccessCol } from './AccessRow';
 import { AccessCard } from './AccessCard';
 import { groupApps, groupKey, matches, monthlyTotals, passes, sortApps, type AppsView } from './appsView';
 import { useDragOrder } from './useDragOrder';
@@ -12,10 +12,11 @@ const money = (list: Access[], t: ReturnType<typeof useI18n>['t'], lang: string)
   [...monthlyTotals(list)].map(([cur, v]) => priceLabel(Math.round(v * 100) / 100, cur, 'month', t, lang)).join(' + ');
 
 /** The apps as a table or a grid, searched, filtered, sorted and grouped; drag to reorder in «My order». */
-export function AppsList({ brandId, list, view, q, cols, onEdit, onClear }: {
+export function AppsList({ brandId, list, view, q, cols: picked, onEdit, onClear }: {
   brandId: string; list: Access[]; view: AppsView; q: string; cols: AccessCol[]; onEdit: (a: Access) => void; onClear: () => void;
 }) {
   const { t, lang } = useI18n();
+  const cols = filledCols(picked, list);
   // The dragged order shows at once; the live list replaces it when the save comes back.
   const [local, setLocal] = useState<{ ids: string[]; groups: Record<string, string> } | null>(null);
   useEffect(() => setLocal(null), [list]);

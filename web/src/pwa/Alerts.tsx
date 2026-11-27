@@ -6,7 +6,7 @@ import { BackToAccount } from '../pages/Account';
 import { disablePush, enablePush, pushApi, pushState, type PushState } from './push';
 
 const ADMIN_KINDS = ['requests', 'comments', 'decisions'] as const;
-const CLIENT_KINDS = ['deliveries', 'comments', 'done', 'due'] as const;
+const CLIENT_KINDS = ['deliveries', 'comments', 'done', 'due', 'billing'] as const;
 
 /** Account â€º Alerts: turn alerts on for this device, pick which arrive, send a test. */
 export function Alerts() {

@@ -17,9 +17,10 @@ export function AccessCard({ brandId, a, logo, drag, onEdit }: { brandId: string
         {drag.enabled && <DragHandle label={t('apps.move', { name: a.platform })} onMove={drag.move} />}
       </div>
       <dl className="acc-card-fields">
-        <dt>{t('acc.user')}</dt><dd><UserCell a={a} /></dd>
-        <dt>{t('acc.password')}</dt><dd><PasswordCell brandId={brandId} a={a} onEdit={onEdit} /></dd>
-        <dt>{t('acc.link')}</dt><dd><LinkCell a={a} /></dd>
+        {/* Empty fields stay out (a «—» row said nothing, 2026-11-26); on phones each label sits over its value (apps.css). */}
+        {a.username && <><dt>{t('acc.user')}</dt><dd><UserCell a={a} /></dd></>}
+        <dt>{t('ct.a.how')}</dt><dd><PasswordCell brandId={brandId} a={a} onEdit={onEdit} /></dd>
+        {a.link && <><dt>{t('acc.link')}</dt><dd><LinkCell a={a} /></dd></>}
         {(a.subscription || a.payer) && <><dt>{t('acc.subscription')}</dt><dd><PlanCell a={a} /></dd></>}
       </dl>
       <div className="row between g8 acc-card-foot">

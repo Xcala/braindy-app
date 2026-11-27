@@ -38,6 +38,8 @@
 @media (min-width: 640px) { .seg.seg-fit { display: inline-flex; width: auto; align-self: flex-start; } .seg.seg-fit a, .seg.seg-fit button { padding: 0 1rem; } }
 .seg-short { display: none; }
 @media (max-width: 639px) { .seg .has-short .seg-full { display: none; } .seg .has-short .seg-short { display: inline; } }
+/* Account row on phones: five short names fit at 375 px without scrolling (audit C2, 2026-11-26). */
+@media (max-width: 639px) { .seg > a:has(.has-short) { padding-inline: 0.625rem; } }
 .seg.seg-scroll[data-more="right"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent); }
 .seg.seg-scroll[data-more="left"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 2.5rem), transparent); }
 .seg.seg-scroll[data-more="both"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent); }

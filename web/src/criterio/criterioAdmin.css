@@ -1,0 +1,27 @@
+/* Admin › Criterio (UX CR1–CR4): two-line rows, area groups, the editor as its own full-screen page. Tokens only. */
+.cra-list{background:var(--white);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.cra-row{display:flex;align-items:center;gap:0.75rem;width:100%;min-height:3.75rem;padding:0.625rem 1rem;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;cursor:pointer;color:inherit;font:inherit}
+.cra-row:last-child{border-bottom:0}
+.cra-row:hover{background:var(--niebla)}
+.cra-row-text{display:flex;flex-direction:column;gap:0.125rem;flex:1;min-width:0}
+.cra-row-title{font-weight:700;line-height:1.25rem;overflow-wrap:anywhere}
+.cra-row-sub{font-size:0.8125rem;line-height:1.125rem;color:var(--graphite);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cra-row .chip{flex:none}
+.cra-row > svg{flex:none;color:var(--graphite)}
+.cra-group{font:700 0.8125rem/1.125rem var(--f-text);color:var(--graphite);margin:0.5rem 0}
+.cra-skel{height:3.75rem;border-radius:0;border-bottom:1px solid var(--line)}
+/* The editor: back arrow and name on top, fields, and the buttons always at hand at the bottom. */
+.cra-sheet{display:flex;flex-direction:column}
+.cra-sheet .acct-sheet-body{flex:1 0 auto;width:100%;max-width:48rem;padding-bottom:1.5rem}
+.cra-sheet-title{display:flex;flex-direction:column;min-width:0}
+.cra-foot{position:sticky;bottom:0;z-index:1;background:var(--niebla);border-top:1px solid var(--line);padding:0.75rem 1rem max(0.75rem,env(safe-area-inset-bottom))}
+.cra-foot-in{max-width:48rem;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem}
+.cra-fold{border:1px solid var(--line);border-radius:var(--r-md);background:var(--white);padding:0 1rem}
+.cra-fold > summary{cursor:pointer;font-weight:700;min-height:3rem;display:flex;align-items:center;gap:0.5rem;list-style:none}
+.cra-fold > summary::-webkit-details-marker{display:none}
+.cra-fold > summary::after{content:"›";margin-left:auto;color:var(--graphite);transition:transform .15s}
+.cra-fold[open] > summary::after{transform:rotate(90deg)}
+.cra-fold[open]{padding-bottom:1rem}
+.cra-hit > summary{list-style:none;cursor:pointer}
+.cra-hit > summary::-webkit-details-marker{display:none}
+@media (prefers-reduced-motion:reduce){.cra-fold > summary::after{transition:none}}

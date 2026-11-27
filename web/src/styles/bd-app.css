@@ -577,6 +577,7 @@ div.acct-row:hover{background:none}
 .notif-dot.is-production{background:#8B5CF6}
 .notif-dot.is-comment{background:#2A7FFF}
 .notif-dot.is-app{background:#06B6D4}
+.notif-dot.is-billing{background:var(--success)}
 /* Search box: solid sheet so the page behind does not show through the results */
 .cmdk{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
@@ -834,3 +835,15 @@ html[data-theme="dark"] .sx .is-decision,html[data-theme="dark"] .sx .is-client{
 .btn.btn-secondary.is-picked{background:var(--hielo);border-color:var(--azul);color:var(--azul)}
 .btn.is-picked::before{content:"";flex:none;width:.875rem;height:.875rem;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat}
 html[data-theme="dark"] .btn.btn-secondary.is-picked{background:rgba(143,160,255,.16);border-color:var(--azul-on-dark);color:var(--azul-on-dark)}
+/* Apps on phones (audit C4, 2026-11-26): one line per app (logo, name, how you get in) that opens to its fields. */
+.acc-sum,.acc-toggle{display:none}
+@media (max-width:767px){
+  .acc-table{gap:0.5rem}
+  .acc-table .acc-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center;gap:0.625rem 0.5rem;min-height:3.5rem!important;padding:0.625rem 0.5rem 0.625rem 1rem}
+  .acc-row .acc-cell,.acc-row > .acc-edit{grid-column:1/-1}
+  .acc-row:not(.is-open) .acc-cell,.acc-row:not(.is-open) > .acc-edit,.acc-row:not(.is-open) .acc-sub{display:none}
+  .acc-row.is-open .acc-sum{display:none}
+  .acc-sum{display:flex;margin-top:0.125rem;min-width:0}
+  .acc-toggle{display:grid;place-items:center;grid-column:2;grid-row:1;width:2.75rem;height:2.75rem;border:0;border-radius:999px;background:none;color:var(--graphite);cursor:pointer}
+  .acc-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+}
