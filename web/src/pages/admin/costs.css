@@ -1,0 +1,29 @@
+/* Admin › Costos IA (UX audit 27 nov 2026, CI1–CI3): one summary, brands by margin, technical blocks folded. */
+.cx-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem}
+.cx-period{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem}
+.cx-period .seg{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.cx-period .seg::-webkit-scrollbar{display:none}
+.cx-period .seg button{flex:none;white-space:nowrap}
+.cx-more{height:2.5rem;width:auto;min-width:7.5rem;padding-right:2rem}
+.cx-more.is-on{border-color:var(--ink);font-weight:700}
+.cx-sum .cx-total{font:900 2rem/2.25rem var(--f-display,inherit);letter-spacing:-0.01em}
+.cx-sum .cx-saved{color:var(--success)}
+.cx-err{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:0.75rem;border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.cx-pos{color:var(--success)}
+.cx-neg{color:var(--danger)}
+
+/* By brand: phone list (two lines, margin right, detail on tap) and desktop table (margin 2nd). */
+.cb-list{display:flex;flex-direction:column;gap:0}
+.cb-table{display:none}
+@media (min-width:768px){.cb-list{display:none}.cb-table{display:block}}
+.cb-item{border-top:1px solid var(--line)}
+.cb-item:first-child{border-top:0}
+.cb-item>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:2rem minmax(0,1fr) auto;align-items:center;gap:0.75rem;padding:0.75rem 0;min-height:3.5rem}
+.cb-item>summary::-webkit-details-marker{display:none}
+.cb-av{width:2rem;height:2rem;border-radius:0.625rem;background:var(--niebla);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font:800 0.6875rem/1 var(--f-text);color:var(--graphite)}
+.cb-name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-m{font-weight:800;white-space:nowrap;text-align:right}
+.cb-det{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1rem;padding:0 0 0.875rem 2.75rem}
+.cb-det dt{color:var(--graphite);font-size:0.75rem}
+.cb-det dd{margin:0;font-weight:700;font-size:0.875rem}
+.cb-loose{border-style:dashed}

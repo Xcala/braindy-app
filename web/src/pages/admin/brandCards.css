@@ -5,4 +5,8 @@
 .bcard-mark{flex:none;display:inline-flex}
 .bcard-mark .mark{width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font:900 0.8125rem/1 var(--f-display);color:#fff;flex:none}
 .bcard-name{font-weight:700;line-height:1.25rem;overflow-wrap:anywhere}
+.bcard-group{font-weight:400;color:var(--graphite)}
 .bcard-late{background:var(--danger-bg);color:var(--danger)}
+/* UX MA1 + MA4: health section titles and the capacity line. */
+.bsec-title{font:700 0.8125rem/1.125rem var(--f-text);color:var(--graphite);margin:0 0 0.5rem}
+.bcap{gap:0.375rem;max-width:32rem}

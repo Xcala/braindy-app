@@ -6,8 +6,9 @@ import { BrandMark } from '../../brands/BrandMark';
 import { useI18n } from '../../i18n/I18nProvider';
 import { MembersCard } from '../../team/MembersCard';
 import { BrandIdentityEdit } from './BrandIdentityEdit';
+import { BrandManageMore } from './BrandManageMore';
 
-/** Everything about one brand in one place: open it, switch it on or off, its people with their permissions. Admin's only per-brand page. */
+/** Everything about one brand in one place: open it, its identity, its people, its details and, at the end (UX MA2), archive. Admin's only per-brand page. */
 export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onToggle: () => void; onClose: () => void }) {
   const { t } = useI18n();
   const { select } = useBrands();
@@ -18,7 +19,7 @@ export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onTogg
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeBtn.current?.focus();
-    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape' && !document.querySelector('.scrim')) onClose(); };
     window.addEventListener('keydown', key);
     return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', key); };
   }, [onClose]);
@@ -35,17 +36,12 @@ export function BrandManage({ brand, onToggle, onClose }: { brand: Brand; onTogg
       </div>
       <div className="acct-sheet-body col g16">
         <button type="button" className="btn btn-primary" onClick={() => { select(brand.id); navigate('/home'); }}>{t('anav.openBrand')}</button>
-        <div className="card row between" style={{ padding: '1rem' }}>
-          <span className="w7">{t('anav.status')}</span>
-          <span className="row g12">
-            <span className="t-sm w7" style={{ color: on ? 'var(--success)' : 'var(--graphite)' }}>{t(`status.${brand.status}`)}</span>
-            <button className={`switch ${on ? 'is-on' : ''}`} role="switch" aria-checked={on} aria-label={`${brand.name} ${t('status.active')}`} onClick={onToggle} />
-          </span>
-        </div>
+        {!on && <span className="chip c-archived" style={{ alignSelf: 'flex-start' }}>{t('status.archived')}</span>}
         <BrandIdentityEdit key={brand.id} brand={brand} />
         <p className="label">{t('anav.people')}</p>
         <MembersCard key={brand.id} brandId={brand.id} brandName={brand.name} />
         <p className="t-xs t-mute">{t('team.membersHint')}</p>
+        <BrandManageMore key={`more-${brand.id}`} brand={brand} onToggle={onToggle} />
       </div>
     </div>,
     document.body,

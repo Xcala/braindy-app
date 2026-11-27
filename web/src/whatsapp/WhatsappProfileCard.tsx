@@ -1,21 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useI18n } from '../i18n/I18nProvider';
 import type { StringKey } from '../i18n/strings';
+import { LoadFail } from './LoadFail';
 
 type Profile = { about: string; description: string; address: string; email: string; websites: string[]; vertical: string; photo: string | null };
 const VERTICALS = ['OTHER', 'PROF_SERVICES', 'EDU', 'ENTERTAIN', 'EVENT_PLAN', 'RETAIL', 'APPAREL', 'BEAUTY', 'HEALTH', 'FINANCE', 'TRAVEL', 'RESTAURANT', 'HOTEL', 'NONPROFIT', 'AUTO', 'GROCERY'];
 const ERRORS: Record<string, StringKey> = { about_required: 'wap.errAbout', invalid_email: 'wap.errEmail', invalid_website: 'wap.errWeb' };
+const host = (u: string) => u.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-/** NickMark only: the public WhatsApp Business profile clients see when they open Braindy's chat. */
+/** NickMark only: the public WhatsApp Business profile, shown the way clients see it; «Edit» opens the fields. */
 export function WhatsappProfileCard() {
   const { t } = useI18n();
   const [p, setP] = useState<Profile | null>(null);
   const [failed, setFailed] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
-  useEffect(() => { api<Profile>('/v1/admin/whatsapp/profile').then(setP).catch(() => setFailed(true)); }, []);
+  const load = useCallback(() => { setFailed(false); api<Profile>('/v1/admin/whatsapp/profile').then(setP, () => setFailed(true)); }, []);
+  useEffect(load, [load]);
   const set = (k: keyof Profile, v: string) => { if (p) { setP({ ...p, [k]: v }); setMsg(null); } };
   const setWeb = (i: number, v: string) => { if (p) { const w = [p.websites[0] ?? '', p.websites[1] ?? '']; w[i] = v; setP({ ...p, websites: w }); setMsg(null); } };
 
@@ -25,7 +29,7 @@ export function WhatsappProfileCard() {
     try {
       const { photo: _photo, ...body } = p;
       await api('/v1/admin/whatsapp/profile', { method: 'PUT', body: JSON.stringify(body) });
-      setMsg({ ok: true, text: t('wap.saved') });
+      setMsg({ ok: true, text: t('wap.saved') }); setEditing(false);
     } catch (e) {
       const code = Object.keys(ERRORS).find((k) => String(e).includes(k));
       setMsg({ ok: false, text: t(code ? ERRORS[code] : 'wap.error') });
@@ -39,15 +43,26 @@ export function WhatsappProfileCard() {
     </div>
   );
 
+  const summary = p ? [p.vertical && p.vertical !== 'UNDEFINED' ? t(`wap.v.${p.vertical}` as StringKey) : '', p.websites[0] ? host(p.websites[0]) : ''].filter(Boolean).join(' · ') : '';
   return (
     <section className="card col g12" aria-labelledby="h-wap">
-      <div className="row g12" style={{ alignItems: 'center' }}>
-        {p?.photo && <img src={p.photo} alt="" width={44} height={44} style={{ borderRadius: '50%', objectFit: 'cover' }} />}
-        <div className="col"><h2 className="h3" id="h-wap">{t('wap.title')}</h2><span className="t-xs t-mute">{t('wap.sub')}</span></div>
-      </div>
-      {failed && <p className="t-sm t-mute">{t('wap.unavailable')}</p>}
+      <h2 className="sr-only" id="h-wap">{t('wap.title')}</h2>
+      {failed && <LoadFail onRetry={load} />}
+      {!p && !failed && <div className="skel" style={{ height: '3rem' }} />}
       {p && (
+        <div className="row g12" style={{ alignItems: 'center' }}>
+          {p.photo && <img src={p.photo} alt="" width={44} height={44} style={{ borderRadius: '50%', objectFit: 'cover', flex: 'none' }} />}
+          <div className="col grow" style={{ minWidth: 0 }}>
+            <span className="w7">Braindy</span>
+            <span className="t-sm">{p.about ? `«${p.about}»` : '—'}</span>
+            {summary && <span className="t-xs t-mute">{summary}</span>}
+          </div>
+          {!editing && <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>{t('wap.edit')}</button>}
+        </div>
+      )}
+      {p && editing && (
         <>
+          <p className="t-xs t-mute" style={{ margin: 0 }}>{t('wap.sub')}</p>
           {field('about', 139)}
           <div className="field">
             <label htmlFor="wap-desc">{t('wap.description')}</label>
@@ -68,10 +83,13 @@ export function WhatsappProfileCard() {
             </div>
           ))}
           <p className="t-xs t-mute" style={{ margin: 0 }}>{t('wap.phoneOnly')}</p>
-          <div className="row g8"><button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={save}>{t('wap.save')}</button></div>
-          {msg && <p className="t-sm" role="status" style={{ margin: 0, color: msg.ok ? undefined : 'var(--danger)' }}>{msg.text}</p>}
+          <div className="row g8">
+            <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={save}>{t('wap.save')}</button>
+            <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => { setEditing(false); setMsg(null); load(); }}>{t('wa.cancel')}</button>
+          </div>
         </>
       )}
+      {msg && <p className="t-sm" role="status" style={{ margin: 0, color: msg.ok ? undefined : 'var(--danger)' }}>{msg.text}</p>}
     </section>
   );
 }
