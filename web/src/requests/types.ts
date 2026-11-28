@@ -36,6 +36,8 @@ export interface BrandRequest {
   /** A version uploaded by the team that waits for NickMark before the client sees it. */
   held?: { versionId: string; why?: string; note?: string } | null;
   createdBy: string;
+  /** Where it came from: app, whatsapp, connector… */
+  source?: string;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
   legacy?: { briefRequestId?: string };

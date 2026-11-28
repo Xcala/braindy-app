@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { useState } from 'react';
+import { useMemberNames } from './useMemberNames';
 import { useI18n } from '../i18n/I18nProvider';
 import { Icon } from '../components/Icon';
 import type { BrandRequest } from './types';
@@ -8,13 +7,6 @@ import { ASKEDS, DUES, NO_FILTERS, SORTS, TABS, hiddenCount, inTab, isFiltered, 
 import { Popover } from './Popover';
 import '../assets/files.css';
 
-/** Names of the brand's people, to say who asked for each request. */
-function useMemberNames(brandId: string) {
-  const [names, setNames] = useState<Record<string, string>>({});
-  useEffect(() => onSnapshot(collection(db, 'brands', brandId, 'members'),
-    (s) => setNames(Object.fromEntries(s.docs.map((d) => [d.id, String(d.data().name || d.data().email || '')]))), () => setNames({})), [brandId]);
-  return names;
-}
 
 export type View = 'board' | 'list' | 'calendar';
 type Props = {

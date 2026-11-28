@@ -21,6 +21,7 @@ import { AdminVersionPanel } from '../requests/AdminVersionPanel';
 import { EyeBanner } from '../requests/EyeBanner';
 import { STATUS_CHIP, type Annotation } from '../requests/types';
 import { dayLabel } from '../lib/dates';
+import { AskedBy } from '../requests/AskedBy';
 import { SafeBoundary } from '../components/SafeBoundary';
 import { LessonForRequest } from '../criterio/LessonCards';
 import { BriefSummary } from '../requests/BriefSummary';
@@ -77,6 +78,7 @@ export function RequestDetail() {
           </div>
           <div className="row g8 wrap req-meta"><span className={`chip ${STATUS_CHIP[r.status]}`}>{t(`req.status.${r.status}`)}</span>{r.cancelled && <span className="chip c-type">{t('rc.chip')}</span>}{r.approvalLevel === 'nicolas' && <span className="chip c-sent">{t('ask.withNicolas')}</span>}
             <span className="t-sm t-mute">{type}{r.dueDate ? ` · ${t('home.dueDay', { day: dayLabel(r.dueDate, lang) })}` : ''}</span></div>
+          <AskedBy brandId={current.id} r={r} />
         </div>
         <div className="col g8 req-prog" style={{ alignItems: 'flex-end' }}><Progress r={r} />{mine && <span className="hidden sm:block"><CancelButton brandId={current.id} r={r} /></span>}</div>
       </div>
