@@ -21,6 +21,7 @@ import { IdeasPanel } from '../wishes/IdeasPanel';
 import { AlertsInvite } from '../pwa/AlertsInvite';
 import { AssistantIntro } from '../help/AssistantIntro';
 import { usePageViews } from '../lib/usage';
+import { ShareThisPage } from './ShareThisPage';
 import './shell.css';
 
 export function AppShell() {
@@ -71,6 +72,7 @@ export function AppShell() {
           )}
           <div className="grow" />
           {isAdmin && import.meta.env.DEV && <span className="hidden md:inline-flex"><ApiStatus /></span>}
+          <ShareThisPage />
           <CommandK />
           <Notifications />
           <AccountMenu />

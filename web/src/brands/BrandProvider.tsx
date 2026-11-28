@@ -81,7 +81,15 @@ export function BrandProvider({ children }: { children: ReactNode }) {
   const { profile } = useAuth();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  // A shared link (?brand=) opens in that brand when the person can see it; the parameter then leaves the address.
   const [selected, setSelected] = useState<string | null>(() => {
+    const fromLink = new URLSearchParams(location.search).get('brand');
+    if (fromLink) {
+      try { localStorage.setItem(STORAGE_KEY, fromLink); } catch { /* storage unavailable */ }
+      const q = new URLSearchParams(location.search); q.delete('brand');
+      history.replaceState(history.state, '', `${location.pathname}${q.toString() ? `?${q}` : ''}${location.hash}`);
+      return fromLink;
+    }
     try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
   });
 

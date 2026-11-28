@@ -1,6 +1,6 @@
 /** Strings for wave H (workspace switch, mobile nav, undo, home blocks, search). */
 export const uxEn = {
-  'nav.backToAdmin': 'Back to admin',
+  'nav.backToAdmin': 'Back to admin', 'app.sharePage': 'Share this page',
   'nav.more': 'More', 'nav.moreTitle': 'Everything in your Braindy', 'nav.homeShort': 'Home', 'nav.brandShort': 'Brand', 'nav.askShort': 'Ask', 'nav.requestsShort': 'Requests', 'nav.assetsShort': 'Assets',
   'common.undo': 'Undo',
   'sig.card': 'Nicolas · NickMark',
@@ -22,7 +22,7 @@ export const uxEn = {
 } as const;
 
 export const uxEs: Record<keyof typeof uxEn, string> = {
-  'nav.backToAdmin': 'Volver a admin',
+  'nav.backToAdmin': 'Volver a admin', 'app.sharePage': 'Compartir esta página',
   'nav.more': 'Más', 'nav.moreTitle': 'Todo en tu Braindy', 'nav.homeShort': 'Inicio', 'nav.brandShort': 'Marca', 'nav.askShort': 'Pedir', 'nav.requestsShort': 'Solicitudes', 'nav.assetsShort': 'Archivos',
   'common.undo': 'Deshacer',
   'sig.card': 'Nicolas · NicoMarca',
