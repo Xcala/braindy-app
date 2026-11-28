@@ -6,7 +6,7 @@ export type AdKey = 'spend' | 'impressions' | 'reach' | 'clicks' | 'results' | '
 export type AdDay = { d: string } & Partial<Record<AdKey, number | null>>;
 export type Campaign = { id: string; name: string; objective: string; status: string; resultLabel: string } & Partial<Record<AdKey, number | null>>;
 /** How the campaign reads against its three projected scenarios and public industry references (set by Nicolas; a general read, never a promise). */
-export type Outlook = { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: { name: string; low: number; high: number; source?: string }[] };
+export type Outlook = { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: { name: string; low: number; high: number; source?: string }[]; sources?: { title: string; url: string }[] };
 export type AdStats = { platform: string; currency: string; daily: AdDay[]; campaigns: Partial<Record<string, Campaign[]>>; outlook?: Outlook | null; updatedAt: Date | null };
 /** cost = net (after the portal credit); grossCost and credit when the portal shows them. */
 export type Promo = { name: string; kind?: string; dates?: string; orders?: number | null; sales?: number | null; cost?: number | null; grossCost?: number | null; credit?: number | null };

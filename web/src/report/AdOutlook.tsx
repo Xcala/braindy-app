@@ -94,6 +94,17 @@ export function AdOutlook({ stats }: { stats: AdStats }) {
         </div>
       )}
 
+      {!!o.sources?.length && (
+        <details className="outlook-sources">
+          <summary className="t-sm w7">{t('ads.o.sources', { n: o.sources.length })}</summary>
+          <ul className="col g4">
+            {o.sources.map((s) => (
+              <li key={s.url} className="t-xs"><a href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>
+            ))}
+          </ul>
+        </details>
+      )}
+
       <p className="t-xs t-mute">{t('ads.o.disclaimer')}</p>
     </section>
   );

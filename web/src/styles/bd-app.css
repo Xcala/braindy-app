@@ -859,3 +859,11 @@ html[data-theme="dark"] .btn.btn-secondary.is-picked{background:rgba(143,160,255
 .outlook-seg.outlook-acid{background:var(--danger)}.outlook-seg.outlook-mid{background:var(--warning)}.outlook-seg.outlook-best{background:var(--success)}
 .outlook-pin{position:absolute;top:50%;width:1rem;height:1rem;border-radius:50%;background:var(--ink);border:3px solid var(--white);transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(11,18,32,.25)}
 .chip.outlook-acid{background:var(--danger-bg);color:var(--danger)}.chip.outlook-mid{background:var(--warning-bg);color:var(--warning)}.chip.outlook-best{background:var(--success-bg);color:var(--success)}
+/* Results › Ads: the sources behind the references, folded. */
+.outlook-sources{border-top:1px solid var(--line);padding-top:0.625rem}
+.outlook-sources summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:0.375rem}
+.outlook-sources summary::-webkit-details-marker{display:none}
+.outlook-sources summary::after{content:'';width:0.5rem;height:0.5rem;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+.outlook-sources[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
+.outlook-sources ul{margin:0.625rem 0 0;padding-left:1rem;list-style:disc}
+.outlook-sources a{color:var(--azul);word-break:break-word}

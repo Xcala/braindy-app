@@ -52,7 +52,7 @@ export async function syncAdStats(brandId: string, platform: string, input: AdIn
   return { days: daily.length, from: daily[0]?.d ?? '', to: daily.at(-1)?.d ?? '', periods: Object.keys(campaigns) };
 }
 
-export interface OutlookInput { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: Array<{ name: string; low: number; high: number; source?: string }> }
+export interface OutlookInput { metric: 'cpr' | 'cpc' | 'ctr'; label?: string; since?: string; acid: number; mid: number; best: number; note?: string; refs?: Array<{ name: string; low: number; high: number; source?: string }>; sources?: Array<{ title: string; url: string }> }
 
 /** Sets (or clears, with null) how a platform's campaign reads against its three scenarios and public industry references. The ads doc must exist. */
 export async function setAdOutlook(brandId: string, platform: string, o: OutlookInput | null) {
@@ -64,8 +64,9 @@ export async function setAdOutlook(brandId: string, platform: string, o: Outlook
   const since = /^\d{4}-\d{2}-\d{2}$/.test(o.since ?? '') ? o.since : '';
   await ref.update({ outlook: {
     metric: o.metric, label: str(o.label, 80), since, acid, mid, best, note: str(o.note, 500),
-    refs: (o.refs ?? []).filter((r) => r.name && num(r.low) != null && num(r.high) != null).slice(0, 5)
-      .map((r) => ({ name: str(r.name, 120), low: Math.min(num(r.low)!, num(r.high)!), high: Math.max(num(r.low)!, num(r.high)!), source: str(r.source, 160) })),
+    refs: (o.refs ?? []).filter((r) => r.name && num(r.low) != null && num(r.high) != null).slice(0, 8)
+      .map((r) => ({ name: str(r.name, 120), low: Math.min(num(r.low)!, num(r.high)!), high: Math.max(num(r.low)!, num(r.high)!), source: str(r.source, 240) })),
+    sources: (o.sources ?? []).filter((s) => s.title && /^https:\/\//.test(s.url ?? '')).slice(0, 20).map((s) => ({ title: str(s.title, 140), url: str(s.url, 400) })),
   } });
   return `ácido ${acid} · medio ${mid} · óptimo ${best}`;
 }
@@ -137,7 +138,8 @@ export function registerAdTools(server: McpServer, app: string) {
       since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('First day of the campaign'),
       acid: z.number().optional(), mid: z.number().optional(), best: z.number().optional(),
       note: z.string().max(500).optional().describe('Two or three plain sentences reading the number, in the brand language'),
-      refs: z.array(z.object({ name: z.string(), low: z.number(), high: z.number(), source: z.string().optional() })).max(5).optional(),
+      refs: z.array(z.object({ name: z.string(), low: z.number(), high: z.number(), source: z.string().optional() })).max(8).optional(),
+      sources: z.array(z.object({ title: z.string(), url: z.string().url() })).max(20).optional().describe('Every page consulted for the references (https), shown in a «Fuentes consultadas» dropdown'),
     },
   }, run(async ({ brandId, platform, clear, ...o }) => {
     const name = await requireBrand(brandId);
